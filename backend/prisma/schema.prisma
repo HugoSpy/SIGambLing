@@ -23,10 +23,10 @@ enum EventCategory {
 }
 
 enum EventStatus {
-  pending
-  active
-  resolved
-  cancelled
+  OPEN      @map("active")
+  CLOSED    @map("pending")
+  RESOLVED  @map("resolved")
+  CANCELLED @map("cancelled")
 }
 
 enum BetStatus {
@@ -66,6 +66,7 @@ model User {
   badges          Badge[]
   createdEvents   Event[]     @relation("EventCreator")
   validatedEvents Event[]     @relation("EventValidator")
+  excludedEvents  EventExclusion[]
   adminLogs       AdminLog[]  @relation("AdminActor")
 
   @@index([email])
@@ -73,48 +74,65 @@ model User {
 }
 
 model Event {
-  id             String        @id @default(uuid()) @db.Uuid
-  creatorId      String?       @db.Uuid
-  validatorId    String?       @db.Uuid
-  title          String        @unique @db.VarChar(200)
-  description    String
+  id             String           @id @default(uuid()) @db.Uuid
+  title          String           @unique @db.VarChar(200)
+  description    String?          @db.Text
   category       EventCategory
+  imageUrl       String?          @db.VarChar(500)
   options        Json
-  status         EventStatus   @default(pending)
-  resultOption   String?       @db.VarChar(50)
-  totalPool      Int           @default(0)
-  resolutionDate DateTime?
-  createdAt      DateTime      @default(now())
-  validatedAt    DateTime?
+  poolByOption   Json             @default("{}")
+  totalPool      Int              @default(0)
+  status         EventStatus      @default(OPEN)
+  resolvedOption String?          @map("resultOption") @db.VarChar(50)
+  closingAt      DateTime?        @map("resolutionDate")
   resolvedAt     DateTime?
-  creator        User?         @relation("EventCreator", fields: [creatorId], references: [id], onDelete: SetNull)
-  validator      User?         @relation("EventValidator", fields: [validatorId], references: [id], onDelete: SetNull)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @default(now()) @updatedAt
+  minBet         Int              @default(10)
+  maxBet         Int?
+  createdById    String?          @map("creatorId") @db.Uuid
+  validatorId    String?          @db.Uuid
+  validatedAt    DateTime?
+  createdBy      User?            @relation("EventCreator", fields: [createdById], references: [id], onDelete: SetNull)
+  validator      User?            @relation("EventValidator", fields: [validatorId], references: [id], onDelete: SetNull)
+  excludedUsers  EventExclusion[]
   bets           Bet[]
 
   @@index([status])
   @@index([category])
+  @@index([closingAt])
   @@index([createdAt(sort: Desc)])
 }
 
 model Bet {
-  id             String    @id @default(uuid()) @db.Uuid
-  userId         String    @db.Uuid
-  eventId        String    @db.Uuid
-  amount         Int
-  selectedOption String    @db.VarChar(50)
-  oddsAtBet      Decimal   @db.Decimal(5, 2)
-  status         BetStatus @default(pending)
-  potentialWin   Int
-  actualWin      Int       @default(0)
-  createdAt      DateTime  @default(now())
-  resolvedAt     DateTime?
-  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  event          Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  id           String    @id @default(uuid()) @db.Uuid
+  userId       String    @db.Uuid
+  eventId      String    @db.Uuid
+  chosenOption String    @map("selectedOption") @db.VarChar(50)
+  amount       Int
+  oddAtBet     Decimal   @map("oddsAtBet") @db.Decimal(5, 2)
+  legacyStatus BetStatus @map("status") @default(pending)
+  potentialWin Int       @default(0)
+  payout       Int       @map("actualWin") @default(0)
+  createdAt    DateTime  @default(now())
+  resolvedAt   DateTime?
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event        Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([eventId])
-  @@index([status])
   @@index([createdAt(sort: Desc)])
+}
+
+model EventExclusion {
+  id      String @id @default(uuid()) @db.Uuid
+  eventId String @db.Uuid
+  userId  String @db.Uuid
+  event   Event  @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  user    User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([eventId, userId])
+  @@index([userId])
 }
 
 model CasinoGame {

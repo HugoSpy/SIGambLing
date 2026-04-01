@@ -1,7 +1,22 @@
 import dotenv from "dotenv";
+import fs from "fs";
+import path from "path";
 import { z } from "zod";
 
-dotenv.config();
+const envCandidates = Array.from(
+  new Set([
+    path.resolve(process.cwd(), ".env"),
+    path.resolve(process.cwd(), "backend/.env"),
+    path.resolve(__dirname, "../../.env"),
+    path.resolve(__dirname, "../../../.env"),
+  ]),
+);
+
+for (const envPath of envCandidates) {
+  if (fs.existsSync(envPath)) {
+    dotenv.config({ path: envPath, override: false });
+  }
+}
 
 const envSchema = z.object({
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
@@ -23,6 +38,22 @@ const envSchema = z.object({
   SENTRY_DSN: z.string().optional(),
 });
 
-export const env = envSchema.parse(process.env);
+const parsedEnv = envSchema.safeParse(process.env);
+
+if (!parsedEnv.success) {
+  const missingKeys = parsedEnv.error.issues
+    .map((issue) => issue.path[0])
+    .filter((value): value is string => typeof value === "string");
+
+  throw new Error(
+    [
+      "Configuration backend invalide.",
+      `Variables manquantes ou invalides: ${missingKeys.join(", ")}`,
+      "Creez `backend/.env` a partir de `backend/.env.example`.",
+    ].join(" "),
+  );
+}
+
+export const env = parsedEnv.data;
 
 export const isProduction = env.NODE_ENV === "production";

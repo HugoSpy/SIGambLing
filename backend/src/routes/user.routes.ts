@@ -1,16 +1,32 @@
 import rateLimit from "express-rate-limit";
 import type { RequestHandler } from "express";
-import multer from "multer";
 import { Router } from "express";
 import {
   getCurrentUserController,
+  listCurrentUserEventBetsController,
+  searchUsersController,
   updateCurrentUserController,
   uploadCurrentUserAvatarController,
 } from "../controllers/user.controller";
 import { requireAuth } from "../middleware/require-auth";
+import { requireRole } from "../middleware/require-role";
 import { validateBody } from "../middleware/validate";
 import { updateUserProfileSchema } from "../schemas/user.schemas";
 import { AppError } from "../utils/app-error";
+
+const multer = require("multer") as {
+  (options: {
+    storage: unknown;
+    limits: { fileSize: number };
+  }): {
+    single(fieldName: string): (
+      request: Parameters<RequestHandler>[0],
+      response: Parameters<RequestHandler>[1],
+      next: (error?: unknown) => void,
+    ) => void;
+  };
+  memoryStorage(): unknown;
+};
 
 export const userRouter = Router();
 
@@ -29,9 +45,18 @@ const avatarUpload = multer({
   },
 });
 
+function hasErrorCode(error: unknown): error is { code: string } {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    typeof (error as { code?: unknown }).code === "string"
+  );
+}
+
 const uploadAvatarMiddleware: RequestHandler = (request, response, next) => {
-  avatarUpload.single("avatar")(request, response, (error) => {
-    if (error instanceof multer.MulterError && error.code === "LIMIT_FILE_SIZE") {
+  avatarUpload.single("avatar")(request, response, (error?: unknown) => {
+    if (hasErrorCode(error) && error.code === "LIMIT_FILE_SIZE") {
       next(new AppError("Fichier trop volumineux (max 2MB).", 400));
       return;
     }
@@ -46,5 +71,7 @@ const uploadAvatarMiddleware: RequestHandler = (request, response, next) => {
 };
 
 userRouter.get("/me", requireAuth, getCurrentUserController);
+userRouter.get("/me/bets", requireAuth, listCurrentUserEventBetsController);
 userRouter.patch("/me", requireAuth, userLimiter, validateBody(updateUserProfileSchema), updateCurrentUserController);
 userRouter.post("/me/avatar", requireAuth, userLimiter, uploadAvatarMiddleware, uploadCurrentUserAvatarController);
+userRouter.get("/", requireAuth, requireRole(["admin"]), searchUsersController);

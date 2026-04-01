@@ -10,6 +10,7 @@ import { notFoundHandler } from "./middleware/not-found";
 import { requestLogger } from "./middleware/request-logger";
 import { authRouter } from "./routes/auth.routes";
 import { casinoRouter } from "./routes/casino.routes";
+import { adminEventsRouter, eventsRouter } from "./routes/events.routes";
 import { healthRouter } from "./routes/health.routes";
 import { userRouter } from "./routes/user.routes";
 
@@ -34,6 +35,8 @@ export function createApp() {
   app.use("/health", healthRouter);
   app.use("/auth", authRouter);
   app.use("/casino", casinoRouter);
+  app.use("/events", eventsRouter);
+  app.use("/admin/events", adminEventsRouter);
   app.use("/users", userRouter);
 
   app.use(notFoundHandler);

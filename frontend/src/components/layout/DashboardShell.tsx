@@ -1,6 +1,6 @@
 import { type ReactNode, useMemo, useState } from "react";
 import { motion } from "framer-motion";
-import { Coins, LayoutDashboard, Menu, Sparkles, UserRound } from "lucide-react";
+import { Coins, LayoutDashboard, Menu, ShieldCheck, Sparkles, TrendingUp, UserRound } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import type { AuthUser } from "../../types/auth";
 import { cn, formatTokens } from "../../lib/utils";
@@ -12,12 +12,6 @@ interface DashboardShellProps {
   onLogout: () => Promise<void>;
   children: ReactNode;
 }
-
-const navItems = [
-  { label: "Tableau de bord", icon: LayoutDashboard, href: "/dashboard" },
-  { label: "Roulette", icon: Sparkles, href: "/casino" },
-  { label: "Profil", icon: UserRound, href: "/profile" },
-];
 
 export function DashboardShell({ user, onLogout, children }: DashboardShellProps) {
   const location = useLocation();
@@ -32,6 +26,18 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
         .slice(0, 2)
         .toUpperCase(),
     [user.pseudo],
+  );
+  const navItems = useMemo(
+    () => [
+      { label: "Tableau de bord", icon: LayoutDashboard, href: "/dashboard" },
+      { label: "Evenements", icon: TrendingUp, href: "/events" },
+      { label: "Roulette", icon: Sparkles, href: "/casino" },
+      { label: "Profil", icon: UserRound, href: "/profile" },
+      ...(user.role === "admin"
+        ? [{ label: "Admin events", icon: ShieldCheck, href: "/admin/events" }]
+        : []),
+    ],
+    [user.role],
   );
 
   return (
@@ -70,7 +76,9 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
           <nav className="mt-8 space-y-2">
             {navItems.map((item) => {
               const Icon = item.icon;
-              const active = location.pathname === item.href;
+              const active =
+                location.pathname === item.href ||
+                (item.href !== "/dashboard" && location.pathname.startsWith(`${item.href}/`));
 
               return (
                 <NavLink
@@ -107,7 +115,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
                   Bienvenue {user.pseudo}
                 </h2>
                 <p className="mt-2 max-w-2xl text-sm leading-7 text-brand-muted">
-                  Retrouvez votre solde, votre profil et toutes vos tables depuis un seul espace.
+                  Retrouvez vos evenements, votre roulette et votre profil depuis un seul espace.
                 </p>
               </div>
 

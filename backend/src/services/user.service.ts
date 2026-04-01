@@ -2,6 +2,7 @@ import sharp from "sharp";
 import { AppError } from "../utils/app-error";
 import { serializeUser } from "../utils/user-serializer";
 import type { UpdateUserProfileInput } from "../schemas/user.schemas";
+import type { UploadedFile } from "../types/upload";
 import { prisma } from "./prisma.service";
 import { storageService } from "./storage.service";
 
@@ -52,7 +53,7 @@ class UserService {
     return serializeUser(updatedUser);
   }
 
-  async uploadAvatar(userId: string, file?: Express.Multer.File) {
+  async uploadAvatar(userId: string, file?: UploadedFile) {
     if (!file) {
       throw new AppError("Aucun fichier reçu.", 400);
     }

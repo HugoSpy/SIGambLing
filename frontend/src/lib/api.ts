@@ -1,5 +1,15 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "../store/auth-store";
+import type {
+  AdminEventView,
+  CreateEventPayload,
+  EventBetHistoryItem,
+  EventBetView,
+  EventSearchUser,
+  EventStatus,
+  EventView,
+  UpdateEventPayload,
+} from "../types/event";
 import type { AuthTokens, AuthUser, MicrosoftRedirectResponse } from "../types/auth";
 
 const baseURL = import.meta.env.VITE_API_URL;
@@ -64,6 +74,78 @@ export async function updateCurrentUserProfile(payload: { pseudo: string }) {
 
 export async function uploadCurrentUserAvatar(formData: FormData) {
   const response = await api.post<AuthUser>("/users/me/avatar", formData);
+  return response.data;
+}
+
+export async function fetchEvents() {
+  const response = await api.get<{ events: EventView[] }>("/events");
+  return response.data.events;
+}
+
+export async function fetchEventById(eventId: string) {
+  const response = await api.get<EventView>(`/events/${eventId}`);
+  return response.data;
+}
+
+export async function fetchMyEventBet(eventId: string) {
+  const response = await api.get<{ bet: EventBetView | null }>(`/events/${eventId}/my-bet`);
+  return response.data.bet;
+}
+
+export async function placeEventBet(
+  eventId: string,
+  payload: { chosen_option: string; amount: number },
+) {
+  const response = await api.post<{ bet: EventBetView; new_balance: number }>(
+    `/events/${eventId}/bet`,
+    payload,
+  );
+  return response.data;
+}
+
+export async function fetchMyEventBets() {
+  const response = await api.get<{ bets: EventBetHistoryItem[] }>("/users/me/bets");
+  return response.data.bets;
+}
+
+export async function searchUsers(query: string) {
+  const response = await api.get<{ users: EventSearchUser[] }>("/users", {
+    params: { search: query },
+  });
+  return response.data.users;
+}
+
+export async function fetchAdminEvents(status?: EventStatus) {
+  const response = await api.get<{ events: AdminEventView[] }>("/admin/events", {
+    params: status ? { status } : undefined,
+  });
+  return response.data.events;
+}
+
+export async function createAdminEvent(payload: CreateEventPayload) {
+  const response = await api.post<AdminEventView>("/admin/events", payload);
+  return response.data;
+}
+
+export async function updateAdminEvent(eventId: string, payload: UpdateEventPayload) {
+  const response = await api.patch<AdminEventView>(`/admin/events/${eventId}`, payload);
+  return response.data;
+}
+
+export async function closeAdminEvent(eventId: string) {
+  const response = await api.post<AdminEventView>(`/admin/events/${eventId}/close`);
+  return response.data;
+}
+
+export async function resolveAdminEvent(eventId: string, resolvedOption: string) {
+  const response = await api.post<AdminEventView>(`/admin/events/${eventId}/resolve`, {
+    resolved_option: resolvedOption,
+  });
+  return response.data;
+}
+
+export async function cancelAdminEvent(eventId: string) {
+  const response = await api.post<AdminEventView>(`/admin/events/${eventId}/cancel`);
   return response.data;
 }
 

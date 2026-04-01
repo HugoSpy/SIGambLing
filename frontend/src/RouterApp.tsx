@@ -15,11 +15,20 @@ const CasinoPage = lazy(() =>
 const DashboardPage = lazy(() =>
   import("./pages/DashboardPage").then((module) => ({ default: module.DashboardPage })),
 );
+const EventDetailPage = lazy(() =>
+  import("./pages/EventDetailPage").then((module) => ({ default: module.EventDetailPage })),
+);
+const EventsPage = lazy(() =>
+  import("./pages/EventsMarketsPage").then((module) => ({ default: module.EventsPage })),
+);
 const LoginPage = lazy(() =>
   import("./pages/LoginPage").then((module) => ({ default: module.LoginPage })),
 );
 const ProfilePage = lazy(() =>
-  import("./pages/ProfilePage").then((module) => ({ default: module.ProfilePage })),
+  import("./pages/AccountProfilePage").then((module) => ({ default: module.ProfilePage })),
+);
+const AdminEventsPage = lazy(() =>
+  import("./pages/admin/AdminEventsPage").then((module) => ({ default: module.AdminEventsPage })),
 );
 
 function LandingRedirect() {
@@ -65,8 +74,13 @@ export default function RouterApp() {
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/events" element={<EventsPage />} />
+            <Route path="/events/:id" element={<EventDetailPage />} />
             <Route path="/casino" element={<CasinoPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+          </Route>
+          <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+            <Route path="/admin/events" element={<AdminEventsPage />} />
           </Route>
           <Route path="*" element={<Navigate replace to="/" />} />
         </Routes>

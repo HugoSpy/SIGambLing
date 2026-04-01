@@ -1,5 +1,8 @@
 import type { RequestHandler } from "express";
+import { userSearchQuerySchema } from "../schemas/events.schemas";
+import { eventService } from "../services/event.service";
 import { userService } from "../services/user.service";
+import type { UploadedFile } from "../types/upload";
 import { AppError } from "../utils/app-error";
 
 function getAuthenticatedUserId(request: Parameters<RequestHandler>[0]) {
@@ -39,8 +42,39 @@ export const uploadCurrentUserAvatarController: RequestHandler = async (
 ) => {
   try {
     const userId = getAuthenticatedUserId(request);
-    const updatedUser = await userService.uploadAvatar(userId, request.file);
+    const requestWithFile = request as typeof request & { file?: UploadedFile };
+    const updatedUser = await userService.uploadAvatar(userId, requestWithFile.file);
     response.json(updatedUser);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const listCurrentUserEventBetsController: RequestHandler = async (
+  request,
+  response,
+  next,
+) => {
+  try {
+    const userId = getAuthenticatedUserId(request);
+    const bets = await eventService.getUserBets(userId);
+    response.json({ bets });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const searchUsersController: RequestHandler = async (request, response, next) => {
+  try {
+    const parsedQuery = userSearchQuerySchema.safeParse(request.query);
+
+    if (!parsedQuery.success) {
+      next(parsedQuery.error);
+      return;
+    }
+
+    const users = await eventService.searchUsers(parsedQuery.data.search);
+    response.json({ users });
   } catch (error) {
     next(error);
   }
