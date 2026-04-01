@@ -1,0 +1,157 @@
+generator client {
+  provider      = "prisma-client-js"
+  binaryTargets = ["native", "debian-openssl-3.0.x"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum UserRole {
+  user
+  validator
+  admin
+}
+
+enum EventCategory {
+  sports
+  politics
+  culture
+  epita
+}
+
+enum EventStatus {
+  pending
+  active
+  resolved
+  cancelled
+}
+
+enum BetStatus {
+  pending
+  won
+  lost
+  cancelled
+}
+
+enum CasinoGameType {
+  roulette
+  blackjack
+}
+
+enum CasinoGameResult {
+  win
+  loss
+  push
+}
+
+model User {
+  id              String      @id @default(uuid()) @db.Uuid
+  email           String      @unique @db.VarChar(255)
+  microsoftId     String?     @unique @db.VarChar(255)
+  pseudo          String      @unique @db.VarChar(50)
+  avatarUrl       String?     @db.VarChar(500)
+  balance         Int         @default(1000)
+  role            UserRole    @default(user)
+  isBanned        Boolean     @default(false)
+  sessionVersion  Int         @default(0)
+  lastRewardAt    DateTime?
+  streakDays      Int         @default(0)
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+  bets            Bet[]
+  casinoGames     CasinoGame[]
+  badges          Badge[]
+  createdEvents   Event[]     @relation("EventCreator")
+  validatedEvents Event[]     @relation("EventValidator")
+  adminLogs       AdminLog[]  @relation("AdminActor")
+
+  @@index([email])
+  @@index([balance(sort: Desc)])
+}
+
+model Event {
+  id             String        @id @default(uuid()) @db.Uuid
+  creatorId      String?       @db.Uuid
+  validatorId    String?       @db.Uuid
+  title          String        @unique @db.VarChar(200)
+  description    String
+  category       EventCategory
+  options        Json
+  status         EventStatus   @default(pending)
+  resultOption   String?       @db.VarChar(50)
+  totalPool      Int           @default(0)
+  resolutionDate DateTime?
+  createdAt      DateTime      @default(now())
+  validatedAt    DateTime?
+  resolvedAt     DateTime?
+  creator        User?         @relation("EventCreator", fields: [creatorId], references: [id], onDelete: SetNull)
+  validator      User?         @relation("EventValidator", fields: [validatorId], references: [id], onDelete: SetNull)
+  bets           Bet[]
+
+  @@index([status])
+  @@index([category])
+  @@index([createdAt(sort: Desc)])
+}
+
+model Bet {
+  id             String    @id @default(uuid()) @db.Uuid
+  userId         String    @db.Uuid
+  eventId        String    @db.Uuid
+  amount         Int
+  selectedOption String    @db.VarChar(50)
+  oddsAtBet      Decimal   @db.Decimal(5, 2)
+  status         BetStatus @default(pending)
+  potentialWin   Int
+  actualWin      Int       @default(0)
+  createdAt      DateTime  @default(now())
+  resolvedAt     DateTime?
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  event          Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([eventId])
+  @@index([status])
+  @@index([createdAt(sort: Desc)])
+}
+
+model CasinoGame {
+  id        String           @id @default(uuid()) @db.Uuid
+  userId    String           @db.Uuid
+  gameType  CasinoGameType
+  betAmount Int
+  result    CasinoGameResult
+  payout    Int              @default(0)
+  gameData  Json
+  createdAt DateTime         @default(now())
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([createdAt(sort: Desc)])
+}
+
+model Badge {
+  id         String   @id @default(uuid()) @db.Uuid
+  userId     String   @db.Uuid
+  badgeType  String   @db.VarChar(50)
+  unlockedAt DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, badgeType])
+  @@index([userId])
+}
+
+model AdminLog {
+  id         String   @id @default(uuid()) @db.Uuid
+  adminId    String?  @db.Uuid
+  actionType String   @db.VarChar(50)
+  targetId   String?  @db.Uuid
+  details    Json?
+  createdAt  DateTime @default(now())
+  admin      User?    @relation("AdminActor", fields: [adminId], references: [id], onDelete: SetNull)
+
+  @@index([adminId])
+  @@index([createdAt(sort: Desc)])
+}

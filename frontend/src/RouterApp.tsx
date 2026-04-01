@@ -1,0 +1,76 @@
+import { Suspense, lazy, type ReactNode } from "react";
+import { Navigate, Route, Routes } from "react-router-dom";
+import { AppErrorBoundary } from "./components/layout/AppErrorBoundary";
+import { LoadingScreen } from "./components/layout/LoadingScreen";
+import { useSessionBootstrap } from "./hooks/useSessionBootstrap";
+import { ProtectedRoute } from "./routes/ProtectedRoute";
+import { useAuthStore } from "./store/auth-store";
+
+const AuthCallbackPage = lazy(() =>
+  import("./pages/AuthCallbackPage").then((module) => ({ default: module.AuthCallbackPage })),
+);
+const CasinoPage = lazy(() =>
+  import("./pages/CasinoPage").then((module) => ({ default: module.CasinoPage })),
+);
+const DashboardPage = lazy(() =>
+  import("./pages/DashboardPage").then((module) => ({ default: module.DashboardPage })),
+);
+const LoginPage = lazy(() =>
+  import("./pages/LoginPage").then((module) => ({ default: module.LoginPage })),
+);
+const ProfilePage = lazy(() =>
+  import("./pages/ProfilePage").then((module) => ({ default: module.ProfilePage })),
+);
+
+function LandingRedirect() {
+  const status = useAuthStore((state) => state.status);
+
+  if (status === "idle" || status === "loading") {
+    return <LoadingScreen label="Ouverture de votre espace SIGambling..." />;
+  }
+
+  return <Navigate replace to={status === "authenticated" ? "/dashboard" : "/login"} />;
+}
+
+function PublicOnly({ children }: { children: ReactNode }) {
+  const status = useAuthStore((state) => state.status);
+
+  if (status === "idle" || status === "loading") {
+    return <LoadingScreen label="Preparation de la session..." />;
+  }
+
+  if (status === "authenticated") {
+    return <Navigate replace to="/dashboard" />;
+  }
+
+  return <>{children}</>;
+}
+
+export default function RouterApp() {
+  useSessionBootstrap();
+
+  return (
+    <AppErrorBoundary>
+      <Suspense fallback={<LoadingScreen label="Chargement de l'interface..." />}>
+        <Routes>
+          <Route path="/" element={<LandingRedirect />} />
+          <Route
+            path="/login"
+            element={
+              <PublicOnly>
+                <LoginPage />
+              </PublicOnly>
+            }
+          />
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<DashboardPage />} />
+            <Route path="/casino" element={<CasinoPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
+          </Route>
+          <Route path="*" element={<Navigate replace to="/" />} />
+        </Routes>
+      </Suspense>
+    </AppErrorBoundary>
+  );
+}

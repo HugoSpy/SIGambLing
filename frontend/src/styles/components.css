@@ -1,0 +1,174 @@
+.panel,
+.auth-copy,
+.auth-panel,
+.loading-card {
+  padding: 1.5rem;
+}
+
+.metric-card,
+.preview-card,
+.challenge-card,
+.event-tile,
+.leaderboard-row,
+.result-card,
+.odd-card,
+.timeline article {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(175, 230, 255, 0.08);
+  border-radius: 22px;
+  padding: 1rem;
+}
+
+.primary-button,
+.secondary-button,
+.ghost-button,
+.chip {
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 0.85rem 1.1rem;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.primary-button {
+  background: linear-gradient(135deg, var(--accent), var(--accent-warm));
+  color: #031018;
+  font-weight: 800;
+}
+
+.secondary-button,
+.ghost-button,
+.chip,
+.token-pill,
+.pill,
+.badge {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(175, 230, 255, 0.12);
+  color: var(--text);
+}
+
+.ghost-button:hover,
+.chip:hover,
+.primary-button:hover,
+.secondary-button:hover,
+.odd-card:hover,
+.event-tile:hover {
+  transform: translateY(-1px);
+}
+
+.banner {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: 20px;
+  border: 1px solid rgba(121, 240, 255, 0.22);
+  background: rgba(121, 240, 255, 0.08);
+}
+
+.banner button {
+  border: 0;
+  background: transparent;
+  color: var(--text);
+}
+
+.token-pill,
+.pill,
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 999px;
+}
+
+.token-pill.large {
+  justify-content: center;
+  min-width: 10rem;
+}
+
+.badge {
+  color: #ffd9ac;
+  border-color: rgba(255, 186, 107, 0.2);
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(2.2rem, 4vw, 4.6rem);
+  line-height: 0.95;
+}
+
+.hero h1 span,
+.topnav a.active,
+.topnav a:hover {
+  color: var(--accent);
+}
+
+.hero-copy,
+.metric-card small,
+.preview-card p,
+.challenge-card p,
+.leaderboard-row p,
+.event-tile p {
+  color: var(--muted);
+}
+
+.metric-card strong {
+  display: block;
+  margin-top: 0.4rem;
+  font-size: 2rem;
+}
+
+.leaderboard-row {
+  display: grid;
+  grid-template-columns: 80px 1fr auto;
+  gap: 1rem;
+  align-items: center;
+}
+
+.odds-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 0.8rem;
+}
+
+.inline-form {
+  display: grid;
+  grid-template-columns: 180px 1fr;
+  gap: 0.9rem;
+  align-items: end;
+}
+
+.search-input {
+  min-width: 240px;
+}
+
+.loading-card {
+  min-height: 18rem;
+  display: grid;
+  place-items: center;
+}
+
+.inset-panel,
+.panel-contrast {
+  background: var(--panel-contrast);
+}
+
+.event-tile,
+.odd-card {
+  text-align: left;
+}
+
+.event-tile.active,
+.odd-card.active,
+.chip.active {
+  border-color: rgba(121, 240, 255, 0.5);
+  background: rgba(121, 240, 255, 0.08);
+}
+
+@media (max-width: 640px) {
+  .inline-form,
+  .leaderboard-row {
+    grid-template-columns: 1fr;
+  }
+}
