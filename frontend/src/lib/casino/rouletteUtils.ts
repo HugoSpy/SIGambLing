@@ -11,6 +11,8 @@ import type {
 } from "../../types/roulette";
 import {
   ALL_NUMBERS,
+  BETTING_BOARD_DIMENSIONS,
+  BETTING_BOARD_LAYOUT,
   BET_MULTIPLIERS,
   BLACK_NUMBERS,
   CORNER_STARTS,
@@ -23,6 +25,13 @@ import {
 const VALID_CORNER_STARTS = new Set<number>(CORNER_STARTS);
 const VALID_SIXLINE_STARTS = new Set<number>(SIXLINE_STARTS);
 const VALID_STREET_STARTS = new Set<number>(STREET_STARTS);
+
+export interface BetDisplayPosition {
+  xPct: number;
+  yPct: number;
+}
+
+export type BetDisplayContext = "number-grid" | "button-center" | "betting-board";
 
 function parseBetNumbers(betType: string, prefix: string, expectedParts: number) {
   const parts = betType.split("_");
@@ -76,6 +85,45 @@ function isCornerBetType(betType: string): betType is CornerBetType {
 function isSixlineBetType(betType: string): betType is SixlineBetType {
   const values = parseBetNumbers(betType, "sixline", 2);
   return values !== null && VALID_SIXLINE_STARTS.has(values[0]);
+}
+
+function getGridCellCoordinates(number: number) {
+  if (!Number.isInteger(number) || number < 1 || number > 36) {
+    return null;
+  }
+
+  const col = Math.floor((number - 1) / 3);
+  const row = 2 - ((number - 1) % 3);
+  return {
+    col,
+    row,
+    xPct: (col + 0.5) / 12,
+    yPct: (row + 0.5) / 3,
+  };
+}
+
+function toBoardPosition(x: number, y: number): BetDisplayPosition {
+  return {
+    xPct: x / BETTING_BOARD_DIMENSIONS.width,
+    yPct: y / BETTING_BOARD_DIMENSIONS.height,
+  };
+}
+
+function getBoardGridCellPosition(number: number) {
+  const coordinates = getGridCellCoordinates(number);
+
+  if (!coordinates) {
+    return null;
+  }
+
+  return {
+    x:
+      BETTING_BOARD_DIMENSIONS.gridX +
+      (coordinates.col + 0.5) * (BETTING_BOARD_DIMENSIONS.gridWidth / 12),
+    y:
+      BETTING_BOARD_DIMENSIONS.gridY +
+      (coordinates.row + 0.5) * (BETTING_BOARD_DIMENSIONS.gridHeight / 3),
+  };
 }
 
 export function isBetWinning(betType: BetType, result: RouletteNumber): boolean {
@@ -132,6 +180,176 @@ export function getMultiplier(betType: BetType): number {
   if (isCornerBetType(betType)) return BET_MULTIPLIERS.corner;
   if (isSixlineBetType(betType)) return BET_MULTIPLIERS.sixline;
   return BET_MULTIPLIERS[betType as keyof typeof BET_MULTIPLIERS] ?? 1;
+}
+
+export function getBetMultiplierLabel(betType: BetType) {
+  return `×${getMultiplier(betType)}`;
+}
+
+export function getBetDisplayPosition(
+  betType: BetType,
+  context: BetDisplayContext = "number-grid",
+): BetDisplayPosition | null {
+  if (context === "button-center") {
+    return { xPct: 0.5, yPct: 0.5 };
+  }
+
+  if (isStraightBetType(betType)) {
+    const number = Number(betType.split("_")[1]);
+    if (context === "betting-board" && number === 0) {
+      return toBoardPosition(
+        BETTING_BOARD_DIMENSIONS.zeroX + BETTING_BOARD_LAYOUT.zeroWidth / 2,
+        BETTING_BOARD_DIMENSIONS.zeroY + BETTING_BOARD_DIMENSIONS.gridHeight / 2,
+      );
+    }
+
+    if (context === "betting-board") {
+      const boardPosition = getBoardGridCellPosition(number);
+      if (!boardPosition) {
+        return null;
+      }
+
+      return toBoardPosition(boardPosition.x, boardPosition.y);
+    }
+
+    if (number === 0) {
+      return null;
+    }
+
+    const gridPosition = getGridCellCoordinates(number);
+
+    if (!gridPosition) {
+      return null;
+    }
+
+    return { xPct: gridPosition.xPct, yPct: gridPosition.yPct };
+  }
+
+  if (isSplitBetType(betType)) {
+    const [a, b] = betType
+      .split("_")
+      .slice(1)
+      .map((value) => Number(value));
+    if (context === "betting-board") {
+      const first = getBoardGridCellPosition(a);
+      const second = getBoardGridCellPosition(b);
+
+      if (!first || !second) {
+        return null;
+      }
+
+      return toBoardPosition((first.x + second.x) / 2, (first.y + second.y) / 2);
+    }
+
+    const first = getGridCellCoordinates(a);
+    const second = getGridCellCoordinates(b);
+
+    if (!first || !second) {
+      return null;
+    }
+
+    return {
+      xPct: (first.xPct + second.xPct) / 2,
+      yPct: (first.yPct + second.yPct) / 2,
+    };
+  }
+
+  if (isCornerBetType(betType)) {
+    const x = Number(betType.split("_")[1]);
+    const numbers = [x, x + 1, x + 3, x + 4];
+
+    if (context === "betting-board") {
+      const cells = numbers.map(getBoardGridCellPosition);
+
+      if (cells.some((cell) => cell === null)) {
+        return null;
+      }
+
+      const concreteCells = cells.filter(Boolean) as { x: number; y: number }[];
+      return toBoardPosition(
+        concreteCells.reduce((sum, cell) => sum + cell.x, 0) / concreteCells.length,
+        concreteCells.reduce((sum, cell) => sum + cell.y, 0) / concreteCells.length,
+      );
+    }
+
+    const cells = numbers.map(getGridCellCoordinates);
+
+    if (cells.some((cell) => cell === null)) {
+      return null;
+    }
+
+    const concreteCells = cells.filter(Boolean) as {
+      col: number;
+      row: number;
+      xPct: number;
+      yPct: number;
+    }[];
+
+    return {
+      xPct: concreteCells.reduce((sum, cell) => sum + cell.xPct, 0) / concreteCells.length,
+      yPct: concreteCells.reduce((sum, cell) => sum + cell.yPct, 0) / concreteCells.length,
+    };
+  }
+
+  if (context === "betting-board" && isStreetBetType(betType)) {
+    const start = Number(betType.split("_")[1]);
+    const streetIndex = Math.floor((start - 1) / 3);
+    const x =
+      BETTING_BOARD_DIMENSIONS.gridX +
+      (streetIndex + 0.5) * (BETTING_BOARD_DIMENSIONS.gridWidth / 12);
+    const y = BETTING_BOARD_DIMENSIONS.streetY + BETTING_BOARD_LAYOUT.streetHeight / 2;
+    return toBoardPosition(x, y);
+  }
+
+  if (context === "betting-board" && isSixlineBetType(betType)) {
+    const start = Number(betType.split("_")[1]);
+    const sixlineIndex = Math.floor((start - 1) / 3);
+    const x =
+      BETTING_BOARD_DIMENSIONS.gridX +
+      (sixlineIndex + 1) * (BETTING_BOARD_DIMENSIONS.gridWidth / 12);
+    const y = BETTING_BOARD_DIMENSIONS.sixlineY + BETTING_BOARD_LAYOUT.sixlineHeight / 2;
+    return toBoardPosition(x, y);
+  }
+
+  if (context === "betting-board") {
+    const innerWidth = BETTING_BOARD_DIMENSIONS.innerWidth;
+    const left = BETTING_BOARD_DIMENSIONS.zeroX;
+
+    if (betType === "column_3" || betType === "column_2" || betType === "column_1") {
+      const rowIndex = betType === "column_3" ? 0 : betType === "column_2" ? 1 : 2;
+      return toBoardPosition(
+        BETTING_BOARD_DIMENSIONS.columnX + BETTING_BOARD_LAYOUT.columnWidth / 2,
+        BETTING_BOARD_DIMENSIONS.gridY +
+          (rowIndex + 0.5) * (BETTING_BOARD_DIMENSIONS.gridHeight / 3),
+      );
+    }
+
+    if (betType === "dozen_1" || betType === "dozen_2" || betType === "dozen_3") {
+      const index = betType === "dozen_1" ? 0 : betType === "dozen_2" ? 1 : 2;
+      return toBoardPosition(
+        left + ((index + 0.5) * innerWidth) / 3,
+        BETTING_BOARD_DIMENSIONS.dozenY + BETTING_BOARD_LAYOUT.dozenHeight / 2,
+      );
+    }
+
+    if (
+      betType === "1-18" ||
+      betType === "even" ||
+      betType === "red" ||
+      betType === "black" ||
+      betType === "odd" ||
+      betType === "19-36"
+    ) {
+      const order = ["1-18", "even", "red", "black", "odd", "19-36"] as const;
+      const index = order.indexOf(betType);
+      return toBoardPosition(
+        left + ((index + 0.5) * innerWidth) / 6,
+        BETTING_BOARD_DIMENSIONS.outsideY + BETTING_BOARD_LAYOUT.outsideHeight / 2,
+      );
+    }
+  }
+
+  return null;
 }
 
 export function calculatePayout(bet: RouletteBet, result: RouletteNumber) {

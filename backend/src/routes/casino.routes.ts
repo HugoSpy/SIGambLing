@@ -1,15 +1,25 @@
 import rateLimit from "express-rate-limit";
 import { Router } from "express";
-import { spinRouletteController } from "../controllers/casino.controller";
+import {
+  blackjackDealController,
+  blackjackDoubleController,
+  blackjackHitController,
+  blackjackStandController,
+  spinRouletteController,
+} from "../controllers/casino.controller";
 import { requireAuth } from "../middleware/require-auth";
 import { validateBody } from "../middleware/validate";
-import { rouletteSpinSchema } from "../schemas/casino.schemas";
+import {
+  blackjackActionSchema,
+  blackjackDealSchema,
+  rouletteSpinSchema,
+} from "../schemas/casino.schemas";
 
 export const casinoRouter = Router();
 
 const casinoLimiter = rateLimit({
   windowMs: 60 * 1000,
-  max: 12,
+  max: 60,
   standardHeaders: true,
   legacyHeaders: false,
   keyGenerator: (request) =>
@@ -23,4 +33,36 @@ casinoRouter.post(
   casinoLimiter,
   validateBody(rouletteSpinSchema),
   spinRouletteController,
+);
+
+casinoRouter.post(
+  "/blackjack/deal",
+  requireAuth,
+  casinoLimiter,
+  validateBody(blackjackDealSchema),
+  blackjackDealController,
+);
+
+casinoRouter.post(
+  "/blackjack/hit",
+  requireAuth,
+  casinoLimiter,
+  validateBody(blackjackActionSchema),
+  blackjackHitController,
+);
+
+casinoRouter.post(
+  "/blackjack/stand",
+  requireAuth,
+  casinoLimiter,
+  validateBody(blackjackActionSchema),
+  blackjackStandController,
+);
+
+casinoRouter.post(
+  "/blackjack/double",
+  requireAuth,
+  casinoLimiter,
+  validateBody(blackjackActionSchema),
+  blackjackDoubleController,
 );

@@ -13,7 +13,6 @@ export default defineConfig({
           "react-vendor": ["react", "react-dom", "react-router-dom", "zustand"],
           "query-vendor": ["@tanstack/react-query", "axios", "zod"],
           "motion-vendor": ["framer-motion", "gsap", "lucide-react"],
-          "three-vendor": ["three"],
         },
       },
     },
