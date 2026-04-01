@@ -148,6 +148,67 @@ export const WHEEL_CONFIG: WheelConfig = {
 
 export const POINTER_ANGLE = -Math.PI / 2;
 
+export const BETTING_BOARD_LAYOUT = {
+  padding: 20,
+  zeroWidth: 78,
+  cellWidth: 58,
+  cellHeight: 72,
+  columnWidth: 84,
+  streetHeight: 28,
+  sixlineHeight: 32,
+  dozenHeight: 60,
+  outsideHeight: 72,
+  innerGap: 8,
+  sectionGap: 12,
+} as const;
+
+const BOARD_GRID_WIDTH = BETTING_BOARD_LAYOUT.cellWidth * 12;
+const BOARD_GRID_HEIGHT = BETTING_BOARD_LAYOUT.cellHeight * 3;
+const BOARD_INNER_WIDTH =
+  BETTING_BOARD_LAYOUT.zeroWidth +
+  BOARD_GRID_WIDTH +
+  BETTING_BOARD_LAYOUT.columnWidth;
+const BOARD_WIDTH = BETTING_BOARD_LAYOUT.padding * 2 + BOARD_INNER_WIDTH;
+const BOARD_HEIGHT =
+  BETTING_BOARD_LAYOUT.padding +
+  BOARD_GRID_HEIGHT +
+  BETTING_BOARD_LAYOUT.streetHeight +
+  BETTING_BOARD_LAYOUT.sixlineHeight +
+  BETTING_BOARD_LAYOUT.sectionGap +
+  BETTING_BOARD_LAYOUT.dozenHeight +
+  BETTING_BOARD_LAYOUT.innerGap +
+  BETTING_BOARD_LAYOUT.outsideHeight +
+  BETTING_BOARD_LAYOUT.padding;
+
+export const BETTING_BOARD_DIMENSIONS = {
+  width: BOARD_WIDTH,
+  height: BOARD_HEIGHT,
+  innerWidth: BOARD_INNER_WIDTH,
+  gridX: BETTING_BOARD_LAYOUT.padding + BETTING_BOARD_LAYOUT.zeroWidth,
+  gridY: BETTING_BOARD_LAYOUT.padding,
+  gridWidth: BOARD_GRID_WIDTH,
+  gridHeight: BOARD_GRID_HEIGHT,
+  zeroX: BETTING_BOARD_LAYOUT.padding,
+  zeroY: BETTING_BOARD_LAYOUT.padding,
+  columnX: BETTING_BOARD_LAYOUT.padding + BETTING_BOARD_LAYOUT.zeroWidth + BOARD_GRID_WIDTH,
+  streetY: BETTING_BOARD_LAYOUT.padding + BOARD_GRID_HEIGHT,
+  sixlineY: BETTING_BOARD_LAYOUT.padding + BOARD_GRID_HEIGHT + BETTING_BOARD_LAYOUT.streetHeight,
+  dozenY:
+    BETTING_BOARD_LAYOUT.padding +
+    BOARD_GRID_HEIGHT +
+    BETTING_BOARD_LAYOUT.streetHeight +
+    BETTING_BOARD_LAYOUT.sixlineHeight +
+    BETTING_BOARD_LAYOUT.sectionGap,
+  outsideY:
+    BETTING_BOARD_LAYOUT.padding +
+    BOARD_GRID_HEIGHT +
+    BETTING_BOARD_LAYOUT.streetHeight +
+    BETTING_BOARD_LAYOUT.sixlineHeight +
+    BETTING_BOARD_LAYOUT.sectionGap +
+    BETTING_BOARD_LAYOUT.dozenHeight +
+    BETTING_BOARD_LAYOUT.innerGap,
+} as const;
+
 export const QUICK_BET_AMOUNTS = [10, 25, 50, 100, 250, 500];
 
 export const ALL_NUMBERS: RouletteNumber[] = Array.from(

@@ -59,7 +59,11 @@ export function RouletteBetGrid({
       return null;
     }
 
-    return <RouletteChip amount={amount} compact={compact} />;
+    return (
+      <div className="pointer-events-none absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2">
+        <RouletteChip amount={amount} compact={compact} />
+      </div>
+    );
   };
 
   return (

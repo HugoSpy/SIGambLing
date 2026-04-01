@@ -12,10 +12,10 @@ export function RouletteChip({ amount, compact = false }: RouletteChipProps) {
 
   return (
     <motion.svg
-      animate={{ opacity: 1, scale: 1, y: 0 }}
-      className="pointer-events-none absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 drop-shadow-[0_14px_28px_rgba(0,0,0,0.35)]"
+      animate={{ opacity: 1, scale: 1 }}
+      className="pointer-events-none block drop-shadow-[0_14px_28px_rgba(0,0,0,0.35)]"
       height={size}
-      initial={{ opacity: 0, scale: 0.6, y: 8 }}
+      initial={{ opacity: 0, scale: 0.6 }}
       transition={{ duration: 0.18, ease: "easeOut" }}
       viewBox="0 0 100 100"
       width={size}
