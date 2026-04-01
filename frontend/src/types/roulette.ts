@@ -53,18 +53,58 @@ export type OutsideBetType =
   | "column_2"
   | "column_3";
 
-export type BetType = OutsideBetType | `number_${RouletteNumber}`;
+export type NumberBetType = `number_${RouletteNumber}`;
 
-export interface BetChipPosition {
-  row: number;
-  column: number;
-}
+export type StreetStart = 1 | 4 | 7 | 10 | 13 | 16 | 19 | 22 | 25 | 28 | 31 | 34;
+
+export type CornerStart =
+  | 1
+  | 2
+  | 4
+  | 5
+  | 7
+  | 8
+  | 10
+  | 11
+  | 13
+  | 14
+  | 16
+  | 17
+  | 19
+  | 20
+  | 22
+  | 23
+  | 25
+  | 26
+  | 28
+  | 29
+  | 31
+  | 32;
+
+export type SixlineStart = 1 | 4 | 7 | 10 | 13 | 16 | 19 | 22 | 25 | 28 | 31;
+
+export type SplitBetType = `split_${number}_${number}`;
+export type StreetBetType = `street_${StreetStart}`;
+export type CornerBetType = `corner_${CornerStart}`;
+export type SixlineBetType = `sixline_${SixlineStart}`;
+
+// Combined bet types:
+//   split_A_B   → 2 adjacent numbers (A < B), payout 18:1
+//   street_X    → 3 numbers {X, X+1, X+2} where X ∈ {1,4,7,...,34}, payout 12:1
+//   corner_X    → 4 numbers {X, X+1, X+3, X+4}, payout 9:1
+//   sixline_X   → 6 numbers {X,...,X+5} where X ∈ {1,4,...,31}, payout 6:1
+export type BetType =
+  | OutsideBetType
+  | NumberBetType
+  | SplitBetType
+  | StreetBetType
+  | CornerBetType
+  | SixlineBetType;
 
 export interface RouletteBet {
   id: string;
   type: BetType;
   amount: number;
-  position?: BetChipPosition;
   multiplier: number;
   potentialWin: number;
 }

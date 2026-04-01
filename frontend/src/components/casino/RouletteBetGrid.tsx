@@ -10,13 +10,13 @@ import {
 } from "../../lib/casino/rouletteConstants";
 import { aggregateBetsByType } from "../../lib/casino/rouletteUtils";
 import { cn } from "../../lib/utils";
-import type { BetChipPosition, BetType, RouletteBet, RouletteNumber } from "../../types/roulette";
+import type { BetType, RouletteBet, RouletteNumber } from "../../types/roulette";
 import { RouletteChip } from "./RouletteChip";
 
 interface RouletteBetGridProps {
   bets: RouletteBet[];
   disabled: boolean;
-  onPlaceBet: (betType: BetType, position?: BetChipPosition) => void;
+  onPlaceBet: (betType: BetType) => void;
 }
 
 function getNumberCellClasses(number: RouletteNumber) {
@@ -83,7 +83,7 @@ export function RouletteBetGrid({
                 getNumberCellClasses(0),
               )}
               disabled={disabled}
-              onClick={() => onPlaceBet("number_0", { row: 0, column: 0 })}
+              onClick={() => onPlaceBet("number_0")}
               type="button"
             >
               <span className="rotate-90">0</span>
@@ -106,12 +106,7 @@ export function RouletteBetGrid({
                       getNumberCellClasses(number),
                     )}
                     disabled={disabled}
-                    onClick={() =>
-                      onPlaceBet(`number_${number}` as BetType, {
-                        row: rowIndex,
-                        column: columnIndex + 1,
-                      })
-                    }
+                    onClick={() => onPlaceBet(`number_${number}` as BetType)}
                     type="button"
                   >
                     {number}
@@ -122,12 +117,7 @@ export function RouletteBetGrid({
                 <button
                   className="relative min-h-[54px] rounded-[16px] border border-white/10 bg-white/[0.07] px-2 text-sm font-semibold text-brand-text transition-all duration-300 hover:scale-[1.02] hover:border-brand-cyan/45 hover:bg-white/[0.10] disabled:cursor-not-allowed disabled:opacity-70"
                   disabled={disabled}
-                  onClick={() =>
-                    onPlaceBet(COLUMN_BET_BY_ROW[rowIndex], {
-                      row: rowIndex,
-                      column: 13,
-                    })
-                  }
+                  onClick={() => onPlaceBet(COLUMN_BET_BY_ROW[rowIndex])}
                   type="button"
                 >
                   2 to 1
@@ -146,7 +136,7 @@ export function RouletteBetGrid({
                   getOutsideCellClasses(bet.type),
                 )}
                 disabled={disabled}
-                onClick={() => onPlaceBet(bet.type, { row: 3, column: index })}
+                onClick={() => onPlaceBet(bet.type)}
                 type="button"
               >
                 {bet.label}
@@ -164,7 +154,7 @@ export function RouletteBetGrid({
                   getOutsideCellClasses(bet.type),
                 )}
                 disabled={disabled}
-                onClick={() => onPlaceBet(bet.type, { row: 4, column: index })}
+                onClick={() => onPlaceBet(bet.type)}
                 type="button"
               >
                 <span>{bet.label}</span>

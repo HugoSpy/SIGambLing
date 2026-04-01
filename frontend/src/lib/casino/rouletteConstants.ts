@@ -1,8 +1,11 @@
 import type {
+  CornerStart,
   OutsideBetType,
   RouletteBoardCell,
   RouletteColor,
   RouletteNumber,
+  SixlineStart,
+  StreetStart,
   WheelConfig,
 } from "../../types/roulette";
 
@@ -24,6 +27,15 @@ export const NUMBER_GRID_ROWS: RouletteNumber[][] = [
   [2, 5, 8, 11, 14, 17, 20, 23, 26, 29, 32, 35],
   [1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34],
 ];
+
+export const STREET_STARTS: StreetStart[] = [1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34];
+
+export const CORNER_STARTS: CornerStart[] = [
+  1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20, 22, 23, 25, 26, 28, 29, 31,
+  32,
+];
+
+export const SIXLINE_STARTS: SixlineStart[] = [1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31];
 
 export const COLUMN_BET_BY_ROW: OutsideBetType[] = ["column_3", "column_2", "column_1"];
 
@@ -67,7 +79,10 @@ export const NUMBER_COLORS: Record<RouletteNumber, RouletteColor> = {
   36: "red",
 };
 
-export const BET_MULTIPLIERS: Record<OutsideBetType | "number", number> = {
+export const BET_MULTIPLIERS: Record<
+  OutsideBetType | "number" | "split" | "street" | "corner" | "sixline",
+  number
+> = {
   red: 2,
   black: 2,
   even: 2,
@@ -81,6 +96,10 @@ export const BET_MULTIPLIERS: Record<OutsideBetType | "number", number> = {
   column_2: 3,
   column_3: 3,
   number: 36,
+  split: 18,
+  street: 12,
+  corner: 9,
+  sixline: 6,
 };
 
 export const DOZEN_BETS: RouletteBoardCell[] = [

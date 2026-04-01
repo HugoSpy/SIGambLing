@@ -7,7 +7,6 @@ import { createBet, resolveRound } from "../../lib/casino/rouletteUtils";
 import { formatTokens } from "../../lib/utils";
 import { useAuthStore } from "../../store/auth-store";
 import type {
-  BetChipPosition,
   BetType,
   RouletteBet,
   RouletteResult,
@@ -64,7 +63,7 @@ export function RouletteGame() {
   }, []);
 
   const handlePlaceBet = useCallback(
-    (betType: BetType, position?: BetChipPosition) => {
+    (betType: BetType) => {
       if (phase === "spinning" || phase === "resolving") {
         return;
       }
@@ -79,7 +78,7 @@ export function RouletteGame() {
         return;
       }
 
-      setBets((currentBets) => [...currentBets, createBet(betType, betAmount, position)]);
+      setBets((currentBets) => [...currentBets, createBet(betType, betAmount)]);
       setPhase("betting");
       soundManager.play("chip");
     },
