@@ -77,3 +77,14 @@ export const rouletteSpinSchema = z.object({
 });
 
 export type RouletteSpinInput = z.infer<typeof rouletteSpinSchema>;
+
+export const blackjackDealSchema = z.object({
+  bet: z.coerce.number().int().min(1).max(100000),
+});
+
+export const blackjackActionSchema = z.object({
+  game_id: z.string().min(1).max(64),
+});
+
+export type BlackjackDealInput = z.infer<typeof blackjackDealSchema>;
+export type BlackjackActionInput = z.infer<typeof blackjackActionSchema>;

@@ -1,15 +1,57 @@
 import type { RequestHandler } from "express";
+import { blackjackService } from "../services/blackjack.service";
 import { rouletteService } from "../services/roulette.service";
+
+function getAuthUserId(request: unknown): string {
+  const authUser = (request as { auth?: { id?: string } }).auth;
+  if (!authUser?.id) throw new Error("Missing authenticated user");
+  return authUser.id;
+}
 
 export const spinRouletteController: RequestHandler = async (request, response, next) => {
   try {
-    const authUser = (request as { auth?: { id?: string } }).auth;
+    const userId = getAuthUserId(request);
+    const result = await rouletteService.spin(userId, request.body.bets);
+    response.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
 
-    if (!authUser?.id) {
-      throw new Error("Missing authenticated user");
-    }
+export const blackjackDealController: RequestHandler = async (request, response, next) => {
+  try {
+    const userId = getAuthUserId(request);
+    const result = await blackjackService.deal(userId, request.body.bet);
+    response.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
 
-    const result = await rouletteService.spin(authUser.id, request.body.bets);
+export const blackjackHitController: RequestHandler = async (request, response, next) => {
+  try {
+    const userId = getAuthUserId(request);
+    const result = await blackjackService.hit(userId, request.body.game_id);
+    response.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const blackjackStandController: RequestHandler = async (request, response, next) => {
+  try {
+    const userId = getAuthUserId(request);
+    const result = await blackjackService.stand(userId, request.body.game_id);
+    response.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const blackjackDoubleController: RequestHandler = async (request, response, next) => {
+  try {
+    const userId = getAuthUserId(request);
+    const result = await blackjackService.double(userId, request.body.game_id);
     response.json(result);
   } catch (error) {
     next(error);
