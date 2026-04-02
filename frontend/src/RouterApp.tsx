@@ -24,6 +24,9 @@ const EventsPage = lazy(() =>
 const LoginPage = lazy(() =>
   import("./pages/LoginPage").then((module) => ({ default: module.LoginPage })),
 );
+const JackpotPage = lazy(() =>
+  import("./pages/JackpotPage").then((module) => ({ default: module.JackpotPage })),
+);
 const ProfilePage = lazy(() =>
   import("./pages/AccountProfilePage").then((module) => ({ default: module.ProfilePage })),
 );
@@ -77,6 +80,8 @@ export default function RouterApp() {
             <Route path="/events" element={<EventsPage />} />
             <Route path="/events/:id" element={<EventDetailPage />} />
             <Route path="/casino" element={<CasinoPage />} />
+            <Route path="/casino/:game" element={<CasinoPage />} />
+            <Route path="/jackpot" element={<JackpotPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
           <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>

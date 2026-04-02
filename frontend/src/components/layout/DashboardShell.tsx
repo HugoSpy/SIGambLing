@@ -6,6 +6,7 @@ import {
   LayoutDashboard,
   ShieldCheck,
   Ticket,
+  Trophy,
   TrendingUp,
   UserRound,
 } from "lucide-react";
@@ -41,7 +42,8 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
     () => [
       { label: "Tableau de bord", icon: LayoutDashboard, href: "/dashboard" },
       { label: "Evenements", icon: TrendingUp, href: "/events" },
-      { label: "Roulette", icon: Dice3, href: "/casino" },
+      { label: "Casino", icon: Dice3, href: "/casino" },
+      { label: "Jackpot", icon: Trophy, href: "/jackpot" },
       { label: "Profil", icon: UserRound, href: "/profile" },
       ...(user.role === "admin"
         ? [{ label: "Admin", icon: ShieldCheck, href: "/admin/events" }]
@@ -241,7 +243,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
       </div>
 
       <nav className="fixed bottom-0 inset-x-0 z-40 border-t border-zinc-800 bg-zinc-900/95 px-2 py-2 backdrop-blur lg:hidden">
-        <div className={`grid gap-1 ${user.role === "admin" ? "grid-cols-5" : "grid-cols-4"}`}>
+        <div className={`grid gap-1 ${user.role === "admin" ? "grid-cols-6" : "grid-cols-5"}`}>
           {navItems.map((item) => {
             const Icon = item.icon;
             const active =

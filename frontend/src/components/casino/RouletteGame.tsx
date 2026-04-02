@@ -146,6 +146,7 @@ export function RouletteGame() {
 
       updateBalance(pendingResponse.new_balance);
       void queryClient.invalidateQueries({ queryKey: ["gamification"] });
+      void queryClient.invalidateQueries({ queryKey: ["jackpot"] });
       setHistory((currentHistory) => [authoritativeResult, ...currentHistory].slice(0, 40));
 
       if (pendingResponse.payout > 0) {
@@ -211,8 +212,8 @@ export function RouletteGame() {
         </div>
       </Card>
 
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,1fr)_400px]">
-        <div className="space-y-6">
+      <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="space-y-6 xl:order-1">
           <Card className="min-w-[300px] overflow-hidden">
             <div className="flex flex-col gap-5">
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
@@ -241,7 +242,43 @@ export function RouletteGame() {
           />
         </div>
 
-        <div className="space-y-6">
+        <div className="order-first space-y-6 xl:order-2">
+          <Card className="min-w-[300px]">
+            <div className="flex flex-col gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.28em] text-brand-orange">
+                  Lecture de table
+                </p>
+                <h3 className="mt-2 font-display text-2xl text-brand-text">
+                  Mise lisible sur tous les ecrans
+                </h3>
+              </div>
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Statut</p>
+                  <p className="mt-2 text-sm font-semibold text-brand-text">{phaseLabel}</p>
+                </div>
+                <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Jeton actif</p>
+                  <p className="mt-2 text-sm font-semibold text-brand-text">
+                    {formatTokens(betAmount)} tokens
+                  </p>
+                </div>
+                <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">
+                    Dernier spin
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-brand-text">
+                    {lastResult ? `${lastResult.number} ${lastResult.color}` : "Aucun"}
+                  </p>
+                </div>
+              </div>
+              <p className="text-sm leading-7 text-brand-muted">
+                Le panneau de mise passe au-dessus de la grille sur petit ecran, puis revient en
+                colonne laterale seulement quand la largeur laisse la table complete visible.
+              </p>
+            </div>
+          </Card>
           <RouletteControls
             balance={availableBalance}
             betAmount={betAmount}

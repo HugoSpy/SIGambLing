@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
-import { Coins } from "lucide-react";
+import { ArrowRight, Coins, Shield, Sparkles, Waves } from "lucide-react";
 import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 import { api } from "../../lib/api";
@@ -25,6 +25,38 @@ const SUIT_SYMBOLS: Record<string, string> = {
 };
 
 const RED_SUITS = new Set(["hearts", "diamonds"]);
+const QUICK_BETS = [10, 25, 50, 100];
+
+const GAME_STATE_COPY: Record<
+  BlackjackGameState,
+  { label: string; detail: string; tone: string }
+> = {
+  BETTING: {
+    label: "Mise ouverte",
+    detail: "Choisissez votre mise puis lancez la distribution.",
+    tone: "text-brand-cyan",
+  },
+  DEALING: {
+    label: "Distribution",
+    detail: "Les cartes arrivent sur le tapis.",
+    tone: "text-amber-300",
+  },
+  PLAYER_TURN: {
+    label: "Votre decision",
+    detail: "Tirez, restez ou doublez selon votre lecture.",
+    tone: "text-emerald-300",
+  },
+  DEALER_TURN: {
+    label: "Tour du dealer",
+    detail: "Le croupier complete sa main avant la resolution.",
+    tone: "text-orange-300",
+  },
+  GAME_OVER: {
+    label: "Manche terminee",
+    detail: "Analysez le resultat puis relancez une partie.",
+    tone: "text-zinc-100",
+  },
+};
 
 function isRedSuit(suit: string) {
   return RED_SUITS.has(suit);
@@ -125,20 +157,22 @@ function ResultOverlay({ result }: { result: BlackjackResult }) {
     blackjack: { text: "BLACKJACK !", className: "text-yellow-400" },
     loss: { text: "PERDU", className: "text-red-400" },
     bust: { text: "BUST !", className: "text-red-500" },
-    push: { text: "ÉGALITÉ", className: "text-gray-300" },
+    push: { text: "EGALITE", className: "text-gray-300" },
   };
   const { text, className } = config[result];
 
   return (
     <motion.div
       animate={{ opacity: 1, scale: 1 }}
-      className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-2xl bg-black/40 backdrop-blur-sm"
+      className="pointer-events-none absolute inset-0 flex items-center justify-center rounded-[36px] bg-black/40 backdrop-blur-sm"
       exit={{ opacity: 0 }}
       initial={{ opacity: 0, scale: 0.8 }}
       transition={{ duration: 0.35 }}
     >
       <motion.p
-        animate={result === "bust" || result === "loss" ? { x: [0, -6, 6, -6, 6, 0] } : { scale: [1, 1.08, 1] }}
+        animate={
+          result === "bust" || result === "loss" ? { x: [0, -6, 6, -6, 6, 0] } : { scale: [1, 1.08, 1] }
+        }
         className={cn("font-display text-5xl font-black tracking-wide drop-shadow-xl", className)}
         transition={{ duration: 0.5 }}
       >
@@ -157,7 +191,7 @@ function calcHandTotal(hand: BlackjackCard[]): number {
     } else if (["J", "Q", "K"].includes(card.rank)) {
       total += 10;
     } else {
-      total += parseInt(card.rank);
+      total += parseInt(card.rank, 10);
     }
   }
   for (let i = 0; i < aces; i++) {
@@ -188,6 +222,7 @@ export function BlackjackGame() {
   const isPlaying = gameState === "PLAYER_TURN";
   const canDouble = isPlaying && playerHand.length === 2 && balance >= currentBet;
   const isDisabled = loading || gameState === "DEALING" || gameState === "DEALER_TURN";
+  const canAdjustBet = !loading && (gameState === "BETTING" || gameState === "GAME_OVER");
 
   const resolveGame = useCallback(
     (response: BlackjackDealResponse | BlackjackActionResponse) => {
@@ -206,6 +241,7 @@ export function BlackjackGame() {
         if (response.new_balance !== undefined) {
           updateBalance(response.new_balance);
           void queryClient.invalidateQueries({ queryKey: ["gamification"] });
+          void queryClient.invalidateQueries({ queryKey: ["jackpot"] });
         }
 
         setGameState("GAME_OVER");
@@ -249,7 +285,7 @@ export function BlackjackGame() {
         setDealerUpcard(data.dealer_upcard ?? data.dealer_hand_final?.[0] ?? null);
         resolveGame(data);
       } else {
-        setDealerUpcard(data.dealer_upcard!);
+        setDealerUpcard(data.dealer_upcard ?? null);
         setDealerTotal(data.dealer_visible_total ?? 0);
         setGameState("PLAYER_TURN");
         soundManager.play("click");
@@ -263,7 +299,10 @@ export function BlackjackGame() {
   }, [bet, balance, resolveGame]);
 
   const handleHit = useCallback(async () => {
-    if (!gameId) return;
+    if (!gameId) {
+      return;
+    }
+
     setLoading(true);
     soundManager.play("click");
 
@@ -289,7 +328,10 @@ export function BlackjackGame() {
   }, [gameId, resolveGame]);
 
   const handleStand = useCallback(async () => {
-    if (!gameId) return;
+    if (!gameId) {
+      return;
+    }
+
     setLoading(true);
     setGameState("DEALER_TURN");
     soundManager.play("click");
@@ -308,7 +350,10 @@ export function BlackjackGame() {
   }, [gameId, resolveGame]);
 
   const handleDouble = useCallback(async () => {
-    if (!gameId) return;
+    if (!gameId) {
+      return;
+    }
+
     setLoading(true);
     setGameState("DEALER_TURN");
     soundManager.play("chip");
@@ -343,6 +388,19 @@ export function BlackjackGame() {
   const playerIsBlackjack = playerTotal === 21 && playerHand.length === 2;
   const dealerDisplayHand = dealerHandFinal ?? (dealerUpcard ? [dealerUpcard] : []);
   const showHiddenCard = gameState !== "GAME_OVER" && gameState !== "DEALER_TURN";
+  const stateCopy = GAME_STATE_COPY[gameState];
+  const resultText =
+    result === "blackjack"
+      ? "Blackjack naturel"
+      : result === "win"
+        ? "Victoire"
+        : result === "push"
+          ? "Egalite"
+          : result === "bust"
+            ? "Bust"
+            : result === "loss"
+              ? "Defaite"
+              : "En attente";
 
   return (
     <div className="space-y-6">
@@ -356,211 +414,294 @@ export function BlackjackGame() {
             </p>
           </div>
 
-          <div className="flex items-center gap-3 rounded-[22px] border border-white/10 bg-white/5 px-4 py-3">
-            <Coins className="h-5 w-5 text-brand-cyan" />
-            <div>
-              <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Solde</p>
-              <p className="text-sm font-semibold text-brand-text">
-                {formatTokens(balance)} tokens
-              </p>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="flex items-center gap-3 rounded-[22px] border border-white/10 bg-white/5 px-4 py-3">
+              <Coins className="h-5 w-5 text-brand-cyan" />
+              <div>
+                <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Solde</p>
+                <p className="text-sm font-semibold text-brand-text">
+                  {formatTokens(balance)} tokens
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 rounded-[22px] border border-white/10 bg-white/5 px-4 py-3">
+              <Sparkles className="h-5 w-5 text-amber-300" />
+              <div>
+                <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Etat</p>
+                <p className={cn("text-sm font-semibold", stateCopy.tone)}>{stateCopy.label}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 rounded-[22px] border border-white/10 bg-white/5 px-4 py-3">
+              <Shield className="h-5 w-5 text-emerald-300" />
+              <div>
+                <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Resultat</p>
+                <p className="text-sm font-semibold text-brand-text">{resultText}</p>
+              </div>
             </div>
           </div>
         </div>
       </Card>
 
-      {/* Table de jeu */}
-      <div
-        className="relative overflow-hidden rounded-[32px] border-8 p-8"
-        style={{
-          background: "radial-gradient(ellipse at center, #1a5a3a 0%, #0d3f27 100%)",
-          borderColor: "#8b4513",
-          borderRadius: "200px / 100px",
-          boxShadow: "inset 0 0 50px rgba(0,0,0,0.5), 0 0 40px rgba(0,0,0,0.5)",
-        }}
-      >
-        {/* Zone dealer */}
-        <div className="mb-8 min-h-[160px]">
-          <div className="mb-3 flex items-center gap-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/60">
-              DEALER
-            </p>
-            {dealerDisplayHand.length > 0 && (
-              <HandTotal
-                total={
-                  gameState === "GAME_OVER"
-                    ? dealerTotal
-                    : dealerUpcard
-                      ? calcHandTotal([dealerUpcard])
-                      : 0
-                }
-              />
-            )}
+      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <div
+          className="relative overflow-hidden rounded-[36px] border border-amber-200/20 p-5 shadow-[0_30px_80px_rgba(0,0,0,0.32)] sm:p-8"
+          style={{
+            background:
+              "radial-gradient(circle at top, rgba(40,123,88,0.88), rgba(10,50,32,0.98) 62%)",
+          }}
+        >
+          <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
+          <div className="absolute left-6 top-6 rounded-full border border-white/10 bg-black/15 px-4 py-2 text-[11px] uppercase tracking-[0.32em] text-white/55">
+            Table principale
           </div>
-          <div className="flex flex-wrap gap-3">
-            <AnimatePresence mode="popLayout">
-              {dealerDisplayHand.map((card, i) => (
-                <PlayingCard key={`dealer-${i}-${card.rank}-${card.suit}`} card={card} index={i} />
-              ))}
-              {showHiddenCard && dealerUpcard && (
-                <PlayingCard key="dealer-hidden" hidden index={dealerDisplayHand.length} />
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
 
-        {/* Zone joueur */}
-        <div className="min-h-[160px]">
-          <div className="mb-3 flex items-center gap-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/60">
-              JOUEUR
-            </p>
-            {playerHand.length > 0 && (
-              <HandTotal isBlackjack={playerIsBlackjack} total={playerTotal} />
-            )}
-            {gameState === "PLAYER_TURN" && (
-              <span className="animate-pulse rounded-full bg-brand-cyan/20 px-2 py-0.5 text-xs text-brand-cyan">
-                Votre tour
-              </span>
-            )}
-          </div>
-          <div className="flex flex-wrap gap-3">
-            <AnimatePresence mode="popLayout">
-              {playerHand.map((card, i) => (
-                <PlayingCard key={`player-${i}-${card.rank}-${card.suit}`} card={card} index={i} />
-              ))}
-            </AnimatePresence>
-          </div>
-        </div>
+          <div className="grid gap-6 pt-12">
+            <div className="rounded-[28px] border border-white/10 bg-black/10 p-5 backdrop-blur-sm">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/55">
+                    Dealer
+                  </p>
+                  <p className="mt-2 text-sm text-white/70">Main visible et resolution finale.</p>
+                </div>
+                {dealerDisplayHand.length > 0 ? (
+                  <HandTotal
+                    total={
+                      gameState === "GAME_OVER"
+                        ? dealerTotal
+                        : dealerUpcard
+                          ? calcHandTotal([dealerUpcard])
+                          : 0
+                    }
+                  />
+                ) : null}
+              </div>
+              <div className="flex min-h-[132px] flex-wrap gap-3">
+                <AnimatePresence mode="popLayout">
+                  {dealerDisplayHand.map((card, index) => (
+                    <PlayingCard
+                      key={`dealer-${index}-${card.rank}-${card.suit}`}
+                      card={card}
+                      index={index}
+                    />
+                  ))}
+                  {showHiddenCard && dealerUpcard ? (
+                    <PlayingCard key="dealer-hidden" hidden index={dealerDisplayHand.length} />
+                  ) : null}
+                </AnimatePresence>
+              </div>
+            </div>
 
-        {/* Mise en jeu */}
-        {currentBet > 0 && gameState !== "BETTING" && (
-          <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full border-2 border-yellow-400 bg-yellow-900/80 text-xs font-bold text-yellow-300 shadow-lg">
-              {formatTokens(currentBet)}
+            <div className="rounded-[28px] border border-white/10 bg-black/10 p-5 backdrop-blur-sm">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/55">
+                    Joueur
+                  </p>
+                  <p className="mt-2 text-sm text-white/70">{stateCopy.detail}</p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  {playerHand.length > 0 ? (
+                    <HandTotal isBlackjack={playerIsBlackjack} total={playerTotal} />
+                  ) : null}
+                  {gameState === "PLAYER_TURN" ? (
+                    <span className="animate-pulse rounded-full bg-brand-cyan/20 px-3 py-1 text-xs text-brand-cyan">
+                      Votre tour
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+              <div className="flex min-h-[132px] flex-wrap gap-3">
+                <AnimatePresence mode="popLayout">
+                  {playerHand.map((card, index) => (
+                    <PlayingCard
+                      key={`player-${index}-${card.rank}-${card.suit}`}
+                      card={card}
+                      index={index}
+                    />
+                  ))}
+                </AnimatePresence>
+              </div>
             </div>
           </div>
-        )}
 
-        {/* Overlay résultat */}
-        <AnimatePresence>
-          {gameState === "GAME_OVER" && result && <ResultOverlay result={result} />}
-        </AnimatePresence>
+          {currentBet > 0 && gameState !== "BETTING" ? (
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
+              <div className="flex min-h-14 min-w-14 items-center justify-center rounded-full border-2 border-amber-300 bg-amber-900/75 px-3 text-sm font-bold text-amber-100 shadow-lg">
+                {formatTokens(currentBet)}
+              </div>
+            </div>
+          ) : null}
+
+          <AnimatePresence>
+            {gameState === "GAME_OVER" && result ? <ResultOverlay result={result} /> : null}
+          </AnimatePresence>
+        </div>
+
+        <div className="space-y-6">
+          <Card className="min-w-[300px]">
+            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
+              <div className="rounded-[24px] border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">Mise courante</p>
+                <p className="mt-3 font-display text-3xl text-brand-text">
+                  {formatTokens(
+                    gameState === "BETTING" || gameState === "GAME_OVER" ? bet : currentBet || bet,
+                  )}
+                </p>
+              </div>
+              <div className="rounded-[24px] border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">Payout</p>
+                <p className="mt-3 font-display text-3xl text-brand-text">
+                  {payout > 0 ? `+${formatTokens(payout)}` : "0"}
+                </p>
+              </div>
+              <div className="rounded-[24px] border border-white/10 bg-white/5 p-4 sm:col-span-2 xl:col-span-1">
+                <div className="flex items-start gap-3">
+                  <Waves className="mt-0.5 h-5 w-5 text-brand-cyan" />
+                  <p className="text-sm leading-7 text-brand-muted">
+                    Le dealer tire sur 16 ou moins. Le double est disponible uniquement sur vos
+                    deux premieres cartes, si le solde le permet.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="min-w-[300px]">
+            {gameState === "GAME_OVER" && result && payout > 0 ? (
+              <motion.div
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-4 flex items-center justify-center gap-2 rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-3"
+                initial={{ opacity: 0, y: -10 }}
+              >
+                <span className="text-sm font-bold text-green-400">
+                  +{formatTokens(payout)} tokens
+                </span>
+              </motion.div>
+            ) : null}
+
+            {(gameState === "BETTING" || gameState === "GAME_OVER") ? (
+              <div className="space-y-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-brand-muted">Votre mise</p>
+                  <div className="mt-3 flex items-center gap-3">
+                    <button
+                      aria-label="Diviser la mise par 2"
+                      className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl border border-brand-line bg-white/5 text-sm font-bold text-brand-text transition-all hover:border-brand-cyan/40 hover:bg-white/10 disabled:opacity-40"
+                      disabled={!canAdjustBet}
+                      onClick={() => setBet((prev) => Math.max(1, Math.floor(prev / 2)))}
+                      type="button"
+                    >
+                      ÷2
+                    </button>
+                    <input
+                      aria-label="Montant de la mise"
+                      className="h-11 w-full rounded-2xl border border-brand-line bg-white/5 px-4 text-center text-sm font-semibold text-brand-text focus:border-brand-cyan/40 focus:outline-none"
+                      disabled={!canAdjustBet}
+                      max={balance}
+                      min={1}
+                      onChange={(event) => {
+                        const value = parseInt(event.target.value, 10);
+                        if (!Number.isNaN(value)) {
+                          setBet(Math.min(Math.max(1, value), balance));
+                        }
+                      }}
+                      type="number"
+                      value={bet}
+                    />
+                    <button
+                      aria-label="Doubler la mise"
+                      className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl border border-brand-line bg-white/5 text-sm font-bold text-brand-text transition-all hover:border-brand-cyan/40 hover:bg-white/10 disabled:opacity-40"
+                      disabled={!canAdjustBet}
+                      onClick={() => setBet((prev) => Math.min(prev * 2, balance))}
+                      type="button"
+                    >
+                      ×2
+                    </button>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  {QUICK_BETS.map((amount) => (
+                    <button
+                      key={amount}
+                      className={cn(
+                        "rounded-full border px-3 py-2 text-sm font-semibold transition",
+                        bet === amount
+                          ? "border-amber-300 bg-amber-300 text-zinc-950"
+                          : "border-white/10 bg-white/5 text-brand-text hover:border-brand-cyan/45 hover:bg-white/10",
+                      )}
+                      disabled={!canAdjustBet || amount > balance}
+                      onClick={() => setBet(Math.min(amount, balance))}
+                      type="button"
+                    >
+                      {formatTokens(amount)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : null}
+
+            <div className="mt-6 flex flex-wrap gap-3">
+              {(gameState === "BETTING" || gameState === "GAME_OVER") ? (
+                <Button
+                  aria-label="Parier et démarrer la partie"
+                  className="flex-1 gap-2 bg-emerald-500 text-zinc-950 hover:bg-emerald-400"
+                  disabled={isDisabled || bet < 1 || bet > balance}
+                  onClick={() => {
+                    if (gameState === "GAME_OVER") {
+                      handleNewGame();
+                    } else {
+                      void handleBet();
+                    }
+                  }}
+                  size="lg"
+                >
+                  {gameState === "GAME_OVER" ? "Nouvelle partie" : "Distribuer"}
+                  <ArrowRight className="h-4 w-4" />
+                </Button>
+              ) : null}
+
+              {gameState === "PLAYER_TURN" ? (
+                <>
+                  <Button
+                    aria-label="Tirer une carte"
+                    className="flex-1 bg-sky-500 text-zinc-950 hover:bg-sky-400"
+                    disabled={isDisabled}
+                    onClick={() => void handleHit()}
+                  >
+                    Tirer
+                  </Button>
+                  <Button
+                    aria-label="Rester avec la main actuelle"
+                    className="flex-1 bg-amber-500 text-zinc-950 hover:bg-amber-400"
+                    disabled={isDisabled}
+                    onClick={() => void handleStand()}
+                  >
+                    Rester
+                  </Button>
+                  <Button
+                    aria-label="Doubler la mise et tirer une carte"
+                    className="flex-1 bg-zinc-100 text-zinc-950 hover:bg-white"
+                    disabled={isDisabled || !canDouble}
+                    onClick={() => void handleDouble()}
+                  >
+                    Doubler
+                  </Button>
+                </>
+              ) : null}
+
+              {(gameState === "DEALING" || gameState === "DEALER_TURN") ? (
+                <div className="flex flex-1 items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                  <span className="animate-pulse text-sm text-brand-muted">
+                    {gameState === "DEALING" ? "Distribution en cours..." : "Le dealer joue..."}
+                  </span>
+                </div>
+              ) : null}
+            </div>
+          </Card>
+        </div>
       </div>
-
-      {/* Panneau de contrôle */}
-      <Card className="min-w-[300px]">
-        {gameState === "GAME_OVER" && result && payout > 0 && (
-          <motion.div
-            animate={{ opacity: 1, y: 0 }}
-            className="mb-4 flex items-center justify-center gap-2 rounded-2xl border border-green-500/30 bg-green-500/10 px-4 py-3"
-            initial={{ opacity: 0, y: -10 }}
-          >
-            <span className="text-sm font-bold text-green-400">
-              +{formatTokens(payout)} tokens
-            </span>
-          </motion.div>
-        )}
-
-        {/* Contrôles de mise */}
-        {(gameState === "BETTING" || gameState === "GAME_OVER") && (
-          <div className="mb-4 space-y-3">
-            <p className="text-xs uppercase tracking-[0.3em] text-brand-muted">Votre mise</p>
-            <div className="flex items-center gap-3">
-              <button
-                aria-label="Diviser la mise par 2"
-                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl border border-brand-line bg-white/5 text-sm font-bold text-brand-text transition-all hover:border-brand-cyan/40 hover:bg-white/10 disabled:opacity-40"
-                disabled={isDisabled}
-                onClick={() => setBet((prev) => Math.max(1, Math.floor(prev / 2)))}
-                type="button"
-              >
-                ÷2
-              </button>
-              <input
-                aria-label="Montant de la mise"
-                className="h-10 w-full rounded-2xl border border-brand-line bg-white/5 px-4 text-center text-sm font-semibold text-brand-text focus:border-brand-cyan/40 focus:outline-none"
-                disabled={isDisabled}
-                max={balance}
-                min={1}
-                onChange={(e) => {
-                  const v = parseInt(e.target.value);
-                  if (!isNaN(v)) setBet(Math.min(Math.max(1, v), balance));
-                }}
-                type="number"
-                value={bet}
-              />
-              <button
-                aria-label="Doubler la mise"
-                className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-2xl border border-brand-line bg-white/5 text-sm font-bold text-brand-text transition-all hover:border-brand-cyan/40 hover:bg-white/10 disabled:opacity-40"
-                disabled={isDisabled}
-                onClick={() => setBet((prev) => Math.min(prev * 2, balance))}
-                type="button"
-              >
-                ×2
-              </button>
-            </div>
-          </div>
-        )}
-
-        {/* Boutons d'action */}
-        <div className="flex flex-wrap gap-3">
-          {/* Phase de mise */}
-          {(gameState === "BETTING" || gameState === "GAME_OVER") && (
-            <Button
-              aria-label="Parier et démarrer la partie"
-              className="flex-1 bg-green-600 text-white hover:bg-green-500"
-              disabled={isDisabled || bet < 1 || bet > balance}
-              onClick={() => {
-                if (gameState === "GAME_OVER") {
-                  handleNewGame();
-                } else {
-                  void handleBet();
-                }
-              }}
-            >
-              {gameState === "GAME_OVER" ? "NOUVELLE PARTIE" : "PARIER"}
-            </Button>
-          )}
-
-          {/* Phase de jeu */}
-          {gameState === "PLAYER_TURN" && (
-            <>
-              <Button
-                aria-label="Tirer une carte"
-                className="flex-1 bg-blue-600 text-white hover:bg-blue-500"
-                disabled={isDisabled}
-                onClick={() => void handleHit()}
-              >
-                TIRER
-              </Button>
-              <Button
-                aria-label="Rester avec la main actuelle"
-                className="flex-1 bg-orange-500 text-white hover:bg-orange-400"
-                disabled={isDisabled}
-                onClick={() => void handleStand()}
-              >
-                RESTER
-              </Button>
-              <Button
-                aria-label="Double down — doubler la mise et tirer une carte"
-                className="flex-1 bg-purple-600 text-white hover:bg-purple-500 disabled:opacity-40"
-                disabled={isDisabled || !canDouble}
-                onClick={() => void handleDouble()}
-              >
-                DOUBLER
-              </Button>
-            </>
-          )}
-
-          {/* Phase dealer / dealing */}
-          {(gameState === "DEALING" || gameState === "DEALER_TURN") && (
-            <div className="flex flex-1 items-center justify-center py-2">
-              <span className="animate-pulse text-sm text-brand-muted">
-                {gameState === "DEALING" ? "Distribution en cours..." : "Le dealer joue..."}
-              </span>
-            </div>
-          )}
-        </div>
-      </Card>
     </div>
   );
 }

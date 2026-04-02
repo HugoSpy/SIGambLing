@@ -1,6 +1,6 @@
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Award, Camera, Coins, Flame, Gift, Save, UserRound } from "lucide-react";
+import { Award, Camera, Coins, Flame, Gift, Save, Ticket, Trophy, UserRound } from "lucide-react";
 import toast from "react-hot-toast";
 import { DashboardShell } from "../components/layout/DashboardShell";
 import { LoadingScreen } from "../components/layout/LoadingScreen";
@@ -54,6 +54,7 @@ export function ProfilePage() {
     initialData: storedUser ?? undefined,
   });
   const { data: gamification } = useGamificationState();
+  const unlockedBadges = gamification?.badges.filter((badge) => badge.unlocked).length ?? 0;
 
   useEffect(() => {
     if (user) {
@@ -143,6 +144,7 @@ export function ProfilePage() {
       const result = await claimDailyReward();
       commitUser(result.user);
       queryClient.setQueryData(["gamification"], result.gamification);
+      queryClient.setQueryData(["jackpot"], result.gamification.jackpot);
 
       if (result.claimed) {
         toast.success(
@@ -283,7 +285,7 @@ export function ProfilePage() {
                 <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
                   <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Badges</p>
                   <p className="mt-2 font-display text-2xl text-brand-text">
-                    {gamification.badges.length}
+                    {unlockedBadges}/{gamification.badges.length}
                   </p>
                 </div>
               </div>
@@ -300,14 +302,41 @@ export function ProfilePage() {
                       ? "Deja recuperee"
                       : "Recuperer la recompense"}
                 </Button>
-                {gamification.daily_reward.next_milestone ? (
+                {gamification.daily_reward.next_tier ? (
                   <p className="text-sm text-brand-muted">
-                    Prochain palier: {gamification.daily_reward.next_milestone.days} jours pour +
-                    {formatTokens(gamification.daily_reward.next_milestone.bonus)}.
+                    Prochain tier: {gamification.daily_reward.next_tier.label} a{" "}
+                    {gamification.daily_reward.next_tier.minDays} jours pour +
+                    {formatTokens(gamification.daily_reward.next_tier.bonus)}.
                   </p>
                 ) : (
-                  <p className="text-sm text-brand-muted">Tous les paliers de streak sont debloques.</p>
+                  <p className="text-sm text-brand-muted">Tous les tiers de streak sont debloques.</p>
                 )}
+              </div>
+
+              <div className="mt-5 rounded-[22px] border border-white/10 bg-white/5 p-4">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">
+                      Tier actuel
+                    </p>
+                    <p className="mt-2 font-display text-2xl text-brand-text">
+                      {gamification.daily_reward.current_tier.label}
+                    </p>
+                  </div>
+                  <Flame className="h-5 w-5 text-brand-orange" />
+                </div>
+                <p className="mt-3 text-sm text-brand-muted">
+                  {gamification.daily_reward.streak_status === "broken"
+                    ? "La streak est tombee. Reprenez un claim pour relancer le compteur."
+                    : gamification.daily_reward.streak_deadline_at
+                      ? `Deadline de streak: ${new Date(
+                          gamification.daily_reward.streak_deadline_at,
+                        ).toLocaleString("fr-FR", {
+                          dateStyle: "short",
+                          timeStyle: "short",
+                        })}`
+                      : "Claim disponible des l'ouverture du prochain jour UTC."}
+                </p>
               </div>
             </Card>
 
@@ -345,6 +374,45 @@ export function ProfilePage() {
           <Card className="min-w-[300px]">
             <div className="flex items-start justify-between gap-4">
               <div>
+                <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">Jackpot</p>
+                <h2 className="mt-3 font-display text-3xl text-brand-text">Participation casino</h2>
+              </div>
+              <Trophy className="h-6 w-6 text-brand-orange" />
+            </div>
+
+            <div className="mt-5 grid gap-4 md:grid-cols-4">
+              <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Pot live</p>
+                <p className="mt-2 font-display text-2xl text-brand-text">
+                  {formatTokens(gamification.jackpot.current_round.current_pot)}
+                </p>
+              </div>
+              <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Tickets</p>
+                <p className="mt-2 font-display text-2xl text-brand-text">
+                  {gamification.jackpot.current_round.user_tickets}
+                </p>
+              </div>
+              <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Chance</p>
+                <p className="mt-2 font-display text-2xl text-brand-text">
+                  {(gamification.jackpot.current_round.user_chance_bps / 100).toFixed(2)}%
+                </p>
+              </div>
+              <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Dernier gain</p>
+                <p className="mt-2 font-display text-2xl text-brand-text">
+                  {formatTokens(gamification.jackpot.last_result?.payout_amount ?? 0)}
+                </p>
+              </div>
+            </div>
+          </Card>
+        ) : null}
+
+        {gamification ? (
+          <Card className="min-w-[300px]">
+            <div className="flex items-start justify-between gap-4">
+              <div>
                 <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">Badges</p>
                 <h2 className="mt-3 font-display text-3xl text-brand-text">Vitrine live</h2>
               </div>
@@ -355,13 +423,43 @@ export function ProfilePage() {
               <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {gamification.badges.map((badge) => (
                   <div
-                    className={`rounded-[22px] border p-4 ${BADGE_STYLES[badge.tone]}`}
+                    className={`rounded-[22px] border p-4 ${
+                      badge.unlocked
+                        ? BADGE_STYLES[badge.tone]
+                        : "border-white/10 bg-white/5 text-brand-text"
+                    }`}
                     key={badge.key}
                   >
-                    <p className="text-sm font-semibold">{badge.name}</p>
+                    <div className="flex items-center justify-between gap-3">
+                      <p className="text-sm font-semibold">{badge.name}</p>
+                      <span className="text-[11px] uppercase tracking-[0.24em] text-white/60">
+                        {badge.rarity}
+                      </span>
+                    </div>
                     <p className="mt-2 text-xs leading-6 text-white/80">{badge.description}</p>
+                    <div className="mt-4">
+                      <div className="flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.2em] text-white/60">
+                        <span>Progression</span>
+                        <span>
+                          {badge.progress.current}/{badge.progress.target} {badge.progress.label}
+                        </span>
+                      </div>
+                      <div className="mt-2 h-2 rounded-full bg-white/10">
+                        <div
+                          className={`h-full rounded-full ${badge.unlocked ? "bg-current" : "bg-white/30"}`}
+                          style={{
+                            width: `${Math.min(
+                              100,
+                              Math.round((badge.progress.current / badge.progress.target) * 100),
+                            )}%`,
+                          }}
+                        />
+                      </div>
+                    </div>
                     <p className="mt-3 text-[11px] uppercase tracking-[0.24em] text-white/60">
-                      {new Date(badge.unlocked_at).toLocaleDateString("fr-FR")}
+                      {badge.unlocked && badge.unlocked_at
+                        ? new Date(badge.unlocked_at).toLocaleDateString("fr-FR")
+                        : "verrouille"}
                     </p>
                   </div>
                 ))}

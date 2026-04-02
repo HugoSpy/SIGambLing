@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Award, Coins, Flame, Gift, ShieldCheck, TrendingUp } from "lucide-react";
+import { ArrowRight, Award, Coins, Flame, Gift, ShieldCheck, Ticket, TrendingUp } from "lucide-react";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { DashboardShell } from "../components/layout/DashboardShell";
@@ -29,6 +29,7 @@ export function DashboardPage() {
     [events],
   );
   const openPositions = myBets?.filter((bet) => bet.status === "PENDING") ?? [];
+  const unlockedBadges = gamification?.badges.filter((badge) => badge.unlocked).length ?? 0;
 
   if (!user) {
     return <LoadingScreen label="Chargement de votre espace..." />;
@@ -145,7 +146,7 @@ export function DashboardPage() {
                     <Award className="h-4 w-4 text-amber-400" />
                     Badges
                   </span>
-                  <span className="text-zinc-100">{gamification?.badges.length ?? 0}</span>
+                  <span className="text-zinc-100">{unlockedBadges}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <span>Victoires paris</span>
@@ -161,6 +162,44 @@ export function DashboardPage() {
                 to="/profile"
               >
                 Ouvrir le centre de recompenses
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Card>
+
+            <Card>
+              <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Jackpot</p>
+              <h2 className="mt-2 text-lg font-semibold text-zinc-100">Round en cours</h2>
+              <div className="mt-4 space-y-3 text-sm text-zinc-400">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="inline-flex items-center gap-2">
+                    <Coins className="h-4 w-4 text-emerald-400" />
+                    Pot
+                  </span>
+                  <span className="text-zinc-100">
+                    {formatTokens(gamification?.jackpot.current_round.current_pot ?? 0)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="inline-flex items-center gap-2">
+                    <Ticket className="h-4 w-4 text-amber-400" />
+                    Vos tickets
+                  </span>
+                  <span className="text-zinc-100">
+                    {gamification?.jackpot.current_round.user_tickets ?? 0}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span>Chance estimee</span>
+                  <span className="text-zinc-100">
+                    {(((gamification?.jackpot.current_round.user_chance_bps ?? 0) / 100) || 0).toFixed(2)}%
+                  </span>
+                </div>
+              </div>
+              <Link
+                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-emerald-400 transition hover:text-emerald-300"
+                to="/jackpot"
+              >
+                Ouvrir le round
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Card>

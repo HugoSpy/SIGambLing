@@ -14,7 +14,11 @@ import type {
   ProposalStatus,
   UpdateEventPayload,
 } from "../types/event";
-import type { ClaimDailyRewardResponse, GamificationState } from "../types/gamification";
+import type {
+  ClaimDailyRewardResponse,
+  GamificationState,
+  JackpotState,
+} from "../types/gamification";
 import type { AuthTokens, AuthUser, MicrosoftRedirectResponse } from "../types/auth";
 
 const baseURL = import.meta.env.VITE_API_URL;
@@ -79,6 +83,11 @@ export async function fetchGamificationState() {
 
 export async function claimDailyReward() {
   const response = await api.post<ClaimDailyRewardResponse>("/rewards/daily");
+  return response.data;
+}
+
+export async function fetchJackpotState() {
+  const response = await api.get<JackpotState>("/rewards/jackpot");
   return response.data;
 }
 

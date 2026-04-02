@@ -127,12 +127,17 @@ function calculateMargin(rows: Array<{ label: string; odd: number | null }>) {
 export function AdminEventsPage() {
   const queryClient = useQueryClient();
   const { data: user } = useAuthenticatedUser();
-  const [view, setView] = useState<"markets" | "proposals">("markets");
+  const [view, setView] = useState<"markets" | "proposals" | "users">("markets");
   const [editingEvent, setEditingEvent] = useState<AdminEventView | null>(null);
   const [draftProposal, setDraftProposal] = useState<EventProposalView | null>(null);
   const [form, setForm] = useState<EventFormState>(emptyFormState);
   const [selectedExcludedUsers, setSelectedExcludedUsers] = useState<EventSearchUser[]>([]);
-  const [userSearch, setUserSearch] = useState("");
+  const [excludedUserSearch, setExcludedUserSearch] = useState("");
+  const [adminUserSearch, setAdminUserSearch] = useState("");
+  const [selectedAdminUser, setSelectedAdminUser] = useState<AdminUserLookup | null>(null);
+  const [balanceAdjustment, setBalanceAdjustment] = useState("100");
+  const [balanceReason, setBalanceReason] = useState("");
+  const [selectedBadgeKey, setSelectedBadgeKey] = useState("");
   const [saving, setSaving] = useState(false);
   const [actionKey, setActionKey] = useState<string | null>(null);
   const [resolveTarget, setResolveTarget] = useState<AdminEventView | null>(null);
@@ -149,9 +154,20 @@ export function AdminEventsPage() {
   });
 
   const { data: foundUsers } = useQuery({
-    queryKey: ["admin-user-search", userSearch],
-    queryFn: () => searchUsers(userSearch),
-    enabled: userSearch.trim().length >= 2,
+    queryKey: ["admin-user-search", excludedUserSearch],
+    queryFn: () => searchUsers(excludedUserSearch),
+    enabled: excludedUserSearch.trim().length >= 2,
+  });
+
+  const { data: adminUsers } = useQuery({
+    queryKey: ["admin-user-ops-search", adminUserSearch],
+    queryFn: () => searchUsers(adminUserSearch),
+    enabled: adminUserSearch.trim().length >= 2,
+  });
+
+  const { data: badgeCatalog } = useQuery({
+    queryKey: ["admin-badge-catalog"],
+    queryFn: fetchAdminBadgeCatalog,
   });
 
   useEffect(() => {
@@ -160,16 +176,25 @@ export function AdminEventsPage() {
     }
   }, [resolveTarget]);
 
-  if (!user || isLoading) {
-    return <LoadingScreen label="Chargement du panel admin..." />;
-  }
+  useEffect(() => {
+    if (!selectedAdminUser) {
+      return;
+    }
+
+    const refreshedUser =
+      (adminUsers ?? []).find((entry) => entry.id === selectedAdminUser.id) ?? null;
+
+    if (refreshedUser) {
+      setSelectedAdminUser(refreshedUser);
+    }
+  }, [adminUsers, selectedAdminUser]);
 
   const resetForm = () => {
     setEditingEvent(null);
     setDraftProposal(null);
     setForm(emptyFormState);
     setSelectedExcludedUsers([]);
-    setUserSearch("");
+    setExcludedUserSearch("");
   };
 
   const handleLogout = async () => {
@@ -273,6 +298,25 @@ export function AdminEventsPage() {
   const optionRows = useMemo(() => parseOptionRows(form.options_text), [form.options_text]);
   const currentMargin = useMemo(() => calculateMargin(optionRows), [optionRows]);
 
+  const availableManualBadges = useMemo(
+    () =>
+      (badgeCatalog ?? []).filter((badge) => !selectedAdminUser?.badges.includes(badge.key)),
+    [badgeCatalog, selectedAdminUser],
+  );
+
+  useEffect(() => {
+    if (!selectedAdminUser) {
+      setSelectedBadgeKey("");
+      return;
+    }
+
+    setSelectedBadgeKey(availableManualBadges[0]?.key ?? "");
+  }, [availableManualBadges, selectedAdminUser]);
+
+  if (!user || isLoading) {
+    return <LoadingScreen label="Chargement du panel admin..." />;
+  }
+
   const applyProposalToForm = (proposal: EventProposalView) => {
     setEditingEvent(null);
     setDraftProposal(proposal);
@@ -288,6 +332,85 @@ export function AdminEventsPage() {
       max_bet: "",
     });
     setView("markets");
+  };
+
+  const refreshAdminUserData = async (nextSelectedUserId?: string) => {
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: ["admin-user-ops-search"] }),
+      queryClient.invalidateQueries({ queryKey: ["admin-user-search"] }),
+      queryClient.invalidateQueries({ queryKey: ["me"] }),
+      queryClient.invalidateQueries({ queryKey: ["gamification"] }),
+    ]);
+
+    if (!nextSelectedUserId) {
+      return;
+    }
+
+    const refreshedUsers = await queryClient.fetchQuery({
+      queryKey: ["admin-user-ops-search", adminUserSearch],
+      queryFn: () => searchUsers(adminUserSearch),
+    });
+    const refreshedUser = refreshedUsers.find((entry) => entry.id === nextSelectedUserId) ?? null;
+    setSelectedAdminUser(refreshedUser);
+  };
+
+  const submitBalanceAdjustment = async () => {
+    if (!selectedAdminUser) {
+      toast.error("Selectionnez d'abord un joueur.");
+      return;
+    }
+
+    const amount = Number(balanceAdjustment);
+
+    if (!Number.isInteger(amount) || amount === 0) {
+      toast.error("Le montant doit etre un entier non nul.");
+      return;
+    }
+
+    if (!balanceReason.trim()) {
+      toast.error("Ajoutez un motif.");
+      return;
+    }
+
+    try {
+      setActionKey(`balance-${selectedAdminUser.id}`);
+      const updatedUser = await adjustAdminUserBalance(selectedAdminUser.id, {
+        amount,
+        reason: balanceReason.trim(),
+      });
+      setSelectedAdminUser(updatedUser);
+      setBalanceReason("");
+      await refreshAdminUserData(updatedUser.id);
+      toast.success("Solde admin mis a jour.");
+    } catch (error) {
+      toast.error(toErrorMessage(error));
+    } finally {
+      setActionKey(null);
+    }
+  };
+
+  const submitBadgeUnlock = async () => {
+    if (!selectedAdminUser) {
+      toast.error("Selectionnez d'abord un joueur.");
+      return;
+    }
+
+    if (!selectedBadgeKey) {
+      toast.error("Choisissez un badge.");
+      return;
+    }
+
+    try {
+      setActionKey(`badge-${selectedAdminUser.id}`);
+      const outcome = await unlockAdminUserBadge(selectedAdminUser.id, selectedBadgeKey);
+      setSelectedAdminUser(outcome.user);
+      await refreshAdminUserData(outcome.user.id);
+      toast.success(outcome.already_unlocked ? "Badge deja debloque." : "Badge debloque.");
+    } catch (error) {
+      toast.error(toErrorMessage(error));
+    } finally {
+      setActionKey(null);
+    }
   };
 
   return (
@@ -320,6 +443,16 @@ export function AdminEventsPage() {
           >
             Propositions
             {view === "proposals" ? <span className="absolute inset-x-0 bottom-0 h-0.5 bg-emerald-500" /> : null}
+          </button>
+          <button
+            className={`relative px-4 py-3 text-sm font-medium transition ${
+              view === "users" ? "text-emerald-400" : "text-zinc-400 hover:text-zinc-100"
+            }`}
+            onClick={() => setView("users")}
+            type="button"
+          >
+            Joueurs
+            {view === "users" ? <span className="absolute inset-x-0 bottom-0 h-0.5 bg-emerald-500" /> : null}
           </button>
         </div>
 
@@ -470,9 +603,9 @@ export function AdminEventsPage() {
                     <Search className="h-4 w-4 text-brand-muted" />
                     <input
                       className="w-full bg-transparent text-sm text-brand-text outline-none placeholder:text-brand-muted"
-                      onChange={(event) => setUserSearch(event.target.value)}
+                      onChange={(event) => setExcludedUserSearch(event.target.value)}
                       placeholder="Pseudo ou email"
-                      value={userSearch}
+                      value={excludedUserSearch}
                     />
                   </div>
                 </label>
@@ -503,9 +636,9 @@ export function AdminEventsPage() {
                       <button
                         className="flex w-full items-center justify-between rounded-2xl px-3 py-3 text-left transition-all duration-300 hover:bg-white/5"
                         key={entry.id}
-                        onClick={() => {
+                          onClick={() => {
                           setSelectedExcludedUsers((current) => [...current, entry]);
-                          setUserSearch("");
+                          setExcludedUserSearch("");
                         }}
                         type="button"
                       >
@@ -616,6 +749,251 @@ export function AdminEventsPage() {
                 ) : null}
               </div>
               </Card>
+            ) : null}
+
+            {view === "users" ? (
+              <div className="grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(320px,0.8fr)]">
+                <Card className="min-w-[300px]">
+                  <div className="flex items-center justify-between gap-4">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.28em] text-brand-cyan">
+                        Operations joueurs
+                      </p>
+                      <h2 className="mt-2 font-display text-3xl text-brand-text">
+                        Recherche et moderation
+                      </h2>
+                    </div>
+                    <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-brand-muted">
+                      {(adminUsers ?? []).length} resultat(s)
+                    </span>
+                  </div>
+
+                  <div className="mt-6 space-y-4">
+                    <label className="block space-y-2">
+                      <span className="text-sm font-medium text-brand-text">Pseudo ou email</span>
+                      <div className="flex items-center gap-3 rounded-2xl border border-brand-line bg-white/5 px-4 py-3">
+                        <Search className="h-4 w-4 text-brand-muted" />
+                        <input
+                          className="w-full bg-transparent text-sm text-brand-text outline-none placeholder:text-brand-muted"
+                          onChange={(event) => setAdminUserSearch(event.target.value)}
+                          placeholder="Rechercher un joueur"
+                          value={adminUserSearch}
+                        />
+                      </div>
+                    </label>
+
+                    {(adminUsers ?? []).length > 0 ? (
+                      <div className="space-y-3">
+                        {(adminUsers ?? []).map((entry) => (
+                          <button
+                            className={`w-full rounded-[22px] border p-4 text-left transition-all duration-300 ${
+                              selectedAdminUser?.id === entry.id
+                                ? "border-brand-cyan/60 bg-brand-cyan/10"
+                                : "border-white/10 bg-white/5 hover:bg-white/10"
+                            }`}
+                            key={entry.id}
+                            onClick={() => setSelectedAdminUser(entry)}
+                            type="button"
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="min-w-0">
+                                <p className="text-sm font-semibold text-brand-text">
+                                  {entry.pseudo}
+                                </p>
+                                <p className="truncate text-xs text-brand-muted">{entry.email}</p>
+                              </div>
+                              <span className="rounded-full border border-white/10 bg-black/10 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-brand-muted">
+                                {entry.role}
+                              </span>
+                            </div>
+                            <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-brand-muted">
+                              <span>{formatTokens(entry.balance)}</span>
+                              <span>Serie {entry.streak_days} j</span>
+                              <span>{entry.badges.length} badge(s)</span>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm leading-7 text-brand-muted">
+                        {adminUserSearch.trim().length < 2
+                          ? "Saisissez au moins deux caracteres pour lancer une recherche."
+                          : "Aucun joueur actif ne correspond a cette recherche."}
+                      </p>
+                    )}
+                  </div>
+                </Card>
+
+                <Card className="min-w-[300px]">
+                  {selectedAdminUser ? (
+                    <div className="space-y-6">
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.28em] text-brand-orange">
+                          Fiche joueur
+                        </p>
+                        <h2 className="mt-2 font-display text-3xl text-brand-text">
+                          {selectedAdminUser.pseudo}
+                        </h2>
+                        <p className="mt-2 text-sm text-brand-muted">{selectedAdminUser.email}</p>
+                      </div>
+
+                      <div className="grid gap-3 sm:grid-cols-2">
+                        <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
+                          <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">
+                            Solde
+                          </p>
+                          <p className="mt-3 font-display text-3xl text-brand-text">
+                            {formatTokens(selectedAdminUser.balance)}
+                          </p>
+                        </div>
+                        <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
+                          <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">
+                            Compte
+                          </p>
+                          <p className="mt-3 text-sm text-brand-text">
+                            Role {selectedAdminUser.role} · serie {selectedAdminUser.streak_days} jour
+                            {selectedAdminUser.streak_days > 1 ? "s" : ""}
+                          </p>
+                          <p className="mt-2 text-xs text-brand-muted">
+                            Inscrit le{" "}
+                            {new Date(selectedAdminUser.created_at).toLocaleDateString("fr-FR")}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="space-y-3 rounded-[22px] border border-white/10 bg-white/5 p-4">
+                        <div>
+                          <p className="text-sm font-semibold text-brand-text">
+                            Ajustement de solde
+                          </p>
+                          <p className="mt-1 text-xs text-brand-muted">
+                            Utilisez un montant positif pour crediter et negatif pour debiter.
+                          </p>
+                        </div>
+
+                        <div className="grid gap-3 sm:grid-cols-2">
+                          <label className="block space-y-2">
+                            <span className="text-sm font-medium text-brand-text">Montant</span>
+                            <input
+                              className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
+                              onChange={(event) => setBalanceAdjustment(event.target.value)}
+                              placeholder="+250 ou -100"
+                              type="number"
+                              value={balanceAdjustment}
+                            />
+                          </label>
+
+                          <label className="block space-y-2">
+                            <span className="text-sm font-medium text-brand-text">Motif</span>
+                            <input
+                              className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
+                              onChange={(event) => setBalanceReason(event.target.value)}
+                              placeholder="Correction jackpot, geste commercial..."
+                              value={balanceReason}
+                            />
+                          </label>
+                        </div>
+
+                        <Button
+                          disabled={actionKey === `balance-${selectedAdminUser.id}`}
+                          onClick={() => void submitBalanceAdjustment()}
+                        >
+                          {actionKey === `balance-${selectedAdminUser.id}`
+                            ? "Mise a jour..."
+                            : "Appliquer l'ajustement"}
+                        </Button>
+                      </div>
+
+                      <div className="space-y-3 rounded-[22px] border border-white/10 bg-white/5 p-4">
+                        <div>
+                          <p className="text-sm font-semibold text-brand-text">
+                            Badges et hooks de recompense
+                          </p>
+                          <p className="mt-1 text-xs text-brand-muted">
+                            Debloquez un badge manuel ou preparez une action jackpot quand le contrat
+                            cross-track sera finalise.
+                          </p>
+                        </div>
+
+                        {selectedAdminUser.badges.length > 0 ? (
+                          <div className="flex flex-wrap gap-2">
+                            {selectedAdminUser.badges.map((badge) => (
+                              <span
+                                className="rounded-full border border-brand-cyan/35 bg-brand-cyan/10 px-3 py-1 text-xs text-brand-cyan"
+                                key={badge}
+                              >
+                                {badge}
+                              </span>
+                            ))}
+                          </div>
+                        ) : (
+                          <p className="text-xs text-brand-muted">
+                            Aucun badge debloque pour ce joueur.
+                          </p>
+                        )}
+
+                        <label className="block space-y-2">
+                          <span className="text-sm font-medium text-brand-text">
+                            Deblocage manuel
+                          </span>
+                          <select
+                            className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
+                            onChange={(event) => setSelectedBadgeKey(event.target.value)}
+                            value={selectedBadgeKey}
+                          >
+                            <option className="bg-[#0f212e]" value="">
+                              Choisir un badge
+                            </option>
+                            {availableManualBadges.map((badge: AdminBadgeCatalogItem) => (
+                              <option className="bg-[#0f212e]" key={badge.key} value={badge.key}>
+                                {badge.name}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+
+                        {selectedBadgeKey ? (
+                          <p className="text-xs text-brand-muted">
+                            {
+                              availableManualBadges.find((badge) => badge.key === selectedBadgeKey)
+                                ?.description
+                            }
+                          </p>
+                        ) : null}
+
+                        <div className="flex flex-col gap-3 sm:flex-row">
+                          <Button
+                            disabled={
+                              actionKey === `badge-${selectedAdminUser.id}` || !selectedBadgeKey
+                            }
+                            onClick={() => void submitBadgeUnlock()}
+                          >
+                            {actionKey === `badge-${selectedAdminUser.id}`
+                              ? "Deblocage..."
+                              : "Debloquer le badge"}
+                          </Button>
+                          <Button disabled variant="secondary">
+                            Hook jackpot a venir
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <p className="text-xs uppercase tracking-[0.28em] text-brand-orange">
+                        Fiche joueur
+                      </p>
+                      <h2 className="font-display text-3xl text-brand-text">
+                        Selection requise
+                      </h2>
+                      <p className="text-sm leading-7 text-brand-muted">
+                        Choisissez un joueur a gauche pour ajuster son solde, debloquer un badge
+                        manuel et preparer les hooks jackpot.
+                      </p>
+                    </div>
+                  )}
+                </Card>
+              </div>
             ) : null}
 
             {view === "markets"

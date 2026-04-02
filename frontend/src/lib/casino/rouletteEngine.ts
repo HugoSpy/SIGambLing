@@ -270,10 +270,6 @@ export class RouletteEngine {
     const safeDuration = Math.max(1800, duration);
     const targetRotation = this.calculateTargetRotation(targetNumber);
 
-    console.log('[Roulette] spin() → targetNumber:', targetNumber);
-    console.log('[Roulette] targetIndex in WHEEL_SEQUENCE:', WHEEL_SEQUENCE.indexOf(targetNumber));
-    console.log('[Roulette] targetRotation (deg):', targetRotation);
-
     await Promise.all([
       this.animateWheel(targetRotation, safeDuration, token),
       this.animateBall(safeDuration, token),
@@ -288,8 +284,6 @@ export class RouletteEngine {
     this.ballRadius = this.size * BALL_POCKET_RADIUS_RATIO;
     this.applyWheelTransform(targetRotation);
     this.drawBall(this.ballAngle, this.ballRadius, 0.92);
-
-    console.log('[Roulette] Final ballAngle (rad):', this.ballAngle, '≈ POINTER_ANGLE:', POINTER_ANGLE);
   }
 
   destroy() {
@@ -313,8 +307,6 @@ export class RouletteEngine {
     const minimumTargetRotation = this.wheelRotationDeg + minimumTurns * 360;
     const snappedTurns = Math.ceil((minimumTargetRotation - finalOffset) / 360);
     const targetRotation = snappedTurns * 360 + finalOffset;
-
-    console.log('[Roulette] calculateTargetRotation() → number:', targetNumber, 'index:', targetIndex, 'finalOffset:', finalOffset.toFixed(2), 'deg → total rotation:', targetRotation.toFixed(2), 'deg');
 
     return targetRotation;
   }
@@ -409,8 +401,6 @@ export class RouletteEngine {
       const phaseTwoTravel = segmentAngle * 0.35 * (Math.random() - 0.5); // ±0.175 segment ≈ ±1°
       const phaseOneEndAngle = startAngle - phaseOneTravel; // ≡ POINTER_ANGLE (same x,y)
       const finalAngle = phaseOneEndAngle - phaseTwoTravel; // landing angle (within target pocket)
-
-      console.log('[Roulette] animateBall → numOrbits:', numOrbits, 'phaseTwoTravel (deg):', (phaseTwoTravel * 180 / Math.PI).toFixed(2));
 
       const step = (now: number) => {
         if (this.destroyed || token !== this.spinToken) {
