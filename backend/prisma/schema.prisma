@@ -36,6 +36,17 @@ enum BetStatus {
   cancelled
 }
 
+enum BetType {
+  SIMPLE
+  PARLAY
+}
+
+enum ProposalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum CasinoGameType {
   roulette
   blackjack
@@ -68,6 +79,8 @@ model User {
   validatedEvents Event[]     @relation("EventValidator")
   excludedEvents  EventExclusion[]
   adminLogs       AdminLog[]  @relation("AdminActor")
+  proposals       EventProposal[]
+  reviewedProposals EventProposal[] @relation("ProposalReviewer")
 
   @@index([email])
   @@index([balance(sort: Desc)])
@@ -97,6 +110,8 @@ model Event {
   validator      User?            @relation("EventValidator", fields: [validatorId], references: [id], onDelete: SetNull)
   excludedUsers  EventExclusion[]
   bets           Bet[]
+  oddsHistories  OddsHistory[]
+  betLegs        BetLeg[]
 
   @@index([status])
   @@index([category])
@@ -107,21 +122,70 @@ model Event {
 model Bet {
   id           String    @id @default(uuid()) @db.Uuid
   userId       String    @db.Uuid
-  eventId      String    @db.Uuid
-  chosenOption String    @map("selectedOption") @db.VarChar(50)
+  eventId      String?   @db.Uuid
+  chosenOption String?   @map("selectedOption") @db.VarChar(100)
   amount       Int
-  oddAtBet     Decimal   @map("oddsAtBet") @db.Decimal(5, 2)
-  legacyStatus BetStatus @map("status") @default(pending)
+  oddAtBet     Decimal?  @map("oddsAtBet") @db.Decimal(8, 4)
+  status       BetStatus @default(pending)
+  type         BetType   @default(SIMPLE)
   potentialWin Int       @default(0)
   payout       Int       @map("actualWin") @default(0)
   createdAt    DateTime  @default(now())
   resolvedAt   DateTime?
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  event        Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event        Event?    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  legs         BetLeg[]
 
   @@index([userId])
   @@index([eventId])
+  @@index([type, status])
   @@index([createdAt(sort: Desc)])
+}
+
+model BetLeg {
+  id           String    @id @default(uuid()) @db.Uuid
+  betId        String    @db.Uuid
+  eventId      String    @db.Uuid
+  chosenOption String    @db.VarChar(100)
+  oddsAtBet    Decimal   @db.Decimal(8, 4)
+  status       BetStatus @default(pending)
+  bet          Bet       @relation(fields: [betId], references: [id], onDelete: Cascade)
+  event        Event     @relation(fields: [eventId], references: [id])
+
+  @@index([betId])
+  @@index([eventId])
+}
+
+model OddsHistory {
+  id          String   @id @default(uuid()) @db.Uuid
+  eventId     String   @db.Uuid
+  option      String   @db.VarChar(100)
+  odds        Decimal  @db.Decimal(8, 4)
+  totalStaked Int
+  timestamp   DateTime @default(now())
+  event       Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([eventId, option])
+  @@index([timestamp(sort: Desc)])
+}
+
+model EventProposal {
+  id              String         @id @default(uuid()) @db.Uuid
+  userId          String         @db.Uuid
+  title           String         @db.VarChar(200)
+  description     String?        @db.Text
+  category        EventCategory
+  suggestedDate   DateTime?
+  status          ProposalStatus @default(PENDING)
+  reviewedById    String?        @db.Uuid
+  reviewedAt      DateTime?
+  rejectionReason String?        @db.Text
+  createdAt       DateTime       @default(now())
+  user            User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  reviewer        User?          @relation("ProposalReviewer", fields: [reviewedById], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([status])
 }
 
 model EventExclusion {

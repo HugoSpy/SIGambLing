@@ -1,14 +1,22 @@
 import rateLimit from "express-rate-limit";
 import { Router } from "express";
 import {
+  approveProposalController,
   cancelEventController,
   closeEventController,
   createEventController,
+  createProposalController,
   getEventController,
+  getEventOddsHistoryController,
   getMyEventBetController,
+  listAdminProposalsController,
   listAdminEventsController,
   listEventsController,
+  listMyProposalsController,
   placeEventBetController,
+  placeParlayBetController,
+  placeSimpleBetsController,
+  rejectProposalController,
   resolveEventController,
   updateEventController,
 } from "../controllers/events.controller";
@@ -17,7 +25,11 @@ import { requireRole } from "../middleware/require-role";
 import { validateBody } from "../middleware/validate";
 import {
   createEventSchema,
+  createProposalSchema,
   placeEventBetSchema,
+  placeParlayBetSchema,
+  placeSimpleBetsSchema,
+  rejectProposalSchema,
   resolveEventSchema,
   updateEventSchema,
 } from "../schemas/events.schemas";
@@ -47,12 +59,24 @@ const adminLimiter = rateLimit({
 
 eventsRouter.use(requireAuth);
 eventsRouter.get("/", listEventsController);
+eventsRouter.get("/proposals/me", listMyProposalsController);
+eventsRouter.post("/proposals", validateBody(createProposalSchema), createProposalController);
+eventsRouter.post("/bets", betLimiter, validateBody(placeSimpleBetsSchema), placeSimpleBetsController);
+eventsRouter.post("/parlay", betLimiter, validateBody(placeParlayBetSchema), placeParlayBetController);
 eventsRouter.get("/:id", getEventController);
+eventsRouter.get("/:id/odds-history", getEventOddsHistoryController);
 eventsRouter.get("/:id/my-bet", getMyEventBetController);
 eventsRouter.post("/:id/bet", betLimiter, validateBody(placeEventBetSchema), placeEventBetController);
 
 adminEventsRouter.use(requireAuth, requireRole(["admin"]), adminLimiter);
 adminEventsRouter.get("/", listAdminEventsController);
+adminEventsRouter.get("/proposals", listAdminProposalsController);
+adminEventsRouter.post("/proposals/:proposalId/approve", approveProposalController);
+adminEventsRouter.post(
+  "/proposals/:proposalId/reject",
+  validateBody(rejectProposalSchema),
+  rejectProposalController,
+);
 adminEventsRouter.post("/", validateBody(createEventSchema), createEventController);
 adminEventsRouter.patch("/:id", validateBody(updateEventSchema), updateEventController);
 adminEventsRouter.post("/:id/close", closeEventController);
