@@ -138,6 +138,9 @@ function roundPercentage(value: number) {
   return Number(value.toFixed(2));
 }
 
+const LIVE_PARIMUTUEL_HOUSE_EDGE = 0.01;
+const MAX_LIVE_ODDS = 99;
+
 function calculatePotentialPayout(stake: number, odds: number) {
   return Math.floor(stake * odds);
 }
@@ -353,7 +356,7 @@ function normalizeStoredOptions(
       return {
         label,
         initial_odds: roundOdds(clamp(initialOdds, 1.01, 100)),
-        current_odds: roundOdds(clamp(currentOdds, 1.01, 100)),
+        current_odds: roundOdds(clamp(currentOdds, LIVE_PARIMUTUEL_HOUSE_EDGE, MAX_LIVE_ODDS)),
         total_staked: totalStaked > 0 ? Math.round(totalStaked) : 0,
         is_winning: typeof isWinningRaw === "boolean" ? isWinningRaw : null,
       };
@@ -370,20 +373,6 @@ function normalizeStoredOptions(
   return parsedOptions;
 }
 
-function getNormalizedInitialProbabilities(options: StoredEventOption[]) {
-  const rawProbabilities = options.map((option) => 1 / option.initial_odds);
-  const rawTotal = rawProbabilities.reduce((sum, value) => sum + value, 0);
-
-  if (rawTotal <= 0) {
-    throw new AppError("Cotes initiales invalides.", 500);
-  }
-
-  return {
-    probabilities: rawProbabilities.map((value) => value / rawTotal),
-    margin: rawTotal - 1,
-  };
-}
-
 function recalculateLiveOptions(inputOptions: StoredEventOption[]) {
   const options = inputOptions.map((option) => ({ ...option }));
   const totalVolume = options.reduce((sum, option) => sum + option.total_staked, 0);
@@ -395,42 +384,19 @@ function recalculateLiveOptions(inputOptions: StoredEventOption[]) {
     }));
   }
 
-  const { probabilities: initialProbabilities, margin } = getNormalizedInitialProbabilities(options);
-  const marketProbabilities = options.map((option) => option.total_staked / totalVolume);
-
-  let marketWeight = 0;
-
-  if (totalVolume >= 1000) {
-    marketWeight = 0.9;
-  } else if (totalVolume >= 100) {
-    marketWeight = ((totalVolume - 100) / 900) * 0.9;
-  }
-
-  const blendedProbabilities = options.map((option, index) => {
-    const previousWeight = 1 - marketWeight;
-    return initialProbabilities[index] * previousWeight + marketProbabilities[index] * marketWeight;
-  });
-
-  const totalProbability = blendedProbabilities.reduce((sum, value) => sum + value, 0) || 1;
-
   return options.map((option, index) => {
-    const normalizedProbability = blendedProbabilities[index] / totalProbability;
-    const impliedProbability = normalizedProbability * (1 + margin);
-    const targetOdds = clamp(1 / Math.max(impliedProbability, 0.0001), 1.01, 100);
-
-    if (totalVolume < 100) {
-      return {
-        ...option,
-        current_odds: roundOdds(option.initial_odds),
-      };
-    }
-
-    const previousOdds = option.current_odds || option.initial_odds;
-    const limitedOdds = clamp(targetOdds, previousOdds * 0.85, previousOdds * 1.15);
+    const targetOdds =
+      option.total_staked <= 0
+        ? MAX_LIVE_ODDS
+        : clamp(
+            (totalVolume / option.total_staked) * (1 - LIVE_PARIMUTUEL_HOUSE_EDGE),
+            LIVE_PARIMUTUEL_HOUSE_EDGE,
+            MAX_LIVE_ODDS,
+          );
 
     return {
       ...option,
-      current_odds: roundOdds(limitedOdds),
+      current_odds: roundOdds(targetOdds),
     };
   });
 }

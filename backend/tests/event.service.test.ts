@@ -56,6 +56,55 @@ function buildAdminEvent() {
   };
 }
 
+function buildEventRecord(overrides: Partial<ReturnType<typeof buildAdminEvent>> = {}) {
+  const base = buildAdminEvent();
+
+  return {
+    ...base,
+    bets: [],
+    excludedUsers: [],
+    ...overrides,
+  };
+}
+
+function buildCreatedBet(overrides: Record<string, unknown> = {}) {
+  const now = new Date("2026-04-03T10:05:00.000Z");
+
+  return {
+    id: "bet-1",
+    userId: "user-1",
+    eventId: "event-1",
+    chosenOption: "Oui",
+    amount: 10,
+    oddAtBet: 1.9,
+    status: "pending",
+    type: "SIMPLE",
+    potentialWin: 19,
+    payout: null,
+    createdAt: now,
+    resolvedAt: null,
+    legs: [
+      {
+        id: "leg-1",
+        eventId: "event-1",
+        chosenOption: "Oui",
+        oddsAtBet: 1.9,
+        status: "pending",
+        event: {
+          id: "event-1",
+          title: "Le SIG passera-t-il la soutenance ?",
+          category: EventCategory.epita,
+          status: EventStatus.OPEN,
+          resolvedOption: null,
+          closingAt: new Date("2026-04-10T10:00:00.000Z"),
+          imageUrl: null,
+        },
+      },
+    ],
+    ...overrides,
+  };
+}
+
 test("createEvent approves a linked pending proposal in the same transaction", async () => {
   const prismaAny = prisma as any;
   const originalTransaction = prismaAny.$transaction;
@@ -223,5 +272,247 @@ test("placeSimpleBets closes expired events before rejecting the basket", async 
   } finally {
     prismaAny.$transaction = originalTransaction;
     prismaAny.event.updateMany = originalUpdateMany;
+  }
+});
+
+test("placeSimpleBets switches to pure pari-mutuel odds and records history snapshots", async () => {
+  const prismaAny = prisma as any;
+  const originalTransaction = prismaAny.$transaction;
+  const originalUpdateMany = prismaAny.event.updateMany;
+  const originalSynchronizeUserBadges = gamificationService.synchronizeUserBadges;
+  const captured = {
+    eventUpdates: [] as Array<Record<string, any>>,
+    historyBatches: [] as Array<Array<Record<string, any>>>,
+  };
+
+  prismaAny.event.updateMany = async () => ({ count: 0 });
+  (gamificationService as any).synchronizeUserBadges = async () => undefined;
+  prismaAny.$transaction = async (callback: (tx: any) => Promise<unknown>) =>
+    callback({
+      event: {
+        findMany: async () => [
+          buildEventRecord({
+            options: [
+              {
+                label: "Oui",
+                initial_odds: 1.9,
+                current_odds: 1.9,
+                total_staked: 100,
+                is_winning: null,
+              },
+              {
+                label: "Non",
+                initial_odds: 1.9,
+                current_odds: 1.9,
+                total_staked: 0,
+                is_winning: null,
+              },
+            ],
+            poolByOption: { Oui: 100, Non: 0 },
+            totalPool: 100,
+          }),
+        ],
+        update: async ({ where, data }: { where: Record<string, unknown>; data: Record<string, unknown> }) => {
+          captured.eventUpdates.push({ where, data });
+          return null;
+        },
+      },
+      user: {
+        updateMany: async () => ({ count: 1 }),
+        findUnique: async () => ({ balance: 3470 }),
+      },
+      bet: {
+        create: async ({ data }: { data: Record<string, any> }) =>
+          buildCreatedBet({
+            eventId: data.eventId,
+            chosenOption: data.chosenOption,
+            amount: data.amount,
+            oddAtBet: data.oddAtBet,
+            type: data.type,
+            status: data.status,
+            potentialWin: data.potentialWin,
+            legs: [
+              {
+                id: "leg-1",
+                eventId: data.eventId,
+                chosenOption: data.chosenOption,
+                oddsAtBet: data.legs.create.oddsAtBet,
+                status: data.legs.create.status,
+                event: {
+                  id: data.eventId,
+                  title: "Le SIG passera-t-il la soutenance ?",
+                  category: EventCategory.epita,
+                  status: EventStatus.OPEN,
+                  resolvedOption: null,
+                  closingAt: new Date("2026-04-10T10:00:00.000Z"),
+                  imageUrl: null,
+                },
+              },
+            ],
+          }),
+      },
+      oddsHistory: {
+        createMany: async ({ data }: { data: Array<Record<string, any>> }) => {
+          captured.historyBatches.push(data);
+          return null;
+        },
+      },
+    });
+
+  try {
+    const outcome = await eventService.placeSimpleBets("user-1", {
+      bets: [
+        {
+          eventId: "event-1",
+          chosenOption: "Non",
+          amount: 1430,
+        },
+      ],
+    });
+
+    assert.equal(outcome.new_balance, 3470);
+    assert.equal(outcome.bets[0]?.odds_at_bet, 1.9);
+    assert.deepEqual(captured.eventUpdates, [
+      {
+        where: { id: "event-1" },
+        data: {
+          options: [
+            {
+              label: "Oui",
+              initial_odds: 1.9,
+              current_odds: 15.147,
+              total_staked: 100,
+              is_winning: null,
+            },
+            {
+              label: "Non",
+              initial_odds: 1.9,
+              current_odds: 1.0592,
+              total_staked: 1430,
+              is_winning: null,
+            },
+          ],
+          poolByOption: { Oui: 100, Non: 1430 },
+          totalPool: 1530,
+        },
+      },
+    ]);
+    assert.deepEqual(captured.historyBatches, [
+      [
+        {
+          eventId: "event-1",
+          option: "Oui",
+          odds: 15.147,
+          totalStaked: 100,
+        },
+        {
+          eventId: "event-1",
+          option: "Non",
+          odds: 1.0592,
+          totalStaked: 1430,
+        },
+      ],
+    ]);
+  } finally {
+    prismaAny.$transaction = originalTransaction;
+    prismaAny.event.updateMany = originalUpdateMany;
+    (gamificationService as any).synchronizeUserBadges = originalSynchronizeUserBadges;
+  }
+});
+
+test("placeSimpleBets no longer clamps the first live odds update", async () => {
+  const prismaAny = prisma as any;
+  const originalTransaction = prismaAny.$transaction;
+  const originalUpdateMany = prismaAny.event.updateMany;
+  const originalSynchronizeUserBadges = gamificationService.synchronizeUserBadges;
+  const captured: Array<Record<string, any>> = [];
+
+  prismaAny.event.updateMany = async () => ({ count: 0 });
+  (gamificationService as any).synchronizeUserBadges = async () => undefined;
+  prismaAny.$transaction = async (callback: (tx: any) => Promise<unknown>) =>
+    callback({
+      event: {
+        findMany: async () => [buildEventRecord()],
+        update: async ({ data }: { data: Record<string, unknown> }) => {
+          captured.push(data);
+          return null;
+        },
+      },
+      user: {
+        updateMany: async () => ({ count: 1 }),
+        findUnique: async () => ({ balance: 4900 }),
+      },
+      bet: {
+        create: async ({ data }: { data: Record<string, any> }) =>
+          buildCreatedBet({
+            eventId: data.eventId,
+            chosenOption: data.chosenOption,
+            amount: data.amount,
+            oddAtBet: data.oddAtBet,
+            type: data.type,
+            status: data.status,
+            potentialWin: data.potentialWin,
+            legs: [
+              {
+                id: "leg-1",
+                eventId: data.eventId,
+                chosenOption: data.chosenOption,
+                oddsAtBet: data.legs.create.oddsAtBet,
+                status: data.legs.create.status,
+                event: {
+                  id: data.eventId,
+                  title: "Le SIG passera-t-il la soutenance ?",
+                  category: EventCategory.epita,
+                  status: EventStatus.OPEN,
+                  resolvedOption: null,
+                  closingAt: new Date("2026-04-10T10:00:00.000Z"),
+                  imageUrl: null,
+                },
+              },
+            ],
+          }),
+      },
+      oddsHistory: {
+        createMany: async () => null,
+      },
+    });
+
+  try {
+    await eventService.placeSimpleBets("user-1", {
+      bets: [
+        {
+          eventId: "event-1",
+          chosenOption: "Oui",
+          amount: 100,
+        },
+      ],
+    });
+
+    assert.deepEqual(captured, [
+      {
+        options: [
+          {
+            label: "Oui",
+            initial_odds: 1.9,
+            current_odds: 0.99,
+            total_staked: 100,
+            is_winning: null,
+          },
+          {
+            label: "Non",
+            initial_odds: 1.9,
+            current_odds: 99,
+            total_staked: 0,
+            is_winning: null,
+          },
+        ],
+        poolByOption: { Oui: 100, Non: 0 },
+        totalPool: 100,
+      },
+    ]);
+  } finally {
+    prismaAny.$transaction = originalTransaction;
+    prismaAny.event.updateMany = originalUpdateMany;
+    (gamificationService as any).synchronizeUserBadges = originalSynchronizeUserBadges;
   }
 });
