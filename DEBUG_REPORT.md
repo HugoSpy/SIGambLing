@@ -57,3 +57,56 @@ This reflects the current repository reality. A follow-up should add committed P
 
 - Any new environment restored from git alone will not inherit the jackpot schema unless `prisma db push` is run explicitly.
 - Without committed migrations, it remains hard to audit exactly when jackpot tables were introduced.
+
+## Gamification And Jackpot Recovery
+
+Issue: [SIG-16](/SIG/issues/SIG-16)
+
+### Summary
+
+Profile and casino failures were not limited to a single `/rewards/*` read path. Jackpot persistence was wired into three critical backend flows:
+
+- `userService.getCurrentUser()` calls `gamificationService.synchronizeUserBadges()`, which reads jackpot entry stats.
+- `gamificationService.getState()` reads both jackpot stats and jackpot round state for `/rewards/me` and `/rewards/jackpot`.
+- `rouletteService` and `blackjackService` record jackpot contributions inside casino transactions.
+
+If jackpot storage is absent or partially drifted, those paths can raise Prisma `P2021`/`P2022` errors and surface as 500s on profile refresh, reward reads, and casino play.
+
+### Root Cause
+
+The gamification layer assumed jackpot tables were always available. That assumption was too strong for the current repo reality, where schema rollout is not preserved in committed Prisma migrations.
+
+- `backend/src/services/gamification.service.ts` queried `prisma.jackpotEntry` directly while synchronizing badges and building stats.
+- `backend/src/services/jackpot.service.ts` created/read jackpot rows without a degraded fallback path.
+- Casino transaction flows depended on jackpot writes succeeding, so a missing jackpot table could abort otherwise valid roulette or blackjack requests.
+
+### Fix
+
+Implemented backend-only recovery in the active TypeScript services:
+
+- added jackpot-storage degradation detection for Prisma missing-table / missing-column errors (`P2021`, `P2022`)
+- zeroed jackpot metrics in gamification badge/stat aggregation when jackpot storage is unavailable
+- returned a neutral fallback jackpot payload instead of throwing on `/rewards/*` jackpot reads
+- made casino jackpot contribution writes non-fatal when jackpot persistence is unavailable, so core casino gameplay can still complete
+
+No legacy JavaScript prototype paths were touched.
+
+### Verification
+
+From `backend/`:
+
+```bash
+npm run test:unit
+npm run test:integration
+npm run build
+```
+
+Added regression coverage for:
+
+- gamification state fallback when jackpot tables are unavailable
+- casino jackpot contribution degradation when jackpot persistence is unavailable
+
+### Remaining Risk
+
+- Degraded mode keeps profile, rewards, and casino endpoints alive, but jackpot stats remain zeroed until storage is restored.
+- This is an operational safety net, not a substitute for committed Prisma migrations and reproducible schema rollout.
