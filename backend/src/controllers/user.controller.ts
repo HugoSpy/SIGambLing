@@ -83,7 +83,7 @@ export const searchUsersController: RequestHandler = async (request, response, n
 export const adjustUserBalanceController: RequestHandler = async (request, response, next) => {
   try {
     const adminId = getAuthenticatedUserId(request);
-    const userId = request.params.id;
+    const userId = String(request.params.id);
     const user = await userService.adjustUserBalance(adminId, userId, request.body);
     response.json({ user });
   } catch (error) {
@@ -94,7 +94,7 @@ export const adjustUserBalanceController: RequestHandler = async (request, respo
 export const unlockUserBadgeController: RequestHandler = async (request, response, next) => {
   try {
     const adminId = getAuthenticatedUserId(request);
-    const userId = request.params.id;
+    const userId = String(request.params.id);
     const outcome = await userService.unlockUserBadge(adminId, userId, request.body);
     response.json(outcome);
   } catch (error) {

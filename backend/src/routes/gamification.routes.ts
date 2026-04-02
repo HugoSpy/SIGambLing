@@ -3,6 +3,7 @@ import { Router } from "express";
 import {
   claimDailyRewardController,
   getMyGamificationStateController,
+  getMyJackpotStateController,
 } from "../controllers/gamification.controller";
 import { requireAuth } from "../middleware/require-auth";
 
@@ -20,4 +21,5 @@ const rewardLimiter = rateLimit({
 
 gamificationRouter.use(requireAuth);
 gamificationRouter.get("/me", getMyGamificationStateController);
+gamificationRouter.get("/jackpot", getMyJackpotStateController);
 gamificationRouter.post("/daily", rewardLimiter, claimDailyRewardController);

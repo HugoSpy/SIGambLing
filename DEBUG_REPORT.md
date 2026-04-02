@@ -1,112 +1,46 @@
-# Debug Report
+# DEBUG_REPORT
 
-## Database Recovery
+## Scope
 
-Issue: [SIG-14](/SIG/issues/SIG-14)
+Issue: [SIG-15](/SIG/issues/SIG-15)
 
-### Summary
+Backend stabilization focus:
 
-The live PostgreSQL schema is already aligned with `backend/prisma/schema.prisma`, including the jackpot-backed `JackpotRound` and `JackpotEntry` tables. The backend also regenerates Prisma client successfully and boots against the real `backend/.env` without Prisma table-missing errors.
+- profile and gamification state routes
+- jackpot-backed casino contribution flows
+- admin event settlement and proposal coverage
+- regression coverage for event and betting paths
 
-### Root Cause
+## Findings
 
-The repo has no committed `backend/prisma/migrations/` history even though the runtime schema already contains the latest jackpot models. That means database rollout happened outside versioned Prisma migrations, leaving the codebase without an auditable schema-apply path.
+- The configured database in this workspace has live `JackpotRound` and `JackpotEntry` tables, so the current local environment is not in the original jackpot-schema-outage state.
+- The main remaining risk was schema drift: profile, rewards, and casino flows were still coupled to jackpot persistence and could surface 500s if jackpot tables disappeared or drifted.
+- Existing controller coverage was already green for admin event resolution, roulette spin, rewards, and admin balance paths, but runtime hardening needed to ensure those routes degrade cleanly when jackpot storage is unavailable.
 
-This is a deployment/process parity problem, not an active live-schema mismatch:
+## Fixes Landed
 
-- `npx prisma db pull --print` shows `JackpotRound` and `JackpotEntry` in the live database.
-- `npm run prisma:generate` completes successfully against the current schema.
-- `npm run build` completes successfully.
-- Boot verification against the real workspace env returns `GET /health -> {"status":"ok","service":"SIGambling API",...}`.
+- Added degraded-mode handling in jackpot persistence reads and writes so roulette/blackjack contributions and jackpot state reads no longer fail hard on missing jackpot tables.
+- Zeroed jackpot-derived gamification stats when jackpot storage is unavailable so `/users/me`, `/rewards/me`, and badge synchronization stop bubbling jackpot storage failures into 500s.
+- Extended regression coverage around:
+  - proposal-to-event approval flow
+  - expired event basket rejection
+  - jackpot storage fallback in gamification state
+  - jackpot contribution fallback for casino flows
 
-### Commands Run
+## Verification
 
-From `backend/`:
+- `cd backend && npm test`
+- `cd backend && npm run build`
+- Live DB probe:
+  - `jackpotRound.count() = 1`
+  - `user.count() = 4`
+- Live route probe:
+  - `GET /rewards/me` returned `200` with authenticated real data
+- Clean backend start:
+  - `cd backend && timeout 15s npm run dev`
+  - server booted successfully before timeout
 
-```bash
-npm run qa:validate-env
-npm run prisma:generate
-npx prisma db pull --print
-npm run build
-npm run dev
-curl http://127.0.0.1:3001/health
-```
+## Notes
 
-### Findings
-
-- Environment validation passed with non-blocking warnings only:
-  - `DATABASE_URL` and `DIRECT_URL` differ
-  - `SUPABASE_SERVICE_ROLE_KEY` is not set
-- No missing jackpot tables were observed in the current live database.
-- No Prisma client generation failure was observed.
-- No backend startup failure was observed during verification.
-
-### Reproducible Schema Rollout Path
-
-Because migration files are absent, the current reproducible schema apply command for this repo is:
-
-```bash
-cd backend
-npm run prisma:push
-npm run prisma:generate
-```
-
-This reflects the current repository reality. A follow-up should add committed Prisma migrations so schema history is preserved and future restores do not depend on implicit manual state.
-
-### Remaining Risk
-
-- Any new environment restored from git alone will not inherit the jackpot schema unless `prisma db push` is run explicitly.
-- Without committed migrations, it remains hard to audit exactly when jackpot tables were introduced.
-
-## Gamification And Jackpot Recovery
-
-Issue: [SIG-16](/SIG/issues/SIG-16)
-
-### Summary
-
-Profile and casino failures were not limited to a single `/rewards/*` read path. Jackpot persistence was wired into three critical backend flows:
-
-- `userService.getCurrentUser()` calls `gamificationService.synchronizeUserBadges()`, which reads jackpot entry stats.
-- `gamificationService.getState()` reads both jackpot stats and jackpot round state for `/rewards/me` and `/rewards/jackpot`.
-- `rouletteService` and `blackjackService` record jackpot contributions inside casino transactions.
-
-If jackpot storage is absent or partially drifted, those paths can raise Prisma `P2021`/`P2022` errors and surface as 500s on profile refresh, reward reads, and casino play.
-
-### Root Cause
-
-The gamification layer assumed jackpot tables were always available. That assumption was too strong for the current repo reality, where schema rollout is not preserved in committed Prisma migrations.
-
-- `backend/src/services/gamification.service.ts` queried `prisma.jackpotEntry` directly while synchronizing badges and building stats.
-- `backend/src/services/jackpot.service.ts` created/read jackpot rows without a degraded fallback path.
-- Casino transaction flows depended on jackpot writes succeeding, so a missing jackpot table could abort otherwise valid roulette or blackjack requests.
-
-### Fix
-
-Implemented backend-only recovery in the active TypeScript services:
-
-- added jackpot-storage degradation detection for Prisma missing-table / missing-column errors (`P2021`, `P2022`)
-- zeroed jackpot metrics in gamification badge/stat aggregation when jackpot storage is unavailable
-- returned a neutral fallback jackpot payload instead of throwing on `/rewards/*` jackpot reads
-- made casino jackpot contribution writes non-fatal when jackpot persistence is unavailable, so core casino gameplay can still complete
-
-No legacy JavaScript prototype paths were touched.
-
-### Verification
-
-From `backend/`:
-
-```bash
-npm run test:unit
-npm run test:integration
-npm run build
-```
-
-Added regression coverage for:
-
-- gamification state fallback when jackpot tables are unavailable
-- casino jackpot contribution degradation when jackpot persistence is unavailable
-
-### Remaining Risk
-
-- Degraded mode keeps profile, rewards, and casino endpoints alive, but jackpot stats remain zeroed until storage is restored.
-- This is an operational safety net, not a substitute for committed Prisma migrations and reproducible schema rollout.
+- `supertest` integration coverage is available in-repo and runnable; it is no longer a blocker for realistic backend verification.
+- The git worktree contains unrelated frontend churn and legacy cleanup outside this issue. Only the backend stabilization slice for this issue should be staged and preserved.

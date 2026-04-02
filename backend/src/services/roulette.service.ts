@@ -2,6 +2,7 @@ import type { CasinoGameResult, CasinoGameType } from "@prisma/client";
 import { AppError } from "../utils/app-error";
 import { spinRoulette } from "../utils/roulette-rng";
 import { gamificationService } from "./gamification.service";
+import { jackpotService } from "./jackpot.service";
 import { prisma } from "./prisma.service";
 import type { RouletteSpinInput } from "../schemas/casino.schemas";
 
@@ -195,6 +196,14 @@ class RouletteService {
           },
         },
       });
+
+      await jackpotService.recordCasinoContribution(
+        userId,
+        totalBet,
+        gameType,
+        game.id,
+        transaction,
+      );
 
       const updatedUser = await transaction.user.findUnique({
         where: { id: userId },

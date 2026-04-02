@@ -12,8 +12,8 @@ const { authService } = require("./services/auth.service");
 const { eventService } = require("./services/event.service");
 const { rouletteService } = require("./services/roulette.service");
 const { blackjackService } = require("./services/blackjack.service");
-const { userService } = require("./services/user.service");
 const { gamificationService } = require("./services/gamification.service");
+const { userService } = require("./services/user.service");
 
 const app = createApp();
 const request = supertest(app);
@@ -317,6 +317,287 @@ test("GET /users/me exposes profile and streak data for gamification surfaces", 
   assert.equal(response.status, 200);
   assert.equal(response.body.streak_days, 6);
   assert.equal(response.body.balance, 1320);
+});
+
+test("GET /rewards/me returns the authenticated gamification state", async () => {
+  const token = issueAccessToken();
+
+  stubMethod(gamificationService, "getState", async (userId: string) => {
+    assert.equal(userId, "user-1");
+
+    return {
+      daily_reward: {
+        day_boundary: "UTC",
+        claimed_today: false,
+        current_streak: 6,
+        streak_status: "claim_available",
+        last_claimed_at: "2026-04-02T12:00:00.000Z",
+        next_claim_at: "2026-04-03T00:00:00.000Z",
+        streak_deadline_at: "2026-04-04T00:00:00.000Z",
+        base_amount: 100,
+        streak_bonus: 25,
+        next_amount: 125,
+        next_streak_bonus: 25,
+        current_tier: { key: "regular", label: "Argent", minDays: 3, bonus: 25, accent: "sky" },
+        next_tier: { key: "committed", label: "Or", minDays: 7, bonus: 75, accent: "amber" },
+        tier_progress: { current: 3, target: 4 },
+      },
+      badges: [
+        {
+          key: "streak_7",
+          name: "Feu continu",
+          description: "Serie de 7 jours sans casser le rythme.",
+          tone: "orange",
+          rarity: "rare",
+          icon: "zap",
+          unlocked: false,
+          unlocked_at: null,
+          progress: { current: 6, target: 7, label: "jours" },
+        },
+      ],
+      progress: [],
+      jackpot: {
+        current_round: {
+          id: "round-1",
+          label: "Jackpot 03 avr.",
+          current_pot: 980,
+          seed_amount: 500,
+          contribution_rate_bps: 800,
+          ticket_unit_amount: 25,
+          starts_at: "2026-04-01T00:00:00.000Z",
+          ends_at: "2026-04-08T00:00:00.000Z",
+          total_tickets: 91,
+          user_tickets: 8,
+          user_entries: 3,
+          user_contribution: 64,
+          user_chance_bps: 879,
+        },
+        last_result: null,
+      },
+      stats: {
+        event_bets: 3,
+        event_wins: 2,
+        casino_games: 4,
+        casino_wins: 1,
+        created_markets: 0,
+        jackpot_entries: 3,
+        jackpot_tickets: 8,
+        balance: 1320,
+      },
+    };
+  });
+
+  const response = await request
+    .get("/rewards/me")
+    .set("Authorization", `Bearer ${token}`);
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.jackpot.current_round.user_tickets, 8);
+  assert.equal(response.body.badges[0].unlocked, false);
+});
+
+test("GET /rewards/jackpot returns the authenticated jackpot state", async () => {
+  const token = issueAccessToken();
+
+  stubMethod(gamificationService, "getState", async () => ({
+    jackpot: {
+      current_round: {
+        id: "round-1",
+        label: "Jackpot 03 avr.",
+        current_pot: 980,
+        seed_amount: 500,
+        contribution_rate_bps: 800,
+        ticket_unit_amount: 25,
+        starts_at: "2026-04-01T00:00:00.000Z",
+        ends_at: "2026-04-08T00:00:00.000Z",
+        total_tickets: 91,
+        user_tickets: 8,
+        user_entries: 3,
+        user_contribution: 64,
+        user_chance_bps: 879,
+      },
+      last_result: {
+        round_id: "round-0",
+        label: "Jackpot 27 mars",
+        payout_amount: 760,
+        resolved_at: "2026-04-01T00:00:00.000Z",
+        winner: {
+          id: "user-9",
+          pseudo: "SigmaQueen",
+        },
+      },
+    },
+  }));
+
+  const response = await request
+    .get("/rewards/jackpot")
+    .set("Authorization", `Bearer ${token}`);
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.last_result.winner.pseudo, "SigmaQueen");
+});
+
+test("POST /rewards/daily claims the authenticated daily reward", async () => {
+  const token = issueAccessToken();
+
+  stubMethod(gamificationService, "claimDailyReward", async (userId: string) => {
+    assert.equal(userId, "user-1");
+
+    return {
+      claimed: true,
+      amount: 175,
+      base_amount: 100,
+      streak_bonus: 75,
+      user: {
+        id: "user-1",
+        pseudo: "SigmaStudent",
+        email: "student@epita.fr",
+        balance: 1495,
+        role: "user",
+        avatar_url: null,
+        streak_days: 7,
+        last_reward_at: "2026-04-03T08:00:00.000Z",
+        created_at: "2026-04-01T12:00:00.000Z",
+      },
+      gamification: {
+        daily_reward: {
+          claimed_today: true,
+        },
+      },
+    };
+  });
+
+  const response = await request
+    .post("/rewards/daily")
+    .set("Authorization", `Bearer ${token}`)
+    .send({});
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.amount, 175);
+  assert.equal(response.body.user.streak_days, 7);
+});
+
+test("GET /users returns admin search results with balance and badges", async () => {
+  const token = issueAccessToken({ id: "admin-1", role: "admin" });
+
+  stubMethod(userService, "searchAdminUsers", async (search: string) => {
+    assert.equal(search, "lea");
+
+    return [
+      {
+        id: "user-7",
+        pseudo: "lea",
+        email: "lea@epita.fr",
+        avatar_url: null,
+        balance: 1450,
+        role: "user",
+        streak_days: 4,
+        last_reward_at: "2026-04-03T08:00:00.000Z",
+        created_at: "2026-03-12T08:00:00.000Z",
+        badges: ["sharp_bettor"],
+      },
+    ];
+  });
+
+  const response = await request
+    .get("/users")
+    .query({ search: "lea" })
+    .set("Authorization", `Bearer ${token}`);
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.users[0].balance, 1450);
+  assert.deepEqual(response.body.users[0].badges, ["sharp_bettor"]);
+});
+
+test("PATCH /users/:id/balance applies an admin balance adjustment", async () => {
+  const token = issueAccessToken({ id: "admin-1", role: "admin" });
+
+  stubMethod(
+    userService,
+    "adjustUserBalance",
+    async (adminId: string, userId: string, payload: { amount: number; reason: string }) => {
+      assert.equal(adminId, "admin-1");
+      assert.equal(userId, "user-7");
+      assert.equal(payload.amount, 250);
+      assert.equal(payload.reason, "Correction jackpot");
+
+      return {
+        id: userId,
+        pseudo: "lea",
+        email: "lea@epita.fr",
+        avatar_url: null,
+        balance: 1700,
+        role: "user",
+        streak_days: 4,
+        last_reward_at: "2026-04-03T08:00:00.000Z",
+        created_at: "2026-03-12T08:00:00.000Z",
+        badges: ["sharp_bettor"],
+      };
+    },
+  );
+
+  const response = await request
+    .patch("/users/user-7/balance")
+    .set("Authorization", `Bearer ${token}`)
+    .send({ amount: 250, reason: "Correction jackpot" });
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.user.balance, 1700);
+});
+
+test("POST /users/:id/badges unlocks a manual badge for admins", async () => {
+  const token = issueAccessToken({ id: "admin-1", role: "admin" });
+
+  stubMethod(userService, "unlockUserBadge", async (adminId: string, userId: string, payload: any) => {
+    assert.equal(adminId, "admin-1");
+    assert.equal(userId, "user-7");
+    assert.equal(payload.badge_key, "market_maker");
+
+    return {
+      user: {
+        id: userId,
+        pseudo: "lea",
+        email: "lea@epita.fr",
+        avatar_url: null,
+        balance: 1700,
+        role: "user",
+        streak_days: 4,
+        last_reward_at: "2026-04-03T08:00:00.000Z",
+        created_at: "2026-03-12T08:00:00.000Z",
+        badges: ["sharp_bettor", "market_maker"],
+      },
+      already_unlocked: false,
+    };
+  });
+
+  const response = await request
+    .post("/users/user-7/badges")
+    .set("Authorization", `Bearer ${token}`)
+    .send({ badge_key: "market_maker" });
+
+  assert.equal(response.status, 200);
+  assert.deepEqual(response.body.user.badges, ["sharp_bettor", "market_maker"]);
+  assert.equal(response.body.already_unlocked, false);
+});
+
+test("GET /users/badges/catalog exposes the manual badge catalog to admins", async () => {
+  const token = issueAccessToken({ id: "admin-1", role: "admin" });
+
+  stubMethod(userService, "listAvailableBadges", () => [
+    {
+      key: "sharp_bettor",
+      name: "Paris en serie",
+      description: "Decrochez 5 paris gagnants.",
+      tone: "emerald",
+    },
+  ]);
+
+  const response = await request
+    .get("/users/badges/catalog")
+    .set("Authorization", `Bearer ${token}`);
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.badges[0].key, "sharp_bettor");
 });
 
 test("PATCH /users/me updates the authenticated profile", async () => {

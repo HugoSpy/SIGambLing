@@ -2,6 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { EventCategory, EventStatus, ProposalStatus } from "@prisma/client";
 import { eventService } from "../src/services/event.service";
+import { gamificationService } from "../src/services/gamification.service";
 import { prisma } from "../src/lib/prisma";
 
 function buildStoredOptions() {
@@ -58,10 +59,13 @@ function buildAdminEvent() {
 test("createEvent approves a linked pending proposal in the same transaction", async () => {
   const prismaAny = prisma as any;
   const originalTransaction = prismaAny.$transaction;
+  const originalSynchronizeUserBadges = gamificationService.synchronizeUserBadges;
   const captured = {
     proposalUpdate: null as null | Record<string, unknown>,
     logs: [] as Array<Record<string, unknown>>,
   };
+
+  (gamificationService as any).synchronizeUserBadges = async () => undefined;
 
   prismaAny.$transaction = async (callback: (tx: any) => Promise<unknown>) =>
     callback({
@@ -114,6 +118,7 @@ test("createEvent approves a linked pending proposal in the same transaction", a
     assert.deepEqual(captured.logs[1]?.details, { event_id: "event-1" });
   } finally {
     prismaAny.$transaction = originalTransaction;
+    (gamificationService as any).synchronizeUserBadges = originalSynchronizeUserBadges;
   }
 });
 

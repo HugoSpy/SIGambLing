@@ -26,6 +26,16 @@ export const getMyGamificationStateController: RequestHandler = async (
   }
 };
 
+export const getMyJackpotStateController: RequestHandler = async (request, response, next) => {
+  try {
+    const userId = getAuthenticatedUserId(request);
+    const gamification = await gamificationService.getState(userId);
+    response.json(gamification.jackpot);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const claimDailyRewardController: RequestHandler = async (request, response, next) => {
   try {
     const userId = getAuthenticatedUserId(request);

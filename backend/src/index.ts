@@ -4,5 +4,5 @@ import { createApp } from "./app";
 const app = createApp();
 
 app.listen(env.PORT, () => {
-  console.log(`Server running on port ${env.PORT}`);
+  process.stdout.write(`Server running on port ${env.PORT}\n`);
 });

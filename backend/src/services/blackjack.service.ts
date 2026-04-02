@@ -1,6 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { AppError } from "../utils/app-error";
 import { gamificationService } from "./gamification.service";
+import { jackpotService } from "./jackpot.service";
 import { prisma } from "./prisma.service";
 
 type Suit = "hearts" | "diamonds" | "clubs" | "spades";
@@ -185,17 +186,24 @@ class BlackjackService {
     if (!user || user.isBanned) throw new AppError("Utilisateur introuvable ou banni.", 404);
     if (user.balance < bet) throw new AppError("Balance insuffisante.", 400);
 
-    const updated = await prisma.user.updateMany({
-      where: { id: userId, isBanned: false, balance: { gte: bet } },
-      data: { balance: { decrement: bet } },
+    const gameId = generateGameId();
+    await prisma.$transaction(async (transaction) => {
+      const debited = await transaction.user.updateMany({
+        where: { id: userId, isBanned: false, balance: { gte: bet } },
+        data: { balance: { decrement: bet } },
+      });
+
+      if (debited.count !== 1) {
+        throw new AppError("Balance insuffisante.", 400);
+      }
+
+      await jackpotService.recordCasinoContribution(userId, bet, "blackjack", gameId, transaction);
     });
-    if (updated.count !== 1) throw new AppError("Balance insuffisante.", 400);
 
     const newBalance = user.balance - bet;
     const deck = buildDeck(6);
     const playerHand: BlackjackCard[] = [deck.pop()!, deck.pop()!];
     const dealerHand: BlackjackCard[] = [deck.pop()!, deck.pop()!];
-    const gameId = generateGameId();
 
     activeSessions.set(gameId, { userId, bet, deck, playerHand, dealerHand, doubled: false });
     userGameMap.set(userId, gameId);
@@ -349,9 +357,18 @@ class BlackjackService {
       throw new AppError("Balance insuffisante pour doubler.", 400);
     }
 
-    const updated = await prisma.user.updateMany({
-      where: { id: userId, balance: { gte: game.bet } },
-      data: { balance: { decrement: game.bet } },
+    const updated = await prisma.$transaction(async (transaction) => {
+      const debited = await transaction.user.updateMany({
+        where: { id: userId, balance: { gte: game.bet } },
+        data: { balance: { decrement: game.bet } },
+      });
+
+      if (debited.count !== 1) {
+        throw new AppError("Balance insuffisante pour doubler.", 400);
+      }
+
+      await jackpotService.recordCasinoContribution(userId, game.bet, "blackjack", gameId, transaction);
+      return debited;
     });
     if (updated.count !== 1) throw new AppError("Balance insuffisante pour doubler.", 400);
 
