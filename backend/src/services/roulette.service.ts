@@ -1,6 +1,7 @@
 import type { CasinoGameResult, CasinoGameType } from "@prisma/client";
 import { AppError } from "../utils/app-error";
 import { spinRoulette } from "../utils/roulette-rng";
+import { gamificationService } from "./gamification.service";
 import { prisma } from "./prisma.service";
 import type { RouletteSpinInput } from "../schemas/casino.schemas";
 
@@ -199,6 +200,8 @@ class RouletteService {
         where: { id: userId },
         select: { balance: true },
       });
+
+      await gamificationService.synchronizeUserBadges(userId, transaction);
 
       if (!updatedUser) {
         throw new AppError("Utilisateur introuvable après transaction.", 500);

@@ -1,3 +1,4 @@
+import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { Coins, Sparkles } from "lucide-react";
@@ -29,6 +30,7 @@ function toErrorMessage(error: unknown) {
 }
 
 export function RouletteGame() {
+  const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
   const updateBalance = useAuthStore((state) => state.updateBalance);
 
@@ -143,6 +145,7 @@ export function RouletteGame() {
       };
 
       updateBalance(pendingResponse.new_balance);
+      void queryClient.invalidateQueries({ queryKey: ["gamification"] });
       setHistory((currentHistory) => [authoritativeResult, ...currentHistory].slice(0, 40));
 
       if (pendingResponse.payout > 0) {
@@ -167,7 +170,7 @@ export function RouletteGame() {
         setPhase("idle");
       }, 1800);
     },
-    [bets, pendingResponse, spinRequest, updateBalance],
+    [bets, pendingResponse, queryClient, spinRequest, updateBalance],
   );
 
   const handleToggleSound = useCallback(() => {

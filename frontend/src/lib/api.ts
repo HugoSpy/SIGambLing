@@ -1,15 +1,20 @@
 import axios, { AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "../store/auth-store";
 import type {
+  AdminBadgeCatalogItem,
   AdminEventView,
+  AdminUserLookup,
+  CreateProposalPayload,
   CreateEventPayload,
-  EventBetHistoryItem,
   EventBetView,
-  EventSearchUser,
+  EventOddsHistoryView,
+  EventProposalView,
   EventStatus,
   EventView,
+  ProposalStatus,
   UpdateEventPayload,
 } from "../types/event";
+import type { ClaimDailyRewardResponse, GamificationState } from "../types/gamification";
 import type { AuthTokens, AuthUser, MicrosoftRedirectResponse } from "../types/auth";
 
 const baseURL = import.meta.env.VITE_API_URL;
@@ -67,6 +72,16 @@ export async function fetchCurrentUser() {
   return response.data;
 }
 
+export async function fetchGamificationState() {
+  const response = await api.get<GamificationState>("/rewards/me");
+  return response.data;
+}
+
+export async function claimDailyReward() {
+  const response = await api.post<ClaimDailyRewardResponse>("/rewards/daily");
+  return response.data;
+}
+
 export async function updateCurrentUserProfile(payload: { pseudo: string }) {
   const response = await api.patch<AuthUser>("/users/me", payload);
   return response.data;
@@ -92,6 +107,11 @@ export async function fetchMyEventBet(eventId: string) {
   return response.data.bet;
 }
 
+export async function fetchEventOddsHistory(eventId: string) {
+  const response = await api.get<EventOddsHistoryView>(`/events/${eventId}/odds-history`);
+  return response.data;
+}
+
 export async function placeEventBet(
   eventId: string,
   payload: { chosen_option: string; amount: number },
@@ -103,16 +123,58 @@ export async function placeEventBet(
   return response.data;
 }
 
+export async function placeSimpleBets(
+  payload: { bets: Array<{ eventId: string; chosenOption: string; amount: number }> },
+) {
+  const response = await api.post<{ bets: EventBetView[]; new_balance: number }>(
+    "/events/bets",
+    payload,
+  );
+  return response.data;
+}
+
+export async function placeParlayBet(payload: {
+  legs: Array<{ eventId: string; chosenOption: string }>;
+  stake: number;
+}) {
+  const response = await api.post<{ bet: EventBetView; new_balance: number }>(
+    "/events/parlay",
+    payload,
+  );
+  return response.data;
+}
+
 export async function fetchMyEventBets() {
-  const response = await api.get<{ bets: EventBetHistoryItem[] }>("/users/me/bets");
+  const response = await api.get<{ bets: EventBetView[] }>("/users/me/bets");
   return response.data.bets;
 }
 
 export async function searchUsers(query: string) {
-  const response = await api.get<{ users: EventSearchUser[] }>("/users", {
+  const response = await api.get<{ users: AdminUserLookup[] }>("/users", {
     params: { search: query },
   });
   return response.data.users;
+}
+
+export async function fetchAdminBadgeCatalog() {
+  const response = await api.get<{ badges: AdminBadgeCatalogItem[] }>("/users/badges/catalog");
+  return response.data.badges;
+}
+
+export async function adjustAdminUserBalance(
+  userId: string,
+  payload: { amount: number; reason: string },
+) {
+  const response = await api.patch<{ user: AdminUserLookup }>(`/users/${userId}/balance`, payload);
+  return response.data.user;
+}
+
+export async function unlockAdminUserBadge(userId: string, badgeKey: string) {
+  const response = await api.post<{ user: AdminUserLookup; already_unlocked: boolean }>(
+    `/users/${userId}/badges`,
+    { badge_key: badgeKey },
+  );
+  return response.data;
 }
 
 export async function fetchAdminEvents(status?: EventStatus) {
@@ -146,6 +208,38 @@ export async function resolveAdminEvent(eventId: string, resolvedOption: string)
 
 export async function cancelAdminEvent(eventId: string) {
   const response = await api.post<AdminEventView>(`/admin/events/${eventId}/cancel`);
+  return response.data;
+}
+
+export async function createProposal(payload: CreateProposalPayload) {
+  const response = await api.post<EventProposalView>("/events/proposals", payload);
+  return response.data;
+}
+
+export async function fetchMyProposals() {
+  const response = await api.get<{ proposals: EventProposalView[] }>("/events/proposals/me");
+  return response.data.proposals;
+}
+
+export async function fetchAdminProposals(status?: ProposalStatus) {
+  const response = await api.get<{ proposals: EventProposalView[] }>("/admin/events/proposals", {
+    params: status ? { status } : undefined,
+  });
+  return response.data.proposals;
+}
+
+export async function approveAdminProposal(proposalId: string) {
+  const response = await api.post<EventProposalView>(
+    `/admin/events/proposals/${proposalId}/approve`,
+  );
+  return response.data;
+}
+
+export async function rejectAdminProposal(proposalId: string, reason: string) {
+  const response = await api.post<EventProposalView>(
+    `/admin/events/proposals/${proposalId}/reject`,
+    { reason },
+  );
   return response.data;
 }
 

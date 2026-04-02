@@ -1,15 +1,34 @@
-import { ArrowRight, Coins, Flame, UserRound } from "lucide-react";
+import { useMemo } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { ArrowRight, Award, Coins, Flame, Gift, ShieldCheck, TrendingUp } from "lucide-react";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { DashboardShell } from "../components/layout/DashboardShell";
 import { LoadingScreen } from "../components/layout/LoadingScreen";
 import { Card } from "../components/ui/Card";
 import { useAuthenticatedUser } from "../hooks/useAuthenticatedUser";
-import { logoutRequest } from "../lib/api";
+import { useGamificationState } from "../hooks/useGamificationState";
+import { fetchEvents, fetchMyEventBets, logoutRequest } from "../lib/api";
+import { formatEventCategory, formatEventDate } from "../lib/event-utils";
 import { formatTokens } from "../lib/utils";
 
 export function DashboardPage() {
   const { data: user } = useAuthenticatedUser();
+  const { data: events } = useQuery({
+    queryKey: ["events"],
+    queryFn: fetchEvents,
+  });
+  const { data: gamification } = useGamificationState();
+  const { data: myBets } = useQuery({
+    queryKey: ["my-event-bets"],
+    queryFn: fetchMyEventBets,
+  });
+
+  const activeEvents = useMemo(
+    () => (events ?? []).filter((event) => event.status === "OPEN").slice(0, 5),
+    [events],
+  );
+  const openPositions = myBets?.filter((bet) => bet.status === "PENDING") ?? [];
 
   if (!user) {
     return <LoadingScreen label="Chargement de votre espace..." />;
@@ -23,108 +42,188 @@ export function DashboardPage() {
   return (
     <DashboardShell onLogout={handleLogout} user={user}>
       <div className="space-y-6">
-        <Card accent="cyan" className="min-w-[300px]">
-          <p className="text-xs uppercase tracking-[0.3em] text-brand-cyan">Tableau de bord</p>
-          <h1 className="mt-3 font-display text-4xl text-brand-text">Bienvenue {user.pseudo}</h1>
-          <p className="mt-4 text-base leading-8 text-brand-muted">
-            Votre solde : {formatTokens(user.balance)} tokens. Gardez un oeil sur votre serie
-            quotidienne et accedez rapidement aux marches, a la roulette et a votre profil.
+        <div>
+          <h1 className="text-2xl font-bold text-zinc-100">Bienvenue, {user.pseudo}</h1>
+          <p className="mt-1 text-sm text-zinc-400">
+            Retrouvez vos stats, les marches actifs et vos positions en cours.
           </p>
-        </Card>
+        </div>
 
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-          <Card className="min-w-[300px]">
-            <Coins className="h-5 w-5 text-brand-cyan" />
-            <p className="mt-5 text-xs uppercase tracking-[0.28em] text-brand-muted">Solde</p>
-            <p className="mt-2 font-display text-3xl text-brand-text">
-              {formatTokens(user.balance)} tokens
-            </p>
+        <div className="grid gap-4 md:grid-cols-3">
+          <Card accent="cyan">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-zinc-400">Solde</span>
+              <Coins className="h-4 w-4 text-emerald-400" />
+            </div>
+            <p className="mt-3 text-3xl font-bold text-emerald-400">{formatTokens(user.balance)}</p>
+            <p className="mt-1 text-xs text-zinc-500">Tokens disponibles pour vos paris</p>
           </Card>
 
-          <Card className="min-w-[300px]">
-            <Flame className="h-5 w-5 text-brand-orange" />
-            <p className="mt-5 text-xs uppercase tracking-[0.28em] text-brand-muted">
-              Streak quotidien
+          <Card>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-zinc-400">Serie</span>
+              <Flame className="h-4 w-4 text-amber-400" />
+            </div>
+            <p className="mt-3 text-3xl font-bold text-zinc-100">
+              {gamification?.daily_reward.current_streak ?? user.streak_days} jour
+              {(gamification?.daily_reward.current_streak ?? user.streak_days) > 1 ? "s" : ""}
             </p>
-            <p className="mt-2 font-display text-3xl text-brand-text">
-              {user.streak_days} jour{user.streak_days > 1 ? "s" : ""}
-            </p>
+            <p className="mt-1 text-xs text-zinc-500">Connexion quotidienne actuelle</p>
           </Card>
 
-          <Card className="min-w-[300px]">
-            <UserRound className="h-5 w-5 text-brand-cyan" />
-            <p className="mt-5 text-xs uppercase tracking-[0.28em] text-brand-muted">Compte</p>
-            <p className="mt-2 font-display text-2xl text-brand-text">{user.email}</p>
-            <p className="mt-3 text-sm leading-7 text-brand-muted">Pseudo actif : {user.pseudo}</p>
+          <Card>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-zinc-400">Positions ouvertes</span>
+              <TrendingUp className="h-4 w-4 text-sky-400" />
+            </div>
+            <p className="mt-3 text-3xl font-bold text-zinc-100">{openPositions.length}</p>
+            <p className="mt-1 text-xs text-zinc-500">
+              {formatTokens(openPositions.reduce((sum, bet) => sum + bet.stake, 0))} engages
+            </p>
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 gap-6 xl:grid-cols-3">
-          <Card className="min-w-[300px]">
-            <p className="text-xs uppercase tracking-[0.3em] text-brand-cyan">Prediction</p>
-            <h2 className="mt-3 font-display text-3xl text-brand-text">Marches ouverts</h2>
-            <p className="mt-4 text-sm leading-7 text-brand-muted">
-              Consultez les pools actives, prenez une position et suivez les resolutions.
-            </p>
-            <Link
-              className="mt-6 inline-flex items-center gap-2 rounded-2xl border border-brand-cyan/35 bg-brand-cyan/10 px-5 py-3 text-sm font-semibold text-brand-text transition hover:scale-[1.02] hover:border-brand-cyan/60 hover:bg-brand-cyan/15"
-              to="/events"
-            >
-              Voir les evenements
-              <ArrowRight className="h-4 w-4" />
-            </Link>
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_360px]">
+          <Card>
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Evenements actifs</p>
+                <h2 className="mt-2 text-lg font-semibold text-zinc-100">A surveiller</h2>
+              </div>
+              <Link className="text-sm font-medium text-emerald-400 transition hover:text-emerald-300" to="/events">
+                Voir tout
+              </Link>
+            </div>
+
+            <div className="mt-4 space-y-3">
+              {activeEvents.map((event) => (
+                <Link
+                  className="block rounded-lg border border-zinc-800 bg-zinc-950 p-4 transition hover:border-zinc-700 hover:bg-zinc-900"
+                  key={event.id}
+                  to={`/events/${event.id}`}
+                >
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-semibold text-zinc-100">{event.title}</p>
+                      <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-zinc-500">
+                        <span>{formatEventCategory(event.category)}</span>
+                        <span>{formatEventDate(event.closing_at)}</span>
+                        <span>{formatTokens(event.total_pool)}</span>
+                      </div>
+                    </div>
+                    <ArrowRight className="mt-0.5 h-4 w-4 text-zinc-500" />
+                  </div>
+                </Link>
+              ))}
+
+              {activeEvents.length === 0 ? (
+                <p className="text-sm leading-7 text-zinc-400">
+                  Aucun marche ouvert pour le moment.
+                </p>
+              ) : null}
+            </div>
           </Card>
 
-          <Card className="min-w-[300px]">
-            <p className="text-xs uppercase tracking-[0.3em] text-brand-orange">Jeu du moment</p>
-            <h2 className="mt-3 font-display text-3xl text-brand-text">Roulette europeenne</h2>
-            <p className="mt-4 text-sm leading-7 text-brand-muted">
-              Entrez sur la table, placez vos mises et suivez les resultats sans quitter votre
-              salon personnel.
-            </p>
-            <Link
-              className="mt-6 inline-flex items-center gap-2 rounded-2xl border border-brand-cyan/35 bg-brand-cyan/10 px-5 py-3 text-sm font-semibold text-brand-text transition hover:scale-[1.02] hover:border-brand-cyan/60 hover:bg-brand-cyan/15"
-              to="/casino"
-            >
-              Ouvrir la roulette
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Card>
+          <div className="space-y-4">
+            <Card>
+              <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Gamification</p>
+              <h2 className="mt-2 text-lg font-semibold text-zinc-100">Etat live</h2>
+              <div className="mt-4 space-y-3 text-sm text-zinc-400">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="inline-flex items-center gap-2">
+                    <Gift className="h-4 w-4 text-emerald-400" />
+                    Recompense
+                  </span>
+                  <span className="text-right text-zinc-100">
+                    {gamification?.daily_reward.claimed_today
+                      ? "Recuperee"
+                      : `${formatTokens(gamification?.daily_reward.next_amount ?? 100)} tokens`}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="inline-flex items-center gap-2">
+                    <Award className="h-4 w-4 text-amber-400" />
+                    Badges
+                  </span>
+                  <span className="text-zinc-100">{gamification?.badges.length ?? 0}</span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span>Victoires paris</span>
+                  <span className="text-zinc-100">{gamification?.stats.event_wins ?? 0}</span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span>Victoires casino</span>
+                  <span className="text-zinc-100">{gamification?.stats.casino_wins ?? 0}</span>
+                </div>
+              </div>
+              <Link
+                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-emerald-400 transition hover:text-emerald-300"
+                to="/profile"
+              >
+                Ouvrir le centre de recompenses
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Card>
 
-          <Card className="min-w-[300px]">
-            <p className="text-xs uppercase tracking-[0.3em] text-brand-cyan">Profil</p>
-            <h2 className="mt-3 font-display text-3xl text-brand-text">Personnalisez votre compte</h2>
-            <p className="mt-4 text-sm leading-7 text-brand-muted">
-              Mettez a jour votre photo, ajustez votre pseudo et gardez votre profil pret pour la
-              promo.
-            </p>
-            <Link
-              className="mt-6 inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-brand-text transition hover:scale-[1.02] hover:border-brand-cyan/45 hover:bg-white/10"
-              to="/profile"
-            >
-              Gerer mon profil
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Card>
+            <Card>
+              <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Compte</p>
+              <h2 className="mt-2 text-lg font-semibold text-zinc-100">Votre profil</h2>
+              <div className="mt-4 space-y-3 text-sm text-zinc-400">
+                <div className="flex items-center justify-between gap-3">
+                  <span>Email</span>
+                  <span className="max-w-[180px] truncate text-right text-zinc-100">{user.email}</span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span>Pseudo</span>
+                  <span className="text-zinc-100">{user.pseudo}</span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span>Role</span>
+                  <span className="text-zinc-100">{user.role}</span>
+                </div>
+              </div>
+              <Link
+                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-emerald-400 transition hover:text-emerald-300"
+                to="/profile"
+              >
+                Gerer mon profil
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Card>
+
+            <Card>
+              <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Raccourcis</p>
+              <div className="mt-4 space-y-3">
+                <Link
+                  className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 transition hover:border-zinc-700 hover:bg-zinc-900"
+                  to="/events"
+                >
+                  <span>Ouvrir les marches</span>
+                  <ArrowRight className="h-4 w-4 text-zinc-500" />
+                </Link>
+                <Link
+                  className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 transition hover:border-zinc-700 hover:bg-zinc-900"
+                  to="/casino"
+                >
+                  <span>Aller a la roulette</span>
+                  <ArrowRight className="h-4 w-4 text-zinc-500" />
+                </Link>
+                {user.role === "admin" ? (
+                  <Link
+                    className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 transition hover:border-zinc-700 hover:bg-zinc-900"
+                    to="/admin/events"
+                  >
+                    <span className="inline-flex items-center gap-2">
+                      <ShieldCheck className="h-4 w-4 text-amber-400" />
+                      Panneau admin
+                    </span>
+                    <ArrowRight className="h-4 w-4 text-zinc-500" />
+                  </Link>
+                ) : null}
+              </div>
+            </Card>
+          </div>
         </div>
-
-        {user.role === "admin" ? (
-          <Card className="min-w-[300px]">
-            <p className="text-xs uppercase tracking-[0.3em] text-brand-orange">Admin</p>
-            <h2 className="mt-3 font-display text-3xl text-brand-text">Piloter les marches</h2>
-            <p className="mt-4 text-sm leading-7 text-brand-muted">
-              Creez les nouveaux evenements, fermez les paris et resolvez les resultats depuis le
-              panneau d'administration.
-            </p>
-            <Link
-              className="mt-6 inline-flex items-center gap-2 rounded-2xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-semibold text-brand-text transition hover:scale-[1.02] hover:border-brand-cyan/45 hover:bg-white/10"
-              to="/admin/events"
-            >
-              Ouvrir le panel admin
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Card>
-        ) : null}
       </div>
     </DashboardShell>
   );

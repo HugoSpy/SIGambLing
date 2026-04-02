@@ -12,11 +12,14 @@
     "dev:backend": "npm run dev --workspace backend",
     "build": "npm run build --workspace backend && npm run build --workspace frontend",
     "start": "npm run start --workspace backend",
+    "test:integration": "npm run test:integration --workspace backend",
+    "qa:validate-env": "npm run qa:validate-env --workspace backend",
     "prisma:generate": "npm run prisma:generate --workspace backend",
     "prisma:push": "npm run prisma:push --workspace backend",
     "seed": "npm run prisma:seed --workspace backend"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.1.2",
+    "supertest": "^7.2.2"
   }
 }

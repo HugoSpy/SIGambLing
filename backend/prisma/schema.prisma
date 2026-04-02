@@ -58,6 +58,11 @@ enum CasinoGameResult {
   push
 }
 
+enum JackpotRoundStatus {
+  ACTIVE
+  RESOLVED
+}
+
 model User {
   id              String      @id @default(uuid()) @db.Uuid
   email           String      @unique @db.VarChar(255)
@@ -81,6 +86,8 @@ model User {
   adminLogs       AdminLog[]  @relation("AdminActor")
   proposals       EventProposal[]
   reviewedProposals EventProposal[] @relation("ProposalReviewer")
+  jackpotEntries  JackpotEntry[]
+  wonJackpotRounds JackpotRound[] @relation("JackpotWinner")
 
   @@index([email])
   @@index([balance(sort: Desc)])
@@ -223,6 +230,46 @@ model Badge {
 
   @@unique([userId, badgeType])
   @@index([userId])
+}
+
+model JackpotRound {
+  id                  String             @id @default(uuid()) @db.Uuid
+  status              JackpotRoundStatus @default(ACTIVE)
+  label               String             @db.VarChar(120)
+  seedAmount          Int                @default(500)
+  currentPot          Int                @default(500)
+  contributionRateBps Int                @default(800)
+  ticketUnitAmount    Int                @default(25)
+  startsAt            DateTime           @default(now())
+  endsAt              DateTime
+  resolvedAt          DateTime?
+  payoutAmount        Int?
+  winnerUserId        String?            @db.Uuid
+  winnerEntryId       String?            @db.Uuid
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+  entries             JackpotEntry[]
+  winner              User?              @relation("JackpotWinner", fields: [winnerUserId], references: [id], onDelete: SetNull)
+
+  @@index([status, endsAt])
+  @@index([winnerUserId])
+}
+
+model JackpotEntry {
+  id                 String      @id @default(uuid()) @db.Uuid
+  roundId            String      @db.Uuid
+  userId             String      @db.Uuid
+  sourceGameType     CasinoGameType
+  sourceReference    String?     @db.VarChar(100)
+  wagerAmount        Int
+  contributionAmount Int
+  tickets            Int
+  createdAt          DateTime    @default(now())
+  round              JackpotRound @relation(fields: [roundId], references: [id], onDelete: Cascade)
+  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([roundId, createdAt(sort: Desc)])
+  @@index([userId, createdAt(sort: Desc)])
 }
 
 model AdminLog {

@@ -73,8 +73,39 @@ export const searchUsersController: RequestHandler = async (request, response, n
       return;
     }
 
-    const users = await eventService.searchUsers(parsedQuery.data.search);
+    const users = await userService.searchAdminUsers(parsedQuery.data.search);
     response.json({ users });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const adjustUserBalanceController: RequestHandler = async (request, response, next) => {
+  try {
+    const adminId = getAuthenticatedUserId(request);
+    const userId = request.params.id;
+    const user = await userService.adjustUserBalance(adminId, userId, request.body);
+    response.json({ user });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const unlockUserBadgeController: RequestHandler = async (request, response, next) => {
+  try {
+    const adminId = getAuthenticatedUserId(request);
+    const userId = request.params.id;
+    const outcome = await userService.unlockUserBadge(adminId, userId, request.body);
+    response.json(outcome);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const listAvailableBadgesController: RequestHandler = async (_request, response, next) => {
+  try {
+    const badges = userService.listAvailableBadges();
+    response.json({ badges });
   } catch (error) {
     next(error);
   }

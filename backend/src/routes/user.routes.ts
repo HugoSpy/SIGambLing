@@ -2,16 +2,23 @@ import rateLimit from "express-rate-limit";
 import type { RequestHandler } from "express";
 import { Router } from "express";
 import {
+  adjustUserBalanceController,
   getCurrentUserController,
+  listAvailableBadgesController,
   listCurrentUserEventBetsController,
   searchUsersController,
+  unlockUserBadgeController,
   updateCurrentUserController,
   uploadCurrentUserAvatarController,
 } from "../controllers/user.controller";
 import { requireAuth } from "../middleware/require-auth";
 import { requireRole } from "../middleware/require-role";
 import { validateBody } from "../middleware/validate";
-import { updateUserProfileSchema } from "../schemas/user.schemas";
+import {
+  adjustUserBalanceSchema,
+  unlockUserBadgeSchema,
+  updateUserProfileSchema,
+} from "../schemas/user.schemas";
 import { AppError } from "../utils/app-error";
 
 const multer = require("multer") as {
@@ -75,3 +82,20 @@ userRouter.get("/me/bets", requireAuth, listCurrentUserEventBetsController);
 userRouter.patch("/me", requireAuth, userLimiter, validateBody(updateUserProfileSchema), updateCurrentUserController);
 userRouter.post("/me/avatar", requireAuth, userLimiter, uploadAvatarMiddleware, uploadCurrentUserAvatarController);
 userRouter.get("/", requireAuth, requireRole(["admin"]), searchUsersController);
+userRouter.get("/badges/catalog", requireAuth, requireRole(["admin"]), listAvailableBadgesController);
+userRouter.patch(
+  "/:id/balance",
+  requireAuth,
+  requireRole(["admin"]),
+  userLimiter,
+  validateBody(adjustUserBalanceSchema),
+  adjustUserBalanceController,
+);
+userRouter.post(
+  "/:id/badges",
+  requireAuth,
+  requireRole(["admin"]),
+  userLimiter,
+  validateBody(unlockUserBadgeSchema),
+  unlockUserBadgeController,
+);

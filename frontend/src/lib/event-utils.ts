@@ -35,10 +35,10 @@ export function formatEventBetStatus(status: EventBetStatus) {
 
 export function formatEventOdds(odds: number | null) {
   if (odds == null || !Number.isFinite(odds)) {
-    return "∞";
+    return "--";
   }
 
-  return `x${odds.toFixed(2)}`;
+  return `${odds.toFixed(2)}x`;
 }
 
 export function formatEventDate(value: string | null) {
@@ -54,16 +54,16 @@ export function formatEventDate(value: string | null) {
 
 export function statusTone(status: EventStatus) {
   if (status === "OPEN") {
-    return "border-emerald-400/35 bg-emerald-400/10 text-emerald-200";
+    return "border-emerald-500/25 bg-emerald-500/10 text-emerald-300";
   }
 
   if (status === "RESOLVED") {
-    return "border-brand-cyan/35 bg-brand-cyan/10 text-brand-cyanSoft";
+    return "border-sky-500/25 bg-sky-500/10 text-sky-300";
   }
 
   if (status === "CANCELLED") {
     return "border-red-400/35 bg-red-400/10 text-red-200";
   }
 
-  return "border-brand-orange/35 bg-brand-orange/10 text-brand-orangeSoft";
+  return "border-amber-500/25 bg-amber-500/10 text-amber-200";
 }

@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { AppError } from "../utils/app-error";
+import { gamificationService } from "./gamification.service";
 import { prisma } from "./prisma.service";
 
 type Suit = "hearts" | "diamonds" | "clubs" | "spades";
@@ -104,6 +105,8 @@ class BlackjackService {
         gameData,
       },
     });
+
+    await gamificationService.synchronizeUserBadges(userId);
   }
 
   private async dealerPlay(userId: string, gameId: string, game: ActiveGame) {
@@ -250,6 +253,8 @@ class BlackjackService {
           gameData,
         },
       });
+
+      await gamificationService.synchronizeUserBadges(userId);
 
       return {
         game_id: gameId,

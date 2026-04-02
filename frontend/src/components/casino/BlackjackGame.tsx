@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from "framer-motion";
+import { useQueryClient } from "@tanstack/react-query";
 import { Coins } from "lucide-react";
 import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
@@ -166,6 +167,7 @@ function calcHandTotal(hand: BlackjackCard[]): number {
 }
 
 export function BlackjackGame() {
+  const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
   const updateBalance = useAuthStore((state) => state.updateBalance);
 
@@ -203,6 +205,7 @@ export function BlackjackGame() {
 
         if (response.new_balance !== undefined) {
           updateBalance(response.new_balance);
+          void queryClient.invalidateQueries({ queryKey: ["gamification"] });
         }
 
         setGameState("GAME_OVER");
@@ -214,7 +217,7 @@ export function BlackjackGame() {
         }
       }
     },
-    [playerHand, updateBalance],
+    [playerHand, queryClient, updateBalance],
   );
 
   const handleBet = useCallback(async () => {

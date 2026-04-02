@@ -1,19 +1,25 @@
-import { ArrowRight, Lock, Wallet } from "lucide-react";
+import { ArrowRight, Lock, Plus, Ticket } from "lucide-react";
 import { Link } from "react-router-dom";
-import { formatEventCategory, formatEventDate, formatEventOdds, formatEventStatus, statusTone } from "../lib/event-utils";
+import {
+  formatEventCategory,
+  formatEventDate,
+  formatEventOdds,
+  formatEventStatus,
+  statusTone,
+} from "../lib/event-utils";
 import { cn, formatTokens } from "../lib/utils";
+import { useBetCartStore } from "../store/bet-cart-store";
 import type { EventView } from "../types/event";
-import { Button } from "./ui/Button";
 import { Card } from "./ui/Card";
 
 interface EventCardProps {
   event: EventView;
-  onBet: (event: EventView) => void;
+  onBet: (event: EventView, optionLabel?: string) => void;
 }
 
 function getDisabledReason(event: EventView) {
-  if (event.my_bet) {
-    return "Votre pari est deja enregistre.";
+  if (event.my_bet_count >= 25) {
+    return "Limite de 25 paris atteinte sur cet evenement.";
   }
 
   if (event.is_excluded) {
@@ -28,94 +34,122 @@ function getDisabledReason(event: EventView) {
 }
 
 export function EventCard({ event, onBet }: EventCardProps) {
+  const addSelection = useBetCartStore((state) => state.addSelection);
+  const selectedCartEntry = useBetCartStore((state) =>
+    state.selections.find((selection) => selection.eventId === event.id),
+  );
   const disabledReason = getDisabledReason(event);
 
   return (
-    <Card className="min-w-[300px] overflow-hidden p-0">
-      <div className="relative border-b border-white/10 p-6">
-        <div
-          aria-hidden
-          className="absolute inset-0 opacity-40"
-          style={{
-            background: event.image_url
-              ? `linear-gradient(180deg, rgba(7,19,33,0.2), rgba(7,19,33,0.95)), url(${event.image_url}) center/cover`
-              : "radial-gradient(circle at top right, rgba(6,182,212,0.18), transparent 38%), radial-gradient(circle at bottom left, rgba(245,158,11,0.14), transparent 34%)",
-          }}
-        />
-        <div className="relative">
+    <Card className="min-w-[300px] p-4">
+      <div className="flex items-start justify-between gap-4">
+        <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-brand-cyan">
+            <span className="rounded-md bg-zinc-800 px-2 py-1 text-[11px] uppercase tracking-[0.18em] text-zinc-300">
               {formatEventCategory(event.category)}
             </span>
-            <span className={`rounded-full border px-3 py-1 text-[11px] uppercase tracking-[0.24em] ${statusTone(event.status)}`}>
+            <span className={`rounded-md border px-2 py-1 text-[11px] uppercase tracking-[0.18em] ${statusTone(event.status)}`}>
               {formatEventStatus(event.status)}
             </span>
           </div>
 
-          <h3 className="mt-4 font-display text-2xl text-brand-text">{event.title}</h3>
-          <p className="mt-3 text-sm leading-7 text-brand-muted">
+          <Link className="transition-colors hover:text-emerald-400" to={`/events/${event.id}`}>
+            <h3 className="mt-3 text-base font-semibold text-zinc-100">{event.title}</h3>
+          </Link>
+
+          <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-zinc-500">
+            <span>Cloture {formatEventDate(event.closing_at)}</span>
+            <span>{formatTokens(event.total_pool)} tokens</span>
+            <span>{event.options.length} issue(s)</span>
+          </div>
+
+          <p className="mt-3 text-sm leading-6 text-zinc-400">
             {event.description || "Aucune description fournie pour cet evenement."}
           </p>
-
-          <div className="mt-5 flex flex-wrap items-center gap-4 text-xs text-brand-muted">
-            <span className="inline-flex items-center gap-2">
-              <Wallet className="h-3.5 w-3.5 text-brand-orange" />
-              Pool {formatTokens(event.total_pool)}
-            </span>
-            <span>Cloture {formatEventDate(event.closing_at)}</span>
-          </div>
         </div>
       </div>
 
-      <div className="space-y-4 p-6">
-        {event.options.map((option) => (
-          <div className="space-y-2" key={option.label}>
-            <div className="flex items-center justify-between gap-4 text-sm">
-              <span className="font-medium text-brand-text">{option.label}</span>
-              <span className="text-brand-cyan">{formatEventOdds(option.odds)}</span>
-            </div>
-            <div className="h-2 overflow-hidden rounded-full bg-white/5">
-              <div
-                className="h-full rounded-full bg-cta-gradient"
-                style={{ width: `${Math.max(option.percentage, option.pool > 0 ? 4 : 0)}%` }}
-              />
-            </div>
-            <div className="flex items-center justify-between text-xs text-brand-muted">
-              <span>{option.percentage.toFixed(1)}%</span>
-              <span>{formatTokens(option.pool)} tokens</span>
-            </div>
-          </div>
-        ))}
+      <div className="mt-4 grid gap-2 md:grid-cols-2">
+        {event.options.map((option) => {
+          const inTicket = selectedCartEntry?.optionLabel === option.label;
 
-        {event.my_bet ? (
-          <div className="rounded-[22px] border border-brand-cyan/20 bg-brand-cyan/10 px-4 py-3 text-sm text-brand-text">
-            Pari actif: {event.my_bet.chosen_option} - {formatTokens(event.my_bet.amount)} tokens
-          </div>
-        ) : null}
+          return (
+            <div
+              className={cn(
+                "flex items-stretch rounded-lg border",
+                inTicket ? "border-emerald-500/30 bg-emerald-500/5" : "border-zinc-800 bg-zinc-950",
+              )}
+              key={option.label}
+            >
+              <button
+                className="flex-1 px-3 py-3 text-left transition hover:bg-zinc-900/80 disabled:cursor-not-allowed disabled:opacity-60"
+                disabled={!event.can_bet}
+                onClick={() => onBet(event, option.label)}
+                type="button"
+              >
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-sm font-medium text-zinc-100">{option.label}</span>
+                  <span className="text-sm font-semibold text-emerald-400">
+                    {formatEventOdds(option.odds)}
+                  </span>
+                </div>
+                <div className="mt-2 flex items-center justify-between text-xs text-zinc-500">
+                  <span>{option.percentage.toFixed(1)}%</span>
+                  <span>{formatTokens(option.pool)}</span>
+                </div>
+              </button>
 
-        {disabledReason ? (
-          <div className="rounded-[22px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-brand-muted">
-            <div className="inline-flex items-center gap-2">
-              <Lock className="h-4 w-4" />
-              <span>{disabledReason}</span>
+              <button
+                aria-label={`Ajouter ${option.label} au ticket`}
+                className={cn(
+                  "m-2 inline-flex w-11 items-center justify-center rounded-lg border text-sm transition",
+                  inTicket
+                    ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-300"
+                    : "border-zinc-700 bg-zinc-800 text-zinc-300 hover:border-zinc-600 hover:bg-zinc-700",
+                )}
+                disabled={!event.can_bet}
+                onClick={() => addSelection(event, option)}
+                type="button"
+              >
+                {inTicket ? <Ticket className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+              </button>
             </div>
-          </div>
-        ) : null}
+          );
+        })}
+      </div>
 
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Button disabled={!event.can_bet} fullWidth onClick={() => onBet(event)}>
-            Parier
-          </Button>
-          <Link
-            className={cn(
-              "glass-panel inline-flex flex-1 items-center justify-center rounded-2xl px-5 py-3 text-sm font-medium text-brand-text transition-all duration-300 hover:scale-[1.02] hover:border-brand-cyan/40",
-            )}
-            to={`/events/${event.id}`}
-          >
-            Details
-            <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
+      {event.my_bets.length > 0 ? (
+        <div className="mt-4 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-sm text-zinc-200">
+          {event.my_bet_count} pari(s) deja poses sur cet evenement
         </div>
+      ) : null}
+
+      {disabledReason ? (
+        <div className="mt-4 rounded-lg border border-zinc-800 bg-zinc-950 px-3 py-2 text-sm text-zinc-400">
+          <div className="inline-flex items-center gap-2">
+            <Lock className="h-4 w-4" />
+            <span>{disabledReason}</span>
+          </div>
+        </div>
+      ) : null}
+
+      <div className="mt-4 flex items-center justify-between gap-3">
+        <button
+          className="inline-flex items-center gap-2 text-sm font-medium text-zinc-300 transition hover:text-emerald-400 disabled:cursor-not-allowed disabled:opacity-60"
+          disabled={!event.can_bet}
+          onClick={() => onBet(event, selectedCartEntry?.optionLabel ?? event.options[0]?.label)}
+          type="button"
+        >
+          Pari rapide
+        </button>
+
+        <Link
+          className="inline-flex items-center gap-2 text-sm font-medium text-zinc-300 transition hover:text-zinc-100"
+          to={`/events/${event.id}`}
+        >
+          Voir le marche
+          <ArrowRight className="h-4 w-4" />
+        </Link>
       </div>
     </Card>
   );

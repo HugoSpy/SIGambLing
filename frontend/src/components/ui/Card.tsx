@@ -4,9 +4,9 @@ import { cn } from "../../lib/utils";
 type CardAccent = "default" | "cyan" | "orange";
 
 const accentStyles: Record<CardAccent, string> = {
-  default: "border-brand-line",
-  cyan: "border-brand-cyan/30 shadow-glow",
-  orange: "border-brand-orange/30 shadow-glow-orange",
+  default: "border-zinc-800 bg-zinc-900",
+  cyan: "border-emerald-500/20 bg-emerald-500/[0.07]",
+  orange: "border-amber-500/20 bg-amber-500/[0.06]",
 };
 
 interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -17,9 +17,9 @@ export function Card({ className, accent = "default", ...props }: CardProps) {
   return (
     <div
       className={cn(
-        "glass-panel rounded-[28px] p-6",
+        "rounded-xl border p-5 shadow-[0_10px_30px_rgba(0,0,0,0.16)]",
         accentStyles[accent],
-        "transition-all duration-300 hover:scale-[1.02]",
+        "transition-colors duration-200",
         className,
       )}
       {...props}

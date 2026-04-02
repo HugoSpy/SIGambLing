@@ -1,7 +1,7 @@
 import { type ReactNode } from "react";
+import { X } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
 import { createPortal } from "react-dom";
-import { Button } from "./Button";
 
 interface ModalProps {
   title: string;
@@ -21,14 +21,14 @@ export function Modal({ title, description, open, onClose, children }: ModalProp
       {open ? (
         <motion.div
           animate={{ opacity: 1 }}
-          className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 px-4 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 px-4 backdrop-blur-sm"
           exit={{ opacity: 0 }}
           initial={{ opacity: 0 }}
           onClick={onClose}
         >
           <motion.div
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            className="glass-panel w-full max-w-lg rounded-[28px] p-6"
+            className="w-full max-w-xl rounded-xl border border-zinc-800 bg-zinc-900 p-5 shadow-[0_20px_80px_rgba(0,0,0,0.45)]"
             exit={{ opacity: 0, y: 16, scale: 0.98 }}
             initial={{ opacity: 0, y: 24, scale: 0.98 }}
             onClick={(event) => event.stopPropagation()}
@@ -36,12 +36,17 @@ export function Modal({ title, description, open, onClose, children }: ModalProp
           >
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
-                <h2 className="font-display text-2xl text-brand-text">{title}</h2>
-                {description ? <p className="mt-2 text-sm text-brand-muted">{description}</p> : null}
+                <h2 className="font-display text-2xl text-zinc-100">{title}</h2>
+                {description ? <p className="mt-2 text-sm text-zinc-400">{description}</p> : null}
               </div>
-              <Button size="sm" variant="secondary" onClick={onClose}>
-                Fermer
-              </Button>
+              <button
+                aria-label="Fermer"
+                className="rounded-lg border border-zinc-700 bg-zinc-800 p-2 text-zinc-300 transition hover:bg-zinc-700 hover:text-zinc-100"
+                onClick={onClose}
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </button>
             </div>
             {children}
           </motion.div>

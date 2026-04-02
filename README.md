@@ -38,6 +38,7 @@ Copy-Item backend/.env.example backend/.env
 - `MICROSOFT_CALLBACK_URL`
 - `JWT_SECRET` and `JWT_REFRESH_SECRET`
 - `FRONTEND_URL` and `VITE_API_URL`
+- `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `SUPABASE_AVATARS_BUCKET` for avatar uploads
 
 4. Generate Prisma client, push the schema, and seed the database:
 
@@ -47,7 +48,13 @@ npm run prisma:push
 npm run seed
 ```
 
-5. Start both apps:
+5. Validate the local environment before launching the stack:
+
+```bash
+npm run qa:validate-env
+```
+
+6. Start both apps:
 
 ```bash
 npm run dev
@@ -59,6 +66,7 @@ npm run dev
 npm run dev:frontend
 npm run dev:backend
 npm run build
+npm run test:integration
 ```
 
 ## Local URLs

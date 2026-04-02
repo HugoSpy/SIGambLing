@@ -9,13 +9,18 @@ import { Card } from "../../components/ui/Card";
 import { Modal } from "../../components/ui/Modal";
 import { useAuthenticatedUser } from "../../hooks/useAuthenticatedUser";
 import {
+  adjustAdminUserBalance,
+  fetchAdminBadgeCatalog,
   cancelAdminEvent,
   closeAdminEvent,
   createAdminEvent,
   fetchAdminEvents,
+  fetchAdminProposals,
   logoutRequest,
+  rejectAdminProposal,
   resolveAdminEvent,
   searchUsers,
+  unlockAdminUserBadge,
   updateAdminEvent,
 } from "../../lib/api";
 import {
@@ -26,7 +31,14 @@ import {
   statusTone,
 } from "../../lib/event-utils";
 import { formatTokens } from "../../lib/utils";
-import type { AdminEventView, EventCategory, EventSearchUser } from "../../types/event";
+import type {
+  AdminBadgeCatalogItem,
+  AdminUserLookup,
+  AdminEventView,
+  EventCategory,
+  EventProposalView,
+  EventSearchUser,
+} from "../../types/event";
 
 const categoryOptions: EventCategory[] = ["epita", "sports", "politics", "culture"];
 
@@ -79,17 +91,45 @@ function toIsoFromLocalDate(value: string) {
   return new Date(value).toISOString();
 }
 
-function parseOptions(value: string) {
+function parseOptionRows(value: string) {
   return value
-    .split(/\n|,/g)
+    .split("\n")
     .map((entry) => entry.trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    .map((entry) => {
+      const [labelPart, oddsPart] = entry.split("|");
+      const label = labelPart?.trim() ?? "";
+      const parsedOdds = oddsPart ? Number(oddsPart.trim()) : null;
+
+      return {
+        label,
+        odd: Number.isFinite(parsedOdds) ? parsedOdds : null,
+      };
+    })
+    .filter((entry) => entry.label.length > 0);
+}
+
+function formatOptionsForTextarea(event: AdminEventView) {
+  return event.options
+    .map((option) => `${option.label}|${option.initial_odds.toFixed(2)}`)
+    .join("\n");
+}
+
+function calculateMargin(rows: Array<{ label: string; odd: number | null }>) {
+  if (rows.length < 2 || rows.some((row) => row.odd == null)) {
+    return null;
+  }
+
+  const implied = rows.reduce((sum, row) => sum + 1 / (row.odd ?? 1), 0);
+  return Number(((implied - 1) * 100).toFixed(2));
 }
 
 export function AdminEventsPage() {
   const queryClient = useQueryClient();
   const { data: user } = useAuthenticatedUser();
+  const [view, setView] = useState<"markets" | "proposals">("markets");
   const [editingEvent, setEditingEvent] = useState<AdminEventView | null>(null);
+  const [draftProposal, setDraftProposal] = useState<EventProposalView | null>(null);
   const [form, setForm] = useState<EventFormState>(emptyFormState);
   const [selectedExcludedUsers, setSelectedExcludedUsers] = useState<EventSearchUser[]>([]);
   const [userSearch, setUserSearch] = useState("");
@@ -101,6 +141,11 @@ export function AdminEventsPage() {
   const { data: events, isLoading } = useQuery({
     queryKey: ["admin-events"],
     queryFn: () => fetchAdminEvents(),
+  });
+
+  const { data: proposals } = useQuery({
+    queryKey: ["admin-proposals"],
+    queryFn: () => fetchAdminProposals(),
   });
 
   const { data: foundUsers } = useQuery({
@@ -121,6 +166,7 @@ export function AdminEventsPage() {
 
   const resetForm = () => {
     setEditingEvent(null);
+    setDraftProposal(null);
     setForm(emptyFormState);
     setSelectedExcludedUsers([]);
     setUserSearch("");
@@ -138,7 +184,7 @@ export function AdminEventsPage() {
       description: event.description ?? "",
       category: event.category,
       image_url: event.image_url ?? "",
-      options_text: event.options.map((option) => option.label).join("\n"),
+      options_text: formatOptionsForTextarea(event),
       closing_at: toDateTimeLocalValue(event.closing_at),
       min_bet: String(event.min_bet),
       max_bet: event.max_bet == null ? "" : String(event.max_bet),
@@ -147,7 +193,13 @@ export function AdminEventsPage() {
   };
 
   const submitForm = async () => {
-    const options = parseOptions(form.options_text);
+    const parsedOptions = parseOptionRows(form.options_text);
+    const options = parsedOptions.map((entry) => entry.label);
+    const optionInitialOdds = Object.fromEntries(
+      parsedOptions
+        .filter((entry) => entry.odd != null)
+        .map((entry) => [entry.label, entry.odd as number]),
+    );
 
     if (options.length < 2) {
       toast.error("Ajoutez au moins deux options.");
@@ -160,8 +212,10 @@ export function AdminEventsPage() {
         title: form.title.trim(),
         description: form.description.trim() || null,
         category: form.category,
+        proposal_id: !editingEvent ? draftProposal?.id : undefined,
         image_url: form.image_url.trim() || null,
         options,
+        option_initial_odds: optionInitialOdds,
         closing_at: toIsoFromLocalDate(form.closing_at),
         min_bet: Number(form.min_bet),
         max_bet: form.max_bet ? Number(form.max_bet) : null,
@@ -173,12 +227,15 @@ export function AdminEventsPage() {
         toast.success("Evenement modifie.");
       } else {
         await createAdminEvent(payload);
-        toast.success("Evenement cree.");
+        toast.success(
+          draftProposal ? "Evenement cree et proposition approuvee." : "Evenement cree.",
+        );
       }
 
       resetForm();
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["admin-events"] }),
+        queryClient.invalidateQueries({ queryKey: ["admin-proposals"] }),
         queryClient.invalidateQueries({ queryKey: ["events"] }),
         queryClient.invalidateQueries({ queryKey: ["event"] }),
       ]);
@@ -196,6 +253,7 @@ export function AdminEventsPage() {
       toast.success(successMessage);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["admin-events"] }),
+        queryClient.invalidateQueries({ queryKey: ["admin-proposals"] }),
         queryClient.invalidateQueries({ queryKey: ["events"] }),
         queryClient.invalidateQueries({ queryKey: ["event"] }),
         queryClient.invalidateQueries({ queryKey: ["my-event-bets"] }),
@@ -212,30 +270,71 @@ export function AdminEventsPage() {
     return (foundUsers ?? []).filter((entry) => !selectedIds.has(entry.id));
   }, [foundUsers, selectedExcludedUsers]);
 
+  const optionRows = useMemo(() => parseOptionRows(form.options_text), [form.options_text]);
+  const currentMargin = useMemo(() => calculateMargin(optionRows), [optionRows]);
+
+  const applyProposalToForm = (proposal: EventProposalView) => {
+    setEditingEvent(null);
+    setDraftProposal(proposal);
+    setSelectedExcludedUsers([]);
+    setForm({
+      title: proposal.title,
+      description: proposal.description ?? "",
+      category: proposal.category,
+      image_url: "",
+      options_text: "Oui|1.90\nNon|1.90",
+      closing_at: proposal.suggested_date ? toDateTimeLocalValue(proposal.suggested_date) : "",
+      min_bet: "10",
+      max_bet: "",
+    });
+    setView("markets");
+  };
+
   return (
     <DashboardShell onLogout={handleLogout} user={user}>
       <div className="space-y-6">
-        <Card accent="orange" className="min-w-[300px]">
-          <p className="text-xs uppercase tracking-[0.3em] text-brand-orange">Admin</p>
-          <h1 className="mt-3 font-display text-4xl text-brand-text">Gestion des evenements</h1>
-          <p className="mt-4 max-w-3xl text-base leading-8 text-brand-muted">
-            Creez les marches, ajustez les exclusions et pilotez le cycle de vie complet jusqu'a la
-            resolution ou l'annulation.
+        <div>
+          <h1 className="text-2xl font-bold text-zinc-100">Panneau admin</h1>
+          <p className="mt-1 text-sm text-zinc-400">
+            Creez les marches, gerez les exclusions et traitez les propositions de la promo.
           </p>
-        </Card>
+        </div>
+
+        <div className="flex gap-2 border-b border-zinc-800">
+          <button
+            className={`relative px-4 py-3 text-sm font-medium transition ${
+              view === "markets" ? "text-emerald-400" : "text-zinc-400 hover:text-zinc-100"
+            }`}
+            onClick={() => setView("markets")}
+            type="button"
+          >
+            Marches
+            {view === "markets" ? <span className="absolute inset-x-0 bottom-0 h-0.5 bg-emerald-500" /> : null}
+          </button>
+          <button
+            className={`relative px-4 py-3 text-sm font-medium transition ${
+              view === "proposals" ? "text-emerald-400" : "text-zinc-400 hover:text-zinc-100"
+            }`}
+            onClick={() => setView("proposals")}
+            type="button"
+          >
+            Propositions
+            {view === "proposals" ? <span className="absolute inset-x-0 bottom-0 h-0.5 bg-emerald-500" /> : null}
+          </button>
+        </div>
 
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[420px_minmax(0,1fr)]">
           <Card className="min-w-[300px]">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.28em] text-brand-cyan">
-                  {editingEvent ? "Edition" : "Creation"}
+                  {editingEvent ? "Edition" : draftProposal ? "Depuis proposition" : "Creation"}
                 </p>
                 <h2 className="mt-2 font-display text-3xl text-brand-text">
                   {editingEvent ? "Modifier un marche" : "Nouveau marche"}
                 </h2>
               </div>
-              {editingEvent ? (
+              {editingEvent || draftProposal ? (
                 <Button size="sm" variant="secondary" onClick={resetForm}>
                   Annuler
                 </Button>
@@ -243,6 +342,12 @@ export function AdminEventsPage() {
             </div>
 
             <div className="mt-6 space-y-4">
+              {draftProposal ? (
+                <div className="rounded-2xl border border-emerald-500/25 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
+                  Cette creation validera la proposition de {draftProposal.user.pseudo}.
+                </div>
+              ) : null}
+
               <label className="block space-y-2">
                 <span className="text-sm font-medium text-brand-text">Titre</span>
                 <input
@@ -304,10 +409,17 @@ export function AdminEventsPage() {
                   onChange={(event) =>
                     setForm((current) => ({ ...current, options_text: event.target.value }))
                   }
-                  placeholder={"Oui\nNon\nOu une option par ligne"}
+                  placeholder={"Oui|1.65\nNon|2.35\nUne option par ligne, avec la cote apres |"}
                   value={form.options_text}
                 />
-                <p className="text-xs text-brand-muted">Une option par ligne ou separee par des virgules.</p>
+                <p className="text-xs text-brand-muted">
+                  Format recommande: `Nom de l&apos;issue|1.85`.
+                </p>
+                {currentMargin != null ? (
+                  <div className="rounded-[18px] border border-white/10 bg-black/10 px-4 py-3 text-xs text-brand-muted">
+                    <span className="text-brand-text">Marge calculee:</span> {currentMargin}%
+                  </div>
+                ) : null}
               </label>
 
               <div className="grid gap-4 sm:grid-cols-3">
@@ -415,7 +527,99 @@ export function AdminEventsPage() {
           </Card>
 
           <div className="space-y-6">
-            {(events ?? []).map((event) => (
+            {view === "proposals" ? (
+              <Card className="min-w-[300px]">
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.28em] text-brand-orange">
+                    Propositions
+                  </p>
+                  <h2 className="mt-2 font-display text-3xl text-brand-text">
+                    File a traiter
+                  </h2>
+                </div>
+                <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-brand-muted">
+                  {(proposals ?? []).length} element(s)
+                </span>
+              </div>
+
+              <div className="mt-6 space-y-4">
+                {(proposals ?? []).slice(0, 6).map((proposal) => (
+                  <div className="rounded-[22px] border border-white/10 bg-white/5 p-4" key={proposal.id}>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-brand-cyan">
+                        {formatEventCategory(proposal.category)}
+                      </span>
+                      <span className="rounded-full border border-white/10 bg-black/10 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-brand-muted">
+                        {proposal.status}
+                      </span>
+                    </div>
+                    <h3 className="mt-3 text-lg font-semibold text-brand-text">{proposal.title}</h3>
+                    <p className="mt-2 text-sm leading-7 text-brand-muted">
+                      {proposal.description || "Aucune description fournie."}
+                    </p>
+                    <p className="mt-2 text-xs text-brand-muted">
+                      Par {proposal.user.pseudo} · Suggestion {formatEventDate(proposal.suggested_date)}
+                    </p>
+                    {proposal.rejection_reason ? (
+                      <p className="mt-2 text-xs text-red-200">
+                        Motif: {proposal.rejection_reason}
+                      </p>
+                    ) : null}
+                    <div className="mt-4 flex flex-wrap gap-3">
+                      <Button
+                        onClick={() => applyProposalToForm(proposal)}
+                        size="sm"
+                        variant="secondary"
+                      >
+                        Pre-remplir
+                      </Button>
+                      {proposal.status === "PENDING" ? (
+                        <>
+                          <Button
+                          onClick={() =>
+                              applyProposalToForm(proposal)
+                            }
+                            size="sm"
+                          >
+                            Creer le marche
+                          </Button>
+                          <Button
+                            onClick={() => {
+                              const reason = window.prompt("Motif du refus ?");
+
+                              if (!reason) {
+                                return;
+                              }
+
+                              void runAction(
+                                `reject-${proposal.id}`,
+                                () => rejectAdminProposal(proposal.id, reason),
+                                "Proposition refusee.",
+                              );
+                            }}
+                            size="sm"
+                            variant="danger"
+                          >
+                            Refuser
+                          </Button>
+                        </>
+                      ) : null}
+                    </div>
+                  </div>
+                ))}
+
+                {(proposals ?? []).length === 0 ? (
+                  <p className="text-sm leading-7 text-brand-muted">
+                    Aucune proposition en attente pour le moment.
+                  </p>
+                ) : null}
+              </div>
+              </Card>
+            ) : null}
+
+            {view === "markets"
+              ? (events ?? []).map((event) => (
               <Card className="min-w-[300px]" key={event.id}>
                 <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
                   <div className="min-w-0 flex-1">
@@ -519,9 +723,10 @@ export function AdminEventsPage() {
                   ))}
                 </div>
               </Card>
-            ))}
+              ))
+              : null}
 
-            {(events ?? []).length === 0 ? (
+            {view === "markets" && (events ?? []).length === 0 ? (
               <Card className="min-w-[300px]">
                 <p className="text-sm leading-7 text-brand-muted">
                   Aucun evenement admin a afficher pour le moment.

@@ -1,11 +1,20 @@
-import { type ReactNode, useMemo, useState } from "react";
+import { type ReactNode, useMemo } from "react";
 import { motion } from "framer-motion";
-import { Coins, LayoutDashboard, Menu, ShieldCheck, Sparkles, TrendingUp, UserRound } from "lucide-react";
+import {
+  Coins,
+  Dice3,
+  LayoutDashboard,
+  ShieldCheck,
+  Ticket,
+  TrendingUp,
+  UserRound,
+} from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import type { AuthUser } from "../../types/auth";
 import { cn, formatTokens } from "../../lib/utils";
+import { useBetCartStore } from "../../store/bet-cart-store";
+import { BetCartDrawer } from "../BetCartDrawer";
 import { Button } from "../ui/Button";
-import { Modal } from "../ui/Modal";
 
 interface DashboardShellProps {
   user: AuthUser;
@@ -15,7 +24,8 @@ interface DashboardShellProps {
 
 export function DashboardShell({ user, onLogout, children }: DashboardShellProps) {
   const location = useLocation();
-  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const cartSelectionsCount = useBetCartStore((state) => state.selections.length);
+  const setCartOpen = useBetCartStore((state) => state.setOpen);
   const initials = useMemo(
     () =>
       user.pseudo
@@ -31,164 +41,231 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
     () => [
       { label: "Tableau de bord", icon: LayoutDashboard, href: "/dashboard" },
       { label: "Evenements", icon: TrendingUp, href: "/events" },
-      { label: "Roulette", icon: Sparkles, href: "/casino" },
+      { label: "Roulette", icon: Dice3, href: "/casino" },
       { label: "Profil", icon: UserRound, href: "/profile" },
       ...(user.role === "admin"
-        ? [{ label: "Admin events", icon: ShieldCheck, href: "/admin/events" }]
+        ? [{ label: "Admin", icon: ShieldCheck, href: "/admin/events" }]
         : []),
     ],
     [user.role],
   );
+  const activeItem = useMemo(
+    () =>
+      navItems.find(
+        (item) =>
+          location.pathname === item.href ||
+          (item.href !== "/dashboard" && location.pathname.startsWith(`${item.href}/`)),
+      ) ?? navItems[0],
+    [location.pathname, navItems],
+  );
 
   return (
-    <div className="surface-grid min-h-screen bg-[#0f212e]">
-      <div className="mx-auto flex min-h-screen w-full max-w-[1800px] gap-6 p-4 lg:p-8">
-        <aside className="glass-panel hidden min-w-[300px] max-w-[320px] flex-col rounded-[32px] p-6 lg:flex">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-cta-gradient text-lg font-display font-bold text-slate-950">
-              SG
-            </div>
-            <div>
-              <p className="text-xs uppercase tracking-[0.3em] text-brand-cyan">EPITA</p>
-              <h1 className="font-display text-2xl text-brand-text">SIGambling</h1>
-            </div>
+    <div className="surface-grid min-h-screen bg-zinc-950 text-zinc-100">
+      <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-zinc-800 bg-zinc-900/95 lg:flex lg:flex-col">
+        <div className="flex h-16 items-center gap-3 border-b border-zinc-800 px-6">
+          <Dice3 className="h-8 w-8 text-emerald-500" />
+          <div>
+            <p className="text-[11px] uppercase tracking-[0.28em] text-zinc-500">EPITA</p>
+            <h1 className="text-xl font-semibold text-zinc-100">SIGambling</h1>
           </div>
+        </div>
 
-          <div className="mt-8 rounded-[24px] border border-white/10 bg-white/5 p-4">
-            <p className="text-xs uppercase tracking-[0.28em] text-brand-cyan">Votre espace</p>
-            <p className="mt-3 text-lg font-semibold text-brand-text">Bienvenue {user.pseudo}</p>
-            <div className="mt-4 grid gap-3">
-              <div className="rounded-[20px] border border-white/10 bg-black/10 px-4 py-3">
-                <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Solde</p>
-                <p className="mt-2 font-display text-2xl text-brand-text">
-                  {formatTokens(user.balance)} tokens
-                </p>
-              </div>
-              <div className="rounded-[20px] border border-white/10 bg-black/10 px-4 py-3">
-                <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Serie</p>
-                <p className="mt-2 font-display text-2xl text-brand-text">
-                  {user.streak_days} jour{user.streak_days > 1 ? "s" : ""}
-                </p>
-              </div>
-            </div>
-          </div>
+        <nav className="flex-1 space-y-1 px-3 py-4">
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const active =
+              location.pathname === item.href ||
+              (item.href !== "/dashboard" && location.pathname.startsWith(`${item.href}/`));
 
-          <nav className="mt-8 space-y-2">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const active =
-                location.pathname === item.href ||
-                (item.href !== "/dashboard" && location.pathname.startsWith(`${item.href}/`));
+            return (
+              <NavLink
+                key={item.label}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
+                  active
+                    ? "bg-emerald-500/10 text-emerald-400"
+                    : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100",
+                )}
+                to={item.href}
+              >
+                <Icon className="h-4 w-4" />
+                <span>{item.label}</span>
+              </NavLink>
+            );
+          })}
+        </nav>
 
-              return (
-                <NavLink
-                  key={item.label}
-                  className={cn(
-                    "flex items-center gap-3 rounded-2xl border px-4 py-3 text-sm transition-all duration-300",
-                    active
-                      ? "border-brand-cyan/40 bg-brand-cyan/10 text-brand-text"
-                      : "border-transparent text-brand-muted hover:border-brand-line hover:bg-white/5 hover:text-brand-text",
-                  )}
-                  to={item.href}
-                >
-                  <Icon className="h-4 w-4" />
-                  <span>{item.label}</span>
-                </NavLink>
-              );
-            })}
-          </nav>
+        <div className="space-y-3 border-t border-zinc-800 p-4">
+          <button
+            className="relative flex w-full items-center justify-between rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-3 text-left text-sm text-zinc-100 transition hover:border-zinc-600 hover:bg-zinc-700"
+            onClick={() => setCartOpen(true)}
+            type="button"
+          >
+            <span className="inline-flex items-center gap-2">
+              <Ticket className="h-4 w-4 text-emerald-400" />
+              Ticket de paris
+            </span>
+            {cartSelectionsCount > 0 ? (
+              <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-emerald-500 px-2 py-0.5 text-[11px] font-bold text-zinc-950">
+                {cartSelectionsCount}
+              </span>
+            ) : null}
+          </button>
 
-          <div className="mt-auto rounded-[24px] border border-white/10 bg-white/5 p-4">
-            <p className="text-xs uppercase tracking-[0.28em] text-brand-orange">Acces prive</p>
-            <p className="mt-3 text-sm leading-7 text-brand-muted">
-              Salon reserve aux etudiants EPITA avec solde, roulette et profil personnalisable.
-            </p>
-          </div>
-        </aside>
-
-        <div className="flex min-w-0 flex-1 flex-col gap-6">
-          <header className="glass-panel rounded-[32px] px-5 py-4">
-            <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-brand-cyan">Salle privee</p>
-                <h2 className="mt-2 font-display text-3xl text-brand-text">
-                  Bienvenue {user.pseudo}
-                </h2>
-                <p className="mt-2 max-w-2xl text-sm leading-7 text-brand-muted">
-                  Retrouvez vos evenements, votre roulette et votre profil depuis un seul espace.
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <button
-                  className="flex h-12 w-12 items-center justify-center rounded-2xl border border-brand-line bg-white/5 text-sm font-semibold text-brand-text lg:hidden"
-                  onClick={() => setMobileNavOpen(true)}
-                  type="button"
-                >
-                  <Menu className="h-5 w-5" />
-                </button>
-
-                <div className="flex items-center gap-3 rounded-2xl border border-brand-line bg-white/5 px-3 py-2">
-                  {user.avatar_url ? (
-                    <img
-                      alt={`Photo de profil de ${user.pseudo}`}
-                      className="h-12 w-12 rounded-2xl object-cover"
-                      onError={(event) => {
-                        event.currentTarget.src = "/default-avatar.svg";
-                      }}
-                      src={user.avatar_url}
-                    />
-                  ) : (
-                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-brand-cyan/20 font-display text-sm font-bold text-brand-cyan">
-                      {initials}
-                    </div>
-                  )}
-                  <div className="hidden sm:block">
-                    <p className="text-sm font-medium text-brand-text">{user.email}</p>
-                    <div className="mt-1 flex items-center gap-2 text-xs text-brand-muted">
-                      <Coins className="h-3.5 w-3.5" />
-                      <span>{formatTokens(user.balance)} tokens</span>
-                    </div>
-                  </div>
+          <div className="rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3">
+            <div className="flex items-center gap-3">
+              {user.avatar_url ? (
+                <img
+                  alt={`Photo de profil de ${user.pseudo}`}
+                  className="h-11 w-11 rounded-full object-cover"
+                  onError={(event) => {
+                    event.currentTarget.src = "/default-avatar.svg";
+                  }}
+                  src={user.avatar_url}
+                />
+              ) : (
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500/10 text-sm font-bold text-emerald-400">
+                  {initials}
                 </div>
-
-                <Button size="sm" variant="secondary" onClick={() => void onLogout()}>
-                  Se deconnecter
-                </Button>
+              )}
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold text-zinc-100">{user.pseudo}</p>
+                <p className="truncate text-xs text-zinc-500">{user.email}</p>
               </div>
             </div>
-          </header>
 
+            <div className="mt-4 grid grid-cols-2 gap-2">
+              <div className="rounded-lg bg-zinc-900 px-3 py-2">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Solde</p>
+                <p className="mt-1 text-sm font-semibold text-emerald-400">
+                  {formatTokens(user.balance)}
+                </p>
+              </div>
+              <div className="rounded-lg bg-zinc-900 px-3 py-2">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Serie</p>
+                <p className="mt-1 text-sm font-semibold text-zinc-100">{user.streak_days} j</p>
+              </div>
+            </div>
+
+            <Button
+              className="mt-4"
+              fullWidth
+              size="sm"
+              variant="secondary"
+              onClick={() => void onLogout()}
+            >
+              Se deconnecter
+            </Button>
+          </div>
+        </div>
+      </aside>
+
+      <div className="lg:pl-64">
+        <header className="sticky top-0 z-30 border-b border-zinc-800/80 bg-zinc-950/90 backdrop-blur">
+          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 lg:px-8">
+            <div className="min-w-0">
+              <p className="text-[11px] uppercase tracking-[0.28em] text-zinc-500">SIGambling</p>
+              <h2 className="truncate text-lg font-semibold text-zinc-100">{activeItem.label}</h2>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <button
+                className="relative inline-flex h-10 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-800 px-3 text-zinc-100 transition hover:border-zinc-600 hover:bg-zinc-700"
+                onClick={() => setCartOpen(true)}
+                type="button"
+              >
+                <Ticket className="h-4 w-4" />
+                <span className="ml-2 hidden text-sm sm:inline">Ticket</span>
+                {cartSelectionsCount > 0 ? (
+                  <span className="absolute -right-2 -top-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-500 px-1.5 text-[10px] font-bold text-zinc-950">
+                    {cartSelectionsCount}
+                  </span>
+                ) : null}
+              </button>
+
+              <div className="hidden items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 sm:flex">
+                <Coins className="h-4 w-4 text-emerald-400" />
+                <span className="text-sm font-medium text-zinc-100">
+                  {formatTokens(user.balance)}
+                </span>
+              </div>
+
+              <div className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2">
+                {user.avatar_url ? (
+                  <img
+                    alt={`Photo de profil de ${user.pseudo}`}
+                    className="h-9 w-9 rounded-full object-cover"
+                    onError={(event) => {
+                      event.currentTarget.src = "/default-avatar.svg";
+                    }}
+                    src={user.avatar_url}
+                  />
+                ) : (
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/10 text-xs font-bold text-emerald-400">
+                    {initials}
+                  </div>
+                )}
+                <div>
+                  <p className="max-w-[160px] truncate text-sm font-medium text-zinc-100">
+                    {user.pseudo}
+                  </p>
+                  <p className="hidden text-xs text-zinc-500 sm:block">{user.email}</p>
+                </div>
+              </div>
+
+              <Button
+                className="hidden sm:inline-flex"
+                size="sm"
+                variant="secondary"
+                onClick={() => void onLogout()}
+              >
+                Se deconnecter
+              </Button>
+              <Button className="sm:hidden" size="sm" variant="secondary" onClick={() => void onLogout()}>
+                Sortir
+              </Button>
+            </div>
+          </div>
+        </header>
+
+        <main className="mx-auto max-w-7xl px-4 py-6 pb-24 lg:px-8 lg:pb-8">
           <motion.div
             animate={{ opacity: 1, y: 0 }}
             className="min-w-0"
-            initial={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.35 }}
+            initial={{ opacity: 0, y: 12 }}
+            transition={{ duration: 0.2 }}
           >
             {children}
           </motion.div>
-        </div>
+        </main>
       </div>
 
-      <Modal
-        description="Navigation mobile de votre espace SIGambling."
-        onClose={() => setMobileNavOpen(false)}
-        open={mobileNavOpen}
-        title="Navigation"
-      >
-        <div className="space-y-3">
-          {navItems.map((item) => (
-            <NavLink
-              key={item.label}
-              className="block rounded-2xl border border-brand-line px-4 py-3 text-sm text-brand-text transition-all duration-300 hover:border-brand-cyan/40 hover:bg-white/5"
-              onClick={() => setMobileNavOpen(false)}
-              to={item.href}
-            >
-              {item.label}
-            </NavLink>
-          ))}
+      <nav className="fixed bottom-0 inset-x-0 z-40 border-t border-zinc-800 bg-zinc-900/95 px-2 py-2 backdrop-blur lg:hidden">
+        <div className={`grid gap-1 ${user.role === "admin" ? "grid-cols-5" : "grid-cols-4"}`}>
+          {navItems.map((item) => {
+            const Icon = item.icon;
+            const active =
+              location.pathname === item.href ||
+              (item.href !== "/dashboard" && location.pathname.startsWith(`${item.href}/`));
+
+            return (
+              <NavLink
+                key={item.label}
+                className={cn(
+                  "flex flex-col items-center justify-center rounded-lg px-2 py-2 text-[11px] transition-colors",
+                  active ? "bg-emerald-500/10 text-emerald-400" : "text-zinc-400",
+                )}
+                to={item.href}
+              >
+                <Icon className="h-4 w-4" />
+                <span className="mt-1 truncate">{item.label}</span>
+              </NavLink>
+            );
+          })}
         </div>
-      </Modal>
+      </nav>
+
+      <BetCartDrawer />
     </div>
   );
 }

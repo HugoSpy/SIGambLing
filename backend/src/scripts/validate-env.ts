@@ -1,0 +1,184 @@
+import fs from "fs";
+import path from "path";
+import dotenv from "dotenv";
+
+function loadEnvFile() {
+  const fileArg = process.argv
+    .slice(2)
+    .find((argument) => argument.startsWith("--file="))
+    ?.slice("--file=".length);
+
+  const candidates = fileArg
+    ? [path.resolve(process.cwd(), fileArg)]
+    : [
+        path.resolve(process.cwd(), ".env"),
+        path.resolve(process.cwd(), "backend/.env"),
+      ];
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) {
+      dotenv.config({ path: candidate, override: false });
+      return candidate;
+    }
+  }
+
+  return null;
+}
+
+function tryParseUrl(value: string, label: string, errors: string[]) {
+  try {
+    return new URL(value);
+  } catch {
+    errors.push(`${label} must be a valid URL.`);
+    return null;
+  }
+}
+
+function deriveSupabaseUrl(databaseUrl: string) {
+  try {
+    const host = new URL(databaseUrl).hostname;
+    const match = host.match(/^db\.([^.]+)\.supabase\.co$/);
+
+    if (!match) {
+      return null;
+    }
+
+    return `https://${match[1]}.supabase.co`;
+  } catch {
+    return null;
+  }
+}
+
+loadEnvFile();
+
+const requiredKeys = [
+  "DATABASE_URL",
+  "DIRECT_URL",
+  "JWT_SECRET",
+  "JWT_REFRESH_SECRET",
+  "MICROSOFT_CLIENT_ID",
+  "MICROSOFT_CLIENT_SECRET",
+  "MICROSOFT_TENANT_ID",
+  "MICROSOFT_CALLBACK_URL",
+  "FRONTEND_URL",
+  "API_BASE_URL",
+] as const;
+
+const errors: string[] = [];
+const warnings: string[] = [];
+
+for (const key of requiredKeys) {
+  if (!process.env[key] || process.env[key]?.trim().length === 0) {
+    errors.push(`${key} is missing.`);
+  }
+}
+
+const nodeEnv = process.env.NODE_ENV ?? "development";
+const apiBaseUrl = process.env.API_BASE_URL;
+const frontendUrl = process.env.FRONTEND_URL;
+const callbackUrl = process.env.MICROSOFT_CALLBACK_URL;
+const databaseUrl = process.env.DATABASE_URL;
+const directUrl = process.env.DIRECT_URL;
+const cookieDomain = process.env.COOKIE_DOMAIN?.trim();
+const supabaseUrl = process.env.SUPABASE_URL?.trim();
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
+const avatarsBucket = process.env.SUPABASE_AVATARS_BUCKET?.trim() || "avatars";
+
+const parsedApiBaseUrl =
+  apiBaseUrl && apiBaseUrl.trim().length > 0
+    ? tryParseUrl(apiBaseUrl, "API_BASE_URL", errors)
+    : null;
+const parsedFrontendUrl =
+  frontendUrl && frontendUrl.trim().length > 0
+    ? tryParseUrl(frontendUrl, "FRONTEND_URL", errors)
+    : null;
+const parsedCallbackUrl =
+  callbackUrl && callbackUrl.trim().length > 0
+    ? tryParseUrl(callbackUrl, "MICROSOFT_CALLBACK_URL", errors)
+    : null;
+
+if (databaseUrl && directUrl && databaseUrl !== directUrl) {
+  warnings.push("DATABASE_URL and DIRECT_URL differ. Confirm both point to the same Supabase/Postgres project.");
+}
+
+if (parsedApiBaseUrl && parsedCallbackUrl) {
+  const expectedCallback = new URL("/auth/microsoft/callback", parsedApiBaseUrl).toString();
+
+  if (parsedCallbackUrl.toString() !== expectedCallback) {
+    errors.push(
+      `MICROSOFT_CALLBACK_URL must match ${expectedCallback} for the current API_BASE_URL.`,
+    );
+  }
+}
+
+if (parsedApiBaseUrl && parsedFrontendUrl) {
+  const callbackFrontendOrigin = parsedFrontendUrl.origin;
+
+  if (nodeEnv === "production") {
+    if (parsedApiBaseUrl.protocol !== "https:" || parsedFrontendUrl.protocol !== "https:") {
+      errors.push("Production API_BASE_URL and FRONTEND_URL must use https.");
+    }
+
+    if (!cookieDomain) {
+      warnings.push("COOKIE_DOMAIN is empty in production. Cross-site refresh cookies may fail.");
+    }
+  }
+
+  if (parsedCallbackUrl && parsedCallbackUrl.origin !== parsedApiBaseUrl.origin) {
+    errors.push("MICROSOFT_CALLBACK_URL origin must match API_BASE_URL origin.");
+  }
+
+  if (callbackFrontendOrigin === parsedApiBaseUrl.origin) {
+    warnings.push("FRONTEND_URL and API_BASE_URL share the same origin. Confirm this is intentional.");
+  }
+}
+
+const derivedSupabaseUrl = databaseUrl ? deriveSupabaseUrl(databaseUrl) : null;
+const effectiveSupabaseUrl = supabaseUrl || derivedSupabaseUrl;
+
+if (!effectiveSupabaseUrl) {
+  warnings.push(
+    "Supabase project URL could not be derived from DATABASE_URL. Avatar uploads will require SUPABASE_URL.",
+  );
+}
+
+if (!supabaseServiceRoleKey) {
+  warnings.push(
+    `SUPABASE_SERVICE_ROLE_KEY is missing. Avatar uploads to bucket "${avatarsBucket}" will be unavailable.`,
+  );
+}
+
+if (supabaseUrl) {
+  tryParseUrl(supabaseUrl, "SUPABASE_URL", errors);
+}
+
+const summary = [
+  `NODE_ENV=${nodeEnv}`,
+  `API_BASE_URL=${apiBaseUrl ?? "<missing>"}`,
+  `FRONTEND_URL=${frontendUrl ?? "<missing>"}`,
+  `MICROSOFT_CALLBACK_URL=${callbackUrl ?? "<missing>"}`,
+  `SUPABASE_URL=${effectiveSupabaseUrl ?? "<disabled>"}`,
+  `SUPABASE_AVATARS_BUCKET=${avatarsBucket}`,
+];
+
+if (errors.length > 0) {
+  console.error("Environment validation failed.");
+  for (const line of summary) {
+    console.error(`- ${line}`);
+  }
+  for (const error of errors) {
+    console.error(`- ERROR: ${error}`);
+  }
+  for (const warning of warnings) {
+    console.error(`- WARN: ${warning}`);
+  }
+  process.exit(1);
+}
+
+console.log("Environment validation passed.");
+for (const line of summary) {
+  console.log(`- ${line}`);
+}
+for (const warning of warnings) {
+  console.log(`- WARN: ${warning}`);
+}

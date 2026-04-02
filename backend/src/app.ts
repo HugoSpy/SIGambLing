@@ -11,6 +11,7 @@ import { requestLogger } from "./middleware/request-logger";
 import { authRouter } from "./routes/auth.routes";
 import { casinoRouter } from "./routes/casino.routes";
 import { adminEventsRouter, eventsRouter } from "./routes/events.routes";
+import { gamificationRouter } from "./routes/gamification.routes";
 import { healthRouter } from "./routes/health.routes";
 import { userRouter } from "./routes/user.routes";
 
@@ -37,6 +38,7 @@ export function createApp() {
   app.use("/casino", casinoRouter);
   app.use("/events", eventsRouter);
   app.use("/admin/events", adminEventsRouter);
+  app.use("/rewards", gamificationRouter);
   app.use("/users", userRouter);
 
   app.use(notFoundHandler);

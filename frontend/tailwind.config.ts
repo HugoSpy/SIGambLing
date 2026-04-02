@@ -6,35 +6,35 @@ const config: Config = {
     extend: {
       colors: {
         brand: {
-          ink: "#0A1628",
-          navy: "#10213A",
-          cyan: "#06B6D4",
-          cyanSoft: "#67E8F9",
+          ink: "#09090B",
+          navy: "#18181B",
+          cyan: "#10B981",
+          cyanSoft: "#6EE7B7",
           orange: "#F59E0B",
-          orangeSoft: "#FDBA74",
-          line: "rgba(255,255,255,0.12)",
-          text: "#E2ECFF",
-          muted: "#8CA0BF"
+          orangeSoft: "#FCD34D",
+          line: "rgba(63,63,70,0.95)",
+          text: "#FAFAFA",
+          muted: "#A1A1AA"
         },
         category: {
-          sports: "#3B82F6",
-          politics: "#EF4444",
-          culture: "#8B5CF6",
-          epita: "#06B6D4"
+          sports: "#38BDF8",
+          politics: "#FB7185",
+          culture: "#C084FC",
+          epita: "#10B981"
         }
       },
       fontFamily: {
-        sans: ["Inter", "sans-serif"],
+        sans: ["Manrope", "Inter", "sans-serif"],
         display: ["Space Grotesk", "sans-serif"]
       },
       boxShadow: {
-        glow: "0 18px 40px rgba(6, 182, 212, 0.18)",
-        "glow-orange": "0 18px 40px rgba(245, 158, 11, 0.18)"
+        glow: "0 18px 40px rgba(16, 185, 129, 0.14)",
+        "glow-orange": "0 18px 40px rgba(245, 158, 11, 0.12)"
       },
       backgroundImage: {
         "hero-radial":
-          "radial-gradient(circle at top left, rgba(6,182,212,0.28), transparent 42%), radial-gradient(circle at bottom right, rgba(245,158,11,0.22), transparent 38%)",
-        "cta-gradient": "linear-gradient(135deg, #06B6D4 0%, #F59E0B 100%)"
+          "radial-gradient(circle at top left, rgba(16,185,129,0.18), transparent 42%), radial-gradient(circle at bottom right, rgba(245,158,11,0.12), transparent 38%)",
+        "cta-gradient": "linear-gradient(135deg, #10B981 0%, #34D399 100%)"
       },
       backdropBlur: {
         glass: "12px"

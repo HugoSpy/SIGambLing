@@ -137,6 +137,7 @@ export const createEventSchema = z
     title: titleSchema,
     description: optionalTextSchema,
     category: z.nativeEnum(EventCategory),
+    proposal_id: z.string().uuid().optional(),
     image_url: optionalImageSchema,
     options: z.array(optionSchema).min(2).max(6),
     option_initial_odds: optionInitialOddsSchema,
