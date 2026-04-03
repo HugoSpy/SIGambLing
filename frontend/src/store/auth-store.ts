@@ -1,7 +1,6 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import type { AuthUser } from "../types/auth";
-import { applyGitHubBonusClaim } from "../../../shared/auth-user-updates";
 
 export type AuthStatus = "idle" | "loading" | "authenticated" | "anonymous";
 
@@ -13,7 +12,6 @@ interface AuthState {
   setAccessToken: (token: string | null) => void;
   setUser: (user: AuthUser | null) => void;
   setSession: (payload: { user: AuthUser; accessToken: string }) => void;
-  applyGitHubBonusClaim: (amount: number) => void;
   updateBalance: (balance: number) => void;
   updateOddsPreference: (acceptOddsChanges: boolean) => void;
   clearSession: () => void;
@@ -34,10 +32,6 @@ export const useAuthStore = create<AuthState>()(
           accessToken,
           status: "authenticated",
         }),
-      applyGitHubBonusClaim: (amount) =>
-        set((state) => ({
-          user: state.user ? applyGitHubBonusClaim(state.user, amount) : null,
-        })),
       updateBalance: (balance) =>
         set((state) => ({
           user: state.user ? { ...state.user, balance } : null,

@@ -9,7 +9,6 @@ import { Input } from "../components/ui/Input";
 import { useGamificationState } from "../hooks/useGamificationState";
 import {
   ApiError,
-  claimGitHubBonus,
   claimDailyReward,
   fetchCurrentUser,
   logoutRequest,
@@ -19,7 +18,6 @@ import {
 import { getErrorMessage, notify } from "../lib/notifications";
 import { formatTokens } from "../lib/utils";
 import { useAuthStore } from "../store/auth-store";
-import { applyGitHubBonusClaim } from "../../../shared/auth-user-updates";
 import type { AuthUser } from "../types/auth";
 import type { GamificationBadge } from "../types/gamification";
 
@@ -54,7 +52,6 @@ export function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [claimingReward, setClaimingReward] = useState(false);
-  const [claimingGitHubBonus, setClaimingGitHubBonus] = useState(false);
 
   const { data: user } = useQuery({
     queryKey: ["me"],
@@ -197,21 +194,6 @@ export function ProfilePage() {
     }
   };
 
-  const handleClaimGitHubBonus = async () => {
-    try {
-      setClaimingGitHubBonus(true);
-      const result = await claimGitHubBonus();
-      const updatedUser = applyGitHubBonusClaim(user, result.amount);
-
-      commitUser(updatedUser);
-      notify.success(`Bonus GitHub valide: +${formatTokens(result.amount)} tokens`);
-    } catch (error) {
-      notify.error(getErrorMessage(error));
-    } finally {
-      setClaimingGitHubBonus(false);
-    }
-  };
-
   return (
     <DashboardShell onLogout={handleLogout} user={user}>
       <div className="space-y-6">
@@ -250,39 +232,6 @@ export function ProfilePage() {
             <p className="mt-2 font-display text-3xl text-brand-text">{user.pseudo}</p>
           </Card>
         </div>
-
-        {!user.claimed_github_bonus ? (
-          <Card className="min-w-[300px]">
-            <div className="flex flex-col gap-5 xl:flex-row xl:items-center xl:justify-between">
-              <div>
-                <p className="text-xs uppercase tracking-[0.28em] text-brand-cyan">
-                  Bonus GitHub
-                </p>
-                <h2 className="mt-3 font-display text-3xl text-brand-text">
-                  Claim onboarding disponible
-                </h2>
-                <p className="mt-3 text-sm leading-7 text-brand-muted">
-                  Ouvrez le repo officiel, laissez une etoile et recuperez une seule fois{" "}
-                  {formatTokens(300)} tokens.
-                </p>
-                <a
-                  className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-brand-cyan transition hover:text-white"
-                  href="https://github.com/HugoSpy/SIGambLing"
-                  rel="noreferrer"
-                  target="_blank"
-                >
-                  <Ticket className="h-4 w-4" />
-                  github.com/HugoSpy/SIGambLing
-                </a>
-              </div>
-
-              <Button disabled={claimingGitHubBonus} onClick={() => void handleClaimGitHubBonus()}>
-                <Gift className="mr-2 h-4 w-4" />
-                {claimingGitHubBonus ? "Validation..." : "Crediter +300 tokens"}
-              </Button>
-            </div>
-          </Card>
-        ) : null}
 
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
           <Card className="min-w-[300px]">
