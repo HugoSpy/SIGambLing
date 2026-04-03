@@ -279,7 +279,7 @@ test("placeSimpleBets closes expired events before rejecting the basket", async 
   }
 });
 
-test("placeSimpleBets switches to pure pari-mutuel odds and records history snapshots", async () => {
+test("placeSimpleBets progressively blends odds once the transition-liquidity band is reached", async () => {
   const prismaAny = prisma as any;
   const originalTransaction = prismaAny.$transaction;
   const originalUpdateMany = prismaAny.event.updateMany;
@@ -306,7 +306,7 @@ test("placeSimpleBets switches to pure pari-mutuel odds and records history snap
                 label: "Oui",
                 initial_odds: 1.9,
                 current_odds: 1.9,
-                total_staked: 100,
+                total_staked: 300,
                 is_winning: null,
               },
               {
@@ -317,8 +317,8 @@ test("placeSimpleBets switches to pure pari-mutuel odds and records history snap
                 is_winning: null,
               },
             ],
-            poolByOption: { Oui: 100, Non: 0 },
-            totalPool: 100,
+            poolByOption: { Oui: 300, Non: 0 },
+            totalPool: 300,
           }),
         ],
         update: async ({ where, data }: { where: Record<string, unknown>; data: Record<string, unknown> }) => {
@@ -373,7 +373,7 @@ test("placeSimpleBets switches to pure pari-mutuel odds and records history snap
         {
           eventId: "event-1",
           chosenOption: "Non",
-          amount: 1430,
+          amount: 200,
         },
       ],
     });
@@ -388,20 +388,20 @@ test("placeSimpleBets switches to pure pari-mutuel odds and records history snap
             {
               label: "Oui",
               initial_odds: 1.9,
-              current_odds: 15.147,
-              total_staked: 100,
+              current_odds: 1.8583,
+              total_staked: 300,
               is_winning: null,
             },
             {
               label: "Non",
               initial_odds: 1.9,
-              current_odds: 1.0592,
-              total_staked: 1430,
+              current_odds: 1.9958,
+              total_staked: 200,
               is_winning: null,
             },
           ],
-          poolByOption: { Oui: 100, Non: 1430 },
-          totalPool: 1530,
+          poolByOption: { Oui: 300, Non: 200 },
+          totalPool: 500,
         },
       },
     ]);
@@ -410,14 +410,14 @@ test("placeSimpleBets switches to pure pari-mutuel odds and records history snap
         {
           eventId: "event-1",
           option: "Oui",
-          odds: 15.147,
-          totalStaked: 100,
+          odds: 1.8583,
+          totalStaked: 300,
         },
         {
           eventId: "event-1",
           option: "Non",
-          odds: 1.0592,
-          totalStaked: 1430,
+          odds: 1.9958,
+          totalStaked: 200,
         },
       ],
     ]);
@@ -429,7 +429,7 @@ test("placeSimpleBets switches to pure pari-mutuel odds and records history snap
   }
 });
 
-test("placeSimpleBets no longer clamps the first live odds update", async () => {
+test("placeSimpleBets keeps admin odds fixed while the pool stays below the liquidity floor", async () => {
   const prismaAny = prisma as any;
   const originalTransaction = prismaAny.$transaction;
   const originalUpdateMany = prismaAny.event.updateMany;
@@ -507,14 +507,14 @@ test("placeSimpleBets no longer clamps the first live odds update", async () => 
           {
             label: "Oui",
             initial_odds: 1.9,
-            current_odds: 1.835,
+            current_odds: 1.9,
             total_staked: 100,
             is_winning: null,
           },
           {
             label: "Non",
             initial_odds: 1.9,
-            current_odds: 8.8357,
+            current_odds: 1.9,
             total_staked: 0,
             is_winning: null,
           },
@@ -522,6 +522,156 @@ test("placeSimpleBets no longer clamps the first live odds update", async () => 
         poolByOption: { Oui: 100, Non: 0 },
         totalPool: 100,
       },
+    ]);
+  } finally {
+    prismaAny.$transaction = originalTransaction;
+    prismaAny.event.updateMany = originalUpdateMany;
+    (gamificationService as any).synchronizeUserBadges = originalSynchronizeUserBadges;
+    (jackpotService as any).recordEventContribution = originalRecordEventContribution;
+  }
+});
+
+test("placeSimpleBets caps each odds move to 12% even in high-liquidity markets", async () => {
+  const prismaAny = prisma as any;
+  const originalTransaction = prismaAny.$transaction;
+  const originalUpdateMany = prismaAny.event.updateMany;
+  const originalSynchronizeUserBadges = gamificationService.synchronizeUserBadges;
+  const originalRecordEventContribution = jackpotService.recordEventContribution;
+  const captured = {
+    eventUpdates: [] as Array<Record<string, any>>,
+    historyBatches: [] as Array<Array<Record<string, any>>>,
+  };
+
+  prismaAny.event.updateMany = async () => ({ count: 0 });
+  (gamificationService as any).synchronizeUserBadges = async () => undefined;
+  (jackpotService as any).recordEventContribution = async () => ({
+    jackpotId: "jackpot-main",
+    contributionAmount: 6,
+  });
+  prismaAny.$transaction = async (callback: (tx: any) => Promise<unknown>) =>
+    callback({
+      event: {
+        findMany: async () => [
+          buildEventRecord({
+            options: [
+              {
+                label: "Oui",
+                initial_odds: 1.9,
+                current_odds: 1.9,
+                total_staked: 800,
+                is_winning: null,
+              },
+              {
+                label: "Non",
+                initial_odds: 1.9,
+                current_odds: 1.9,
+                total_staked: 800,
+                is_winning: null,
+              },
+            ],
+            poolByOption: { Oui: 800, Non: 800 },
+            totalPool: 1600,
+          }),
+        ],
+        update: async ({ where, data }: { where: Record<string, unknown>; data: Record<string, unknown> }) => {
+          captured.eventUpdates.push({ where, data });
+          return null;
+        },
+      },
+      user: {
+        updateMany: async () => ({ count: 1 }),
+        findUnique: async () => ({ balance: 4300 }),
+      },
+      bet: {
+        create: async ({ data }: { data: Record<string, any> }) =>
+          buildCreatedBet({
+            eventId: data.eventId,
+            chosenOption: data.chosenOption,
+            amount: data.amount,
+            oddAtBet: data.oddAtBet,
+            type: data.type,
+            status: data.status,
+            potentialWin: data.potentialWin,
+            legs: [
+              {
+                id: "leg-1",
+                eventId: data.eventId,
+                chosenOption: data.chosenOption,
+                oddsAtBet: data.legs.create.oddsAtBet,
+                status: data.legs.create.status,
+                event: {
+                  id: data.eventId,
+                  title: "Le SIG passera-t-il la soutenance ?",
+                  status: EventStatus.OPEN,
+                  resolvedOption: null,
+                  closingAt: new Date("2026-04-10T10:00:00.000Z"),
+                  imageUrl: null,
+                },
+              },
+            ],
+          }),
+      },
+      oddsHistory: {
+        createMany: async ({ data }: { data: Array<Record<string, any>> }) => {
+          captured.historyBatches.push(data);
+          return null;
+        },
+      },
+    });
+
+  try {
+    const outcome = await eventService.placeSimpleBets("user-1", {
+      bets: [
+        {
+          eventId: "event-1",
+          chosenOption: "Oui",
+          amount: 600,
+        },
+      ],
+    });
+
+    assert.equal(outcome.new_balance, 4300);
+    assert.equal(outcome.bets[0]?.odds_at_bet, 1.9);
+    assert.deepEqual(captured.eventUpdates, [
+      {
+        where: { id: "event-1" },
+        data: {
+          options: [
+            {
+              label: "Oui",
+              initial_odds: 1.9,
+              current_odds: 1.672,
+              total_staked: 1400,
+              is_winning: null,
+            },
+            {
+              label: "Non",
+              initial_odds: 1.9,
+              current_odds: 2.128,
+              total_staked: 800,
+              is_winning: null,
+            },
+          ],
+          poolByOption: { Oui: 1400, Non: 800 },
+          totalPool: 2200,
+        },
+      },
+    ]);
+    assert.deepEqual(captured.historyBatches, [
+      [
+        {
+          eventId: "event-1",
+          option: "Oui",
+          odds: 1.672,
+          totalStaked: 1400,
+        },
+        {
+          eventId: "event-1",
+          option: "Non",
+          odds: 2.128,
+          totalStaked: 800,
+        },
+      ],
     ]);
   } finally {
     prismaAny.$transaction = originalTransaction;

@@ -140,7 +140,9 @@ function roundPercentage(value: number) {
 
 const LIVE_PARIMUTUEL_HOUSE_EDGE = 0.01;
 const MAX_LIVE_ODDS = 99;
-const LIQUIDITY_BLEND_THRESHOLD = 1400;
+const FIXED_ODDS_LIQUIDITY_FLOOR = 400;
+const FULL_MARKET_LIQUIDITY_THRESHOLD = 1000;
+const MAX_ODDS_MOVEMENT_PER_BET = 0.12;
 const SIGNIFICANT_ODDS_DRIFT = 0.05;
 
 interface OddsChangeEntry {
@@ -441,9 +443,15 @@ function recalculateLiveOptions(inputOptions: StoredEventOption[]) {
     }));
   }
 
-  const blendFactor = clamp(totalVolume / LIQUIDITY_BLEND_THRESHOLD, 0, 1);
+  const blendFactor =
+    totalVolume <= FIXED_ODDS_LIQUIDITY_FLOOR
+      ? 0
+      : totalVolume >= FULL_MARKET_LIQUIDITY_THRESHOLD
+        ? 1
+        : (totalVolume - FIXED_ODDS_LIQUIDITY_FLOOR) /
+          (FULL_MARKET_LIQUIDITY_THRESHOLD - FIXED_ODDS_LIQUIDITY_FLOOR);
 
-  return options.map((option, index) => {
+  return options.map((option) => {
     const targetOdds =
       option.total_staked <= 0
         ? MAX_LIVE_ODDS
@@ -454,10 +462,17 @@ function recalculateLiveOptions(inputOptions: StoredEventOption[]) {
           );
     const blendedOdds =
       option.initial_odds + (targetOdds - option.initial_odds) * blendFactor;
+    const previousOdds = roundOdds(clamp(option.current_odds, LIVE_PARIMUTUEL_HOUSE_EDGE, MAX_LIVE_ODDS));
+    const lowerBound = previousOdds * (1 - MAX_ODDS_MOVEMENT_PER_BET);
+    const upperBound = previousOdds * (1 + MAX_ODDS_MOVEMENT_PER_BET);
+    const cappedOdds =
+      totalVolume <= FIXED_ODDS_LIQUIDITY_FLOOR
+        ? blendedOdds
+        : clamp(blendedOdds, lowerBound, upperBound);
 
     return {
       ...option,
-      current_odds: roundOdds(clamp(blendedOdds, LIVE_PARIMUTUEL_HOUSE_EDGE, MAX_LIVE_ODDS)),
+      current_odds: roundOdds(clamp(cappedOdds, LIVE_PARIMUTUEL_HOUSE_EDGE, MAX_LIVE_ODDS)),
     };
   });
 }
