@@ -27,6 +27,17 @@ const SUIT_SYMBOLS: Record<string, string> = {
 
 const RED_SUITS = new Set(["hearts", "diamonds"]);
 const QUICK_BETS = [10, 25, 50, 100];
+const PIP_ROWS: Record<string, number[]> = {
+  "2": [1, 1],
+  "3": [1, 1, 1],
+  "4": [2, 2],
+  "5": [2, 1, 2],
+  "6": [2, 2, 2],
+  "7": [2, 1, 2, 2],
+  "8": [2, 2, 2, 2],
+  "9": [2, 2, 1, 2, 2],
+  "10": [2, 2, 2, 2, 2],
+};
 
 const GAME_STATE_COPY: Record<
   BlackjackGameState,
@@ -61,6 +72,64 @@ const GAME_STATE_COPY: Record<
 
 function isRedSuit(suit: string) {
   return RED_SUITS.has(suit);
+}
+
+function CardCenter({ card }: { card?: BlackjackCard }) {
+  if (!card) {
+    return null;
+  }
+
+  const suitSymbol = SUIT_SYMBOLS[card.suit];
+  const tone = isRedSuit(card.suit) ? "text-red-600" : "text-gray-900";
+
+  if (card.rank === "A") {
+    return (
+      <div className={cn("flex flex-1 items-center justify-center text-4xl font-bold", tone)}>
+        {suitSymbol}
+      </div>
+    );
+  }
+
+  if (["J", "Q", "K"].includes(card.rank)) {
+    return (
+      <div className="flex h-full flex-1 flex-col items-center justify-center gap-2">
+        <span className={cn("text-4xl font-black tracking-tight", tone)}>{card.rank}</span>
+        <span className={cn("text-2xl", tone)}>{suitSymbol}</span>
+      </div>
+    );
+  }
+
+  const rows = PIP_ROWS[card.rank];
+  if (!rows) {
+    return (
+      <div className={cn("flex flex-1 items-center justify-center text-3xl font-bold", tone)}>
+        {suitSymbol}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-full flex-1 flex-col justify-center px-3 py-4">
+      <div className="flex flex-1 flex-col justify-between">
+        {rows.map((count, rowIndex) => (
+          <div
+            key={`${card.rank}-${rowIndex}`}
+            className={cn(
+              "flex items-center",
+              count === 1 ? "justify-center" : "justify-between",
+              tone,
+            )}
+          >
+            {Array.from({ length: count }).map((_, pipIndex) => (
+              <span key={`${card.rank}-${rowIndex}-${pipIndex}`} className="text-lg leading-none">
+                {suitSymbol}
+              </span>
+            ))}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
 function PlayingCard({
@@ -104,14 +173,7 @@ function PlayingCard({
             <span className="text-sm font-bold">{card?.rank}</span>
             <span className="text-xs">{SUIT_SYMBOLS[card?.suit ?? ""]}</span>
           </div>
-          <div
-            className={cn(
-              "flex flex-1 items-center justify-center text-3xl font-bold",
-              isRedSuit(card?.suit ?? "") ? "text-red-600" : "text-gray-900",
-            )}
-          >
-            {SUIT_SYMBOLS[card?.suit ?? ""]}
-          </div>
+          <CardCenter card={card} />
           <div
             className={cn(
               "absolute bottom-1 right-1 flex rotate-180 flex-col items-center leading-none",
@@ -239,11 +301,16 @@ export function BlackjackGame() {
   const [result, setResult] = useState<BlackjackResult | null>(null);
   const [payout, setPayout] = useState(0);
   const [currentBet, setCurrentBet] = useState(0);
+  const [insuranceBet, setInsuranceBet] = useState(0);
+  const [insurancePayout, setInsurancePayout] = useState(0);
+  const [insuranceAvailable, setInsuranceAvailable] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const balance = user?.balance ?? 0;
   const isPlaying = gameState === "PLAYER_TURN";
+  const insuranceCost = currentBet > 0 ? Math.max(1, Math.floor(currentBet / 2)) : 0;
   const canDouble = isPlaying && playerHand.length === 2 && balance >= currentBet;
+  const canInsure = isPlaying && insuranceAvailable && insuranceCost > 0 && balance >= insuranceCost;
   const isDisabled = loading || gameState === "DEALING" || gameState === "DEALER_TURN";
   const canAdjustBet = !loading && (gameState === "BETTING" || gameState === "GAME_OVER");
 
@@ -260,6 +327,9 @@ export function BlackjackGame() {
         setDealerTotal(response.dealer_total ?? calcHandTotal(finalDealerHand));
         setResult(finalResult);
         setPayout(response.payout ?? 0);
+        setInsuranceBet(response.insurance_bet ?? 0);
+        setInsurancePayout(response.insurance_payout ?? 0);
+        setInsuranceAvailable(false);
 
         if (response.new_balance !== undefined) {
           updateBalance(response.new_balance);
@@ -303,6 +373,8 @@ export function BlackjackGame() {
       setPlayerHand(data.player_hand);
       setPlayerTotal(data.player_total);
       setCurrentBet(bet);
+      setInsuranceBet(data.insurance_bet ?? 0);
+      setInsurancePayout(data.insurance_payout ?? 0);
 
       if (data.status === "resolved") {
         setDealerUpcard(data.dealer_upcard ?? data.dealer_hand_final?.[0] ?? null);
@@ -310,6 +382,7 @@ export function BlackjackGame() {
       } else {
         setDealerUpcard(data.dealer_upcard ?? null);
         setDealerTotal(data.dealer_visible_total ?? 0);
+        setInsuranceAvailable(data.insurance_available ?? false);
         setGameState("PLAYER_TURN");
         soundManager.play("click");
       }
@@ -339,6 +412,9 @@ export function BlackjackGame() {
         setPlayerHand(data.player_hand);
         setPlayerTotal(data.player_total ?? calcHandTotal(data.player_hand));
       }
+      setInsuranceBet(data.insurance_bet ?? insuranceBet);
+      setInsurancePayout(data.insurance_payout ?? 0);
+      setInsuranceAvailable(data.insurance_available ?? false);
 
       if (data.status === "resolved") {
         resolveGame(data);
@@ -348,7 +424,7 @@ export function BlackjackGame() {
     } finally {
       setLoading(false);
     }
-  }, [gameId, resolveGame]);
+  }, [gameId, insuranceBet, resolveGame]);
 
   const handleStand = useCallback(async () => {
     if (!gameId) {
@@ -363,6 +439,9 @@ export function BlackjackGame() {
       const response = await api.post<BlackjackActionResponse>("/casino/blackjack/stand", {
         game_id: gameId,
       });
+      setInsuranceBet(response.data.insurance_bet ?? insuranceBet);
+      setInsurancePayout(response.data.insurance_payout ?? 0);
+      setInsuranceAvailable(response.data.insurance_available ?? false);
       resolveGame(response.data);
     } catch (error) {
       setGameState("PLAYER_TURN");
@@ -370,7 +449,7 @@ export function BlackjackGame() {
     } finally {
       setLoading(false);
     }
-  }, [gameId, resolveGame]);
+  }, [gameId, insuranceBet, resolveGame]);
 
   const handleDouble = useCallback(async () => {
     if (!gameId) {
@@ -385,7 +464,12 @@ export function BlackjackGame() {
       const response = await api.post<BlackjackActionResponse>("/casino/blackjack/double", {
         game_id: gameId,
       });
-      setCurrentBet((prev) => prev * 2);
+      if ((response.data.player_hand?.length ?? playerHand.length) > playerHand.length) {
+        setCurrentBet((prev) => prev * 2);
+      }
+      setInsuranceBet(response.data.insurance_bet ?? insuranceBet);
+      setInsurancePayout(response.data.insurance_payout ?? 0);
+      setInsuranceAvailable(response.data.insurance_available ?? false);
       resolveGame(response.data);
     } catch (error) {
       setGameState("PLAYER_TURN");
@@ -393,7 +477,41 @@ export function BlackjackGame() {
     } finally {
       setLoading(false);
     }
-  }, [gameId, resolveGame]);
+  }, [gameId, insuranceBet, playerHand.length, resolveGame]);
+
+  const handleInsurance = useCallback(async () => {
+    if (!gameId) {
+      return;
+    }
+
+    setLoading(true);
+    soundManager.play("chip");
+
+    try {
+      const response = await api.post<BlackjackActionResponse>("/casino/blackjack/insurance", {
+        game_id: gameId,
+      });
+      const data = response.data;
+
+      setInsuranceBet(data.insurance_bet ?? insuranceCost);
+      setInsurancePayout(data.insurance_payout ?? 0);
+      setInsuranceAvailable(data.insurance_available ?? false);
+
+      if (data.new_balance !== undefined) {
+        updateBalance(data.new_balance);
+        void queryClient.invalidateQueries({ queryKey: ["gamification"] });
+        void queryClient.invalidateQueries({ queryKey: ["jackpot"] });
+      }
+
+      if (data.status === "resolved") {
+        resolveGame(data);
+      }
+    } catch (error) {
+      notify.error(getErrorMessage(error, "Impossible de prendre l'assurance."));
+    } finally {
+      setLoading(false);
+    }
+  }, [gameId, insuranceCost, queryClient, resolveGame, updateBalance]);
 
   const handleNewGame = useCallback(() => {
     setGameState("BETTING");
@@ -404,6 +522,9 @@ export function BlackjackGame() {
     setResult(null);
     setPayout(0);
     setCurrentBet(0);
+    setInsuranceBet(0);
+    setInsurancePayout(0);
+    setInsuranceAvailable(false);
     setPlayerTotal(0);
     setDealerTotal(0);
   }, []);
@@ -430,8 +551,12 @@ export function BlackjackGame() {
       ? "Choisissez la mise puis distribuez."
       : gameState === "PLAYER_TURN"
         ? canDouble
-          ? "Tirer pour pousser, rester pour securiser, doubler si la lecture est nette."
-          : "Tirer pour pousser ou rester pour verrouiller la main."
+          ? insuranceAvailable
+            ? "Le dealer montre un As. Vous pouvez assurer maintenant, sinon continuer la manche."
+            : "Tirer pour pousser, rester pour securiser, doubler si la lecture est nette."
+          : insuranceAvailable
+            ? "Le dealer montre un As. Assurance disponible avant votre premiere action."
+            : "Tirer pour pousser ou rester pour verrouiller la main."
         : gameState === "GAME_OVER"
           ? "Le recap de manche reste visible pendant que vous preparez la suivante."
           : "Patientez pendant la resolution de la manche.";
@@ -450,7 +575,7 @@ export function BlackjackGame() {
             <p className="mt-4 text-xs uppercase tracking-[0.3em] text-brand-cyan">Salon casino</p>
             <h1 className="mt-3 font-display text-4xl text-brand-text">Blackjack</h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-brand-muted">
-              Blackjack paie 3:2 • Dealer tire sur 16 ou moins • Double down disponible
+              Blackjack paie 3:2 • Dealer tire sur 16 ou moins • Assurance sur As visible
             </p>
           </div>
 
@@ -598,21 +723,27 @@ export function BlackjackGame() {
                   {payout > 0 ? `+${formatTokens(payout)}` : "0"}
                 </p>
               </div>
+              <div className="rounded-[24px] border border-white/10 bg-white/5 p-4">
+                <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">Assurance</p>
+                <p className="mt-3 font-display text-3xl text-brand-text">
+                  {insuranceBet > 0 ? formatTokens(insuranceBet) : "0"}
+                </p>
+                <p className="mt-2 text-xs text-brand-muted">
+                  {insurancePayout > 0
+                    ? `Retour ${formatTokens(insurancePayout)}`
+                    : insuranceAvailable
+                      ? `Cout ${formatTokens(insuranceCost)}`
+                      : "Inactive"}
+                </p>
+              </div>
               <div className="rounded-[24px] border border-white/10 bg-white/5 p-4 sm:col-span-2 xl:col-span-1">
                 <div className="flex items-start gap-3">
                   <Waves className="mt-0.5 h-5 w-5 text-brand-cyan" />
                   <p className="text-sm leading-7 text-brand-muted">
-                    Le dealer tire sur 16 ou moins. Le double est disponible uniquement sur vos
-                    deux premieres cartes, si le solde le permet.
+                    Le dealer tire sur 16 ou moins. L'assurance coute 50% de la mise initiale et
+                    ne reste visible que sur un As expose avant votre premiere action.
                   </p>
                 </div>
-              </div>
-              <div className="rounded-[24px] border border-white/10 bg-white/5 p-4 sm:col-span-2 xl:col-span-1">
-                <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">Lecture rapide</p>
-                <p className="mt-3 text-sm leading-7 text-brand-muted">
-                  Les totaux restent affiches directement sur la table pour eviter le va-et-vient
-                  visuel, meme pendant la resolution.
-                </p>
               </div>
             </div>
           </Card>
@@ -656,6 +787,18 @@ export function BlackjackGame() {
                       Total dealer
                     </p>
                     <p className="mt-1 text-lg font-black text-brand-text">{dealerTotal}</p>
+                  </div>
+                  <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 sm:col-span-2">
+                    <p className="text-[10px] uppercase tracking-[0.28em] text-white/45">
+                      Assurance
+                    </p>
+                    <p className="mt-1 text-lg font-black text-brand-text">
+                      {insuranceBet > 0
+                        ? insurancePayout > 0
+                          ? `Cout ${formatTokens(insuranceBet)} • Retour ${formatTokens(insurancePayout)}`
+                          : `Cout ${formatTokens(insuranceBet)} • Non declenchee`
+                        : "Aucune assurance prise"}
+                    </p>
                   </div>
                 </div>
               </motion.div>
@@ -750,6 +893,14 @@ export function BlackjackGame() {
 
               {gameState === "PLAYER_TURN" ? (
                 <>
+                  <Button
+                    aria-label="Prendre l'assurance"
+                    className="flex-1 bg-teal-100 text-zinc-950 hover:bg-white"
+                    disabled={isDisabled || !canInsure}
+                    onClick={() => void handleInsurance()}
+                  >
+                    Assurance
+                  </Button>
                   <Button
                     aria-label="Tirer une carte"
                     className="flex-1 bg-sky-500 text-zinc-950 hover:bg-sky-400"

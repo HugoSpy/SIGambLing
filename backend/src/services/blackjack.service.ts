@@ -14,11 +14,16 @@ export interface BlackjackCard {
 
 interface ActiveGame {
   userId: string;
+  initialBet: number;
   bet: number;
   deck: BlackjackCard[];
   playerHand: BlackjackCard[];
   dealerHand: BlackjackCard[];
   doubled: boolean;
+  insuranceBet: number;
+  insuranceResolved: boolean;
+  insuranceAvailable: boolean;
+  dealerHasBlackjack: boolean;
 }
 
 const SUITS: Suit[] = ["hearts", "diamonds", "clubs", "spades"];
@@ -26,6 +31,7 @@ const RANKS: Rank[] = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "
 
 const activeSessions = new Map<string, ActiveGame>();
 const userGameMap = new Map<string, string>();
+let deckFactory = () => buildDeck(6);
 
 function buildDeck(numDecks = 6): BlackjackCard[] {
   const deck: BlackjackCard[] = [];
@@ -69,6 +75,16 @@ function generateGameId(): string {
   return `bj_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
 
+function canOfferInsurance(game: ActiveGame): boolean {
+  return (
+    game.insuranceAvailable &&
+    !game.insuranceResolved &&
+    game.insuranceBet === 0 &&
+    game.playerHand.length === 2 &&
+    game.dealerHand[0]?.rank === "A"
+  );
+}
+
 class BlackjackService {
   private getActiveGame(userId: string, gameId: string): ActiveGame {
     const game = activeSessions.get(gameId);
@@ -90,19 +106,25 @@ class BlackjackService {
     payout: number,
     extraData: Record<string, unknown>,
   ) {
+    const totalStake = game.bet + game.insuranceBet;
     const gameData: Prisma.InputJsonValue = {
       player_hand: game.playerHand as unknown as Prisma.InputJsonValue,
       dealer_hand: game.dealerHand as unknown as Prisma.InputJsonValue,
+      initial_bet: game.initialBet,
+      total_stake: totalStake,
       doubled: game.doubled,
+      insurance_bet: game.insuranceBet,
+      insurance_resolved: game.insuranceResolved,
+      dealer_blackjack: game.dealerHasBlackjack,
       ...extraData,
     };
     await prisma.casinoGame.create({
       data: {
         userId,
         gameType: "blackjack",
-        betAmount: game.bet,
+        betAmount: totalStake,
         result,
-        payout: payout - game.bet,
+        payout: payout - totalStake,
         gameData,
       },
     });
@@ -110,7 +132,84 @@ class BlackjackService {
     await gamificationService.synchronizeUserBadges(userId);
   }
 
+  private async settleDealerBlackjack(userId: string, gameId: string, game: ActiveGame) {
+    const playerTotal = handTotal(game.playerHand);
+    const dealerTotal = handTotal(game.dealerHand);
+    const playerBlackjack = playerTotal === 21 && game.playerHand.length === 2;
+    const insuranceWon = game.insuranceBet > 0;
+    const insurancePayout = insuranceWon ? game.insuranceBet * 3 : 0;
+
+    let result: "win" | "loss" | "push";
+    let resolvedResult: string;
+    let payout: number;
+
+    if (playerBlackjack) {
+      result = "push";
+      resolvedResult = "push";
+      payout = game.initialBet + insurancePayout;
+    } else {
+      result = "loss";
+      resolvedResult = "loss";
+      payout = insurancePayout;
+    }
+
+    this.cleanupGame(gameId, userId);
+
+    if (payout > 0) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { balance: { increment: payout } },
+      });
+    }
+
+    await this.saveGame(userId, game, result, payout, {
+      player_total: playerTotal,
+      dealer_total: dealerTotal,
+      result: resolvedResult,
+      payout,
+      player_blackjack: playerBlackjack,
+      dealer_blackjack: true,
+      insurance_payout: insurancePayout,
+      insurance_won: insuranceWon,
+    });
+
+    const updatedUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { balance: true },
+    });
+
+    return {
+      player_hand: game.playerHand,
+      player_total: playerTotal,
+      dealer_hand_final: game.dealerHand,
+      dealer_total: dealerTotal,
+      status: "resolved" as const,
+      result: resolvedResult,
+      payout,
+      insurance_bet: game.insuranceBet,
+      insurance_payout: insurancePayout,
+      insurance_available: false,
+      new_balance: updatedUser?.balance ?? 0,
+    };
+  }
+
+  private async resolvePendingDealerPeek(userId: string, gameId: string, game: ActiveGame) {
+    if (!game.insuranceAvailable) {
+      return null;
+    }
+
+    game.insuranceAvailable = false;
+
+    if (game.dealerHasBlackjack) {
+      return this.settleDealerBlackjack(userId, gameId, game);
+    }
+
+    return null;
+  }
+
   private async dealerPlay(userId: string, gameId: string, game: ActiveGame) {
+    game.insuranceAvailable = false;
+
     while (handTotal(game.dealerHand) < 17) {
       const card = game.deck.pop();
       if (!card) break;
@@ -169,6 +268,9 @@ class BlackjackService {
       status: "resolved" as const,
       result: resolvedResult,
       payout,
+      insurance_bet: game.insuranceBet,
+      insurance_payout: 0,
+      insurance_available: false,
       new_balance: updatedUser?.balance ?? 0,
     };
   }
@@ -201,19 +303,33 @@ class BlackjackService {
     });
 
     const newBalance = user.balance - bet;
-    const deck = buildDeck(6);
+    const deck = deckFactory();
     const playerHand: BlackjackCard[] = [deck.pop()!, deck.pop()!];
     const dealerHand: BlackjackCard[] = [deck.pop()!, deck.pop()!];
 
-    activeSessions.set(gameId, { userId, bet, deck, playerHand, dealerHand, doubled: false });
+    const playerBlackjack = handTotal(playerHand) === 21;
+    const dealerBlackjack = handTotal(dealerHand) === 21;
+    const insuranceAvailable = dealerHand[0]?.rank === "A" && !playerBlackjack;
+
+    activeSessions.set(gameId, {
+      userId,
+      initialBet: bet,
+      bet,
+      deck,
+      playerHand,
+      dealerHand,
+      doubled: false,
+      insuranceBet: 0,
+      insuranceResolved: false,
+      insuranceAvailable,
+      dealerHasBlackjack: dealerBlackjack,
+    });
     userGameMap.set(userId, gameId);
 
     const playerTotal = handTotal(playerHand);
     const dealerTotal = handTotal(dealerHand);
-    const playerBlackjack = playerTotal === 21;
-    const dealerBlackjack = dealerTotal === 21;
 
-    if (playerBlackjack || dealerBlackjack) {
+    if (playerBlackjack || (dealerBlackjack && !insuranceAvailable)) {
       this.cleanupGame(gameId, userId);
 
       let result: "win" | "loss" | "push";
@@ -274,6 +390,9 @@ class BlackjackService {
         status: "resolved" as const,
         result: resolvedResult,
         payout,
+        insurance_bet: 0,
+        insurance_payout: 0,
+        insurance_available: false,
         new_balance: newBalance + payout,
         is_immediate: true,
       };
@@ -286,12 +405,18 @@ class BlackjackService {
       dealer_visible_total: handTotal([dealerHand[0]!]),
       player_total: playerTotal,
       status: "playing" as const,
+      insurance_bet: 0,
+      insurance_available: insuranceAvailable,
       new_balance: newBalance,
     };
   }
 
   async hit(userId: string, gameId: string) {
     const game = this.getActiveGame(userId, gameId);
+    const dealerPeekResult = await this.resolvePendingDealerPeek(userId, gameId, game);
+    if (dealerPeekResult) {
+      return dealerPeekResult;
+    }
 
     const card = game.deck.pop();
     if (!card) throw new AppError("Le deck est vide.", 500);
@@ -322,6 +447,9 @@ class BlackjackService {
         status: "resolved" as const,
         result: "bust",
         payout: 0,
+        insurance_bet: game.insuranceBet,
+        insurance_payout: 0,
+        insurance_available: false,
         new_balance: updatedUser?.balance ?? 0,
       };
     }
@@ -334,16 +462,26 @@ class BlackjackService {
       player_hand: game.playerHand,
       player_total: playerTotal,
       status: "playing" as const,
+      insurance_bet: game.insuranceBet,
+      insurance_available: false,
     };
   }
 
   async stand(userId: string, gameId: string) {
     const game = this.getActiveGame(userId, gameId);
+    const dealerPeekResult = await this.resolvePendingDealerPeek(userId, gameId, game);
+    if (dealerPeekResult) {
+      return dealerPeekResult;
+    }
     return this.dealerPlay(userId, gameId, game);
   }
 
   async double(userId: string, gameId: string) {
     const game = this.getActiveGame(userId, gameId);
+    const dealerPeekResult = await this.resolvePendingDealerPeek(userId, gameId, game);
+    if (dealerPeekResult) {
+      return dealerPeekResult;
+    }
 
     if (game.playerHand.length !== 2) {
       throw new AppError("Le double down n'est disponible qu'avec 2 cartes.", 400);
@@ -374,6 +512,7 @@ class BlackjackService {
 
     game.bet *= 2;
     game.doubled = true;
+    game.insuranceAvailable = false;
 
     const card = game.deck.pop();
     if (!card) throw new AppError("Le deck est vide.", 500);
@@ -381,6 +520,71 @@ class BlackjackService {
 
     return this.dealerPlay(userId, gameId, game);
   }
+
+  async insure(userId: string, gameId: string) {
+    const game = this.getActiveGame(userId, gameId);
+
+    if (!canOfferInsurance(game)) {
+      throw new AppError("L'assurance n'est pas disponible pour cette manche.", 400);
+    }
+
+    const insuranceBet = Math.floor(game.initialBet / 2);
+    if (insuranceBet < 1) {
+      throw new AppError("Mise trop faible pour prendre une assurance.", 400);
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { balance: true },
+    });
+    if (!user || user.balance < insuranceBet) {
+      throw new AppError("Balance insuffisante pour l'assurance.", 400);
+    }
+
+    const debited = await prisma.user.updateMany({
+      where: { id: userId, balance: { gte: insuranceBet } },
+      data: { balance: { decrement: insuranceBet } },
+    });
+
+    if (debited.count !== 1) {
+      throw new AppError("Balance insuffisante pour l'assurance.", 400);
+    }
+
+    game.insuranceBet = insuranceBet;
+    game.insuranceResolved = true;
+    game.insuranceAvailable = false;
+
+    if (game.dealerHasBlackjack) {
+      return this.settleDealerBlackjack(userId, gameId, game);
+    }
+
+    const updatedUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { balance: true },
+    });
+
+    return {
+      player_hand: game.playerHand,
+      player_total: handTotal(game.playerHand),
+      status: "playing" as const,
+      insurance_bet: insuranceBet,
+      insurance_payout: 0,
+      insurance_available: false,
+      new_balance: updatedUser?.balance ?? Math.max(0, user.balance - insuranceBet),
+    };
+  }
 }
 
 export const blackjackService = new BlackjackService();
+export const blackjackServiceTestUtils = {
+  setDeckFactory(factory: () => BlackjackCard[]) {
+    deckFactory = factory;
+  },
+  resetDeckFactory() {
+    deckFactory = () => buildDeck(6);
+  },
+  clearSessions() {
+    activeSessions.clear();
+    userGameMap.clear();
+  },
+};

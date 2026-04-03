@@ -17,6 +17,9 @@ export interface BlackjackDealResponse {
   status: "playing" | "resolved";
   result?: BlackjackResult;
   payout?: number;
+  insurance_bet?: number;
+  insurance_payout?: number;
+  insurance_available?: boolean;
   new_balance: number;
   is_immediate?: boolean;
 }
@@ -29,5 +32,8 @@ export interface BlackjackActionResponse {
   status: "playing" | "resolved";
   result?: BlackjackResult;
   payout?: number;
+  insurance_bet?: number;
+  insurance_payout?: number;
+  insurance_available?: boolean;
   new_balance?: number;
 }

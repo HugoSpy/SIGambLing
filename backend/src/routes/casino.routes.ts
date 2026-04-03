@@ -4,6 +4,7 @@ import {
   blackjackDealController,
   blackjackDoubleController,
   blackjackHitController,
+  blackjackInsuranceController,
   blackjackStandController,
   spinRouletteController,
 } from "../controllers/casino.controller";
@@ -57,6 +58,14 @@ casinoRouter.post(
   casinoLimiter,
   validateBody(blackjackActionSchema),
   blackjackStandController,
+);
+
+casinoRouter.post(
+  "/blackjack/insurance",
+  requireAuth,
+  casinoLimiter,
+  validateBody(blackjackActionSchema),
+  blackjackInsuranceController,
 );
 
 casinoRouter.post(

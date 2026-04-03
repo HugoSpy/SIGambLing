@@ -334,6 +334,32 @@ test("POST /casino/blackjack/deal starts an authenticated blackjack session", as
   assert.equal(response.body.status, "playing");
 });
 
+test("POST /casino/blackjack/insurance forwards the authenticated insurance action", async () => {
+  const token = issueAccessToken();
+
+  stubMethod(blackjackService, "insure", async (userId: string, gameId: string) => {
+    assert.equal(userId, "user-1");
+    assert.equal(gameId, "blackjack-1");
+
+    return {
+      status: "playing",
+      insurance_bet: 25,
+      insurance_payout: 0,
+      insurance_available: false,
+      new_balance: 925,
+    };
+  });
+
+  const response = await request
+    .post("/casino/blackjack/insurance")
+    .set("Authorization", `Bearer ${token}`)
+    .send({ game_id: "blackjack-1" });
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.insurance_bet, 25);
+  assert.equal(response.body.new_balance, 925);
+});
+
 test("GET /users/me exposes profile and streak data for gamification surfaces", async () => {
   const token = issueAccessToken();
 
