@@ -10,6 +10,11 @@ import {
 import { validateBody } from "../middleware/validate";
 import { startMicrosoftAuthSchema, refreshSchema } from "../schemas/auth.schemas";
 import { AppError } from "../utils/app-error";
+import {
+  clearMicrosoftOAuthState,
+  issueMicrosoftOAuthState,
+  verifyMicrosoftOAuthState,
+} from "../utils/oauth-state";
 
 export const authRouter = Router();
 
@@ -34,13 +39,27 @@ authRouter.use(authLimiter);
 authRouter.post("/microsoft", validateBody(startMicrosoftAuthSchema), getMicrosoftRedirectController);
 
 authRouter.get("/microsoft", (request, response, next) => {
+  const state = issueMicrosoftOAuthState(response);
+
   passport.authenticate("microsoft", {
     session: false,
+    state,
     prompt: typeof request.query.prompt === "string" ? request.query.prompt : "select_account",
   })(request, response, next);
 });
 
 authRouter.get("/microsoft/callback", (request, response, next) => {
+  clearMicrosoftOAuthState(response);
+
+  if (!request.query.error) {
+    try {
+      verifyMicrosoftOAuthState(request);
+    } catch (error) {
+      next(error);
+      return;
+    }
+  }
+
   passport.authenticate(
     "microsoft",
     { session: false },

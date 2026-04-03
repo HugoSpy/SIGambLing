@@ -1,6 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
 const jwt = require("jsonwebtoken");
+const passport = require("passport");
 const supertest = require("supertest");
 
 process.env.NODE_ENV = "test";
@@ -139,6 +140,130 @@ test("POST /auth/logout invalidates the session and clears the refresh cookie", 
   assert.equal(invalidatedToken, "logout-refresh-token");
   assert.equal(response.body.message, "Logged out successfully");
   assert.match(response.headers["set-cookie"][0], /refresh_token=;/);
+});
+
+test("OPTIONS /auth/refresh allows the configured frontend origin", async () => {
+  const response = await request
+    .options("/auth/refresh")
+    .set("Origin", "http://localhost:5173")
+    .set("Access-Control-Request-Method", "POST");
+
+  assert.equal(response.status, 200);
+  assert.equal(response.headers["access-control-allow-origin"], "http://localhost:5173");
+  assert.equal(response.headers["access-control-allow-credentials"], "true");
+});
+
+test("OPTIONS /auth/refresh omits CORS headers for disallowed origins", async () => {
+  const response = await request
+    .options("/auth/refresh")
+    .set("Origin", "https://evil.example")
+    .set("Access-Control-Request-Method", "POST");
+
+  assert.equal(response.status, 200);
+  assert.equal(response.headers["access-control-allow-origin"], undefined);
+});
+
+test("GET /auth/microsoft issues a signed state cookie and forwards it to Passport", async () => {
+  let observedState: string | undefined;
+
+  stubMethod(passport, "authenticate", (_strategy: string, options: Record<string, unknown>) => {
+    observedState = typeof options.state === "string" ? options.state : undefined;
+
+    return (_request: any, response: any) => {
+      response.status(204).end();
+    };
+  });
+
+  const response = await request.get("/auth/microsoft");
+
+  assert.equal(response.status, 204);
+  assert.ok(observedState);
+  assert.match(response.headers["set-cookie"][0], /microsoft_oauth_state=/);
+  assert.match(response.headers["set-cookie"][0], /HttpOnly/i);
+  assert.match(response.headers["set-cookie"][0], /SameSite=Lax/i);
+  assert.match(response.headers["set-cookie"][0], /Path=\/auth/i);
+  assert.match(response.headers["set-cookie"][0], new RegExp(`microsoft_oauth_state=${observedState}`));
+  assert.doesNotThrow(() => jwt.verify(observedState, env.JWT_SECRET));
+});
+
+test("GET /auth/microsoft/callback rejects requests with a missing OAuth state before Passport runs", async () => {
+  let authenticateCalled = false;
+
+  stubMethod(passport, "authenticate", () => {
+    authenticateCalled = true;
+
+    return (_request: any, response: any) => {
+      response.status(204).end();
+    };
+  });
+
+  const response = await request
+    .get("/auth/microsoft/callback")
+    .query({ code: "microsoft-code" });
+
+  assert.equal(response.status, 403);
+  assert.equal(response.body.message, "Etat OAuth Microsoft manquant.");
+  assert.equal(authenticateCalled, false);
+  assert.match(response.headers["set-cookie"][0], /microsoft_oauth_state=;/);
+});
+
+test("GET /auth/microsoft/callback redirects without leaking an access token in the URL", async () => {
+  const state = jwt.sign(
+    {
+      purpose: "microsoft_oauth_state",
+      nonce: "a".repeat(64),
+    },
+    env.JWT_SECRET,
+    { expiresIn: "10m" },
+  );
+
+  stubMethod(passport, "authenticate", (_strategy: string, _options: unknown, callback?: Function) => {
+    return (request: unknown, response: unknown, next: Function) => {
+      if (callback) {
+        callback(null, { id: "user-1" });
+        return;
+      }
+
+      next();
+    };
+  });
+
+  stubMethod(prisma.user, "findUnique", async () => ({
+    id: "user-1",
+    email: "student@epita.fr",
+    pseudo: "SigmaStudent",
+    balance: 1000,
+    role: "user",
+    avatarUrl: null,
+    streakDays: 2,
+    acceptOddsChanges: false,
+    lastRewardAt: null,
+    createdAt: new Date("2026-04-01T12:00:00.000Z"),
+  }));
+
+  stubMethod(authService, "buildSession", () => ({
+    accessToken: "browser-access-token",
+    refreshToken: "browser-refresh-token",
+  }));
+
+  stubMethod(authService, "applyRefreshCookie", (response: any, refreshToken: string) => {
+    response.cookie("refresh_token", refreshToken, {
+      httpOnly: true,
+      path: "/auth",
+    });
+  });
+
+  const response = await request
+    .get("/auth/microsoft/callback")
+    .set("Accept", "text/html")
+    .set("Cookie", `microsoft_oauth_state=${state}`)
+    .query({ code: "microsoft-code", state });
+
+  assert.equal(response.status, 302);
+  assert.equal(response.headers.location, new URL("/auth/callback", env.FRONTEND_URL).toString());
+  assert.equal(new URL(response.headers.location).searchParams.get("access_token"), null);
+  assert.match(response.headers["set-cookie"][0], /microsoft_oauth_state=;/);
+  assert.match(response.headers["set-cookie"][1], /refresh_token=browser-refresh-token/);
 });
 
 test("GET /events returns the authenticated user's open event feed", async () => {
