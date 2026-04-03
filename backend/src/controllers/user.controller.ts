@@ -50,20 +50,6 @@ export const uploadCurrentUserAvatarController: RequestHandler = async (
   }
 };
 
-export const claimCurrentUserGitHubBonusController: RequestHandler = async (
-  request,
-  response,
-  next,
-) => {
-  try {
-    const userId = getAuthenticatedUserId(request);
-    const result = await userService.claimGitHubBonus(userId);
-    response.status(201).json(result);
-  } catch (error) {
-    next(error);
-  }
-};
-
 export const listCurrentUserEventBetsController: RequestHandler = async (
   request,
   response,

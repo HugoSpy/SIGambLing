@@ -63,7 +63,6 @@ model User {
   sessionVersion  Int         @default(0)
   lastRewardAt    DateTime?
   streakDays      Int         @default(0)
-  claimedGitHubBonus Boolean  @default(false)
   acceptOddsChanges Boolean   @default(false)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt

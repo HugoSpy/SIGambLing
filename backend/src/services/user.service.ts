@@ -13,7 +13,6 @@ import { storageService } from "./storage.service";
 
 const ALLOWED_AVATAR_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const MAX_AVATAR_SIZE = 2 * 1024 * 1024;
-const GITHUB_ONBOARDING_BONUS = 300;
 
 function serializeAdminUserSummary(user: {
   id: string;
@@ -137,55 +136,6 @@ class UserService {
     await gamificationService.synchronizeUserBadges(userId);
 
     return serializeUser(updatedUser);
-  }
-
-  async claimGitHubBonus(userId: string) {
-    return prisma.$transaction(async (transaction) => {
-      const claimResult = await transaction.user.updateMany({
-        where: {
-          id: userId,
-          isBanned: false,
-          claimedGitHubBonus: false,
-        },
-        data: {
-          claimedGitHubBonus: true,
-          balance: {
-            increment: GITHUB_ONBOARDING_BONUS,
-          },
-        },
-      });
-
-      if (claimResult.count !== 1) {
-        const existingUser = await transaction.user.findUnique({
-          where: { id: userId },
-        });
-
-        if (!existingUser || existingUser.isBanned) {
-          throw new AppError("Utilisateur introuvable.", 404);
-        }
-
-        if (existingUser.claimedGitHubBonus) {
-          throw new AppError("Bonus GitHub deja recupere.", 409);
-        }
-
-        throw new AppError("Impossible de crediter le bonus GitHub.", 500);
-      }
-
-      await gamificationService.synchronizeUserBadges(userId, transaction);
-
-      const updatedUser = await transaction.user.findUnique({
-        where: { id: userId },
-      });
-
-      if (!updatedUser) {
-        throw new AppError("Utilisateur introuvable.", 404);
-      }
-
-      return {
-        amount: GITHUB_ONBOARDING_BONUS,
-        user: serializeUser(updatedUser),
-      };
-    });
   }
 
   async searchAdminUsers(search: string) {

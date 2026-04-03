@@ -3,7 +3,6 @@ import type { RequestHandler } from "express";
 import { Router } from "express";
 import {
   adjustUserBalanceController,
-  claimCurrentUserGitHubBonusController,
   getCurrentUserController,
   listAvailableBadgesController,
   listCurrentUserEventBetsController,
@@ -82,7 +81,6 @@ userRouter.get("/me", requireAuth, getCurrentUserController);
 userRouter.get("/me/bets", requireAuth, listCurrentUserEventBetsController);
 userRouter.patch("/me", requireAuth, userLimiter, validateBody(updateUserProfileSchema), updateCurrentUserController);
 userRouter.post("/me/avatar", requireAuth, userLimiter, uploadAvatarMiddleware, uploadCurrentUserAvatarController);
-userRouter.post("/me/github-bonus/claim", requireAuth, userLimiter, claimCurrentUserGitHubBonusController);
 userRouter.get("/", requireAuth, requireRole(["admin"]), searchUsersController);
 userRouter.get("/badges/catalog", requireAuth, requireRole(["admin"]), listAvailableBadgesController);
 userRouter.patch(
