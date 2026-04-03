@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
+import { ActiveEventBetsList } from "../components/ActiveEventBetsList";
 import { DashboardShell } from "../components/layout/DashboardShell";
 import { LoadingScreen } from "../components/layout/LoadingScreen";
 import { Card } from "../components/ui/Card";
@@ -111,45 +112,13 @@ export function DashboardPage() {
                 </Link>
               </div>
 
-              <div className="mt-4 space-y-3">
-                {highlightedOpenPositions.map((bet) => {
-                  const targetEvent = bet.event_id
-                    ? events?.find((event) => event.id === bet.event_id) ?? null
-                    : bet.legs[0]?.event ?? null;
-                  const linkTarget = targetEvent ? `/events/${targetEvent.id}` : "/events?tab=my-bets";
-                  const label =
-                    bet.type === "PARLAY"
-                      ? `${bet.legs.length} selections`
-                      : bet.chosen_option ?? "Position ouverte";
-
-                  return (
-                    <Link
-                      className="block rounded-lg border border-zinc-800 bg-zinc-950 p-4 transition hover:border-zinc-700 hover:bg-zinc-900"
-                      key={bet.id}
-                      to={linkTarget}
-                    >
-                      <div className="flex items-start justify-between gap-4">
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-semibold text-zinc-100">
-                            {targetEvent?.title ?? "Pari combine en cours"}
-                          </p>
-                          <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-zinc-500">
-                            <span>{label}</span>
-                            <span>{formatTokens(bet.stake)} engages</span>
-                            <span>{formatTokens(bet.potential_payout)} potentiels</span>
-                          </div>
-                        </div>
-                        <ArrowRight className="mt-0.5 h-4 w-4 text-zinc-500" />
-                      </div>
-                    </Link>
-                  );
-                })}
-
-                {highlightedOpenPositions.length === 0 ? (
-                  <p className="text-sm leading-7 text-zinc-400">
-                    Aucune position ouverte. Ouvrez un marche ou composez un combine.
-                  </p>
-                ) : null}
+              <div className="mt-4">
+                <ActiveEventBetsList
+                  bets={highlightedOpenPositions}
+                  emptyMessage="Aucune position ouverte. Ouvrez un marche ou composez un combine."
+                  events={events}
+                  fallbackLinkTarget="/events?tab=my-bets"
+                />
               </div>
             </Card>
 

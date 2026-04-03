@@ -1,8 +1,9 @@
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, Search } from "lucide-react";
+import { Search } from "lucide-react";
 import toast from "react-hot-toast";
-import { Link, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
+import { ActiveEventBetsList } from "../components/ActiveEventBetsList";
 import { BetDrawer } from "../components/BetDrawer";
 import { EventCard } from "../components/EventCard";
 import { DashboardShell } from "../components/layout/DashboardShell";
@@ -252,45 +253,13 @@ export function EventsPage() {
                   </span>
                 </div>
 
-                <div className="mt-4 space-y-3">
-                  {activeBetList.map((bet) => {
-                    const targetEvent = bet.event_id
-                      ? events?.find((event) => event.id === bet.event_id) ?? null
-                      : bet.legs[0]?.event ?? null;
-                    const linkTarget = targetEvent ? `/events/${targetEvent.id}` : "/events";
-                    const label =
-                      bet.type === "PARLAY"
-                        ? `${bet.legs.length} selections`
-                        : bet.chosen_option ?? "Selection";
-
-                    return (
-                      <Link
-                        className="block rounded-lg border border-zinc-800 bg-zinc-950 p-4 transition hover:border-zinc-700 hover:bg-zinc-900"
-                        key={bet.id}
-                        to={linkTarget}
-                      >
-                        <div className="flex items-start justify-between gap-4">
-                          <div className="min-w-0 flex-1">
-                            <p className="text-sm font-semibold text-zinc-100">
-                              {targetEvent?.title ?? "Pari combine"}
-                            </p>
-                            <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-zinc-500">
-                              <span>{label}</span>
-                              <span>{formatTokens(bet.stake)} engages</span>
-                              <span>{formatTokens(bet.potential_payout)} potentiels</span>
-                            </div>
-                          </div>
-                          <ArrowRight className="mt-0.5 h-4 w-4 text-zinc-500" />
-                        </div>
-                      </Link>
-                    );
-                  })}
-
-                  {activeBetList.length === 0 ? (
-                    <p className="text-sm leading-7 text-zinc-400">
-                      Aucun pari actif pour le moment.
-                    </p>
-                  ) : null}
+                <div className="mt-4">
+                  <ActiveEventBetsList
+                    bets={activeBetList}
+                    emptyMessage="Aucun pari actif pour le moment."
+                    events={events}
+                    fallbackLinkTarget="/events"
+                  />
                 </div>
               </Card>
             ) : null}
@@ -386,15 +355,6 @@ export function EventsPage() {
                     Aucune proposition envoyee pour l'instant.
                   </p>
                 ) : null}
-              </div>
-            </Card>
-
-            <Card>
-              <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Raccourcis</p>
-              <div className="mt-4 space-y-3 text-sm text-zinc-400">
-                <p>Une issue cliquable ouvre un pari rapide.</p>
-                <p>Le bouton a droite de chaque issue ajoute la selection au ticket.</p>
-                <p>Les statuts de marche restent visibles dans la liste comme sur le front de reference.</p>
               </div>
             </Card>
           </div>
