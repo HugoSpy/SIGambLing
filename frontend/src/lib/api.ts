@@ -148,6 +148,11 @@ export async function uploadCurrentUserAvatar(formData: FormData) {
   return response.data;
 }
 
+export async function claimGitHubBonus() {
+  const response = await api.post<{ amount: number; user: AuthUser }>("/users/me/github-bonus/claim");
+  return response.data;
+}
+
 export async function fetchEvents() {
   const response = await api.get<{ events: EventView[] }>("/events");
   return response.data.events;

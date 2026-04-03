@@ -1,11 +1,12 @@
-import { useMemo } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   ArrowRight,
   Award,
   Coins,
   Flame,
   Gift,
+  Github,
   Medal,
   ShieldCheck,
   Ticket,
@@ -16,14 +17,19 @@ import { Link } from "react-router-dom";
 import { ActiveEventBetsList } from "../components/ActiveEventBetsList";
 import { DashboardShell } from "../components/layout/DashboardShell";
 import { LoadingScreen } from "../components/layout/LoadingScreen";
+import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { useAuthenticatedUser } from "../hooks/useAuthenticatedUser";
 import { useGamificationState } from "../hooks/useGamificationState";
-import { fetchEvents, fetchMyEventBets, logoutRequest } from "../lib/api";
+import { claimGitHubBonus, fetchEvents, fetchMyEventBets, logoutRequest } from "../lib/api";
 import { formatEventDate } from "../lib/event-utils";
+import { getErrorMessage } from "../lib/notifications";
 import { formatTokens } from "../lib/utils";
+import { useAuthStore } from "../store/auth-store";
+import { applyGitHubBonusClaim } from "../../../shared/auth-user-updates";
 
 export function DashboardPage() {
+  const [claimingBonus, setClaimingBonus] = useState(false);
   const { data: user } = useAuthenticatedUser();
   const { data: events } = useQuery({
     queryKey: ["events"],
@@ -34,11 +40,10 @@ export function DashboardPage() {
     queryKey: ["my-event-bets"],
     queryFn: fetchMyEventBets,
   });
+  const setUser = useAuthStore((state) => state.setUser);
+  const queryClient = useQueryClient();
 
-  const activeEvents = useMemo(
-    () => (events ?? []).filter((event) => event.status === "OPEN").slice(0, 5),
-    [events],
-  );
+  const activeEvents = (events ?? []).filter((event) => event.status === "OPEN").slice(0, 5);
   const openPositions = myBets?.filter((bet) => bet.status === "PENDING") ?? [];
   const highlightedOpenPositions = openPositions.slice(0, 4);
   const unlockedBadges = gamification?.badges.filter((badge) => badge.unlocked).length ?? 0;
@@ -50,6 +55,22 @@ export function DashboardPage() {
   const handleLogout = async () => {
     await logoutRequest();
     toast.success("Session fermee.");
+  };
+
+  const handleClaimGitHubBonus = async () => {
+    try {
+      setClaimingBonus(true);
+      const result = await claimGitHubBonus();
+      const updatedUser = applyGitHubBonusClaim(user, result.amount);
+
+      setUser(updatedUser);
+      queryClient.setQueryData(["me"], updatedUser);
+      toast.success(`Bonus GitHub valide: +${formatTokens(result.amount)} tokens`);
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setClaimingBonus(false);
+    }
   };
 
   return (
@@ -96,13 +117,44 @@ export function DashboardPage() {
           </Card>
         </div>
 
+        {!user.claimed_github_bonus ? (
+          <Card accent="cyan">
+            <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+              <div className="max-w-2xl">
+                <p className="text-xs uppercase tracking-[0.28em] text-emerald-300">Onboarding</p>
+                <h2 className="mt-2 text-2xl font-bold text-zinc-100">
+                  Bonus GitHub a activer
+                </h2>
+                <p className="mt-3 text-sm leading-7 text-zinc-400">
+                  Ajoutez une etoile au repo SIGambLing puis declenchez votre bonus de bonne foi pour
+                  crediter {formatTokens(300)} tokens sur votre compte.
+                </p>
+                <a
+                  className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-emerald-400 transition hover:text-emerald-300"
+                  href="https://github.com/HugoSpy/SIGambLing"
+                  rel="noreferrer"
+                  target="_blank"
+                >
+                  <Github className="h-4 w-4" />
+                  Ouvrir le repo SIGambLing
+                </a>
+              </div>
+
+              <Button disabled={claimingBonus} onClick={() => void handleClaimGitHubBonus()}>
+                <Gift className="mr-2 h-4 w-4" />
+                {claimingBonus ? "Verification..." : "Crediter +300 tokens"}
+              </Button>
+            </div>
+          </Card>
+        ) : null}
+
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_360px]">
           <div className="space-y-6">
             <Card>
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Mes paris actifs</p>
-                  <h2 className="mt-2 text-lg font-semibold text-zinc-100">Positions a couvrir</h2>
+                  <h1 className="animate-pulse text-sm font-bold uppercase tracking-[0.28em] text-red-500" style={{ animationDuration: "2s" }}>● LIVE</h1>
+                  <h2 className="mt-2 text-2xl font-bold text-zinc-100">Mes paris à surveiller</h2>
                 </div>
                 <Link
                   className="text-sm font-medium text-emerald-400 transition hover:text-emerald-300"
@@ -241,7 +293,7 @@ export function DashboardPage() {
 
             <Card>
               <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Jackpot</p>
-              <h2 className="mt-2 text-lg font-semibold text-zinc-100">Pot permanent</h2>
+              <h2 className="mt-2 text-lg font-semibold text-zinc-100">Pot Total Commun</h2>
               <div className="mt-4 space-y-3 text-sm text-zinc-400">
                 <div className="flex items-center justify-between gap-3">
                   <span className="inline-flex items-center gap-2">

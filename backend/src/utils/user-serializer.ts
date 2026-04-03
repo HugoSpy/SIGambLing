@@ -9,6 +9,7 @@ export function serializeUser(user: User) {
     role: user.role,
     avatar_url: user.avatarUrl,
     streak_days: user.streakDays,
+    claimed_github_bonus: user.claimedGitHubBonus,
     accept_odds_changes: user.acceptOddsChanges,
     last_reward_at: user.lastRewardAt?.toISOString() ?? null,
     created_at: user.createdAt.toISOString(),

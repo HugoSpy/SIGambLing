@@ -348,6 +348,7 @@ test("GET /users/me exposes profile and streak data for gamification surfaces", 
       role: "user",
       avatar_url: null,
       streak_days: 6,
+      claimed_github_bonus: false,
       accept_odds_changes: false,
       last_reward_at: "2026-04-02T12:00:00.000Z",
       created_at: "2026-04-01T12:00:00.000Z",
@@ -361,7 +362,43 @@ test("GET /users/me exposes profile and streak data for gamification surfaces", 
   assert.equal(response.status, 200);
   assert.equal(response.body.streak_days, 6);
   assert.equal(response.body.balance, 1320);
+  assert.equal(response.body.claimed_github_bonus, false);
   assert.equal(response.body.accept_odds_changes, false);
+});
+
+test("POST /users/me/github-bonus/claim credits the authenticated user once", async () => {
+  const token = issueAccessToken();
+
+  stubMethod(userService, "claimGitHubBonus", async (userId: string) => {
+    assert.equal(userId, "user-1");
+
+    return {
+      amount: 300,
+      user: {
+        id: "user-1",
+        pseudo: "SigmaStudent",
+        email: "student@epita.fr",
+        balance: 1300,
+        role: "user",
+        avatar_url: null,
+        streak_days: 6,
+        claimed_github_bonus: true,
+        accept_odds_changes: false,
+        last_reward_at: "2026-04-02T12:00:00.000Z",
+        created_at: "2026-04-01T12:00:00.000Z",
+      },
+    };
+  });
+
+  const response = await request
+    .post("/users/me/github-bonus/claim")
+    .set("Authorization", `Bearer ${token}`)
+    .send({});
+
+  assert.equal(response.status, 201);
+  assert.equal(response.body.amount, 300);
+  assert.equal(response.body.user.balance, 1300);
+  assert.equal(response.body.user.claimed_github_bonus, true);
 });
 
 test("GET /users/me/bets returns active and settled bets for dashboard surfaces", async () => {
