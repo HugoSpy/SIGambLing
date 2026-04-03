@@ -1,6 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { EventCategory, EventStatus, ProposalStatus } from "@prisma/client";
+import { EventStatus, ProposalStatus } from "@prisma/client";
 import { eventService } from "../src/services/event.service";
 import { gamificationService } from "../src/services/gamification.service";
 import { jackpotService } from "../src/services/jackpot.service";
@@ -33,7 +33,6 @@ function buildAdminEvent() {
     id: "event-1",
     title: "Le SIG passera-t-il la soutenance ?",
     description: "Description",
-    category: EventCategory.epita,
     imageUrl: null,
     options,
     poolByOption: { Oui: 0, Non: 0 },
@@ -94,7 +93,6 @@ function buildCreatedBet(overrides: Record<string, unknown> = {}) {
         event: {
           id: "event-1",
           title: "Le SIG passera-t-il la soutenance ?",
-          category: EventCategory.epita,
           status: EventStatus.OPEN,
           resolvedOption: null,
           closingAt: new Date("2026-04-10T10:00:00.000Z"),
@@ -147,7 +145,6 @@ test("createEvent approves a linked pending proposal in the same transaction", a
     const created = await eventService.createEvent("admin-1", {
       title: "Le SIG passera-t-il la soutenance ?",
       description: "Description",
-      category: EventCategory.epita,
       proposal_id: "proposal-1",
       image_url: null,
       options: ["Oui", "Non"],
@@ -199,7 +196,6 @@ test("createEvent rejects already reviewed proposals before creating the event",
         eventService.createEvent("admin-1", {
           title: "Le SIG passera-t-il la soutenance ?",
           description: "Description",
-          category: EventCategory.epita,
           proposal_id: "proposal-1",
           image_url: null,
           options: ["Oui", "Non"],
@@ -246,6 +242,13 @@ test("placeSimpleBets closes expired events before rejecting the basket", async 
           updates.push({ where, data });
           return null;
         },
+      },
+      user: {
+        findUnique: async () => ({
+          id: "user-1",
+          isBanned: false,
+          acceptOddsChanges: false,
+        }),
       },
     });
 
@@ -347,7 +350,6 @@ test("placeSimpleBets switches to pure pari-mutuel odds and records history snap
                 event: {
                   id: data.eventId,
                   title: "Le SIG passera-t-il la soutenance ?",
-                  category: EventCategory.epita,
                   status: EventStatus.OPEN,
                   resolvedOption: null,
                   closingAt: new Date("2026-04-10T10:00:00.000Z"),
@@ -474,7 +476,6 @@ test("placeSimpleBets no longer clamps the first live odds update", async () => 
                 event: {
                   id: data.eventId,
                   title: "Le SIG passera-t-il la soutenance ?",
-                  category: EventCategory.epita,
                   status: EventStatus.OPEN,
                   resolvedOption: null,
                   closingAt: new Date("2026-04-10T10:00:00.000Z"),
@@ -506,14 +507,14 @@ test("placeSimpleBets no longer clamps the first live odds update", async () => 
           {
             label: "Oui",
             initial_odds: 1.9,
-            current_odds: 0.99,
+            current_odds: 1.835,
             total_staked: 100,
             is_winning: null,
           },
           {
             label: "Non",
             initial_odds: 1.9,
-            current_odds: 99,
+            current_odds: 8.8357,
             total_staked: 0,
             is_winning: null,
           },

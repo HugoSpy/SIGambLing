@@ -1,7 +1,6 @@
 import { ArrowRight, Lock, Plus, Ticket } from "lucide-react";
 import { Link } from "react-router-dom";
 import {
-  formatEventCategory,
   formatEventDate,
   formatEventOdds,
   formatEventStatus,
@@ -45,9 +44,6 @@ export function EventCard({ event, onBet }: EventCardProps) {
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="rounded-md bg-zinc-800 px-2 py-1 text-[11px] uppercase tracking-[0.18em] text-zinc-300">
-              {formatEventCategory(event.category)}
-            </span>
             <span className={`rounded-md border px-2 py-1 text-[11px] uppercase tracking-[0.18em] ${statusTone(event.status)}`}>
               {formatEventStatus(event.status)}
             </span>

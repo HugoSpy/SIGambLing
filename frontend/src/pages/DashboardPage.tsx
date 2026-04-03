@@ -19,7 +19,7 @@ import { Card } from "../components/ui/Card";
 import { useAuthenticatedUser } from "../hooks/useAuthenticatedUser";
 import { useGamificationState } from "../hooks/useGamificationState";
 import { fetchEvents, fetchMyEventBets, logoutRequest } from "../lib/api";
-import { formatEventCategory, formatEventDate } from "../lib/event-utils";
+import { formatEventDate } from "../lib/event-utils";
 import { formatTokens } from "../lib/utils";
 
 export function DashboardPage() {
@@ -178,7 +178,6 @@ export function DashboardPage() {
                       <div className="min-w-0 flex-1">
                         <p className="text-sm font-semibold text-zinc-100">{event.title}</p>
                         <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-zinc-500">
-                          <span>{formatEventCategory(event.category)}</span>
                           <span>{formatEventDate(event.closing_at)}</span>
                           <span>{formatTokens(event.total_pool)}</span>
                         </div>

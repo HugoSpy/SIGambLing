@@ -3,7 +3,6 @@ import {
   BetType,
   CasinoGameResult,
   CasinoGameType,
-  EventCategory,
   EventStatus,
   Prisma,
   PrismaClient,
@@ -26,7 +25,6 @@ interface SeedOption {
 interface EventSeed {
   title: string;
   description: string;
-  category: EventCategory;
   status: EventStatus;
   options: readonly SeedOption[];
   closingAt: Date;
@@ -89,7 +87,6 @@ const eventSeeds: readonly EventSeed[] = [
   {
     title: "Qui finira top 1 du mini leaderboard cette semaine ?",
     description: "Evenement ouvert avec pari simple deja place pour valider le dashboard.",
-    category: EventCategory.epita,
     status: EventStatus.OPEN,
     options: [
       { label: "Les grinders du matin", initial_odds: 1.78, current_odds: 1.64, total_staked: 180, is_winning: null },
@@ -103,7 +100,6 @@ const eventSeeds: readonly EventSeed[] = [
   {
     title: "Finale Champions League 2026",
     description: "Evenement sport ouvert avec utilisateur exclu pour tester les protections.",
-    category: EventCategory.sports,
     status: EventStatus.OPEN,
     options: [
       { label: "Equipe A", initial_odds: 1.92, current_odds: 1.88, total_staked: 120, is_winning: null },
@@ -117,7 +113,6 @@ const eventSeeds: readonly EventSeed[] = [
   {
     title: "Quel projet de promo fera le plus parler cette semaine ?",
     description: "Evenement ferme en attente de resolution pour le workflow admin.",
-    category: EventCategory.culture,
     status: EventStatus.CLOSED,
     options: [
       { label: "Projet IA", initial_odds: 2.22, current_odds: 2.08, total_staked: 230, is_winning: null },
@@ -132,7 +127,6 @@ const eventSeeds: readonly EventSeed[] = [
   {
     title: "Quel club remportera le hackathon SIGambLing ?",
     description: "Evenement resolu avec gains credites pour verifier les regressions de settlement.",
-    category: EventCategory.epita,
     status: EventStatus.RESOLVED,
     options: [
       { label: "Club IA", initial_odds: 2.05, current_odds: 1.86, total_staked: 260, is_winning: true },
@@ -221,7 +215,6 @@ async function main() {
       where: { title: eventSeed.title },
       update: {
         description: eventSeed.description,
-        category: eventSeed.category,
         status: eventSeed.status,
         options: toJsonOptions(eventSeed.options),
         poolByOption,
@@ -238,7 +231,6 @@ async function main() {
       create: {
         title: eventSeed.title,
         description: eventSeed.description,
-        category: eventSeed.category,
         status: eventSeed.status,
         options: toJsonOptions(eventSeed.options),
         poolByOption,
@@ -442,7 +434,6 @@ async function main() {
     update: {
       title: "Resultat partiel ALGO > 15/20 ?",
       description: "Je pense que la moyenne sera surprenamment haute cette annee.",
-      category: EventCategory.epita,
       suggestedDate: new Date(now + 8 * 24 * 60 * 60 * 1000),
       status: ProposalStatus.PENDING,
       reviewedById: null,
@@ -455,7 +446,6 @@ async function main() {
       userId: student.id,
       title: "Resultat partiel ALGO > 15/20 ?",
       description: "Je pense que la moyenne sera surprenamment haute cette annee.",
-      category: EventCategory.epita,
       suggestedDate: new Date(now + 8 * 24 * 60 * 60 * 1000),
       status: ProposalStatus.PENDING,
     },
@@ -466,7 +456,6 @@ async function main() {
     update: {
       title: "La roulette sortira-t-elle deux fois noir de suite au prochain live ?",
       description: "Proposition approuvee pour la demo casino.",
-      category: EventCategory.culture,
       suggestedDate: new Date(now + 2 * 24 * 60 * 60 * 1000),
       status: ProposalStatus.APPROVED,
       reviewedById: admin.id,
@@ -479,7 +468,6 @@ async function main() {
       userId: streaker.id,
       title: "La roulette sortira-t-elle deux fois noir de suite au prochain live ?",
       description: "Proposition approuvee pour la demo casino.",
-      category: EventCategory.culture,
       suggestedDate: new Date(now + 2 * 24 * 60 * 60 * 1000),
       status: ProposalStatus.APPROVED,
       reviewedById: admin.id,
@@ -492,7 +480,6 @@ async function main() {
     update: {
       title: "Le serveur tombera-t-il pendant la soutenance ?",
       description: "Cas de rejet pour valider le panneau admin.",
-      category: EventCategory.epita,
       suggestedDate: new Date(now + 9 * 24 * 60 * 60 * 1000),
       status: ProposalStatus.REJECTED,
       reviewedById: validator.id,
@@ -505,7 +492,6 @@ async function main() {
       userId: excluded.id,
       title: "Le serveur tombera-t-il pendant la soutenance ?",
       description: "Cas de rejet pour valider le panneau admin.",
-      category: EventCategory.epita,
       suggestedDate: new Date(now + 9 * 24 * 60 * 60 * 1000),
       status: ProposalStatus.REJECTED,
       reviewedById: validator.id,

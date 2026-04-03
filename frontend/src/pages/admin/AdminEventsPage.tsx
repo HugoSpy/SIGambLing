@@ -25,7 +25,6 @@ import {
   updateAdminEvent,
 } from "../../lib/api";
 import {
-  formatEventCategory,
   formatEventDate,
   formatEventOdds,
   formatEventStatus,
@@ -36,30 +35,45 @@ import type {
   AdminBadgeCatalogItem,
   AdminUserLookup,
   AdminEventView,
-  EventCategory,
   EventProposalView,
   EventSearchUser,
 } from "../../types/event";
 
-const categoryOptions: EventCategory[] = ["epita", "sports", "politics", "culture"];
+const DEFAULT_HOUSE_MARGIN = 0.05;
+
+interface ProbabilityRow {
+  id: string;
+  label: string;
+  probability: string;
+}
 
 interface EventFormState {
   title: string;
   description: string;
-  category: EventCategory;
   image_url: string;
-  options_text: string;
+  options: ProbabilityRow[];
   closing_at: string;
   min_bet: string;
   max_bet: string;
 }
 
+function createProbabilityRow(label = "", probability = ""): ProbabilityRow {
+  return {
+    id: crypto.randomUUID(),
+    label,
+    probability,
+  };
+}
+
+function createDefaultProbabilityRows() {
+  return [createProbabilityRow("Oui", "50"), createProbabilityRow("Non", "50")];
+}
+
 const emptyFormState: EventFormState = {
   title: "",
   description: "",
-  category: "epita",
   image_url: "",
-  options_text: "",
+  options: createDefaultProbabilityRows(),
   closing_at: "",
   min_bet: "10",
   max_bet: "",
@@ -92,37 +106,54 @@ function toIsoFromLocalDate(value: string) {
   return new Date(value).toISOString();
 }
 
-function parseOptionRows(value: string) {
-  return value
-    .split("\n")
-    .map((entry) => entry.trim())
-    .filter(Boolean)
-    .map((entry) => {
-      const [labelPart, oddsPart] = entry.split("|");
-      const label = labelPart?.trim() ?? "";
-      const parsedOdds = oddsPart ? Number(oddsPart.trim()) : null;
+function normalizeProbabilityRows(rows: ProbabilityRow[]) {
+  return rows
+    .map((row) => {
+      const label = row.label.trim();
+      const parsedProbability = Number(row.probability);
 
       return {
+        id: row.id,
         label,
-        odd: Number.isFinite(parsedOdds) ? parsedOdds : null,
+        probability: Number.isFinite(parsedProbability) ? parsedProbability : null,
       };
     })
-    .filter((entry) => entry.label.length > 0);
+    .filter((row) => row.label.length > 0);
 }
 
-function formatOptionsForTextarea(event: AdminEventView) {
-  return event.options
-    .map((option) => `${option.label}|${option.initial_odds.toFixed(2)}`)
-    .join("\n");
-}
+function calculateProbabilityTotal(rows: ProbabilityRow[]) {
+  const normalized = normalizeProbabilityRows(rows);
 
-function calculateMargin(rows: Array<{ label: string; odd: number | null }>) {
-  if (rows.length < 2 || rows.some((row) => row.odd == null)) {
+  if (normalized.length === 0 || normalized.some((row) => row.probability == null)) {
     return null;
   }
 
-  const implied = rows.reduce((sum, row) => sum + 1 / (row.odd ?? 1), 0);
-  return Number(((implied - 1) * 100).toFixed(2));
+  return Number(
+    normalized.reduce((sum, row) => sum + (row.probability ?? 0), 0).toFixed(2),
+  );
+}
+
+function probabilityToInitialOdds(probability: number) {
+  return Number((100 / (probability * (1 + DEFAULT_HOUSE_MARGIN))).toFixed(4));
+}
+
+function initialOddsToProbability(odds: number, totalImplied: number) {
+  if (!Number.isFinite(odds) || odds <= 0 || totalImplied <= 0) {
+    return "";
+  }
+
+  return (((1 / odds) / totalImplied) * 100).toFixed(1).replace(/\.0$/, "");
+}
+
+function buildProbabilityRowsFromEvent(event: AdminEventView) {
+  const totalImplied = event.options.reduce((sum, option) => sum + 1 / option.initial_odds, 0);
+
+  return event.options.map((option) =>
+    createProbabilityRow(
+      option.label,
+      initialOddsToProbability(option.initial_odds, totalImplied),
+    ),
+  );
 }
 
 export function AdminEventsPage() {
@@ -208,9 +239,8 @@ export function AdminEventsPage() {
     setForm({
       title: event.title,
       description: event.description ?? "",
-      category: event.category,
       image_url: event.image_url ?? "",
-      options_text: formatOptionsForTextarea(event),
+      options: buildProbabilityRowsFromEvent(event),
       closing_at: toDateTimeLocalValue(event.closing_at),
       min_bet: String(event.min_bet),
       max_bet: event.max_bet == null ? "" : String(event.max_bet),
@@ -219,25 +249,37 @@ export function AdminEventsPage() {
   };
 
   const submitForm = async () => {
-    const parsedOptions = parseOptionRows(form.options_text);
+    const parsedOptions = normalizeProbabilityRows(form.options);
     const options = parsedOptions.map((entry) => entry.label);
-    const optionInitialOdds = Object.fromEntries(
-      parsedOptions
-        .filter((entry) => entry.odd != null)
-        .map((entry) => [entry.label, entry.odd as number]),
-    );
+    const probabilityTotal = calculateProbabilityTotal(form.options);
 
     if (options.length < 2) {
       toast.error("Ajoutez au moins deux options.");
       return;
     }
 
+    if (parsedOptions.some((entry) => entry.probability == null || entry.probability <= 0)) {
+      toast.error("Chaque option doit avoir une probabilite strictement positive.");
+      return;
+    }
+
+    if (probabilityTotal !== 100) {
+      toast.error("La somme des probabilites doit etre exactement de 100%.");
+      return;
+    }
+
+    const optionInitialOdds = Object.fromEntries(
+      parsedOptions.map((entry) => [
+        entry.label,
+        probabilityToInitialOdds(entry.probability as number),
+      ]),
+    );
+
     try {
       setSaving(true);
       const payload = {
         title: form.title.trim(),
         description: form.description.trim() || null,
-        category: form.category,
         proposal_id: !editingEvent ? draftProposal?.id : undefined,
         image_url: form.image_url.trim() || null,
         options,
@@ -298,8 +340,14 @@ export function AdminEventsPage() {
     return (foundUsers ?? []).filter((entry) => !selectedIds.has(entry.id));
   }, [foundUsers, selectedExcludedUsers]);
 
-  const optionRows = useMemo(() => parseOptionRows(form.options_text), [form.options_text]);
-  const currentMargin = useMemo(() => calculateMargin(optionRows), [optionRows]);
+  const probabilityTotal = useMemo(() => calculateProbabilityTotal(form.options), [form.options]);
+  const currentMargin = useMemo(
+    () =>
+      probabilityTotal == null
+        ? null
+        : Number((DEFAULT_HOUSE_MARGIN * 100).toFixed(2)),
+    [probabilityTotal],
+  );
 
   const availableManualBadges = useMemo(
     () =>
@@ -327,9 +375,8 @@ export function AdminEventsPage() {
     setForm({
       title: proposal.title,
       description: proposal.description ?? "",
-      category: proposal.category,
       image_url: "",
-      options_text: "Oui|1.90\nNon|1.90",
+      options: createDefaultProbabilityRows(),
       closing_at: proposal.suggested_date ? toDateTimeLocalValue(proposal.suggested_date) : "",
       min_bet: "10",
       max_bet: "",
@@ -504,59 +551,130 @@ export function AdminEventsPage() {
                 />
               </label>
 
-              <div className="grid gap-4 sm:grid-cols-2">
-                <label className="block space-y-2">
-                  <span className="text-sm font-medium text-brand-text">Categorie</span>
-                  <select
-                    className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
-                    onChange={(event) =>
+              <label className="block space-y-2">
+                <span className="text-sm font-medium text-brand-text">Image URL</span>
+                <input
+                  className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
+                  onChange={(event) =>
+                    setForm((current) => ({ ...current, image_url: event.target.value }))
+                  }
+                  placeholder="https://..."
+                  value={form.image_url}
+                />
+              </label>
+
+              <div className="space-y-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div>
+                    <span className="text-sm font-medium text-brand-text">Issues et probabilites</span>
+                    <p className="mt-1 text-xs text-brand-muted">
+                      Repartissez 100% de probabilite, les cotes initiales sont derivees avec une
+                      marge fixe de {currentMargin ?? Number((DEFAULT_HOUSE_MARGIN * 100).toFixed(2))}%.
+                    </p>
+                  </div>
+                  <Button
+                    onClick={() =>
                       setForm((current) => ({
                         ...current,
-                        category: event.target.value as EventCategory,
+                        options: [...current.options, createProbabilityRow()],
                       }))
                     }
-                    value={form.category}
+                    size="sm"
+                    type="button"
+                    variant="secondary"
                   >
-                    {categoryOptions.map((category) => (
-                      <option className="bg-[#0f212e]" key={category} value={category}>
-                        {formatEventCategory(category)}
-                      </option>
-                    ))}
-                  </select>
-                </label>
+                    Ajouter
+                  </Button>
+                </div>
 
-                <label className="block space-y-2">
-                  <span className="text-sm font-medium text-brand-text">Image URL</span>
-                  <input
-                    className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
-                    onChange={(event) =>
-                      setForm((current) => ({ ...current, image_url: event.target.value }))
-                    }
-                    placeholder="https://..."
-                    value={form.image_url}
-                  />
-                </label>
+                <div className="space-y-3">
+                  {form.options.map((row, index) => (
+                    <div
+                      className="rounded-[22px] border border-white/10 bg-white/5 p-4"
+                      key={row.id}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="grid flex-1 gap-3 sm:grid-cols-[minmax(0,1fr)_120px]">
+                          <input
+                            className="w-full rounded-2xl border border-brand-line bg-black/10 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
+                            onChange={(event) =>
+                              setForm((current) => ({
+                                ...current,
+                                options: current.options.map((entry) =>
+                                  entry.id === row.id
+                                    ? { ...entry, label: event.target.value }
+                                    : entry,
+                                ),
+                              }))
+                            }
+                            placeholder={`Issue ${index + 1}`}
+                            value={row.label}
+                          />
+                          <input
+                            className="w-full rounded-2xl border border-brand-line bg-black/10 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
+                            max={100}
+                            min={0}
+                            onChange={(event) =>
+                              setForm((current) => ({
+                                ...current,
+                                options: current.options.map((entry) =>
+                                  entry.id === row.id
+                                    ? { ...entry, probability: event.target.value }
+                                    : entry,
+                                ),
+                              }))
+                            }
+                            step="0.1"
+                            type="number"
+                            value={row.probability}
+                          />
+                        </div>
+                        <Button
+                          disabled={form.options.length <= 2}
+                          onClick={() =>
+                            setForm((current) => ({
+                              ...current,
+                              options: current.options.filter((entry) => entry.id !== row.id),
+                            }))
+                          }
+                          size="sm"
+                          type="button"
+                          variant="danger"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+
+                      <input
+                        className="mt-3 w-full accent-brand-cyan"
+                        max={100}
+                        min={0}
+                        onChange={(event) =>
+                          setForm((current) => ({
+                            ...current,
+                            options: current.options.map((entry) =>
+                              entry.id === row.id
+                                ? { ...entry, probability: event.target.value }
+                                : entry,
+                            ),
+                          }))
+                        }
+                        step="0.1"
+                        type="range"
+                        value={row.probability || 0}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="rounded-[18px] border border-white/10 bg-black/10 px-4 py-3 text-xs text-brand-muted">
+                  <span className="text-brand-text">Total probabilites:</span>{" "}
+                  {probabilityTotal == null ? "--" : `${probabilityTotal}%`}
+                  {" · "}
+                  <span className="text-brand-text">Marge derivee:</span>{" "}
+                  {currentMargin == null ? "--" : `${currentMargin}%`}
+                </div>
               </div>
-
-              <label className="block space-y-2">
-                <span className="text-sm font-medium text-brand-text">Options</span>
-                <textarea
-                  className="min-h-[130px] w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, options_text: event.target.value }))
-                  }
-                  placeholder={"Oui|1.65\nNon|2.35\nUne option par ligne, avec la cote apres |"}
-                  value={form.options_text}
-                />
-                <p className="text-xs text-brand-muted">
-                  Format recommande: `Nom de l&apos;issue|1.85`.
-                </p>
-                {currentMargin != null ? (
-                  <div className="rounded-[18px] border border-white/10 bg-black/10 px-4 py-3 text-xs text-brand-muted">
-                    <span className="text-brand-text">Marge calculee:</span> {currentMargin}%
-                  </div>
-                ) : null}
-              </label>
 
               <div className="grid gap-4 sm:grid-cols-3">
                 <label className="block space-y-2">
@@ -683,9 +801,6 @@ export function AdminEventsPage() {
                 {(proposals ?? []).slice(0, 6).map((proposal) => (
                   <div className="rounded-[22px] border border-white/10 bg-white/5 p-4" key={proposal.id}>
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-brand-cyan">
-                        {formatEventCategory(proposal.category)}
-                      </span>
                       <span className="rounded-full border border-white/10 bg-black/10 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-brand-muted">
                         {proposal.status}
                       </span>
@@ -1020,9 +1135,6 @@ export function AdminEventsPage() {
                 <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-brand-cyan">
-                        {formatEventCategory(event.category)}
-                      </span>
                       <span className={`rounded-full border px-3 py-1 text-[11px] uppercase tracking-[0.24em] ${statusTone(event.status)}`}>
                         {formatEventStatus(event.status)}
                       </span>

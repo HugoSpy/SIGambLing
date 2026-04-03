@@ -1,11 +1,4 @@
-import type { EventBetStatus, EventCategory, EventStatus } from "../types/event";
-
-const categoryLabels: Record<EventCategory, string> = {
-  sports: "Sports",
-  politics: "Politics",
-  culture: "Culture",
-  epita: "EPITA",
-};
+import type { EventBetStatus, EventStatus } from "../types/event";
 
 const statusLabels: Record<EventStatus, string> = {
   OPEN: "Ouvert",
@@ -20,10 +13,6 @@ const betStatusLabels: Record<EventBetStatus, string> = {
   LOST: "Perdu",
   CANCELLED: "Rembourse",
 };
-
-export function formatEventCategory(category: EventCategory) {
-  return categoryLabels[category];
-}
 
 export function formatEventStatus(status: EventStatus) {
   return statusLabels[status];

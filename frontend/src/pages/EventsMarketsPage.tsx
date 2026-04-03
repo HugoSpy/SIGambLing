@@ -18,18 +18,10 @@ import {
   fetchMyProposals,
   logoutRequest,
 } from "../lib/api";
-import { formatEventCategory, formatEventDate, formatEventStatus } from "../lib/event-utils";
+import { formatEventDate, formatEventStatus } from "../lib/event-utils";
 import { formatTokens } from "../lib/utils";
 import { useBetCartStore } from "../store/bet-cart-store";
-import type { EventCategory, EventStatus, EventView } from "../types/event";
-
-const categoryOptions: Array<{ value: "all" | EventCategory; label: string }> = [
-  { value: "all", label: "Toutes" },
-  { value: "epita", label: "EPITA" },
-  { value: "sports", label: "Sports" },
-  { value: "politics", label: "Politics" },
-  { value: "culture", label: "Culture" },
-];
+import type { EventStatus, EventView } from "../types/event";
 
 const statusOptions: Array<{ value: "all" | EventStatus; label: string }> = [
   { value: "all", label: "Tous" },
@@ -64,7 +56,6 @@ export function EventsPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const ticketCount = useBetCartStore((state) => state.selections.length);
   const [search, setSearch] = useState("");
-  const [category, setCategory] = useState<"all" | EventCategory>("all");
   const [status, setStatus] = useState<"all" | EventStatus>("all");
   const viewTab = searchParams.get("tab") === "my-bets" ? "my-bets" : "all";
   const [selectedBet, setSelectedBet] = useState<{
@@ -76,7 +67,6 @@ export function EventsPage() {
   const [proposalForm, setProposalForm] = useState({
     title: "",
     description: "",
-    category: "epita" as EventCategory,
     suggested_date: "",
   });
 
@@ -112,10 +102,6 @@ export function EventsPage() {
         return false;
       }
 
-      if (category !== "all" && event.category !== category) {
-        return false;
-      }
-
       if (status !== "all" && event.status !== status) {
         return false;
       }
@@ -124,10 +110,10 @@ export function EventsPage() {
         return true;
       }
 
-      const haystack = `${event.title} ${event.description ?? ""} ${formatEventCategory(event.category)}`;
+      const haystack = `${event.title} ${event.description ?? ""}`;
       return haystack.toLocaleLowerCase("fr-FR").includes(normalizedSearch);
     });
-  }, [category, events, myBets, search, status, viewTab]);
+  }, [events, myBets, search, status, viewTab]);
 
   if (!user || eventsLoading) {
     return <LoadingScreen label="Chargement des evenements..." />;
@@ -149,7 +135,6 @@ export function EventsPage() {
       await createProposal({
         title: proposalForm.title.trim(),
         description: proposalForm.description.trim() || null,
-        category: proposalForm.category,
         suggested_date: proposalForm.suggested_date
           ? new Date(proposalForm.suggested_date).toISOString()
           : null,
@@ -158,7 +143,6 @@ export function EventsPage() {
       setProposalForm({
         title: "",
         description: "",
-        category: "epita",
         suggested_date: "",
       });
       await queryClient.invalidateQueries({ queryKey: ["my-proposals"] });
@@ -220,7 +204,7 @@ export function EventsPage() {
                 </button>
               </div>
 
-              <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">
+              <div className="grid gap-4">
                 <label className="block space-y-2">
                   <span className="text-sm font-medium text-zinc-200">Recherche</span>
                   <div className="flex items-center gap-3 rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3">
@@ -228,31 +212,11 @@ export function EventsPage() {
                     <input
                       className="w-full bg-transparent text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
                       onChange={(event) => setSearch(event.target.value)}
-                      placeholder="Titre, categorie ou description"
+                      placeholder="Titre ou description"
                       value={search}
                     />
                   </div>
                 </label>
-
-                <div className="space-y-2">
-                  <span className="text-sm font-medium text-zinc-200">Categorie</span>
-                  <div className="flex flex-wrap gap-2">
-                    {categoryOptions.map((option) => (
-                      <button
-                        className={`rounded-lg px-3 py-2 text-sm transition ${
-                          category === option.value
-                            ? "bg-emerald-500 text-zinc-950"
-                            : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
-                        }`}
-                        key={option.value}
-                        onClick={() => setCategory(option.value)}
-                        type="button"
-                      >
-                        {option.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
               </div>
 
               <div className="mt-4 space-y-2">
@@ -404,9 +368,6 @@ export function EventsPage() {
                 {(myProposals ?? []).slice(0, 4).map((proposal) => (
                   <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-3" key={proposal.id}>
                     <div className="flex items-center justify-between gap-3">
-                      <span className="text-xs uppercase tracking-[0.18em] text-zinc-500">
-                        {formatEventCategory(proposal.category)}
-                      </span>
                       <span className={`text-xs font-medium ${proposalTone(proposal.status)}`}>
                         {proposal.status}
                       </span>
@@ -476,27 +437,7 @@ export function EventsPage() {
             />
           </label>
 
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block space-y-2">
-              <span className="text-sm font-medium text-zinc-200">Categorie</span>
-              <select
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none transition focus:border-emerald-500"
-                onChange={(event) =>
-                  setProposalForm((current) => ({
-                    ...current,
-                    category: event.target.value as EventCategory,
-                  }))
-                }
-                value={proposalForm.category}
-              >
-                {categoryOptions.slice(1).map((option) => (
-                  <option className="bg-zinc-950" key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
+          <div className="grid gap-4">
             <label className="block space-y-2">
               <span className="text-sm font-medium text-zinc-200">Date suggeree</span>
               <input
