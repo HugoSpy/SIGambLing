@@ -27,9 +27,9 @@ const TABS: {
   {
     id: "roulette",
     label: "Roulette",
-    eyebrow: "Table rapide",
+    eyebrow: "Pour miser au bruit",
     description:
-      "Retrouvez la roue europeenne, la grille complete et un panneau de mise clair sur mobile comme sur desktop.",
+      "La roue pour celles et ceux qui pensent qu'un plan solide commence par 'on verra bien'.",
     href: "/casino/roulette",
     accentClassName: "from-emerald-500/20 via-emerald-500/5 to-transparent",
     icon: CircleDot,
@@ -37,9 +37,9 @@ const TABS: {
   {
     id: "blackjack",
     label: "Blackjack",
-    eyebrow: "Salon premium",
+    eyebrow: "Pour jouer les strateges",
     description:
-      "Une table refondue, des cartes mieux mises en scene et des controles resserres pour enchainer les manches.",
+      "La table pour faire semblant d'avoir une methode, puis blamer le dealer quand elle casse.",
     href: "/casino/blackjack",
     accentClassName: "from-amber-500/20 via-amber-500/5 to-transparent",
     icon: Waves,
@@ -94,13 +94,13 @@ export function CasinoPage() {
                 <p className="text-xs uppercase tracking-[0.3em] text-brand-cyan">Casino club</p>
                 <h1 className="mt-3 font-display text-4xl text-brand-text">
                   {activeGame
-                    ? "Choisissez votre table, sans quitter le salon"
-                    : "Deux tables, deux rythmes, une seule entree"}
+                    ? "Choisissez votre table, comme si tout cela etait une decision rationnelle"
+                    : "Deux tables. Pas de detour. Pas d'excuse."}
                 </h1>
                 <p className="mt-4 max-w-3xl text-sm leading-7 text-brand-muted">
-                  Le hub casino centralise vos parties rapides et les sessions plus posees, avec
-                  une navigation dediee et des interfaces concues pour rester nettes sur chaque
-                  format.
+                  {activeGame
+                    ? "Roulette pour improviser en public, blackjack pour compter jusqu'a 21 avec une confiance discutable. Le hub reste volontairement simple: vous entrez, vous choisissez, vous assumez."
+                    : "Le casino se limite enfin a l'essentiel: une roue pour les impulsifs, une table de blackjack pour les faux calculateurs. Le reste du cirque peut attendre."}
                 </p>
                 <div className="mt-5 flex flex-wrap gap-3">
                   {TABS.map((tab) => {
@@ -130,15 +130,15 @@ export function CasinoPage() {
               <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
                 <div className="rounded-[24px] border border-white/10 bg-white/5 p-4">
                   <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Hub</p>
-                  <p className="mt-2 text-lg font-semibold text-brand-text">Navigation dediee</p>
+                  <p className="mt-2 text-lg font-semibold text-brand-text">Deux jeux, zero bruit</p>
                 </div>
                 <div className="rounded-[24px] border border-white/10 bg-white/5 p-4">
                   <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Roulette</p>
-                  <p className="mt-2 text-lg font-semibold text-brand-text">Grille complete visible</p>
+                  <p className="mt-2 text-lg font-semibold text-brand-text">Chaos rapide et grille lisible</p>
                 </div>
                 <div className="rounded-[24px] border border-white/10 bg-white/5 p-4">
                   <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Blackjack</p>
-                  <p className="mt-2 text-lg font-semibold text-brand-text">Table premium refondue</p>
+                  <p className="mt-2 text-lg font-semibold text-brand-text">Lecture nette sans cinema inutile</p>
                 </div>
               </div>
             </div>
@@ -181,7 +181,7 @@ export function CasinoPage() {
                         Parcours mobile
                       </div>
                       <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-                        Actions immediates
+                        Entree directe
                       </div>
                     </div>
 
@@ -209,13 +209,13 @@ export function CasinoPage() {
               <div>
                 <p className="text-xs uppercase tracking-[0.28em] text-brand-orange">Mode salon</p>
                 <h3 className="mt-2 font-display text-2xl text-brand-text">
-                  Entrez par le hub, puis basculez entre les tables sans casser le rythme
+                  Entrez, choisissez votre vice de la minute, puis changez de table sans casser le rythme
                 </h3>
               </div>
               <div className="flex flex-wrap gap-3 text-sm text-brand-muted">
                 <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
                   <Sparkles className="mr-2 inline h-4 w-4 text-brand-cyan" />
-                  Parcours casino unifie
+                  Navigation casino epuree
                 </span>
                 <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
                   <Coins className="mr-2 inline h-4 w-4 text-brand-orange" />
