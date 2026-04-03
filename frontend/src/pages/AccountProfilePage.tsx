@@ -86,7 +86,7 @@ export function ProfilePage() {
 
   const handleLogout = async () => {
     await logoutRequest();
-    notify.success("Session fermee.");
+    notify.success("Session fermée.");
   };
 
   const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -103,7 +103,7 @@ export function ProfilePage() {
     }
 
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      notify.error("Format non supporte.");
+      notify.error("Format non supporté.");
       event.target.value = "";
       return;
     }
@@ -115,7 +115,7 @@ export function ProfilePage() {
       setUploading(true);
       const updatedUser = await uploadCurrentUserAvatar(formData);
       commitUser(updatedUser);
-      notify.success("Photo de profil mise a jour.");
+      notify.success("Photo de profil mise à jour.");
     } catch (error) {
       notify.error(getErrorMessage(error));
     } finally {
@@ -128,12 +128,12 @@ export function ProfilePage() {
     const nextPseudo = trimmedPseudo;
 
     if (!nextPseudo) {
-      notify.error("Le pseudo ne peut pas etre vide.");
+      notify.error("Le pseudo ne peut pas être vide.");
       return;
     }
 
     if (nextPseudo === user.pseudo && alwaysAcceptOddsChanges === user.accept_odds_changes) {
-      notify.info("Aucune modification a enregistrer.");
+      notify.info("Aucune modification à enregistrer.");
       return;
     }
 
@@ -152,7 +152,7 @@ export function ProfilePage() {
           alwaysAcceptOddsChanges === user.accept_odds_changes ? undefined : alwaysAcceptOddsChanges,
       });
       commitUser(updatedUser);
-      notify.success("Profil enregistre.");
+      notify.success("Profil enregistré.");
     } catch (error) {
       if (error instanceof ApiError) {
         const pseudoErrors =
@@ -182,10 +182,10 @@ export function ProfilePage() {
 
       if (result.claimed) {
         notify.success(
-          `Recompense recuperee: +${formatTokens(result.amount)} tokens`,
+          `Récompense récupérée : +${formatTokens(result.amount)} tokens`,
         );
       } else {
-        notify.info("Recompense deja recuperee aujourd'hui.");
+        notify.info("Récompense déjà récupérée aujourd'hui.");
       }
     } catch (error) {
       notify.error(getErrorMessage(error));
@@ -311,11 +311,11 @@ export function ProfilePage() {
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">
-                    Recompense quotidienne
+                    Récompense quotidienne
                   </p>
                   <h2 className="mt-3 font-display text-3xl text-brand-text">
                     {gamification.daily_reward.claimed_today
-                      ? "Recompense recuperée"
+                      ? "Récompense récupérée"
                       : `${formatTokens(gamification.daily_reward.next_amount)} tokens a prendre`}
                   </h2>
                   <p className="mt-3 text-sm leading-7 text-brand-muted">
@@ -360,8 +360,8 @@ export function ProfilePage() {
                   {claimingReward
                     ? "Validation..."
                     : gamification.daily_reward.claimed_today
-                      ? "Deja recuperee"
-                      : "Recuperer la recompense"}
+                      ? "Déjà récupérée"
+                      : "Récupérer la récompense"}
                 </Button>
                 {gamification.daily_reward.next_tier ? (
                   <p className="text-sm text-brand-muted">
@@ -529,7 +529,7 @@ export function ProfilePage() {
               </div>
             ) : (
               <p className="mt-5 text-sm leading-7 text-brand-muted">
-                Aucun badge debloque pour le moment. Votre prochaine recompense et vos premieres
+                Aucun badge débloqué pour le moment. Votre prochaine récompense et vos premières
                 victoires alimenteront cette section.
               </p>
             )}

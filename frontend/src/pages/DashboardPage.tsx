@@ -49,7 +49,7 @@ export function DashboardPage() {
 
   const handleLogout = async () => {
     await logoutRequest();
-    toast.success("Session fermee.");
+    toast.success("Session fermée.");
   };
 
   return (
@@ -58,7 +58,7 @@ export function DashboardPage() {
         <div>
           <h1 className="text-2xl font-bold text-zinc-100">Bienvenue, {user.pseudo}</h1>
           <p className="mt-1 text-sm text-zinc-400">
-            Retrouvez vos stats, les marches actifs et vos positions en cours.
+            Retrouvez vos stats, les marchés actifs et vos positions en cours.
           </p>
         </div>
 
@@ -74,7 +74,7 @@ export function DashboardPage() {
 
           <Card>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-zinc-400">Serie</span>
+              <span className="text-sm text-zinc-400">Série</span>
               <Flame className="h-4 w-4 text-amber-400" />
             </div>
             <p className="mt-3 text-3xl font-bold text-zinc-100">
@@ -91,7 +91,7 @@ export function DashboardPage() {
             </div>
             <p className="mt-3 text-3xl font-bold text-zinc-100">{openPositions.length}</p>
             <p className="mt-1 text-xs text-zinc-500">
-              {formatTokens(openPositions.reduce((sum, bet) => sum + bet.stake, 0))} engages
+              {formatTokens(openPositions.reduce((sum, bet) => sum + bet.stake, 0))} engagés
             </p>
           </Card>
         </div>
@@ -115,7 +115,7 @@ export function DashboardPage() {
               <div className="mt-4">
                 <ActiveEventBetsList
                   bets={highlightedOpenPositions}
-                  emptyMessage="Aucune position ouverte. Ouvrez un marche ou composez un combine."
+                  emptyMessage="Aucune position ouverte. Ouvrez un marché ou composez un combiné."
                   events={events}
                   fallbackLinkTarget="/events?tab=my-bets"
                 />
@@ -125,7 +125,7 @@ export function DashboardPage() {
             <Card>
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Evenements actifs</p>
+                <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Événements actifs</p>
                   <h2 className="mt-2 text-lg font-semibold text-zinc-100">A surveiller</h2>
                 </div>
                 <Link
@@ -158,7 +158,7 @@ export function DashboardPage() {
 
                 {activeEvents.length === 0 ? (
                   <p className="text-sm leading-7 text-zinc-400">
-                    Aucun marche ouvert pour le moment.
+                    Aucun marché ouvert pour le moment.
                   </p>
                 ) : null}
               </div>
@@ -176,7 +176,7 @@ export function DashboardPage() {
                     Position
                   </span>
                   <span className="text-zinc-100">
-                    {openPositions.length > 0 ? "Classement live" : "Pret a monter"}
+                    {openPositions.length > 0 ? "Classement live" : "Prêt à monter"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
@@ -201,16 +201,16 @@ export function DashboardPage() {
 
             <Card>
               <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Gamification</p>
-              <h2 className="mt-2 text-lg font-semibold text-zinc-100">Etat live</h2>
+              <h2 className="mt-2 text-lg font-semibold text-zinc-100">État live</h2>
               <div className="mt-4 space-y-3 text-sm text-zinc-400">
                 <div className="flex items-center justify-between gap-3">
                   <span className="inline-flex items-center gap-2">
                     <Gift className="h-4 w-4 text-emerald-400" />
-                    Recompense
+                    Récompense
                   </span>
                   <span className="text-right text-zinc-100">
                     {gamification?.daily_reward.claimed_today
-                      ? "Recuperee"
+                      ? "Récupérée"
                       : `${formatTokens(gamification?.daily_reward.next_amount ?? 100)} tokens`}
                   </span>
                 </div>
@@ -222,7 +222,7 @@ export function DashboardPage() {
                   <span className="text-zinc-100">{unlockedBadges}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span>Victoires paris</span>
+                  <span>Victoires aux paris</span>
                   <span className="text-zinc-100">{gamification?.stats.event_wins ?? 0}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
@@ -234,7 +234,7 @@ export function DashboardPage() {
                 className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-emerald-400 transition hover:text-emerald-300"
                 to="/profile"
               >
-                Ouvrir le centre de recompenses
+                Ouvrir le centre de récompenses
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Card>
@@ -308,7 +308,7 @@ export function DashboardPage() {
                   className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 transition hover:border-zinc-700 hover:bg-zinc-900"
                   to="/events"
                 >
-                  <span>Ouvrir les marches</span>
+                  <span>Ouvrir les marchés</span>
                   <ArrowRight className="h-4 w-4 text-zinc-500" />
                 </Link>
                 <Link

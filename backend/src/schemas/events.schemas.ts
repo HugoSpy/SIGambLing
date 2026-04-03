@@ -147,7 +147,7 @@ export const createEventSchema = z
   })
   .refine((value) => value.max_bet == null || value.max_bet >= value.min_bet, {
     path: ["max_bet"],
-    message: "La mise max doit etre superieure ou egale a la mise min.",
+    message: "La mise max doit être supérieure ou égale à la mise min.",
   });
 
 export const updateEventSchema = z
@@ -170,7 +170,7 @@ export const updateEventSchema = z
       value.min_bet == null || value.max_bet == null || value.max_bet >= value.min_bet,
     {
       path: ["max_bet"],
-      message: "La mise max doit etre superieure ou egale a la mise min.",
+      message: "La mise max doit être supérieure ou égale à la mise min.",
     },
   );
 
@@ -196,7 +196,7 @@ export const placeSimpleBetsSchema = z.object({
     .max(15)
     .refine(
       (bets) => new Set(bets.map((bet) => bet.eventId)).size === bets.length,
-      "Une seule selection par evenement est autorisee dans le panier simple.",
+      "Une seule sélection par événement est autorisée dans le panier simple.",
     ),
   accept_any_odds_change: z.boolean().optional().default(false),
   persist_accept_odds_changes: z.boolean().optional().default(false),
@@ -215,7 +215,7 @@ export const placeParlayBetSchema = z.object({
     .max(15)
     .refine(
       (legs) => new Set(legs.map((leg) => leg.eventId)).size === legs.length,
-      "Impossible de combiner deux issues du meme evenement.",
+      "Impossible de combiner deux issues du même événement.",
     ),
   stake: z.coerce.number().int().min(5).max(500),
   accept_any_odds_change: z.boolean().optional().default(false),

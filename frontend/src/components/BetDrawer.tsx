@@ -99,7 +99,7 @@ export function BetDrawer({ event, open, onClose, initialOption }: BetDrawerProp
       updateBalance(outcome.new_balance);
       await invalidateBetQueries(event.id);
 
-      notify.success("Pari enregistre.");
+      notify.success("Pari enregistré.");
       setOddsConflict(null);
       onClose();
     } catch (error) {
@@ -142,7 +142,7 @@ export function BetDrawer({ event, open, onClose, initialOption }: BetDrawerProp
             <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-4">
               <p className="text-sm font-medium text-zinc-100">{event.title}</p>
               <p className="mt-1 text-xs text-zinc-500">
-                Limite {event.my_bet_count}/25 paris sur cet evenement
+                Limite {event.my_bet_count}/25 paris sur cet événement
               </p>
             </div>
 
@@ -213,13 +213,13 @@ export function BetDrawer({ event, open, onClose, initialOption }: BetDrawerProp
 
               <div className="flex items-center justify-between text-sm">
                 <span className="text-zinc-500">
-                  Disponible: {formatTokens(currentBalance)} tokens
+                  Disponible : {formatTokens(currentBalance)} tokens
                 </span>
                 {amount > currentBalance ? <span className="text-red-400">Solde insuffisant</span> : null}
               </div>
               <p className="text-xs text-zinc-500">
                 Min {formatTokens(event.min_bet)} - Max{" "}
-                {event.max_bet == null ? "illimite" : formatTokens(event.max_bet)}
+                {event.max_bet == null ? "illimité" : formatTokens(event.max_bet)}
               </p>
             </div>
 
@@ -235,7 +235,7 @@ export function BetDrawer({ event, open, onClose, initialOption }: BetDrawerProp
                   </span>
                 </div>
                 <p className="mt-2 text-xs text-zinc-400">
-                  Base sur la cote actuelle de {formatEventOdds(selectedOptionData.odds)} au moment de
+                  Basé sur la cote actuelle de {formatEventOdds(selectedOptionData.odds)} au moment de
                   la prise de position.
                 </p>
               </div>

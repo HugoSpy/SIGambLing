@@ -205,7 +205,7 @@ test("createEvent rejects already reviewed proposals before creating the event",
           max_bet: null,
           excluded_user_ids: [],
         }),
-      /Seules les propositions en attente peuvent etre converties en evenement/,
+      /Seules les propositions en attente peuvent être converties en événement/,
     );
 
     assert.equal(eventCreated, false);
@@ -264,7 +264,7 @@ test("placeSimpleBets closes expired events before rejecting the basket", async 
             },
           ],
         }),
-      /Un des evenements du panier est deja ferme/,
+      /Un des événements du panier est déjà fermé/,
     );
 
     assert.deepEqual(updates, [

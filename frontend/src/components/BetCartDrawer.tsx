@@ -96,7 +96,7 @@ export function BetCartDrawer() {
       setOddsConflict(null);
       await invalidateBetQueries();
 
-      notify.success(`${outcome.bets.length} pari(s) enregistres.`);
+      notify.success(`${outcome.bets.length} pari(s) enregistrés.`);
     } catch (error) {
       if (isOddsConflictError(error) && error.details) {
         setOddsConflict(error.details);
@@ -142,7 +142,7 @@ export function BetCartDrawer() {
       setOddsConflict(null);
       await invalidateBetQueries();
 
-      notify.success("Combine enregistre.");
+      notify.success("Combiné enregistré.");
     } catch (error) {
       if (isOddsConflictError(error) && error.details) {
         setOddsConflict(error.details);
@@ -212,7 +212,7 @@ export function BetCartDrawer() {
                     Ticket de paris
                   </h2>
                   <p className="mt-2 text-sm text-zinc-400">
-                    {selections.length} selection{selections.length > 1 ? "s" : ""} en attente
+                    {selections.length} sélection{selections.length > 1 ? "s" : ""} en attente
                   </p>
                 </div>
                 <button
@@ -253,7 +253,7 @@ export function BetCartDrawer() {
 
               {selections.length === 0 ? (
                 <div className="mt-6 rounded-xl border border-dashed border-zinc-700 bg-zinc-950 p-8 text-center text-sm text-zinc-400">
-                  Ajoutez des issues depuis les cartes evenement pour remplir votre ticket.
+                  Ajoutez des issues depuis les cartes événement pour remplir votre ticket.
                 </div>
               ) : (
                 <>
@@ -272,7 +272,7 @@ export function BetCartDrawer() {
                               {selection.optionLabel} · {formatEventOdds(selection.odds)}
                             </p>
                             <p className="mt-1 text-xs text-brand-muted">
-                              Cloture {formatEventDate(selection.closingAt)}
+                              Clôture {formatEventDate(selection.closingAt)}
                             </p>
                           </div>
                           <button
@@ -306,7 +306,7 @@ export function BetCartDrawer() {
                             />
                             <p className="text-xs text-brand-muted">
                               Min {formatTokens(selection.minBet)} · Max{" "}
-                              {selection.maxBet == null ? "illimite" : formatTokens(selection.maxBet)}
+                              {selection.maxBet == null ? "illimité" : formatTokens(selection.maxBet)}
                             </p>
                           </label>
                         ) : null}

@@ -231,7 +231,7 @@ export function AdminEventsPage() {
 
   const handleLogout = async () => {
     await logoutRequest();
-    toast.success("Session fermee.");
+    toast.success("Session fermée.");
   };
 
   const applyEventToForm = (event: AdminEventView) => {
@@ -292,11 +292,11 @@ export function AdminEventsPage() {
 
       if (editingEvent) {
         await updateAdminEvent(editingEvent.id, payload);
-        toast.success("Evenement modifie.");
+        toast.success("Événement modifié.");
       } else {
         await createAdminEvent(payload);
         toast.success(
-          draftProposal ? "Evenement cree et proposition approuvee." : "Evenement cree.",
+          draftProposal ? "Événement créé et proposition approuvée." : "Événement créé.",
         );
       }
 
@@ -469,7 +469,7 @@ export function AdminEventsPage() {
         <div>
           <h1 className="text-2xl font-bold text-zinc-100">Panneau admin</h1>
           <p className="mt-1 text-sm text-zinc-400">
-            Creez les marches, gerez les exclusions et traitez les propositions de la promo.
+            Créez les marchés, gérez les exclusions et traitez les propositions de la promo.
           </p>
         </div>
 
@@ -514,7 +514,7 @@ export function AdminEventsPage() {
                   {editingEvent ? "Edition" : draftProposal ? "Depuis proposition" : "Creation"}
                 </p>
                 <h2 className="mt-2 font-display text-3xl text-brand-text">
-                  {editingEvent ? "Modifier un marche" : "Nouveau marche"}
+                  {editingEvent ? "Modifier un marché" : "Nouveau marché"}
                 </h2>
               </div>
               {editingEvent || draftProposal ? (
@@ -678,7 +678,7 @@ export function AdminEventsPage() {
 
               <div className="grid gap-4 sm:grid-cols-3">
                 <label className="block space-y-2">
-                  <span className="text-sm font-medium text-brand-text">Cloture</span>
+                  <span className="text-sm font-medium text-brand-text">Clôture</span>
                   <input
                     className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
                     onChange={(event) =>
@@ -775,7 +775,7 @@ export function AdminEventsPage() {
               </div>
 
               <Button disabled={saving} fullWidth onClick={() => void submitForm()}>
-                {saving ? "Enregistrement..." : editingEvent ? "Sauvegarder" : "Creer l'evenement"}
+                {saving ? "Enregistrement..." : editingEvent ? "Sauvegarder" : "Créer l'événement"}
               </Button>
             </div>
           </Card>
@@ -833,7 +833,7 @@ export function AdminEventsPage() {
                             }
                             size="sm"
                           >
-                            Creer le marche
+                            Créer le marché
                           </Button>
                           <Button
                             onClick={() => {
@@ -926,7 +926,7 @@ export function AdminEventsPage() {
                             </div>
                             <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-brand-muted">
                               <span>{formatTokens(entry.balance)}</span>
-                              <span>Serie {entry.streak_days} j</span>
+                              <span>Série {entry.streak_days} j</span>
                               <span>{entry.badges.length} badge(s)</span>
                             </div>
                           </button>
@@ -969,7 +969,7 @@ export function AdminEventsPage() {
                             Compte
                           </p>
                           <p className="mt-3 text-sm text-brand-text">
-                            Role {selectedAdminUser.role} · serie {selectedAdminUser.streak_days} jour
+                            Rôle {selectedAdminUser.role} · série {selectedAdminUser.streak_days} jour
                             {selectedAdminUser.streak_days > 1 ? "s" : ""}
                           </p>
                           <p className="mt-2 text-xs text-brand-muted">
@@ -1025,7 +1025,7 @@ export function AdminEventsPage() {
                       <div className="space-y-3 rounded-[22px] border border-white/10 bg-white/5 p-4">
                         <div>
                           <p className="text-sm font-semibold text-brand-text">
-                            Badges et hooks de recompense
+                            Badges et hooks de récompense
                           </p>
                           <p className="mt-1 text-xs text-brand-muted">
                             Debloquez un badge manuel ou preparez une action jackpot quand le contrat
@@ -1145,7 +1145,7 @@ export function AdminEventsPage() {
                     </p>
                     <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-brand-muted">
                       <span>Pool {formatTokens(event.total_pool)}</span>
-                      <span>Cloture {formatEventDate(event.closing_at)}</span>
+                      <span>Clôture {formatEventDate(event.closing_at)}</span>
                       <span>{event.bet_count} paris</span>
                     </div>
                     {event.excluded_users.length > 0 ? (
@@ -1177,7 +1177,7 @@ export function AdminEventsPage() {
                         void runAction(
                           `close-${event.id}`,
                           () => closeAdminEvent(event.id),
-                          "Evenement clos.",
+                          "Événement clos.",
                         )
                       }
                       variant="secondary"
@@ -1204,7 +1204,7 @@ export function AdminEventsPage() {
                         void runAction(
                           `cancel-${event.id}`,
                           () => cancelAdminEvent(event.id),
-                          "Evenement annule et rembourse.",
+                          "Événement annulé et remboursé.",
                         )
                       }
                       variant="danger"
@@ -1237,7 +1237,7 @@ export function AdminEventsPage() {
             {view === "markets" && (events ?? []).length === 0 ? (
               <Card className="min-w-[300px]">
                 <p className="text-sm leading-7 text-brand-muted">
-                  Aucun evenement admin a afficher pour le moment.
+                  Aucun événement admin à afficher pour le moment.
                 </p>
               </Card>
             ) : null}
@@ -1278,7 +1278,7 @@ export function AdminEventsPage() {
                     await resolveAdminEvent(resolveTarget.id, resolvedOption);
                     setResolveTarget(null);
                   },
-                  "Evenement resolu.",
+                  "Événement résolu.",
                 )
               }
             >

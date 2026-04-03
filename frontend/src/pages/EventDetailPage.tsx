@@ -48,12 +48,12 @@ export function EventDetailPage() {
   });
 
   if (!user || isLoading) {
-    return <LoadingScreen label="Chargement de l'evenement..." />;
+    return <LoadingScreen label="Chargement de l'événement..." />;
   }
 
   const handleLogout = async () => {
     await logoutRequest();
-    notify.success("Session fermee.");
+    notify.success("Session fermée.");
   };
 
   return (
@@ -69,7 +69,7 @@ export function EventDetailPage() {
             to="/events"
           >
             <ArrowLeft className="h-4 w-4" />
-            Retour aux evenements
+            Retour aux événements
           </Link>
 
           <Card>
@@ -81,24 +81,24 @@ export function EventDetailPage() {
 
             <h1 className="mt-4 text-3xl font-bold text-zinc-100">{event.title}</h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-400">
-              {event.description || "Aucune description fournie pour cet evenement."}
+              {event.description || "Aucune description fournie pour cet événement."}
             </p>
 
             <div className="mt-5 grid gap-3 md:grid-cols-3">
               <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-4">
-                <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Pool totale</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Pool total</p>
                 <p className="mt-2 text-xl font-semibold text-emerald-400">
                   {formatTokens(event.total_pool)}
                 </p>
               </div>
               <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-4">
-                <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Cloture</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Clôture</p>
                 <p className="mt-2 text-sm font-medium text-zinc-100">
                   {formatEventDate(event.closing_at)}
                 </p>
               </div>
               <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-4">
-                <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Createur</p>
+                <p className="text-xs uppercase tracking-[0.18em] text-zinc-500">Créateur</p>
                 <p className="mt-2 text-sm font-medium text-zinc-100">
                   {event.created_by?.pseudo ?? "Admin"}
                 </p>
@@ -115,7 +115,7 @@ export function EventDetailPage() {
                       Historique des cotes
                     </p>
                     <h2 className="mt-2 text-lg font-semibold text-zinc-100">
-                      Evolution des issues
+                      Évolution des issues
                     </h2>
                   </div>
                   <CalendarClock className="h-5 w-5 text-emerald-400" />
@@ -151,7 +151,7 @@ export function EventDetailPage() {
                           <div>
                             <h3 className="text-base font-semibold text-zinc-100">{option.label}</h3>
                             <p className="mt-1 text-xs text-zinc-500">
-                              {formatTokens(option.pool)} tokens places
+                              {formatTokens(option.pool)} tokens placés
                             </p>
                           </div>
                           <div className="text-right">
@@ -210,15 +210,15 @@ export function EventDetailPage() {
 
             <div className="space-y-4">
               <Card>
-                <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Marche</p>
+                <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Marché</p>
                 <h2 className="mt-2 text-lg font-semibold text-zinc-100">Statut</h2>
                 <div className="mt-4 space-y-3 text-sm text-zinc-400">
                   <div className="flex items-center justify-between gap-3">
-                    <span>Etat</span>
+                    <span>État</span>
                     <span className="font-medium text-zinc-100">{formatEventStatus(event.status)}</span>
                   </div>
                   <div className="flex items-center justify-between gap-3">
-                    <span>Resolution</span>
+                    <span>Résolution</span>
                     <span className="text-right text-zinc-100">
                       {event.resolved_at ? formatEventDate(event.resolved_at) : "En attente"}
                     </span>
@@ -234,7 +234,7 @@ export function EventDetailPage() {
 
               <Card>
                 <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Vos paris</p>
-                <h2 className="mt-2 text-lg font-semibold text-zinc-100">Positions enregistrees</h2>
+                <h2 className="mt-2 text-lg font-semibold text-zinc-100">Positions enregistrées</h2>
 
                 {event.my_bets.length > 0 ? (
                   <div className="mt-4 space-y-3">
@@ -268,7 +268,7 @@ export function EventDetailPage() {
                   </div>
                 ) : (
                   <p className="mt-4 text-sm leading-7 text-zinc-400">
-                    Aucun pari enregistre sur cet evenement pour le moment.
+                    Aucun pari enregistré sur cet événement pour le moment.
                   </p>
                 )}
               </Card>

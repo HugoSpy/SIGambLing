@@ -15,7 +15,7 @@ const limitSteps = [10, 25, 50] as const;
 
 function formatActivityLabel(value: string | null) {
   if (!value) {
-    return "Aucune activite recente";
+    return "Aucune activité récente";
   }
 
   return new Date(value).toLocaleString("fr-FR", {
@@ -52,7 +52,7 @@ export function LeaderboardPage() {
 
   const handleLogout = async () => {
     await logoutRequest();
-    toast.success("Session fermee.");
+    toast.success("Session fermée.");
   };
 
   return (
@@ -60,9 +60,9 @@ export function LeaderboardPage() {
       <div className="space-y-6">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-zinc-100">Leaderboard</h1>
+            <h1 className="text-2xl font-bold text-zinc-100">Classement</h1>
             <p className="mt-1 max-w-2xl text-sm text-zinc-400">
-              Classement sur les 60 derniers jours, avec votre position toujours visible meme
+              Classement sur les 60 derniers jours, avec votre position toujours visible même
               hors top {limit}.
             </p>
           </div>
@@ -98,7 +98,7 @@ export function LeaderboardPage() {
             <p className="mt-3 text-3xl font-bold text-zinc-100">
               {formatTokens(leaderboard?.current_user_entry?.total_wagered ?? 0)}
             </p>
-            <p className="mt-1 text-xs text-zinc-500">Tokens engages sur 60 jours</p>
+            <p className="mt-1 text-xs text-zinc-500">Tokens engagés sur 60 jours</p>
           </Card>
 
           <Card>
@@ -106,7 +106,7 @@ export function LeaderboardPage() {
             <p className="mt-3 text-3xl font-bold text-zinc-100">
               {formatTokens(leaderboard?.total_ranked_users ?? 0)}
             </p>
-            <p className="mt-1 text-xs text-zinc-500">Joueurs classes</p>
+            <p className="mt-1 text-xs text-zinc-500">Joueurs classés</p>
           </Card>
         </div>
 
@@ -161,7 +161,7 @@ export function LeaderboardPage() {
                     <div>
                       <p className="text-sm font-semibold text-zinc-100">{entry.user.pseudo}</p>
                       <p className="text-xs text-zinc-500">
-                        Derniere activite {formatActivityLabel(entry.recent_activity_at)}
+                        Dernière activité {formatActivityLabel(entry.recent_activity_at)}
                       </p>
                     </div>
                   </div>
@@ -174,7 +174,7 @@ export function LeaderboardPage() {
                       </p>
                     </div>
                     <div>
-                      <p>Evenements</p>
+                      <p>Événements</p>
                       <p className="mt-1 font-semibold text-zinc-100">
                         {formatTokens(entry.event_wagered)}
                       </p>
@@ -192,7 +192,7 @@ export function LeaderboardPage() {
 
             {visibleEntries.length === 0 ? (
               <p className="text-sm leading-7 text-zinc-400">
-                Aucun volume de jeu n&apos;a encore ete enregistre sur cette fenetre.
+                Aucun volume de jeu n&apos;a encore été enregistré sur cette fenêtre.
               </p>
             ) : null}
           </div>
@@ -206,7 +206,7 @@ export function LeaderboardPage() {
                     #{pinnedEntry.rank} {pinnedEntry.user.pseudo}
                   </p>
                   <p className="text-xs text-zinc-400">
-                    Hors top {limit}, mais toujours epingle pour suivi.
+                    Hors top {limit}, mais toujours épinglé pour suivi.
                   </p>
                 </div>
                 <p className="text-sm font-semibold text-zinc-100">
@@ -227,7 +227,7 @@ export function LeaderboardPage() {
               className="inline-flex items-center gap-2 text-sm font-medium text-emerald-400 transition hover:text-emerald-300"
               to={scope === "casino" ? "/casino" : "/events"}
             >
-              {scope === "casino" ? "Ouvrir le casino" : "Voir les marches"}
+              {scope === "casino" ? "Ouvrir le casino" : "Voir les marchés"}
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>

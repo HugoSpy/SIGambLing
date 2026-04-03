@@ -198,7 +198,7 @@ function createOddsChangeEntry(input: {
 
 function throwOddsConflict(details: OddsConflictDetails) {
   throw new AppError(
-    "Les cotes ont evolue. Confirmez le pari pour accepter les nouvelles valeurs.",
+    "Les cotes ont évolué. Confirmez le pari pour accepter les nouvelles valeurs.",
     409,
     details,
   );
@@ -423,7 +423,7 @@ function normalizeStoredOptions(
     .filter((entry): entry is StoredEventOption => Boolean(entry));
 
   if (parsedOptions.length < 2) {
-    throw new AppError("L'evenement doit contenir au moins deux options.", 500);
+    throw new AppError("L'événement doit contenir au moins deux options.", 500);
   }
 
   dedupeOptions(parsedOptions.map((option) => option.label));
@@ -687,7 +687,7 @@ function buildOddsHistoryEntries(eventId: string, options: StoredEventOption[]) 
 
 function getFriendlyConstraintMessage(error: unknown, fallback: string) {
   if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-    return "Cette valeur existe deja.";
+    return "Cette valeur existe déjà.";
   }
 
   return fallback;
@@ -763,7 +763,7 @@ class EventService {
       }
     }
 
-    throw new AppError("La transaction evenement a echoue.", 500);
+    throw new AppError("La transaction événement a échoué.", 500);
   }
 
   private async logAdminAction(
@@ -826,11 +826,11 @@ class EventService {
     dedupeOptions(input.options);
 
     if (input.closing_at && input.closing_at <= new Date()) {
-      throw new AppError("La date de cloture doit etre dans le futur.", 400);
+      throw new AppError("La date de clôture doit être dans le futur.", 400);
     }
 
     if (input.max_bet != null && input.max_bet < input.min_bet) {
-      throw new AppError("La mise max doit etre superieure ou egale a la mise min.", 400);
+      throw new AppError("La mise max doit être supérieure ou égale à la mise min.", 400);
     }
   }
 
@@ -904,7 +904,7 @@ class EventService {
     });
 
     if (!event) {
-      throw new AppError("Evenement introuvable.", 404);
+      throw new AppError("Événement introuvable.", 404);
     }
 
     return serializeEvent(event);
@@ -923,7 +923,7 @@ class EventService {
     });
 
     if (!event) {
-      throw new AppError("Evenement introuvable.", 404);
+      throw new AppError("Événement introuvable.", 404);
     }
 
     const history = await prisma.oddsHistory.findMany({
@@ -982,7 +982,7 @@ class EventService {
     });
 
     if (!event) {
-      throw new AppError("Evenement introuvable.", 404);
+      throw new AppError("Événement introuvable.", 404);
     }
 
     const bet = await prisma.bet.findFirst({
@@ -1118,7 +1118,7 @@ class EventService {
 
           if (proposal.status !== ProposalStatus.PENDING) {
             throw new AppError(
-              "Seules les propositions en attente peuvent etre converties en evenement.",
+              "Seules les propositions en attente peuvent être converties en événement.",
               400,
             );
           }
@@ -1203,7 +1203,10 @@ class EventService {
       return serializeAdminEvent(createdEvent);
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-        throw new AppError(getFriendlyConstraintMessage(error, "Creation d'evenement impossible."), 409);
+        throw new AppError(
+          getFriendlyConstraintMessage(error, "Création d'événement impossible."),
+          409,
+        );
       }
 
       throw error;
@@ -1223,11 +1226,11 @@ class EventService {
     });
 
     if (!existingEvent) {
-      throw new AppError("Evenement introuvable.", 404);
+      throw new AppError("Événement introuvable.", 404);
     }
 
     if (existingEvent.status !== EventStatus.OPEN) {
-      throw new AppError("Seuls les evenements ouverts peuvent etre modifies.", 400);
+      throw new AppError("Seuls les événements ouverts peuvent être modifiés.", 400);
     }
 
     const currentOptions = normalizeStoredOptions(existingEvent.options, existingEvent.poolByOption);
@@ -1252,11 +1255,11 @@ class EventService {
       input.closing_at === undefined ? existingEvent.closingAt : input.closing_at;
 
     if (nextClosingAt && nextClosingAt <= new Date()) {
-      throw new AppError("La date de cloture doit etre dans le futur.", 400);
+      throw new AppError("La date de clôture doit être dans le futur.", 400);
     }
 
     if (nextMaxBet != null && nextMaxBet < nextMinBet) {
-      throw new AppError("La mise max doit etre superieure ou egale a la mise min.", 400);
+      throw new AppError("La mise max doit être supérieure ou égale à la mise min.", 400);
     }
 
     const excludedUserIds = input.excluded_user_ids
@@ -1372,11 +1375,11 @@ class EventService {
       });
 
       if (!event) {
-        throw new AppError("Evenement introuvable.", 404);
+        throw new AppError("Événement introuvable.", 404);
       }
 
       if (event.status !== EventStatus.OPEN) {
-        throw new AppError("Les paris sont fermes pour cet evenement.", 400);
+        throw new AppError("Les paris sont fermés pour cet événement.", 400);
       }
 
       if (isClosingDateExpired(event.closingAt)) {
@@ -1388,15 +1391,15 @@ class EventService {
             status: EventStatus.CLOSED,
           },
         });
-        throw new AppError("La date de cloture est depassee.", 400);
+        throw new AppError("La date de clôture est dépassée.", 400);
       }
 
       if (event.excludedUsers.length > 0) {
-        throw new AppError("Vous etes exclu de cet evenement.", 403);
+        throw new AppError("Vous êtes exclu de cet événement.", 403);
       }
 
       if (event.bets.length >= 25) {
-        throw new AppError("Limite de 25 paris atteinte sur cet evenement.", 400);
+        throw new AppError("Limite de 25 paris atteinte sur cet événement.", 400);
       }
 
       if (input.amount < event.minBet) {
@@ -1533,7 +1536,7 @@ class EventService {
       });
 
       if (!updatedUser) {
-        throw new AppError("Utilisateur introuvable apres transaction.", 500);
+        throw new AppError("Utilisateur introuvable après transaction.", 500);
       }
 
       await gamificationService.synchronizeUserBadges(userId, transaction);
@@ -1592,7 +1595,7 @@ class EventService {
       });
 
       if (events.length !== eventIds.length) {
-        throw new AppError("Un ou plusieurs evenements sont introuvables.", 404);
+        throw new AppError("Un ou plusieurs événements sont introuvables.", 404);
       }
 
       const eventById = new Map(events.map((event) => [event.id, event]));
@@ -1612,11 +1615,11 @@ class EventService {
         const event = eventById.get(betInput.eventId);
 
         if (!event) {
-          throw new AppError("Un ou plusieurs evenements sont introuvables.", 404);
+          throw new AppError("Un ou plusieurs événements sont introuvables.", 404);
         }
 
         if (event.status !== EventStatus.OPEN) {
-          throw new AppError("Tous les evenements du panier doivent etre ouverts.", 400);
+          throw new AppError("Tous les événements du panier doivent être ouverts.", 400);
         }
 
         if (isClosingDateExpired(event.closingAt)) {
@@ -1628,11 +1631,11 @@ class EventService {
               status: EventStatus.CLOSED,
             },
           });
-          throw new AppError("Un des evenements du panier est deja ferme.", 400);
+          throw new AppError("Un des événements du panier est déjà fermé.", 400);
         }
 
         if (event.excludedUsers.length > 0) {
-          throw new AppError("Vous etes exclu d'un des evenements selectionnes.", 403);
+          throw new AppError("Vous êtes exclu d'un des événements sélectionnés.", 403);
         }
 
         if (event.bets.length >= 25) {
@@ -1798,7 +1801,7 @@ class EventService {
       });
 
       if (!updatedUser) {
-        throw new AppError("Utilisateur introuvable apres transaction.", 500);
+        throw new AppError("Utilisateur introuvable après transaction.", 500);
       }
 
       await gamificationService.synchronizeUserBadges(userId, transaction);
@@ -1816,7 +1819,7 @@ class EventService {
     const uniqueEventIds = new Set(input.legs.map((leg) => leg.eventId));
 
     if (uniqueEventIds.size !== input.legs.length) {
-      throw new AppError("Impossible de combiner deux issues du meme evenement.", 400);
+      throw new AppError("Impossible de combiner deux issues du même événement.", 400);
     }
 
     return this.withSerializableTransaction(async (transaction) => {
@@ -1851,7 +1854,7 @@ class EventService {
       });
 
       if (events.length !== input.legs.length) {
-        throw new AppError("Un ou plusieurs evenements sont introuvables.", 404);
+        throw new AppError("Un ou plusieurs événements sont introuvables.", 404);
       }
 
       const eventById = new Map(events.map((event) => [event.id, event]));
@@ -1867,11 +1870,11 @@ class EventService {
         const event = eventById.get(leg.eventId);
 
         if (!event) {
-          throw new AppError("Un ou plusieurs evenements sont introuvables.", 404);
+          throw new AppError("Un ou plusieurs événements sont introuvables.", 404);
         }
 
         if (event.status !== EventStatus.OPEN) {
-          throw new AppError("Tous les evenements du combine doivent etre ouverts.", 400);
+          throw new AppError("Tous les événements du combiné doivent être ouverts.", 400);
         }
 
         if (isClosingDateExpired(event.closingAt)) {
@@ -1883,11 +1886,11 @@ class EventService {
               status: EventStatus.CLOSED,
             },
           });
-          throw new AppError("Un des evenements du combine est deja ferme.", 400);
+          throw new AppError("Un des événements du combiné est déjà fermé.", 400);
         }
 
         if (event.excludedUsers.length > 0) {
-          throw new AppError("Vous etes exclu d'un des evenements selectionnes.", 403);
+          throw new AppError("Vous êtes exclu d'un des événements sélectionnés.", 403);
         }
 
         const options = normalizeStoredOptions(event.options, event.poolByOption);
@@ -2023,7 +2026,7 @@ class EventService {
       });
 
       if (!updatedUser) {
-        throw new AppError("Utilisateur introuvable apres transaction.", 500);
+        throw new AppError("Utilisateur introuvable après transaction.", 500);
       }
 
       await gamificationService.synchronizeUserBadges(userId, transaction);
@@ -2045,11 +2048,11 @@ class EventService {
     });
 
     if (!event) {
-      throw new AppError("Evenement introuvable.", 404);
+      throw new AppError("Événement introuvable.", 404);
     }
 
     if (event.status !== EventStatus.OPEN) {
-      throw new AppError("Seuls les evenements ouverts peuvent etre clos.", 400);
+      throw new AppError("Seuls les événements ouverts peuvent être clos.", 400);
     }
 
     const closedEvent = await this.withSerializableTransaction(async (transaction) => {
@@ -2197,11 +2200,11 @@ class EventService {
       });
 
       if (!event) {
-        throw new AppError("Evenement introuvable.", 404);
+        throw new AppError("Événement introuvable.", 404);
       }
 
       if (event.status !== EventStatus.OPEN && event.status !== EventStatus.CLOSED) {
-        throw new AppError("Cet evenement ne peut pas etre resolu.", 400);
+        throw new AppError("Cet événement ne peut pas être résolu.", 400);
       }
 
       const options = normalizeStoredOptions(event.options, event.poolByOption);
@@ -2275,11 +2278,11 @@ class EventService {
       });
 
       if (!event) {
-        throw new AppError("Evenement introuvable.", 404);
+        throw new AppError("Événement introuvable.", 404);
       }
 
       if (event.status === EventStatus.RESOLVED || event.status === EventStatus.CANCELLED) {
-        throw new AppError("Cet evenement ne peut plus etre annule.", 400);
+        throw new AppError("Cet événement ne peut plus être annulé.", 400);
       }
 
       const options = normalizeStoredOptions(event.options, event.poolByOption).map((option) => ({

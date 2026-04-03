@@ -82,7 +82,7 @@ export function JackpotPage() {
 
   const handleLogout = async () => {
     await logoutRequest();
-    toast.success("Session fermee.");
+    toast.success("Session fermée.");
   };
 
   return (
@@ -109,7 +109,7 @@ export function JackpotPage() {
               </p>
               <p className="mt-4 text-sm text-brand-muted">
                 1% de chaque pari alimente le pot. Le prochain gagnant sera designe lors d'un
-                evenement GOLD exceptionnel.
+                événement GOLD exceptionnel.
               </p>
             </div>
           </div>
@@ -159,7 +159,7 @@ export function JackpotPage() {
 
               <div className="mt-6 rounded-[24px] border border-white/10 bg-white/5 p-5 text-sm leading-7 text-brand-muted">
                 Le jackpot ne tourne plus par deadline ni par tickets. Chaque mise roulette,
-                blackjack ou evenement ajoute automatiquement une fraction au pot, et le montant
+                blackjack ou événement ajoute automatiquement une fraction au pot, et le montant
                 reste visible en continu pour tout le monde.
               </div>
             </Card>

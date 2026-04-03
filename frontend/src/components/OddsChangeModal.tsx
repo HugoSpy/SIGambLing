@@ -25,8 +25,8 @@ export function OddsChangeModal({
 }: OddsChangeModalProps) {
   return (
     <Modal
-      title="Cotes mises a jour"
-      description="Le marche a bouge juste avant la validation. Verifiez les nouvelles cotes avant de confirmer."
+      title="Cotes mises à jour"
+      description="Le marché a bougé juste avant la validation. Vérifiez les nouvelles cotes avant de confirmer."
       open={open}
       onClose={onClose}
     >

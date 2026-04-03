@@ -18,15 +18,15 @@ interface EventCardProps {
 
 function getDisabledReason(event: EventView) {
   if (event.my_bet_count >= 25) {
-    return "Limite de 25 paris atteinte sur cet evenement.";
+    return "Limite de 25 paris atteinte sur cet événement.";
   }
 
   if (event.is_excluded) {
-    return "Vous etes exclu de ce marche.";
+    return "Vous êtes exclu de ce marché.";
   }
 
   if (event.status !== "OPEN") {
-    return "Les paris sont fermes sur cet evenement.";
+    return "Les paris sont fermés sur cet événement.";
   }
 
   return null;
@@ -54,13 +54,13 @@ export function EventCard({ event, onBet }: EventCardProps) {
           </Link>
 
           <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-zinc-500">
-            <span>Cloture {formatEventDate(event.closing_at)}</span>
+            <span>Clôture {formatEventDate(event.closing_at)}</span>
             <span>{formatTokens(event.total_pool)} tokens</span>
             <span>{event.options.length} issue(s)</span>
           </div>
 
           <p className="mt-3 text-sm leading-6 text-zinc-400">
-            {event.description || "Aucune description fournie pour cet evenement."}
+            {event.description || "Aucune description fournie pour cet événement."}
           </p>
         </div>
       </div>
@@ -116,7 +116,7 @@ export function EventCard({ event, onBet }: EventCardProps) {
 
       {event.my_bets.length > 0 ? (
         <div className="mt-4 rounded-lg border border-emerald-500/20 bg-emerald-500/5 px-3 py-2 text-sm text-zinc-200">
-          {event.my_bet_count} pari(s) deja poses sur cet evenement
+          {event.my_bet_count} pari(s) déjà posés sur cet événement
         </div>
       ) : null}
 
@@ -143,7 +143,7 @@ export function EventCard({ event, onBet }: EventCardProps) {
           className="inline-flex items-center gap-2 text-sm font-medium text-zinc-300 transition hover:text-zinc-100"
           to={`/events/${event.id}`}
         >
-          Voir le marche
+          Voir le marché
           <ArrowRight className="h-4 w-4" />
         </Link>
       </div>

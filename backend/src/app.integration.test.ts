@@ -204,7 +204,7 @@ test("POST /events/:id/bet forwards structured odds-conflict details", async () 
 
   stubMethod(eventService, "placeBet", async () => {
     throw new AppError(
-      "Les cotes ont evolue. Confirmez le pari pour accepter les nouvelles valeurs.",
+      "Les cotes ont évolué. Confirmez le pari pour accepter les nouvelles valeurs.",
       409,
       {
         code: "ODDS_CHANGED",
@@ -460,7 +460,7 @@ test("GET /rewards/me returns the authenticated gamification state", async () =>
         {
           key: "streak_7",
           name: "Feu continu",
-          description: "Serie de 7 jours sans casser le rythme.",
+          description: "Série de 7 jours sans casser le rythme.",
           tone: "orange",
           rarity: "rare",
           icon: "zap",
@@ -760,8 +760,8 @@ test("GET /users/badges/catalog exposes the manual badge catalog to admins", asy
   stubMethod(userService, "listAvailableBadges", () => [
     {
       key: "sharp_bettor",
-      name: "Paris en serie",
-      description: "Decrochez 5 paris gagnants.",
+      name: "Paris en série",
+      description: "Décrochez 5 paris gagnants.",
       tone: "emerald",
     },
   ]);
@@ -828,7 +828,7 @@ test("POST /events/proposals submits a proposal without category metadata", asyn
   stubMethod(eventService, "createProposal", async (userId: string, payload: any) => {
     assert.equal(userId, "user-1");
     assert.equal(payload.title, "Le prochain live roulette aura-t-il un zero ?");
-    assert.equal(payload.description, "Question de demo sans categorie.");
+    assert.equal(payload.description, "Question de démo sans catégorie.");
     assert.equal(payload.suggested_date, null);
     assert.equal("category" in payload, false);
 
@@ -856,7 +856,7 @@ test("POST /events/proposals submits a proposal without category metadata", asyn
     .set("Authorization", `Bearer ${token}`)
     .send({
       title: "Le prochain live roulette aura-t-il un zero ?",
-      description: "Question de demo sans categorie.",
+      description: "Question de démo sans catégorie.",
       suggested_date: null,
     });
 
@@ -912,7 +912,7 @@ test("GET /rewards/me exposes the authenticated gamification state", async () =>
       badges: [
         {
           key: "streak_3",
-          name: "Serie en route",
+          name: "Série en route",
         },
       ],
       progress: [

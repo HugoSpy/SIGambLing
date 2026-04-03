@@ -27,8 +27,8 @@ import type { EventStatus, EventView } from "../types/event";
 const statusOptions: Array<{ value: "all" | EventStatus; label: string }> = [
   { value: "all", label: "Tous" },
   { value: "OPEN", label: "Ouverts" },
-  { value: "CLOSED", label: "Clotures" },
-  { value: "RESOLVED", label: "Resolus" },
+  { value: "CLOSED", label: "Clôturés" },
+  { value: "RESOLVED", label: "Résolus" },
 ];
 
 function toErrorMessage(error: unknown) {
@@ -117,17 +117,17 @@ export function EventsPage() {
   }, [events, myBets, search, status, viewTab]);
 
   if (!user || eventsLoading) {
-    return <LoadingScreen label="Chargement des evenements..." />;
+    return <LoadingScreen label="Chargement des événements..." />;
   }
 
   const handleLogout = async () => {
     await logoutRequest();
-    toast.success("Session fermee.");
+    toast.success("Session fermée.");
   };
 
   const submitProposal = async () => {
     if (proposalForm.title.trim().length < 10) {
-      toast.error("Le titre doit contenir au moins 10 caracteres.");
+      toast.error("Le titre doit contenir au moins 10 caractères.");
       return;
     }
 
@@ -147,7 +147,7 @@ export function EventsPage() {
         suggested_date: "",
       });
       await queryClient.invalidateQueries({ queryKey: ["my-proposals"] });
-      toast.success("Proposition envoyee.");
+      toast.success("Proposition envoyée.");
     } catch (error) {
       toast.error(toErrorMessage(error));
     } finally {
@@ -167,13 +167,13 @@ export function EventsPage() {
       <div className="space-y-6">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-zinc-100">Evenements</h1>
+            <h1 className="text-2xl font-bold text-zinc-100">Événements</h1>
             <p className="mt-1 text-sm text-zinc-400">
-              Parcourez les marches, ouvrez un pari rapide ou alimentez votre ticket.
+              Parcourez les marchés, ouvrez un pari rapide ou alimentez votre ticket.
             </p>
           </div>
           <Button variant="secondary" onClick={() => setProposalOpen(true)}>
-            Proposer un evenement
+            Proposer un événement
           </Button>
         </div>
 
@@ -190,7 +190,7 @@ export function EventsPage() {
                   onClick={() => setSearchParams({})}
                   type="button"
                 >
-                  Tous les marches
+                  Tous les marchés
                 </button>
                 <button
                   className={`rounded-lg px-3 py-2 text-sm transition ${
@@ -266,10 +266,10 @@ export function EventsPage() {
 
             <div className="flex items-center justify-between text-sm text-zinc-500">
               <span>
-                {filteredEvents.length} evenement{filteredEvents.length > 1 ? "s" : ""} affiche
+                {filteredEvents.length} événement{filteredEvents.length > 1 ? "s" : ""} affiché
                 {filteredEvents.length > 1 ? "s" : ""}
               </span>
-              <span>{ticketCount} selection(s) dans le ticket</span>
+              <span>{ticketCount} sélection(s) dans le ticket</span>
             </div>
 
             {eventsError ? (
@@ -281,7 +281,7 @@ export function EventsPage() {
             {filteredEvents.length === 0 ? (
               <Card>
                 <p className="text-sm leading-7 text-zinc-400">
-                  Aucun evenement ne correspond a vos filtres.
+                  Aucun événement ne correspond à vos filtres.
                 </p>
               </Card>
             ) : (
@@ -345,14 +345,14 @@ export function EventsPage() {
                     <p className="mt-1 text-xs text-zinc-500">
                       {proposal.suggested_date
                         ? `Suggestion ${formatEventDate(proposal.suggested_date)}`
-                        : "Sans date suggeree"}
+                        : "Sans date suggérée"}
                     </p>
                   </div>
                 ))}
 
                 {(myProposals ?? []).length === 0 ? (
                   <p className="text-sm leading-7 text-zinc-400">
-                    Aucune proposition envoyee pour l'instant.
+                    Aucune proposition envoyée pour l'instant.
                   </p>
                 ) : null}
               </div>
@@ -369,10 +369,10 @@ export function EventsPage() {
       />
 
       <Modal
-        description="Soumettez une idee de marche. Un admin pourra ensuite la configurer avec les cotes."
+        description="Soumettez une idée de marché. Un admin pourra ensuite la configurer avec les cotes."
         onClose={() => setProposalOpen(false)}
         open={proposalOpen}
-        title="Proposer un evenement"
+        title="Proposer un événement"
       >
         <div className="space-y-4">
           <label className="block space-y-2">
@@ -399,7 +399,7 @@ export function EventsPage() {
 
           <div className="grid gap-4">
             <label className="block space-y-2">
-              <span className="text-sm font-medium text-zinc-200">Date suggeree</span>
+              <span className="text-sm font-medium text-zinc-200">Date suggérée</span>
               <input
                 className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none transition focus:border-emerald-500"
                 onChange={(event) =>

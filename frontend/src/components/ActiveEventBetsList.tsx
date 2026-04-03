@@ -55,8 +55,8 @@ export function ActiveEventBetsList({
         const linkTarget = targetEvent ? `/events/${targetEvent.id}` : fallbackLinkTarget;
         const isParlay = bet.type === "PARLAY" && bet.legs.length > 0;
         const isExpanded = expandedBets.has(bet.id);
-        const betTitle = isParlay ? `Combine ${bet.legs.length} selections` : targetEvent?.title ?? "Pari simple";
-        const betLabel = isParlay ? `${bet.legs.length} selections` : bet.chosen_option ?? "Selection";
+        const betTitle = isParlay ? `Combiné ${bet.legs.length} sélections` : targetEvent?.title ?? "Pari simple";
+        const betLabel = isParlay ? `${bet.legs.length} sélections` : bet.chosen_option ?? "Sélection";
 
         return (
           <div className="rounded-lg border border-zinc-800 bg-zinc-950" key={bet.id}>
@@ -65,7 +65,7 @@ export function ActiveEventBetsList({
                 <p className="text-sm font-semibold text-zinc-100">{betTitle}</p>
                 <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-zinc-500">
                   <span>{betLabel}</span>
-                  <span>{formatTokens(bet.stake)} engages</span>
+                  <span>{formatTokens(bet.stake)} engagés</span>
                   <span>{formatTokens(bet.potential_payout)} potentiels</span>
                   <span>Cote {formatEventOdds(isParlay ? bet.total_odds : bet.odds_at_bet)}</span>
                 </div>

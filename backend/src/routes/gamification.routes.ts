@@ -19,7 +19,7 @@ const rewardLimiter = rateLimit({
   legacyHeaders: false,
   keyGenerator: (request) =>
     ((request as { auth?: { id?: string } }).auth?.id ?? request.ip ?? "anonymous"),
-  message: { message: "Trop de requetes de recompense en peu de temps." },
+  message: { message: "Trop de requêtes de récompense en peu de temps." },
 });
 
 gamificationRouter.use(requireAuth);
