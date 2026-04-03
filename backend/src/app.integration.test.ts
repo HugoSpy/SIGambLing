@@ -305,7 +305,8 @@ test("GET /auth/microsoft/callback JSON response omits the refresh token body fi
   }));
 
   let appliedRefreshToken: string | null = null;
-  let jsonPayload: { access_token?: string; refresh_token?: string } | null = null;
+  let callbackAccessToken: string | null = null;
+  let callbackIncludesRefreshToken = false;
 
   stubMethod(authService, "applyRefreshCookie", (_response: any, refreshToken: string) => {
     appliedRefreshToken = refreshToken;
@@ -321,7 +322,8 @@ test("GET /auth/microsoft/callback JSON response omits the refresh token body fi
       throw new Error("Unexpected redirect response");
     },
     json: (payload: { access_token?: string; refresh_token?: string }) => {
-      jsonPayload = payload;
+      callbackAccessToken = payload.access_token ?? null;
+      callbackIncludesRefreshToken = "refresh_token" in payload;
     },
   };
 
@@ -336,13 +338,8 @@ test("GET /auth/microsoft/callback JSON response omits the refresh token body fi
   );
 
   assert.equal(appliedRefreshToken, "browser-refresh-token");
-  if (jsonPayload === null) {
-    throw new Error("Expected JSON callback payload.");
-  }
-
-  const callbackPayload = jsonPayload;
-  assert.equal(callbackPayload.access_token, "browser-access-token");
-  assert.equal("refresh_token" in callbackPayload, false);
+  assert.equal(callbackAccessToken, "browser-access-token");
+  assert.equal(callbackIncludesRefreshToken, false);
 });
 
 test("GET /events returns the authenticated user's open event feed", async () => {
