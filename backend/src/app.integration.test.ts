@@ -13,6 +13,7 @@ const { eventService } = require("./services/event.service");
 const { rouletteService } = require("./services/roulette.service");
 const { blackjackService } = require("./services/blackjack.service");
 const { gamificationService } = require("./services/gamification.service");
+const { jackpotService } = require("./services/jackpot.service");
 const { userService } = require("./services/user.service");
 
 const app = createApp();
@@ -357,21 +358,12 @@ test("GET /rewards/me returns the authenticated gamification state", async () =>
       ],
       progress: [],
       jackpot: {
-        current_round: {
-          id: "round-1",
-          label: "Jackpot 03 avr.",
-          current_pot: 980,
-          seed_amount: 500,
-          contribution_rate_bps: 800,
-          ticket_unit_amount: 25,
-          starts_at: "2026-04-01T00:00:00.000Z",
-          ends_at: "2026-04-08T00:00:00.000Z",
-          total_tickets: 91,
-          user_tickets: 8,
-          user_entries: 3,
-          user_contribution: 64,
-          user_chance_bps: 879,
-        },
+        current_pot: 980,
+        contribution_rate_bps: 100,
+        total_contributed: 1240,
+        user_contribution_total: 64,
+        user_contribution_count: 3,
+        updated_at: "2026-04-03T10:00:00.000Z",
         last_result: null,
       },
       stats: {
@@ -392,7 +384,7 @@ test("GET /rewards/me returns the authenticated gamification state", async () =>
     .set("Authorization", `Bearer ${token}`);
 
   assert.equal(response.status, 200);
-  assert.equal(response.body.jackpot.current_round.user_tickets, 8);
+  assert.equal(response.body.jackpot.user_contribution_count, 3);
   assert.equal(response.body.badges[0].unlocked, false);
 });
 
@@ -401,26 +393,15 @@ test("GET /rewards/jackpot returns the authenticated jackpot state", async () =>
 
   stubMethod(gamificationService, "getState", async () => ({
     jackpot: {
-      current_round: {
-        id: "round-1",
-        label: "Jackpot 03 avr.",
-        current_pot: 980,
-        seed_amount: 500,
-        contribution_rate_bps: 800,
-        ticket_unit_amount: 25,
-        starts_at: "2026-04-01T00:00:00.000Z",
-        ends_at: "2026-04-08T00:00:00.000Z",
-        total_tickets: 91,
-        user_tickets: 8,
-        user_entries: 3,
-        user_contribution: 64,
-        user_chance_bps: 879,
-      },
+      current_pot: 980,
+      contribution_rate_bps: 100,
+      total_contributed: 1240,
+      user_contribution_total: 64,
+      user_contribution_count: 3,
+      updated_at: "2026-04-03T10:00:00.000Z",
       last_result: {
-        round_id: "round-0",
-        label: "Jackpot 27 mars",
         payout_amount: 760,
-        resolved_at: "2026-04-01T00:00:00.000Z",
+        won_at: "2026-04-01T00:00:00.000Z",
         winner: {
           id: "user-9",
           pseudo: "SigmaQueen",
@@ -435,6 +416,31 @@ test("GET /rewards/jackpot returns the authenticated jackpot state", async () =>
 
   assert.equal(response.status, 200);
   assert.equal(response.body.last_result.winner.pseudo, "SigmaQueen");
+});
+
+test("POST /rewards/jackpot/payout allows admin jackpot triggers", async () => {
+  const token = issueAccessToken({ id: "admin-1", email: "admin@epita.fr", role: "admin" });
+
+  stubMethod(jackpotService, "triggerGoldEventWinner", async (winnerUserId: string) => {
+    assert.equal(winnerUserId, "user-9");
+
+    return {
+      payout_amount: 760,
+      won_at: "2026-04-03T10:00:00.000Z",
+      winner: {
+        id: "user-9",
+        pseudo: "SigmaQueen",
+      },
+    };
+  });
+
+  const response = await request
+    .post("/rewards/jackpot/payout")
+    .set("Authorization", `Bearer ${token}`)
+    .send({ winner_user_id: "user-9" });
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.winner.pseudo, "SigmaQueen");
 });
 
 test("POST /rewards/daily claims the authenticated daily reward", async () => {

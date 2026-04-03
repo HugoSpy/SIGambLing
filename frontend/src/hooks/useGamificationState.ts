@@ -13,7 +13,7 @@ export function useJackpotState() {
   return useQuery({
     queryKey: ["jackpot"],
     queryFn: fetchJackpotState,
-    refetchInterval: 30_000,
+    refetchInterval: 5_000,
   });
 }
 

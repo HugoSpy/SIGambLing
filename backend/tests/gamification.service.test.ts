@@ -21,7 +21,7 @@ function createMissingJackpotTableError(message: string) {
   return {
     code: "P2021",
     message,
-    meta: { modelName: "JackpotEntry" },
+    meta: { modelName: "JackpotContribution" },
   };
 }
 
@@ -53,16 +53,16 @@ test("getState falls back to zeroed jackpot stats when jackpot storage is unavai
     ) as never,
     stubProperty(prisma.event, "count", async () => 0) as never,
     stubProperty(prisma.eventProposal, "count", async () => 0) as never,
-    stubProperty(prisma.jackpotEntry, "count", async () => {
-      throw createMissingJackpotTableError("The table `public.JackpotEntry` does not exist.");
+    stubProperty(prisma.jackpotContribution, "count", async () => {
+      throw createMissingJackpotTableError("The table `public.JackpotContribution` does not exist.");
     }) as never,
-    stubProperty(prisma.jackpotEntry, "aggregate", async () => {
-      throw createMissingJackpotTableError("The table `public.JackpotEntry` does not exist.");
+    stubProperty(prisma.jackpotContribution, "aggregate", async () => {
+      throw createMissingJackpotTableError("The table `public.JackpotContribution` does not exist.");
     }) as never,
     stubProperty(prisma.badge, "createMany", async () => ({ count: 0 })) as never,
     stubProperty(prisma.badge, "findMany", async () => []) as never,
     stubProperty(jackpotService, "getState", async () => {
-      throw createMissingJackpotTableError("The table `public.JackpotEntry` does not exist.");
+      throw createMissingJackpotTableError("The table `public.JackpotContribution` does not exist.");
     }) as never,
   ];
 
@@ -72,8 +72,8 @@ test("getState falls back to zeroed jackpot stats when jackpot storage is unavai
     assert.equal(state.stats.jackpot_entries, 0);
     assert.equal(state.stats.jackpot_tickets, 0);
     assert.equal(state.progress.find((item) => item.key === "jackpot_hunter")?.current, 0);
-    assert.equal(state.jackpot.current_round.id, "jackpot-unavailable");
-    assert.equal(state.jackpot.current_round.user_tickets, 0);
+    assert.equal(state.jackpot.current_pot, 0);
+    assert.equal(state.jackpot.user_contribution_total, 0);
   } finally {
     while (restores.length > 0) {
       restores.pop()?.();
@@ -82,30 +82,24 @@ test("getState falls back to zeroed jackpot stats when jackpot storage is unavai
 });
 
 test("recordCasinoContribution degrades cleanly when jackpot persistence tables are unavailable", async () => {
-  const activeRound = {
-    id: "round-1",
-    label: "Jackpot 03 avr.",
-    currentPot: 980,
-    seedAmount: 500,
-    contributionRateBps: 800,
-    ticketUnitAmount: 25,
-    startsAt: new Date("2026-04-01T00:00:00.000Z"),
-    endsAt: new Date("2026-04-08T00:00:00.000Z"),
-    resolvedAt: null,
-    payoutAmount: null,
-    winnerUserId: null,
-    winnerEntryId: null,
+  const jackpot = {
+    id: "jackpot-main",
+    currentAmount: 980,
+    contributionRateBps: 100,
+    totalContributed: 980,
+    lastWinnerId: null,
+    lastWinAmount: null,
+    lastWinAt: null,
     createdAt: new Date("2026-04-01T00:00:00.000Z"),
     updatedAt: new Date("2026-04-01T00:00:00.000Z"),
-    status: "ACTIVE",
   };
 
   const restores = [
-    stubProperty(prisma.jackpotRound, "findFirst", async () => activeRound) as never,
-    stubProperty(prisma.jackpotEntry, "create", async () => {
-      throw createMissingJackpotTableError("The table `public.JackpotEntry` does not exist.");
+    stubProperty(prisma.jackpot, "findFirst", async () => jackpot) as never,
+    stubProperty(prisma.jackpotContribution, "create", async () => {
+      throw createMissingJackpotTableError("The table `public.JackpotContribution` does not exist.");
     }) as never,
-    stubProperty(prisma.jackpotRound, "update", async () => activeRound) as never,
+    stubProperty(prisma.jackpot, "update", async () => jackpot) as never,
   ];
 
   try {
@@ -116,9 +110,8 @@ test("recordCasinoContribution degrades cleanly when jackpot persistence tables 
       "game-1",
     );
 
-    assert.equal(contribution.roundId, null);
+    assert.equal(contribution.jackpotId, null);
     assert.equal(contribution.contributionAmount, 0);
-    assert.equal(contribution.tickets, 0);
   } finally {
     while (restores.length > 0) {
       restores.pop()?.();

@@ -58,11 +58,6 @@ enum CasinoGameResult {
   push
 }
 
-enum JackpotRoundStatus {
-  ACTIVE
-  RESOLVED
-}
-
 model User {
   id              String      @id @default(uuid()) @db.Uuid
   email           String      @unique @db.VarChar(255)
@@ -86,8 +81,8 @@ model User {
   adminLogs       AdminLog[]  @relation("AdminActor")
   proposals       EventProposal[]
   reviewedProposals EventProposal[] @relation("ProposalReviewer")
-  jackpotEntries  JackpotEntry[]
-  wonJackpotRounds JackpotRound[] @relation("JackpotWinner")
+  jackpotContributions JackpotContribution[]
+  wonJackpotSnapshots Jackpot[] @relation("JackpotLastWinner")
 
   @@index([email])
   @@index([balance(sort: Desc)])
@@ -232,43 +227,35 @@ model Badge {
   @@index([userId])
 }
 
-model JackpotRound {
-  id                  String             @id @default(uuid()) @db.Uuid
-  status              JackpotRoundStatus @default(ACTIVE)
-  label               String             @db.VarChar(120)
-  seedAmount          Int                @default(500)
-  currentPot          Int                @default(500)
-  contributionRateBps Int                @default(800)
-  ticketUnitAmount    Int                @default(25)
-  startsAt            DateTime           @default(now())
-  endsAt              DateTime
-  resolvedAt          DateTime?
-  payoutAmount        Int?
-  winnerUserId        String?            @db.Uuid
-  winnerEntryId       String?            @db.Uuid
-  createdAt           DateTime           @default(now())
-  updatedAt           DateTime           @updatedAt
-  entries             JackpotEntry[]
-  winner              User?              @relation("JackpotWinner", fields: [winnerUserId], references: [id], onDelete: SetNull)
+model Jackpot {
+  id                  String                @id @default(cuid())
+  currentAmount       Int                   @default(0)
+  contributionRateBps Int                   @default(100)
+  totalContributed    Int                   @default(0)
+  lastWinnerId        String?               @db.Uuid
+  lastWinAmount       Int?
+  lastWinAt           DateTime?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  lastWinner          User?                 @relation("JackpotLastWinner", fields: [lastWinnerId], references: [id], onDelete: SetNull)
+  contributions       JackpotContribution[]
 
-  @@index([status, endsAt])
-  @@index([winnerUserId])
+  @@index([lastWinnerId])
 }
 
-model JackpotEntry {
-  id                 String      @id @default(uuid()) @db.Uuid
-  roundId            String      @db.Uuid
-  userId             String      @db.Uuid
-  sourceGameType     CasinoGameType
-  sourceReference    String?     @db.VarChar(100)
+model JackpotContribution {
+  id                 String   @id @default(uuid()) @db.Uuid
+  jackpotId          String
+  userId             String   @db.Uuid
+  sourceType         String   @db.VarChar(50)
+  sourceReference    String?  @db.VarChar(100)
   wagerAmount        Int
   contributionAmount Int
-  tickets            Int
-  createdAt          DateTime    @default(now())
-  round              JackpotRound @relation(fields: [roundId], references: [id], onDelete: Cascade)
-  user               User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt          DateTime @default(now())
+  jackpot            Jackpot  @relation(fields: [jackpotId], references: [id], onDelete: Cascade)
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@index([roundId, createdAt(sort: Desc)])
+  @@index([jackpotId, createdAt(sort: Desc)])
   @@index([userId, createdAt(sort: Desc)])
 }
 

@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { EventCategory, EventStatus, ProposalStatus } from "@prisma/client";
 import { eventService } from "../src/services/event.service";
 import { gamificationService } from "../src/services/gamification.service";
+import { jackpotService } from "../src/services/jackpot.service";
 import { prisma } from "../src/lib/prisma";
 
 function buildStoredOptions() {
@@ -280,6 +281,7 @@ test("placeSimpleBets switches to pure pari-mutuel odds and records history snap
   const originalTransaction = prismaAny.$transaction;
   const originalUpdateMany = prismaAny.event.updateMany;
   const originalSynchronizeUserBadges = gamificationService.synchronizeUserBadges;
+  const originalRecordEventContribution = jackpotService.recordEventContribution;
   const captured = {
     eventUpdates: [] as Array<Record<string, any>>,
     historyBatches: [] as Array<Array<Record<string, any>>>,
@@ -287,6 +289,10 @@ test("placeSimpleBets switches to pure pari-mutuel odds and records history snap
 
   prismaAny.event.updateMany = async () => ({ count: 0 });
   (gamificationService as any).synchronizeUserBadges = async () => undefined;
+  (jackpotService as any).recordEventContribution = async () => ({
+    jackpotId: "jackpot-main",
+    contributionAmount: 14,
+  });
   prismaAny.$transaction = async (callback: (tx: any) => Promise<unknown>) =>
     callback({
       event: {
@@ -417,6 +423,7 @@ test("placeSimpleBets switches to pure pari-mutuel odds and records history snap
     prismaAny.$transaction = originalTransaction;
     prismaAny.event.updateMany = originalUpdateMany;
     (gamificationService as any).synchronizeUserBadges = originalSynchronizeUserBadges;
+    (jackpotService as any).recordEventContribution = originalRecordEventContribution;
   }
 });
 
@@ -425,10 +432,15 @@ test("placeSimpleBets no longer clamps the first live odds update", async () => 
   const originalTransaction = prismaAny.$transaction;
   const originalUpdateMany = prismaAny.event.updateMany;
   const originalSynchronizeUserBadges = gamificationService.synchronizeUserBadges;
+  const originalRecordEventContribution = jackpotService.recordEventContribution;
   const captured: Array<Record<string, any>> = [];
 
   prismaAny.event.updateMany = async () => ({ count: 0 });
   (gamificationService as any).synchronizeUserBadges = async () => undefined;
+  (jackpotService as any).recordEventContribution = async () => ({
+    jackpotId: "jackpot-main",
+    contributionAmount: 1,
+  });
   prismaAny.$transaction = async (callback: (tx: any) => Promise<unknown>) =>
     callback({
       event: {
@@ -514,5 +526,6 @@ test("placeSimpleBets no longer clamps the first live odds update", async () => 
     prismaAny.$transaction = originalTransaction;
     prismaAny.event.updateMany = originalUpdateMany;
     (gamificationService as any).synchronizeUserBadges = originalSynchronizeUserBadges;
+    (jackpotService as any).recordEventContribution = originalRecordEventContribution;
   }
 });

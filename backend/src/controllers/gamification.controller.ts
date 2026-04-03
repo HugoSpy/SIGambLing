@@ -1,5 +1,6 @@
 import type { RequestHandler } from "express";
 import { gamificationService } from "../services/gamification.service";
+import { jackpotService } from "../services/jackpot.service";
 import { AppError } from "../utils/app-error";
 
 function getAuthenticatedUserId(request: Parameters<RequestHandler>[0]) {
@@ -41,6 +42,21 @@ export const claimDailyRewardController: RequestHandler = async (request, respon
     const userId = getAuthenticatedUserId(request);
     const reward = await gamificationService.claimDailyReward(userId);
     response.json(reward);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const triggerJackpotPayoutController: RequestHandler = async (request, response, next) => {
+  try {
+    const winnerUserId = (request.body as { winner_user_id?: string }).winner_user_id;
+
+    if (!winnerUserId) {
+      throw new AppError("Aucun gagnant jackpot n'a ete transmis.", 400);
+    }
+
+    const result = await jackpotService.triggerGoldEventWinner(winnerUserId);
+    response.json(result);
   } catch (error) {
     next(error);
   }

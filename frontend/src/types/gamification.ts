@@ -62,26 +62,15 @@ export interface GamificationDailyRewardState {
 }
 
 export interface JackpotState {
-  current_round: {
-    id: string;
-    label: string;
-    current_pot: number;
-    seed_amount: number;
-    contribution_rate_bps: number;
-    ticket_unit_amount: number;
-    starts_at: string;
-    ends_at: string;
-    total_tickets: number;
-    user_tickets: number;
-    user_entries: number;
-    user_contribution: number;
-    user_chance_bps: number;
-  };
+  current_pot: number;
+  contribution_rate_bps: number;
+  total_contributed: number;
+  user_contribution_total: number;
+  user_contribution_count: number;
+  updated_at: string;
   last_result: {
-    round_id: string;
-    label: string;
     payout_amount: number;
-    resolved_at: string | null;
+    won_at: string | null;
     winner: {
       id: string;
       pseudo: string;

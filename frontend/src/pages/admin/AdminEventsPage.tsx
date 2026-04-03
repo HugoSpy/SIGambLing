@@ -20,6 +20,7 @@ import {
   rejectAdminProposal,
   resolveAdminEvent,
   searchUsers,
+  triggerAdminJackpotPayout,
   unlockAdminUserBadge,
   updateAdminEvent,
 } from "../../lib/api";
@@ -278,11 +279,13 @@ export function AdminEventsPage() {
       toast.success(successMessage);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["admin-events"] }),
-        queryClient.invalidateQueries({ queryKey: ["admin-proposals"] }),
-        queryClient.invalidateQueries({ queryKey: ["events"] }),
-        queryClient.invalidateQueries({ queryKey: ["event"] }),
-        queryClient.invalidateQueries({ queryKey: ["my-event-bets"] }),
-      ]);
+      queryClient.invalidateQueries({ queryKey: ["admin-proposals"] }),
+      queryClient.invalidateQueries({ queryKey: ["events"] }),
+      queryClient.invalidateQueries({ queryKey: ["event"] }),
+      queryClient.invalidateQueries({ queryKey: ["my-event-bets"] }),
+      queryClient.invalidateQueries({ queryKey: ["jackpot"] }),
+      queryClient.invalidateQueries({ queryKey: ["gamification"] }),
+    ]);
     } catch (error) {
       toast.error(toErrorMessage(error));
     } finally {
@@ -972,8 +975,23 @@ export function AdminEventsPage() {
                               ? "Deblocage..."
                               : "Debloquer le badge"}
                           </Button>
-                          <Button disabled variant="secondary">
-                            Hook jackpot a venir
+                          <Button
+                            disabled={actionKey === `jackpot-${selectedAdminUser.id}`}
+                            onClick={() =>
+                              void runAction(
+                                `jackpot-${selectedAdminUser.id}`,
+                                async () => {
+                                  await triggerAdminJackpotPayout(selectedAdminUser.id);
+                                  await refreshAdminUserData(selectedAdminUser.id);
+                                },
+                                "Jackpot verse au gagnant GOLD.",
+                              )
+                            }
+                            variant="secondary"
+                          >
+                            {actionKey === `jackpot-${selectedAdminUser.id}`
+                              ? "Paiement..."
+                              : "Payer le jackpot GOLD"}
                           </Button>
                         </div>
                       </div>

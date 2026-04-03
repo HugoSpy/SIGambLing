@@ -16,6 +16,7 @@ import type {
 } from "../schemas/events.schemas";
 import { AppError } from "../utils/app-error";
 import { gamificationService } from "./gamification.service";
+import { jackpotService } from "./jackpot.service";
 import { prisma } from "./prisma.service";
 
 interface StoredEventOption {
@@ -1382,6 +1383,8 @@ class EventService {
         select: betSelect,
       });
 
+      await jackpotService.recordEventContribution(userId, input.amount, "simple", bet.id, transaction);
+
       await transaction.event.update({
         where: {
           id: eventId,
@@ -1575,6 +1578,14 @@ class EventService {
 
         createdBets.push(bet);
 
+        await jackpotService.recordEventContribution(
+          userId,
+          prepared.amount,
+          "simple",
+          bet.id,
+          transaction,
+        );
+
         await transaction.event.update({
           where: {
             id: prepared.event.id,
@@ -1739,6 +1750,8 @@ class EventService {
         },
         select: betSelect,
       });
+
+      await jackpotService.recordEventContribution(userId, input.stake, "parlay", bet.id, transaction);
 
       for (const [currentEventId, state] of eventStates.entries()) {
         await transaction.event.update({

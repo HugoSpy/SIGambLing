@@ -4,8 +4,10 @@ import {
   claimDailyRewardController,
   getMyGamificationStateController,
   getMyJackpotStateController,
+  triggerJackpotPayoutController,
 } from "../controllers/gamification.controller";
 import { requireAuth } from "../middleware/require-auth";
+import { requireRole } from "../middleware/require-role";
 
 export const gamificationRouter = Router();
 
@@ -23,3 +25,4 @@ gamificationRouter.use(requireAuth);
 gamificationRouter.get("/me", getMyGamificationStateController);
 gamificationRouter.get("/jackpot", getMyJackpotStateController);
 gamificationRouter.post("/daily", rewardLimiter, claimDailyRewardController);
+gamificationRouter.post("/jackpot/payout", requireRole(["admin"]), triggerJackpotPayoutController);

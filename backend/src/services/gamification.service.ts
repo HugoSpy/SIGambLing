@@ -45,7 +45,7 @@ interface BadgeStats {
   casinoWins: number;
   createdMarkets: number;
   jackpotEntries: number;
-  jackpotTickets: number;
+  jackpotContributionTotal: number;
 }
 
 interface BadgeProgress {
@@ -186,15 +186,15 @@ const BADGE_DEFINITIONS: BadgeDefinition[] = [
   {
     key: "jackpot_hunter",
     name: "Chasseur de jackpot",
-    description: "20 tickets jackpot accumules.",
-    lockedDescription: "Entrez au casino et montez a 20 tickets jackpot.",
+    description: "250 tokens rediriges vers le jackpot permanent.",
+    lockedDescription: "Alimentez le jackpot avec 250 tokens de contributions cumulees.",
     tone: "cyan",
     rarity: "rare",
     icon: "ticket",
     getProgress: ({ stats }) => ({
-      current: Math.min(stats.jackpotTickets, 20),
-      target: 20,
-      label: "tickets",
+      current: Math.min(stats.jackpotContributionTotal, 250),
+      target: 250,
+      label: "tokens",
     }),
   },
 ];
@@ -291,14 +291,16 @@ export class GamificationService {
     ]);
 
     let jackpotEntryCount = 0;
-    let jackpotTicketAggregate: { _sum: { tickets: number | null } } = { _sum: { tickets: 0 } };
+    let jackpotContributionAggregate: { _sum: { contributionAmount: number | null } } = {
+      _sum: { contributionAmount: 0 },
+    };
 
     try {
-      [jackpotEntryCount, jackpotTicketAggregate] = await Promise.all([
-        db.jackpotEntry.count({ where: { userId } }),
-        db.jackpotEntry.aggregate({
+      [jackpotEntryCount, jackpotContributionAggregate] = await Promise.all([
+        db.jackpotContribution.count({ where: { userId } }),
+        db.jackpotContribution.aggregate({
           where: { userId },
-          _sum: { tickets: true },
+          _sum: { contributionAmount: true },
         }),
       ]);
     } catch (error) {
@@ -318,7 +320,7 @@ export class GamificationService {
       casinoWins,
       createdMarkets: createdEvents + createdProposals,
       jackpotEntries: jackpotEntryCount,
-      jackpotTickets: jackpotTicketAggregate._sum.tickets ?? 0,
+      jackpotContributionTotal: jackpotContributionAggregate._sum.contributionAmount ?? 0,
     };
   }
 
@@ -422,11 +424,11 @@ export class GamificationService {
       },
       {
         key: "jackpot_hunter",
-        label: "Tickets jackpot",
-        current: Math.min(stats.jackpotTickets, 20),
-        target: 20,
+        label: "Contribution jackpot",
+        current: Math.min(stats.jackpotContributionTotal, 250),
+        target: 250,
         reward: "Badge Chasseur de jackpot",
-        completed: stats.jackpotTickets >= 20,
+        completed: stats.jackpotContributionTotal >= 250,
       },
     ];
   }
@@ -501,7 +503,7 @@ export class GamificationService {
         casino_wins: stats.casinoWins,
         created_markets: stats.createdMarkets,
         jackpot_entries: stats.jackpotEntries,
-        jackpot_tickets: stats.jackpotTickets,
+        jackpot_tickets: stats.jackpotContributionTotal,
         balance: user.balance,
       },
     };

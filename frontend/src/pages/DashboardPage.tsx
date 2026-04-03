@@ -168,30 +168,28 @@ export function DashboardPage() {
 
             <Card>
               <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Jackpot</p>
-              <h2 className="mt-2 text-lg font-semibold text-zinc-100">Round en cours</h2>
+              <h2 className="mt-2 text-lg font-semibold text-zinc-100">Pot permanent</h2>
               <div className="mt-4 space-y-3 text-sm text-zinc-400">
                 <div className="flex items-center justify-between gap-3">
                   <span className="inline-flex items-center gap-2">
                     <Coins className="h-4 w-4 text-emerald-400" />
                     Pot
                   </span>
-                  <span className="text-zinc-100">
-                    {formatTokens(gamification?.jackpot.current_round.current_pot ?? 0)}
-                  </span>
+                  <span className="text-zinc-100">{formatTokens(gamification?.jackpot.current_pot ?? 0)}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <span className="inline-flex items-center gap-2">
                     <Ticket className="h-4 w-4 text-amber-400" />
-                    Vos tickets
+                    Vos apports
                   </span>
                   <span className="text-zinc-100">
-                    {gamification?.jackpot.current_round.user_tickets ?? 0}
+                    {formatTokens(gamification?.jackpot.user_contribution_total ?? 0)}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
-                  <span>Chance estimee</span>
+                  <span>Contributions</span>
                   <span className="text-zinc-100">
-                    {(((gamification?.jackpot.current_round.user_chance_bps ?? 0) / 100) || 0).toFixed(2)}%
+                    {gamification?.jackpot.user_contribution_count ?? 0}
                   </span>
                 </div>
               </div>
@@ -199,7 +197,7 @@ export function DashboardPage() {
                 className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-emerald-400 transition hover:text-emerald-300"
                 to="/jackpot"
               >
-                Ouvrir le round
+                Ouvrir le jackpot
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Card>

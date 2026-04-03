@@ -91,6 +91,13 @@ export async function fetchJackpotState() {
   return response.data;
 }
 
+export async function triggerAdminJackpotPayout(winnerUserId: string) {
+  const response = await api.post<JackpotState["last_result"]>("/rewards/jackpot/payout", {
+    winner_user_id: winnerUserId,
+  });
+  return response.data;
+}
+
 export async function updateCurrentUserProfile(payload: { pseudo: string }) {
   const response = await api.patch<AuthUser>("/users/me", payload);
   return response.data;

@@ -380,28 +380,30 @@ export function ProfilePage() {
               <Trophy className="h-6 w-6 text-brand-orange" />
             </div>
 
-            <div className="mt-5 grid gap-4 md:grid-cols-4">
-              <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
-                <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Pot live</p>
-                <p className="mt-2 font-display text-2xl text-brand-text">
-                  {formatTokens(gamification.jackpot.current_round.current_pot)}
-                </p>
-              </div>
-              <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
-                <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Tickets</p>
-                <p className="mt-2 font-display text-2xl text-brand-text">
-                  {gamification.jackpot.current_round.user_tickets}
-                </p>
-              </div>
-              <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
-                <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Chance</p>
-                <p className="mt-2 font-display text-2xl text-brand-text">
-                  {(gamification.jackpot.current_round.user_chance_bps / 100).toFixed(2)}%
-                </p>
-              </div>
-              <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
-                <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Dernier gain</p>
-                <p className="mt-2 font-display text-2xl text-brand-text">
+              <div className="mt-5 grid gap-4 md:grid-cols-4">
+                <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Pot live</p>
+                  <p className="mt-2 font-display text-2xl text-brand-text">
+                    {formatTokens(gamification.jackpot.current_pot)}
+                  </p>
+                </div>
+                <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Vos apports</p>
+                  <p className="mt-2 font-display text-2xl text-brand-text">
+                    {formatTokens(gamification.jackpot.user_contribution_total)}
+                  </p>
+                </div>
+                <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">
+                    Contributions
+                  </p>
+                  <p className="mt-2 font-display text-2xl text-brand-text">
+                    {gamification.jackpot.user_contribution_count}
+                  </p>
+                </div>
+                <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
+                  <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Dernier gain</p>
+                  <p className="mt-2 font-display text-2xl text-brand-text">
                   {formatTokens(gamification.jackpot.last_result?.payout_amount ?? 0)}
                 </p>
               </div>
