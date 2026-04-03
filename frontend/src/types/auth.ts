@@ -8,6 +8,7 @@ export interface AuthUser {
   role: UserRole;
   avatar_url: string | null;
   streak_days: number;
+  accept_odds_changes: boolean;
   last_reward_at: string | null;
   created_at: string;
 }

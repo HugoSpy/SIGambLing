@@ -15,6 +15,7 @@ const { blackjackService } = require("./services/blackjack.service");
 const { gamificationService } = require("./services/gamification.service");
 const { jackpotService } = require("./services/jackpot.service");
 const { userService } = require("./services/user.service");
+const { AppError } = require("./utils/app-error");
 
 const app = createApp();
 const request = supertest(app);
@@ -150,7 +151,6 @@ test("GET /events returns the authenticated user's open event feed", async () =>
       {
         id: "event-1",
         title: "QA launch event",
-        category: "epita",
         status: "active",
         can_bet: true,
       },
@@ -197,6 +197,48 @@ test("POST /events/bets submits a simple multi-event bet cart", async () => {
 
   assert.equal(response.status, 201);
   assert.equal(response.body.new_balance, 975);
+});
+
+test("POST /events/:id/bet forwards structured odds-conflict details", async () => {
+  const token = issueAccessToken();
+
+  stubMethod(eventService, "placeBet", async () => {
+    throw new AppError(
+      "Les cotes ont evolue. Confirmez le pari pour accepter les nouvelles valeurs.",
+      409,
+      {
+        code: "ODDS_CHANGED",
+        bet_type: "SIMPLE",
+        changes: [
+          {
+            event_id: "event-1",
+            event_title: "QA launch event",
+            chosen_option: "Team A",
+            previous_odds: 1.85,
+            current_odds: 1.62,
+            stake: 25,
+            potential_payout_before: 46,
+            potential_payout_after: 40,
+          },
+        ],
+        total_potential_payout_before: 46,
+        total_potential_payout_after: 40,
+      },
+    );
+  });
+
+  const response = await request
+    .post("/events/11111111-1111-1111-1111-111111111111/bet")
+    .set("Authorization", `Bearer ${token}`)
+    .send({
+      chosen_option: "Team A",
+      amount: 25,
+      expected_odds: 1.85,
+    });
+
+  assert.equal(response.status, 409);
+  assert.equal(response.body.details.code, "ODDS_CHANGED");
+  assert.equal(response.body.details.changes[0].current_odds, 1.62);
 });
 
 test("POST /admin/events/:id/resolve rejects non-admin users before the service layer", async () => {
@@ -306,6 +348,7 @@ test("GET /users/me exposes profile and streak data for gamification surfaces", 
       role: "user",
       avatar_url: null,
       streak_days: 6,
+      accept_odds_changes: false,
       last_reward_at: "2026-04-02T12:00:00.000Z",
       created_at: "2026-04-01T12:00:00.000Z",
     };
@@ -318,6 +361,76 @@ test("GET /users/me exposes profile and streak data for gamification surfaces", 
   assert.equal(response.status, 200);
   assert.equal(response.body.streak_days, 6);
   assert.equal(response.body.balance, 1320);
+  assert.equal(response.body.accept_odds_changes, false);
+});
+
+test("GET /users/me/bets returns active and settled bets for dashboard surfaces", async () => {
+  const token = issueAccessToken();
+
+  stubMethod(eventService, "getUserBets", async (userId: string) => {
+    assert.equal(userId, "user-1");
+
+    return [
+      {
+        id: "bet-1",
+        user_id: "user-1",
+        event_id: "event-1",
+        chosen_option: "Team A",
+        type: "SIMPLE",
+        status: "PENDING",
+        stake: 40,
+        total_odds: 2.4,
+        odds_at_bet: 2.4,
+        potential_payout: 96,
+        actual_payout: null,
+        placed_at: "2026-04-02T12:00:00.000Z",
+        resolved_at: null,
+        legs: [],
+      },
+      {
+        id: "bet-2",
+        user_id: "user-1",
+        event_id: null,
+        chosen_option: null,
+        type: "PARLAY",
+        status: "PENDING",
+        stake: 25,
+        total_odds: 3.8,
+        odds_at_bet: null,
+        potential_payout: 95,
+        actual_payout: null,
+        placed_at: "2026-04-02T13:00:00.000Z",
+        resolved_at: null,
+        legs: [
+          {
+            id: "leg-1",
+            event_id: "event-2",
+            chosen_option: "EPITA",
+            odds_at_bet: 1.9,
+            status: "PENDING",
+            event: {
+              id: "event-2",
+              title: "Qui gagne le derby ?",
+              status: "OPEN",
+              resolved_option: null,
+              closing_at: "2026-04-08T18:00:00.000Z",
+              image_url: null,
+            },
+          },
+        ],
+      },
+    ];
+  });
+
+  const response = await request
+    .get("/users/me/bets")
+    .set("Authorization", `Bearer ${token}`);
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.bets.length, 2);
+  assert.equal(response.body.bets[0].status, "PENDING");
+  assert.equal(response.body.bets[1].type, "PARLAY");
+  assert.equal(response.body.bets[1].legs[0].event.title, "Qui gagne le derby ?");
 });
 
 test("GET /rewards/me returns the authenticated gamification state", async () => {
@@ -386,6 +499,61 @@ test("GET /rewards/me returns the authenticated gamification state", async () =>
   assert.equal(response.status, 200);
   assert.equal(response.body.jackpot.user_contribution_count, 3);
   assert.equal(response.body.badges[0].unlocked, false);
+});
+
+test("GET /rewards/leaderboard exposes global rankings and pins the current user", async () => {
+  const token = issueAccessToken();
+
+  stubMethod(gamificationService, "getLeaderboard", async (userId: string, input?: any) => {
+    assert.equal(userId, "user-1");
+    assert.equal(input.scope, "global");
+    assert.equal(input.limit, 25);
+
+    return {
+      scope: "global",
+      window_days: 60,
+      limit: 25,
+      total_ranked_users: 3,
+      entries: [
+        {
+          rank: 1,
+          user: { id: "user-2", pseudo: "HighRoller", avatar_url: null },
+          total_wagered: 1500,
+          casino_wagered: 900,
+          event_wagered: 600,
+          recent_activity_at: "2026-04-03T08:00:00.000Z",
+          is_current_user: false,
+        },
+        {
+          rank: 2,
+          user: { id: "user-1", pseudo: "SigmaStudent", avatar_url: null },
+          total_wagered: 820,
+          casino_wagered: 320,
+          event_wagered: 500,
+          recent_activity_at: "2026-04-03T07:30:00.000Z",
+          is_current_user: true,
+        },
+      ],
+      current_user_entry: {
+        rank: 2,
+        user: { id: "user-1", pseudo: "SigmaStudent", avatar_url: null },
+        total_wagered: 820,
+        casino_wagered: 320,
+        event_wagered: 500,
+        recent_activity_at: "2026-04-03T07:30:00.000Z",
+        is_current_user: true,
+      },
+    };
+  });
+
+  const response = await request
+    .get("/rewards/leaderboard?scope=global&limit=25")
+    .set("Authorization", `Bearer ${token}`);
+
+  assert.equal(response.status, 200);
+  assert.equal(response.body.scope, "global");
+  assert.equal(response.body.entries[1].is_current_user, true);
+  assert.equal(response.body.current_user_entry.rank, 2);
 });
 
 test("GET /rewards/jackpot returns the authenticated jackpot state", async () => {
@@ -612,6 +780,7 @@ test("PATCH /users/me updates the authenticated profile", async () => {
   stubMethod(userService, "updateCurrentUser", async (userId: string, payload: any) => {
     assert.equal(userId, "user-1");
     assert.equal(payload.pseudo, "SigmaPrime");
+    assert.equal(payload.accept_odds_changes, true);
 
     return {
       id: "user-1",
@@ -621,6 +790,7 @@ test("PATCH /users/me updates the authenticated profile", async () => {
       role: "user",
       avatar_url: null,
       streak_days: 6,
+      accept_odds_changes: true,
       last_reward_at: null,
       created_at: "2026-04-01T12:00:00.000Z",
     };
@@ -629,10 +799,69 @@ test("PATCH /users/me updates the authenticated profile", async () => {
   const response = await request
     .patch("/users/me")
     .set("Authorization", `Bearer ${token}`)
-    .send({ pseudo: "SigmaPrime" });
+    .send({ pseudo: "SigmaPrime", accept_odds_changes: true });
 
   assert.equal(response.status, 200);
   assert.equal(response.body.pseudo, "SigmaPrime");
+  assert.equal(response.body.accept_odds_changes, true);
+});
+
+test("PATCH /users/me returns explicit pseudo validation rules", async () => {
+  const token = issueAccessToken();
+
+  const response = await request
+    .patch("/users/me")
+    .set("Authorization", `Bearer ${token}`)
+    .send({ pseudo: "x!" });
+
+  assert.equal(response.status, 400);
+  assert.equal(response.body.message, "Validation error");
+  assert.deepEqual(response.body.details.fieldErrors.pseudo, [
+    "Le pseudo doit contenir au moins 3 caractères.",
+    "Le pseudo contient des caractères non autorisés.",
+  ]);
+});
+
+test("POST /events/proposals submits a proposal without category metadata", async () => {
+  const token = issueAccessToken();
+
+  stubMethod(eventService, "createProposal", async (userId: string, payload: any) => {
+    assert.equal(userId, "user-1");
+    assert.equal(payload.title, "Le prochain live roulette aura-t-il un zero ?");
+    assert.equal(payload.description, "Question de demo sans categorie.");
+    assert.equal(payload.suggested_date, null);
+    assert.equal("category" in payload, false);
+
+    return {
+      id: "proposal-1",
+      title: payload.title,
+      description: payload.description,
+      suggested_date: null,
+      status: "PENDING",
+      created_at: "2026-04-03T10:00:00.000Z",
+      reviewed_at: null,
+      rejection_reason: null,
+      user: {
+        id: "user-1",
+        pseudo: "SigmaStudent",
+        email: "student@epita.fr",
+        avatar_url: null,
+      },
+      reviewer: null,
+    };
+  });
+
+  const response = await request
+    .post("/events/proposals")
+    .set("Authorization", `Bearer ${token}`)
+    .send({
+      title: "Le prochain live roulette aura-t-il un zero ?",
+      description: "Question de demo sans categorie.",
+      suggested_date: null,
+    });
+
+  assert.equal(response.status, 201);
+  assert.equal(response.body.id, "proposal-1");
 });
 
 test("POST /users/me/avatar accepts an avatar upload on the authenticated profile route", async () => {
@@ -650,6 +879,7 @@ test("POST /users/me/avatar accepts an avatar upload on the authenticated profil
       role: "user",
       avatar_url: "https://cdn.sigambling.test/avatars/user-1.webp?v=1",
       streak_days: 6,
+      accept_odds_changes: false,
       last_reward_at: null,
       created_at: "2026-04-01T12:00:00.000Z",
     };
@@ -731,6 +961,7 @@ test("POST /rewards/daily claims the daily reward and returns refreshed gamifica
         role: "user",
         avatar_url: null,
         streak_days: 7,
+        accept_odds_changes: false,
         last_reward_at: "2026-04-03T08:00:00.000Z",
         created_at: "2026-04-01T12:00:00.000Z",
       },

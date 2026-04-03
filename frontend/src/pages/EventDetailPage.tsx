@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, CalendarClock, CheckCircle2, Plus, Ticket } from "lucide-react";
-import toast from "react-hot-toast";
 import { Link, useParams } from "react-router-dom";
 import { BetDrawer } from "../components/BetDrawer";
 import { OddsHistoryChart } from "../components/OddsHistoryChart";
@@ -12,22 +11,14 @@ import { Card } from "../components/ui/Card";
 import { useAuthenticatedUser } from "../hooks/useAuthenticatedUser";
 import { fetchEventById, fetchEventOddsHistory, logoutRequest } from "../lib/api";
 import {
-  formatEventCategory,
   formatEventDate,
   formatEventOdds,
   formatEventStatus,
   statusTone,
 } from "../lib/event-utils";
+import { getErrorMessage, notify } from "../lib/notifications";
 import { formatTokens } from "../lib/utils";
 import { useBetCartStore } from "../store/bet-cart-store";
-
-function toErrorMessage(error: unknown) {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return "Une erreur est survenue.";
-}
 
 export function EventDetailPage() {
   const { id } = useParams<{ id: string }>();
@@ -62,14 +53,14 @@ export function EventDetailPage() {
 
   const handleLogout = async () => {
     await logoutRequest();
-    toast.success("Session fermee.");
+    notify.success("Session fermee.");
   };
 
   return (
     <DashboardShell onLogout={handleLogout} user={user}>
       {!event || error ? (
         <Card>
-          <p className="text-sm text-red-300">{toErrorMessage(error)}</p>
+          <p className="text-sm text-red-300">{getErrorMessage(error)}</p>
         </Card>
       ) : (
         <div className="space-y-6">
@@ -83,9 +74,6 @@ export function EventDetailPage() {
 
           <Card>
             <div className="flex flex-wrap items-center gap-2">
-              <span className="rounded-md bg-zinc-800 px-2 py-1 text-[11px] uppercase tracking-[0.18em] text-zinc-300">
-                {formatEventCategory(event.category)}
-              </span>
               <span className={`rounded-md border px-2 py-1 text-[11px] uppercase tracking-[0.18em] ${statusTone(event.status)}`}>
                 {formatEventStatus(event.status)}
               </span>

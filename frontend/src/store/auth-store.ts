@@ -13,6 +13,7 @@ interface AuthState {
   setUser: (user: AuthUser | null) => void;
   setSession: (payload: { user: AuthUser; accessToken: string }) => void;
   updateBalance: (balance: number) => void;
+  updateOddsPreference: (acceptOddsChanges: boolean) => void;
   clearSession: () => void;
 }
 
@@ -34,6 +35,10 @@ export const useAuthStore = create<AuthState>()(
       updateBalance: (balance) =>
         set((state) => ({
           user: state.user ? { ...state.user, balance } : null,
+        })),
+      updateOddsPreference: (acceptOddsChanges) =>
+        set((state) => ({
+          user: state.user ? { ...state.user, accept_odds_changes: acceptOddsChanges } : null,
         })),
       clearSession: () =>
         set({

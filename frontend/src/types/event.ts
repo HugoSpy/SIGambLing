@@ -1,5 +1,4 @@
 export type EventStatus = "OPEN" | "CLOSED" | "RESOLVED" | "CANCELLED";
-export type EventCategory = "sports" | "politics" | "culture" | "epita";
 export type EventType = "BINARY" | "MULTIPLE_CHOICE";
 export type EventBetStatus = "PENDING" | "WON" | "LOST" | "CANCELLED";
 export type EventBetType = "SIMPLE" | "PARLAY";
@@ -52,7 +51,6 @@ export interface EventLegView {
   event: {
     id: string;
     title: string;
-    category: EventCategory;
     status: EventStatus;
     resolved_option: string | null;
     closing_at: string | null;
@@ -81,7 +79,6 @@ export interface EventView {
   id: string;
   title: string;
   description: string | null;
-  category: EventCategory;
   type: EventType;
   image_url: string | null;
   options: EventOptionView[];
@@ -105,7 +102,6 @@ export interface AdminEventView {
   id: string;
   title: string;
   description: string | null;
-  category: EventCategory;
   type: EventType;
   image_url: string | null;
   options: EventOptionView[];
@@ -140,11 +136,29 @@ export interface EventOddsHistoryView {
   series: EventOddsHistorySeries[];
 }
 
+export interface OddsChangeEntry {
+  event_id: string;
+  event_title: string;
+  chosen_option: string;
+  previous_odds: number;
+  current_odds: number;
+  stake: number;
+  potential_payout_before: number;
+  potential_payout_after: number;
+}
+
+export interface OddsConflictDetails {
+  code: "ODDS_CHANGED";
+  bet_type: "SIMPLE" | "PARLAY";
+  changes: OddsChangeEntry[];
+  total_potential_payout_before: number;
+  total_potential_payout_after: number;
+}
+
 export interface EventProposalView {
   id: string;
   title: string;
   description: string | null;
-  category: EventCategory;
   suggested_date: string | null;
   status: ProposalStatus;
   created_at: string;
@@ -161,7 +175,6 @@ export interface EventProposalView {
 export interface CreateEventPayload {
   title: string;
   description?: string | null;
-  category: EventCategory;
   proposal_id?: string;
   image_url?: string | null;
   options: string[];
@@ -175,7 +188,6 @@ export interface CreateEventPayload {
 export interface UpdateEventPayload {
   title?: string;
   description?: string | null;
-  category?: EventCategory;
   image_url?: string | null;
   options?: string[];
   option_initial_odds?: Record<string, number>;
@@ -188,6 +200,5 @@ export interface UpdateEventPayload {
 export interface CreateProposalPayload {
   title: string;
   description?: string | null;
-  category: EventCategory;
   suggested_date?: string | null;
 }

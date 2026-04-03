@@ -1,7 +1,6 @@
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Award, Camera, Coins, Flame, Gift, Save, Ticket, Trophy, UserRound } from "lucide-react";
-import toast from "react-hot-toast";
 import { DashboardShell } from "../components/layout/DashboardShell";
 import { LoadingScreen } from "../components/layout/LoadingScreen";
 import { Button } from "../components/ui/Button";
@@ -9,12 +8,14 @@ import { Card } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
 import { useGamificationState } from "../hooks/useGamificationState";
 import {
+  ApiError,
   claimDailyReward,
   fetchCurrentUser,
   logoutRequest,
   updateCurrentUserProfile,
   uploadCurrentUserAvatar,
 } from "../lib/api";
+import { getErrorMessage, notify } from "../lib/notifications";
 import { formatTokens } from "../lib/utils";
 import { useAuthStore } from "../store/auth-store";
 import type { AuthUser } from "../types/auth";
@@ -29,13 +30,16 @@ const BADGE_STYLES: Record<GamificationBadge["tone"], string> = {
   sky: "border-sky-400/30 bg-sky-400/10 text-sky-300",
 };
 
-function toErrorMessage(error: unknown) {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return "Une erreur est survenue.";
-}
+const pseudoRules = [
+  {
+    label: "Entre 3 et 24 caracteres",
+    test: (value: string) => value.length >= 3 && value.length <= 24,
+  },
+  {
+    label: "Lettres, chiffres, point, tiret ou underscore uniquement",
+    test: (value: string) => /^[A-Za-z0-9._-]+$/.test(value),
+  },
+] as const;
 
 export function ProfilePage() {
   const queryClient = useQueryClient();
@@ -44,6 +48,7 @@ export function ProfilePage() {
   const setUser = useAuthStore((state) => state.setUser);
   const setStatus = useAuthStore((state) => state.setStatus);
   const [pseudo, setPseudo] = useState("");
+  const [alwaysAcceptOddsChanges, setAlwaysAcceptOddsChanges] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [claimingReward, setClaimingReward] = useState(false);
@@ -55,12 +60,18 @@ export function ProfilePage() {
   });
   const { data: gamification } = useGamificationState();
   const unlockedBadges = gamification?.badges.filter((badge) => badge.unlocked).length ?? 0;
+  const trimmedPseudo = pseudo.trim();
+  const pseudoRuleChecks = pseudoRules.map((rule) => ({
+    label: rule.label,
+    valid: rule.test(trimmedPseudo),
+  }));
 
   useEffect(() => {
     if (user) {
       setUser(user);
       setStatus("authenticated");
       setPseudo(user.pseudo);
+      setAlwaysAcceptOddsChanges(user.accept_odds_changes);
     }
   }, [setStatus, setUser, user]);
 
@@ -75,7 +86,7 @@ export function ProfilePage() {
 
   const handleLogout = async () => {
     await logoutRequest();
-    toast.success("Session fermée.");
+    notify.success("Session fermee.");
   };
 
   const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -86,13 +97,13 @@ export function ProfilePage() {
     }
 
     if (file.size > 2 * 1024 * 1024) {
-      toast.error("Fichier trop volumineux (max 2MB).");
+      notify.error("Fichier trop volumineux (max 2MB).");
       event.target.value = "";
       return;
     }
 
     if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
-      toast.error("Format non supporté.");
+      notify.error("Format non supporte.");
       event.target.value = "";
       return;
     }
@@ -104,9 +115,9 @@ export function ProfilePage() {
       setUploading(true);
       const updatedUser = await uploadCurrentUserAvatar(formData);
       commitUser(updatedUser);
-      toast.success("Photo de profil mise à jour.");
+      notify.success("Photo de profil mise a jour.");
     } catch (error) {
-      toast.error(toErrorMessage(error));
+      notify.error(getErrorMessage(error));
     } finally {
       setUploading(false);
       event.target.value = "";
@@ -114,25 +125,48 @@ export function ProfilePage() {
   };
 
   const handleSave = async () => {
-    const nextPseudo = pseudo.trim();
+    const nextPseudo = trimmedPseudo;
 
     if (!nextPseudo) {
-      toast.error("Le pseudo ne peut pas être vide.");
+      notify.error("Le pseudo ne peut pas etre vide.");
       return;
     }
 
-    if (nextPseudo === user.pseudo) {
-      toast("Aucune modification à enregistrer.");
+    if (nextPseudo === user.pseudo && alwaysAcceptOddsChanges === user.accept_odds_changes) {
+      notify.info("Aucune modification a enregistrer.");
+      return;
+    }
+
+    const failingRule = pseudoRuleChecks.find((rule) => !rule.valid);
+
+    if (failingRule) {
+      notify.error(failingRule.label);
       return;
     }
 
     try {
       setSaving(true);
-      const updatedUser = await updateCurrentUserProfile({ pseudo: nextPseudo });
+      const updatedUser = await updateCurrentUserProfile({
+        pseudo: nextPseudo === user.pseudo ? undefined : nextPseudo,
+        accept_odds_changes:
+          alwaysAcceptOddsChanges === user.accept_odds_changes ? undefined : alwaysAcceptOddsChanges,
+      });
       commitUser(updatedUser);
-      toast.success("Profil enregistré.");
+      notify.success("Profil enregistre.");
     } catch (error) {
-      toast.error(toErrorMessage(error));
+      if (error instanceof ApiError) {
+        const pseudoErrors =
+          typeof error.details === "object" && error.details !== null && "fieldErrors" in error.details
+            ? (error.details as { fieldErrors?: { pseudo?: string[] } }).fieldErrors?.pseudo
+            : undefined;
+
+        if (pseudoErrors && pseudoErrors.length > 0) {
+          notify.error(pseudoErrors.join(" "));
+          return;
+        }
+      }
+
+      notify.error(getErrorMessage(error));
     } finally {
       setSaving(false);
     }
@@ -147,14 +181,14 @@ export function ProfilePage() {
       queryClient.setQueryData(["jackpot"], result.gamification.jackpot);
 
       if (result.claimed) {
-        toast.success(
+        notify.success(
           `Recompense recuperee: +${formatTokens(result.amount)} tokens`,
         );
       } else {
-        toast("Recompense deja recuperée aujourd'hui.");
+        notify.info("Recompense deja recuperee aujourd'hui.");
       }
     } catch (error) {
-      toast.error(toErrorMessage(error));
+      notify.error(getErrorMessage(error));
     } finally {
       setClaimingReward(false);
     }
@@ -235,7 +269,34 @@ export function ProfilePage() {
           <Card className="min-w-[300px]">
             <div className="space-y-5">
               <Input label="Pseudo" onChange={(event) => setPseudo(event.target.value)} value={pseudo} />
+              <div className="rounded-[20px] border border-white/10 bg-white/5 px-4 py-3">
+                <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">
+                  Regles du pseudo
+                </p>
+                <div className="mt-3 space-y-2">
+                  {pseudoRuleChecks.map((rule) => (
+                    <p
+                      className={`text-sm ${rule.valid ? "text-emerald-300" : "text-brand-muted"}`}
+                      key={rule.label}
+                    >
+                      {rule.valid ? "OK" : "A faire"} · {rule.label}
+                    </p>
+                  ))}
+                </div>
+              </div>
               <Input disabled label="Email" value={user.email} />
+              <label className="flex items-start gap-3 rounded-[20px] border border-white/10 bg-white/5 px-4 py-3 text-sm text-brand-text">
+                <input
+                  checked={alwaysAcceptOddsChanges}
+                  className="mt-1 h-4 w-4 rounded border-white/20 bg-black/20 text-emerald-500"
+                  onChange={(event) => setAlwaysAcceptOddsChanges(event.target.checked)}
+                  type="checkbox"
+                />
+                <span>
+                  Toujours accepter les changements de cotes quand un pari est valide avec une
+                  nouvelle valeur.
+                </span>
+              </label>
               <Button disabled={saving} onClick={() => void handleSave()}>
                 <Save className="mr-2 h-4 w-4" />
                 {saving ? "Enregistrement..." : "Enregistrer"}

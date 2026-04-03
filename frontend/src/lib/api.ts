@@ -8,6 +8,7 @@ import type {
   CreateEventPayload,
   EventBetView,
   EventOddsHistoryView,
+  OddsConflictDetails,
   EventProposalView,
   EventStatus,
   EventView,
@@ -18,8 +19,37 @@ import type {
   ClaimDailyRewardResponse,
   GamificationState,
   JackpotState,
+  LeaderboardView,
 } from "../types/gamification";
 import type { AuthTokens, AuthUser, MicrosoftRedirectResponse } from "../types/auth";
+
+export interface ApiErrorDetails {
+  formErrors?: string[];
+  fieldErrors?: Record<string, string[] | undefined>;
+}
+
+export class ApiError<TDetails = ApiErrorDetails> extends Error {
+  readonly status?: number;
+  readonly details?: TDetails;
+
+  constructor(message: string, options?: { status?: number; details?: TDetails }) {
+    super(message);
+    this.name = "ApiError";
+    this.status = options?.status;
+    this.details = options?.details;
+  }
+}
+
+export function isOddsConflictError(error: unknown): error is ApiError<OddsConflictDetails> {
+  return (
+    error instanceof ApiError &&
+    error.status === 409 &&
+    typeof error.details === "object" &&
+    error.details !== null &&
+    "code" in error.details &&
+    error.details.code === "ODDS_CHANGED"
+  );
+}
 
 const baseURL = import.meta.env.VITE_API_URL;
 
@@ -91,6 +121,13 @@ export async function fetchJackpotState() {
   return response.data;
 }
 
+export async function fetchLeaderboard(scope: "global" | "casino", limit: number) {
+  const response = await api.get<LeaderboardView>("/rewards/leaderboard", {
+    params: { scope, limit },
+  });
+  return response.data;
+}
+
 export async function triggerAdminJackpotPayout(winnerUserId: string) {
   const response = await api.post<JackpotState["last_result"]>("/rewards/jackpot/payout", {
     winner_user_id: winnerUserId,
@@ -98,7 +135,10 @@ export async function triggerAdminJackpotPayout(winnerUserId: string) {
   return response.data;
 }
 
-export async function updateCurrentUserProfile(payload: { pseudo: string }) {
+export async function updateCurrentUserProfile(payload: {
+  pseudo?: string;
+  accept_odds_changes?: boolean;
+}) {
   const response = await api.patch<AuthUser>("/users/me", payload);
   return response.data;
 }
@@ -130,7 +170,13 @@ export async function fetchEventOddsHistory(eventId: string) {
 
 export async function placeEventBet(
   eventId: string,
-  payload: { chosen_option: string; amount: number },
+  payload: {
+    chosen_option: string;
+    amount: number;
+    expected_odds?: number;
+    accept_any_odds_change?: boolean;
+    persist_accept_odds_changes?: boolean;
+  },
 ) {
   const response = await api.post<{ bet: EventBetView; new_balance: number }>(
     `/events/${eventId}/bet`,
@@ -140,7 +186,11 @@ export async function placeEventBet(
 }
 
 export async function placeSimpleBets(
-  payload: { bets: Array<{ eventId: string; chosenOption: string; amount: number }> },
+  payload: {
+    bets: Array<{ eventId: string; chosenOption: string; amount: number; expectedOdds?: number }>;
+    accept_any_odds_change?: boolean;
+    persist_accept_odds_changes?: boolean;
+  },
 ) {
   const response = await api.post<{ bets: EventBetView[]; new_balance: number }>(
     "/events/bets",
@@ -150,8 +200,10 @@ export async function placeSimpleBets(
 }
 
 export async function placeParlayBet(payload: {
-  legs: Array<{ eventId: string; chosenOption: string }>;
+  legs: Array<{ eventId: string; chosenOption: string; expectedOdds?: number }>;
   stake: number;
+  accept_any_odds_change?: boolean;
+  persist_accept_odds_changes?: boolean;
 }) {
   const response = await api.post<{ bet: EventBetView; new_balance: number }>(
     "/events/parlay",
@@ -306,12 +358,17 @@ api.interceptors.response.use(
       }
     }
 
-    return Promise.reject(
-      toApiError(
-        error.response?.data && typeof error.response.data === "object" && "message" in error.response.data
-          ? new Error(String(error.response.data.message))
-          : error,
-      ),
-    );
+    const payload = error.response?.data;
+
+    if (payload && typeof payload === "object" && "message" in payload) {
+      return Promise.reject(
+        new ApiError(String(payload.message), {
+          status: error.response?.status,
+          details: ("details" in payload ? payload.details : undefined) as unknown,
+        }),
+      );
+    }
+
+    return Promise.reject(toApiError(error));
   },
 );

@@ -2,8 +2,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowRight, Coins, Shield, Sparkles, Waves } from "lucide-react";
 import { useCallback, useState } from "react";
-import toast from "react-hot-toast";
 import { api } from "../../lib/api";
+import { getErrorMessage, notify } from "../../lib/notifications";
 import { soundManager } from "../../lib/casino/soundManager";
 import { cn, formatTokens } from "../../lib/utils";
 import { useAuthStore } from "../../store/auth-store";
@@ -280,11 +280,11 @@ export function BlackjackGame() {
 
   const handleBet = useCallback(async () => {
     if (bet < 1) {
-      toast.error("La mise minimum est de 1 token.");
+      notify.error("La mise minimum est de 1 token.");
       return;
     }
     if (bet > balance) {
-      toast.error("Solde insuffisant.");
+      notify.error("Solde insuffisant.");
       return;
     }
 
@@ -314,7 +314,7 @@ export function BlackjackGame() {
       }
     } catch (error) {
       setGameState("BETTING");
-      toast.error(error instanceof Error ? error.message : "Erreur lors de la distribution.");
+      notify.error(getErrorMessage(error, "Erreur lors de la distribution."));
     } finally {
       setLoading(false);
     }
@@ -343,7 +343,7 @@ export function BlackjackGame() {
         resolveGame(data);
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Erreur.");
+      notify.error(getErrorMessage(error, "Erreur."));
     } finally {
       setLoading(false);
     }
@@ -365,7 +365,7 @@ export function BlackjackGame() {
       resolveGame(response.data);
     } catch (error) {
       setGameState("PLAYER_TURN");
-      toast.error(error instanceof Error ? error.message : "Erreur.");
+      notify.error(getErrorMessage(error, "Erreur."));
     } finally {
       setLoading(false);
     }
@@ -388,7 +388,7 @@ export function BlackjackGame() {
       resolveGame(response.data);
     } catch (error) {
       setGameState("PLAYER_TURN");
-      toast.error(error instanceof Error ? error.message : "Erreur.");
+      notify.error(getErrorMessage(error, "Erreur."));
     } finally {
       setLoading(false);
     }

@@ -35,7 +35,6 @@ const creatorSelect = {
 const eventSummarySelect = {
   id: true,
   title: true,
-  category: true,
   status: true,
   resolvedOption: true,
   closingAt: true,
@@ -141,9 +140,66 @@ function roundPercentage(value: number) {
 
 const LIVE_PARIMUTUEL_HOUSE_EDGE = 0.01;
 const MAX_LIVE_ODDS = 99;
+const LIQUIDITY_BLEND_THRESHOLD = 1400;
+const SIGNIFICANT_ODDS_DRIFT = 0.05;
+
+interface OddsChangeEntry {
+  event_id: string;
+  event_title: string;
+  chosen_option: string;
+  previous_odds: number;
+  current_odds: number;
+  stake: number;
+  potential_payout_before: number;
+  potential_payout_after: number;
+}
+
+interface OddsConflictDetails {
+  code: "ODDS_CHANGED";
+  bet_type: "SIMPLE" | "PARLAY";
+  changes: OddsChangeEntry[];
+  total_potential_payout_before: number;
+  total_potential_payout_after: number;
+}
 
 function calculatePotentialPayout(stake: number, odds: number) {
   return Math.floor(stake * odds);
+}
+
+function hasSignificantOddsDrift(expectedOdds: number | undefined, currentOdds: number) {
+  return (
+    expectedOdds !== undefined &&
+    Number.isFinite(expectedOdds) &&
+    Math.abs(currentOdds - expectedOdds) >= SIGNIFICANT_ODDS_DRIFT
+  );
+}
+
+function createOddsChangeEntry(input: {
+  eventId: string;
+  eventTitle: string;
+  chosenOption: string;
+  expectedOdds: number;
+  currentOdds: number;
+  stake: number;
+}) {
+  return {
+    event_id: input.eventId,
+    event_title: input.eventTitle,
+    chosen_option: input.chosenOption,
+    previous_odds: roundOdds(input.expectedOdds),
+    current_odds: roundOdds(input.currentOdds),
+    stake: input.stake,
+    potential_payout_before: calculatePotentialPayout(input.stake, input.expectedOdds),
+    potential_payout_after: calculatePotentialPayout(input.stake, input.currentOdds),
+  } satisfies OddsChangeEntry;
+}
+
+function throwOddsConflict(details: OddsConflictDetails) {
+  throw new AppError(
+    "Les cotes ont evolue. Confirmez le pari pour accepter les nouvelles valeurs.",
+    409,
+    details,
+  );
 }
 
 function serializeBetStatus(status: BetStatus) {
@@ -385,6 +441,8 @@ function recalculateLiveOptions(inputOptions: StoredEventOption[]) {
     }));
   }
 
+  const blendFactor = clamp(totalVolume / LIQUIDITY_BLEND_THRESHOLD, 0, 1);
+
   return options.map((option, index) => {
     const targetOdds =
       option.total_staked <= 0
@@ -394,10 +452,12 @@ function recalculateLiveOptions(inputOptions: StoredEventOption[]) {
             LIVE_PARIMUTUEL_HOUSE_EDGE,
             MAX_LIVE_ODDS,
           );
+    const blendedOdds =
+      option.initial_odds + (targetOdds - option.initial_odds) * blendFactor;
 
     return {
       ...option,
-      current_odds: roundOdds(targetOdds),
+      current_odds: roundOdds(clamp(blendedOdds, LIVE_PARIMUTUEL_HOUSE_EDGE, MAX_LIVE_ODDS)),
     };
   });
 }
@@ -464,7 +524,6 @@ function serializeEventSummary(event: EventSummaryRecord) {
   return {
     id: event.id,
     title: event.title,
-    category: event.category,
     status: event.status,
     resolved_option: event.resolvedOption,
     closing_at: event.closingAt?.toISOString() ?? null,
@@ -513,7 +572,6 @@ function serializeEvent(event: EventForViewer) {
     id: event.id,
     title: event.title,
     description: event.description,
-    category: event.category,
     type: getEventType(options),
     image_url: event.imageUrl,
     options: options.map((option) => serializeEventOption(option, totalPool)),
@@ -548,7 +606,6 @@ function serializeAdminEvent(event: EventForAdmin) {
     id: event.id,
     title: event.title,
     description: event.description,
-    category: event.category,
     type: getEventType(options),
     image_url: event.imageUrl,
     options: options.map((option) => serializeEventOption(option, totalPool)),
@@ -583,7 +640,6 @@ function serializeProposal(proposal: ProposalRecord) {
     id: proposal.id,
     title: proposal.title,
     description: proposal.description,
-    category: proposal.category,
     suggested_date: proposal.suggestedDate?.toISOString() ?? null,
     status: serializeProposalStatus(proposal.status),
     created_at: proposal.createdAt.toISOString(),
@@ -1058,7 +1114,6 @@ class EventService {
         const eventData: EventCreateData = {
           title: input.title,
           description: input.description,
-          category: input.category,
           imageUrl: input.image_url,
           options: toJsonOptions(options),
           poolByOption,
@@ -1208,7 +1263,6 @@ class EventService {
           data: {
             title: input.title,
             description: input.description,
-            category: input.category,
             imageUrl: input.image_url,
             options: toJsonOptions(nextOptions),
             poolByOption: buildPoolByOption(nextOptions),
@@ -1265,6 +1319,21 @@ class EventService {
     await this.closeExpiredEvents();
 
     return this.withSerializableTransaction(async (transaction) => {
+      const user = await transaction.user.findUnique({
+        where: {
+          id: userId,
+        },
+        select: {
+          id: true,
+          isBanned: true,
+          acceptOddsChanges: true,
+        },
+      });
+
+      if (!user || user.isBanned) {
+        throw new AppError("Utilisateur introuvable.", 404);
+      }
+
       const event = await transaction.event.findUnique({
         where: {
           id: eventId,
@@ -1328,6 +1397,45 @@ class EventService {
 
       if (!chosenOption) {
         throw new AppError("Option de pari invalide.", 400);
+      }
+
+      const autoAcceptOddsChanges =
+        user.acceptOddsChanges || input.accept_any_odds_change === true;
+
+      if (
+        hasSignificantOddsDrift(input.expected_odds, chosenOption.current_odds) &&
+        !autoAcceptOddsChanges
+      ) {
+        throwOddsConflict({
+          code: "ODDS_CHANGED",
+          bet_type: "SIMPLE",
+          changes: [
+            createOddsChangeEntry({
+              eventId: event.id,
+              eventTitle: event.title,
+              chosenOption: chosenOption.label,
+              expectedOdds: input.expected_odds ?? chosenOption.current_odds,
+              currentOdds: chosenOption.current_odds,
+              stake: input.amount,
+            }),
+          ],
+          total_potential_payout_before: calculatePotentialPayout(
+            input.amount,
+            input.expected_odds ?? chosenOption.current_odds,
+          ),
+          total_potential_payout_after: calculatePotentialPayout(input.amount, chosenOption.current_odds),
+        });
+      }
+
+      if (input.persist_accept_odds_changes && !user.acceptOddsChanges) {
+        await transaction.user.update({
+          where: {
+            id: userId,
+          },
+          data: {
+            acceptOddsChanges: true,
+          },
+        });
       }
 
       const debited = await transaction.user.updateMany({
@@ -1429,6 +1537,21 @@ class EventService {
     const totalStake = input.bets.reduce((sum, bet) => sum + bet.amount, 0);
 
     return this.withSerializableTransaction(async (transaction) => {
+      const user = await transaction.user.findUnique({
+        where: {
+          id: userId,
+        },
+        select: {
+          id: true,
+          isBanned: true,
+          acceptOddsChanges: true,
+        },
+      });
+
+      if (!user || user.isBanned) {
+        throw new AppError("Utilisateur introuvable.", 404);
+      }
+
       const events = await transaction.event.findMany({
         where: {
           id: {
@@ -1464,6 +1587,11 @@ class EventService {
         chosenOption: StoredEventOption;
         nextOptions: StoredEventOption[];
       }> = [];
+      const oddsChanges: OddsChangeEntry[] = [];
+      let totalPotentialBefore = 0;
+      let totalPotentialAfter = 0;
+      const autoAcceptOddsChanges =
+        user.acceptOddsChanges || input.accept_any_odds_change === true;
 
       for (const betInput of input.bets) {
         const event = eventById.get(betInput.eventId);
@@ -1511,6 +1639,28 @@ class EventService {
           throw new AppError(`Option invalide pour ${event.title}.`, 400);
         }
 
+        const expectedOdds = betInput.expectedOdds;
+        const currentOdds = chosenOption.current_odds;
+
+        totalPotentialBefore += calculatePotentialPayout(
+          betInput.amount,
+          expectedOdds ?? currentOdds,
+        );
+        totalPotentialAfter += calculatePotentialPayout(betInput.amount, currentOdds);
+
+        if (hasSignificantOddsDrift(expectedOdds, currentOdds)) {
+          oddsChanges.push(
+            createOddsChangeEntry({
+              eventId: event.id,
+              eventTitle: event.title,
+              chosenOption: chosenOption.label,
+              expectedOdds: expectedOdds ?? currentOdds,
+              currentOdds,
+              stake: betInput.amount,
+            }),
+          );
+        }
+
         const nextOptions = recalculateLiveOptions(
           options.map((option) =>
             option.label === chosenOption.label
@@ -1527,6 +1677,27 @@ class EventService {
           amount: betInput.amount,
           chosenOption,
           nextOptions,
+        });
+      }
+
+      if (oddsChanges.length > 0 && !autoAcceptOddsChanges) {
+        throwOddsConflict({
+          code: "ODDS_CHANGED",
+          bet_type: "SIMPLE",
+          changes: oddsChanges,
+          total_potential_payout_before: totalPotentialBefore,
+          total_potential_payout_after: totalPotentialAfter,
+        });
+      }
+
+      if (input.persist_accept_odds_changes && !user.acceptOddsChanges) {
+        await transaction.user.update({
+          where: {
+            id: userId,
+          },
+          data: {
+            acceptOddsChanges: true,
+          },
         });
       }
 
@@ -1634,6 +1805,21 @@ class EventService {
     }
 
     return this.withSerializableTransaction(async (transaction) => {
+      const user = await transaction.user.findUnique({
+        where: {
+          id: userId,
+        },
+        select: {
+          id: true,
+          isBanned: true,
+          acceptOddsChanges: true,
+        },
+      });
+
+      if (!user || user.isBanned) {
+        throw new AppError("Utilisateur introuvable.", 404);
+      }
+
       const events = await transaction.event.findMany({
         where: {
           id: {
@@ -1656,7 +1842,11 @@ class EventService {
       const eventById = new Map(events.map((event) => [event.id, event]));
       const eventStates = new Map<string, { options: StoredEventOption[]; totalPool: number }>();
       const legOdds = new Map<string, number>();
+      const oddsChanges: OddsChangeEntry[] = [];
       let totalOdds = 1;
+      let totalExpectedOdds = 1;
+      const autoAcceptOddsChanges =
+        user.acceptOddsChanges || input.accept_any_odds_change === true;
 
       for (const leg of input.legs) {
         const event = eventById.get(leg.eventId);
@@ -1692,8 +1882,25 @@ class EventService {
           throw new AppError("Une option du combine est invalide.", 400);
         }
 
+        const expectedOdds = leg.expectedOdds;
+        const currentOdds = chosenOption.current_odds;
+
+        totalExpectedOdds *= expectedOdds ?? currentOdds;
         legOdds.set(`${leg.eventId}:${leg.chosenOption}`, chosenOption.current_odds);
         totalOdds *= chosenOption.current_odds;
+
+        if (hasSignificantOddsDrift(expectedOdds, currentOdds)) {
+          oddsChanges.push(
+            createOddsChangeEntry({
+              eventId: event.id,
+              eventTitle: event.title,
+              chosenOption: chosenOption.label,
+              expectedOdds: expectedOdds ?? currentOdds,
+              currentOdds,
+              stake: input.stake,
+            }),
+          );
+        }
 
         const nextOptions = recalculateLiveOptions(
           options.map((option) =>
@@ -1709,6 +1916,27 @@ class EventService {
         eventStates.set(event.id, {
           options: nextOptions,
           totalPool: nextOptions.reduce((sum, option) => sum + option.total_staked, 0),
+        });
+      }
+
+      if (oddsChanges.length > 0 && !autoAcceptOddsChanges) {
+        throwOddsConflict({
+          code: "ODDS_CHANGED",
+          bet_type: "PARLAY",
+          changes: oddsChanges,
+          total_potential_payout_before: calculatePotentialPayout(input.stake, totalExpectedOdds),
+          total_potential_payout_after: calculatePotentialPayout(input.stake, totalOdds),
+        });
+      }
+
+      if (input.persist_accept_odds_changes && !user.acceptOddsChanges) {
+        await transaction.user.update({
+          where: {
+            id: userId,
+          },
+          data: {
+            acceptOddsChanges: true,
+          },
         });
       }
 
@@ -2082,7 +2310,6 @@ class EventService {
         userId,
         title: input.title,
         description: input.description,
-        category: input.category,
         suggestedDate: input.suggested_date,
       },
       include: {

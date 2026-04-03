@@ -15,13 +15,6 @@ enum UserRole {
   admin
 }
 
-enum EventCategory {
-  sports
-  politics
-  culture
-  epita
-}
-
 enum EventStatus {
   OPEN      @map("active")
   CLOSED    @map("pending")
@@ -70,6 +63,7 @@ model User {
   sessionVersion  Int         @default(0)
   lastRewardAt    DateTime?
   streakDays      Int         @default(0)
+  acceptOddsChanges Boolean   @default(false)
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   bets            Bet[]
@@ -92,7 +86,6 @@ model Event {
   id             String           @id @default(uuid()) @db.Uuid
   title          String           @unique @db.VarChar(200)
   description    String?          @db.Text
-  category       EventCategory
   imageUrl       String?          @db.VarChar(500)
   options        Json
   poolByOption   Json             @default("{}")
@@ -116,7 +109,6 @@ model Event {
   betLegs        BetLeg[]
 
   @@index([status])
-  @@index([category])
   @@index([closingAt])
   @@index([createdAt(sort: Desc)])
 }
@@ -176,7 +168,6 @@ model EventProposal {
   userId          String         @db.Uuid
   title           String         @db.VarChar(200)
   description     String?        @db.Text
-  category        EventCategory
   suggestedDate   DateTime?
   status          ProposalStatus @default(PENDING)
   reviewedById    String?        @db.Uuid

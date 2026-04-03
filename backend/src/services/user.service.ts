@@ -22,6 +22,7 @@ function serializeAdminUserSummary(user: {
   balance: number;
   role: string;
   streakDays: number;
+  acceptOddsChanges?: boolean;
   lastRewardAt: Date | null;
   createdAt: Date;
   badges?: Array<{ badgeType: string }>;
@@ -34,6 +35,7 @@ function serializeAdminUserSummary(user: {
     balance: user.balance,
     role: user.role,
     streak_days: user.streakDays,
+    accept_odds_changes: user.acceptOddsChanges ?? false,
     last_reward_at: user.lastRewardAt?.toISOString() ?? null,
     created_at: user.createdAt.toISOString(),
     badges: (user.badges ?? []).map((badge) => badge.badgeType).sort(),
@@ -63,23 +65,36 @@ class UserService {
   async updateCurrentUser(userId: string, input: UpdateUserProfileInput) {
     await this.requireActiveUser(userId);
 
-    const pseudo = input.pseudo.trim();
+    const data: {
+      pseudo?: string;
+      acceptOddsChanges?: boolean;
+    } = {};
 
-    const existingPseudo = await prisma.user.findFirst({
-      where: {
-        pseudo,
-        NOT: { id: userId },
-      },
-      select: { id: true },
-    });
+    if (input.pseudo !== undefined) {
+      const pseudo = input.pseudo.trim();
 
-    if (existingPseudo) {
-      throw new AppError("Ce pseudo est déjà utilisé.", 409);
+      const existingPseudo = await prisma.user.findFirst({
+        where: {
+          pseudo,
+          NOT: { id: userId },
+        },
+        select: { id: true },
+      });
+
+      if (existingPseudo) {
+        throw new AppError("Ce pseudo est déjà utilisé.", 409);
+      }
+
+      data.pseudo = pseudo;
+    }
+
+    if (input.accept_odds_changes !== undefined) {
+      data.acceptOddsChanges = input.accept_odds_changes;
     }
 
     const updatedUser = await prisma.user.update({
       where: { id: userId },
-      data: { pseudo },
+      data,
     });
 
     await gamificationService.synchronizeUserBadges(userId);
@@ -160,6 +175,7 @@ class UserService {
         balance: true,
         role: true,
         streakDays: true,
+        acceptOddsChanges: true,
         lastRewardAt: true,
         createdAt: true,
         badges: {

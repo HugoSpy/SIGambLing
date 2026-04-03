@@ -1,9 +1,9 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import toast from "react-hot-toast";
 import { Coins, Sparkles } from "lucide-react";
 import { api } from "../../lib/api";
 import { soundManager } from "../../lib/casino/soundManager";
+import { getErrorMessage, notify } from "../../lib/notifications";
 import { createBet, resolveRound } from "../../lib/casino/rouletteUtils";
 import { formatTokens } from "../../lib/utils";
 import { useAuthStore } from "../../store/auth-store";
@@ -20,14 +20,6 @@ import { RouletteControls } from "./RouletteControls";
 import { RouletteHistory } from "./RouletteHistory";
 import { RouletteStats } from "./RouletteStats";
 import { RouletteWheel } from "./RouletteWheel";
-
-function toErrorMessage(error: unknown) {
-  if (error instanceof Error) {
-    return error.message;
-  }
-
-  return "Une erreur roulette est survenue.";
-}
 
 export function RouletteGame() {
   const queryClient = useQueryClient();
@@ -71,12 +63,12 @@ export function RouletteGame() {
       }
 
       if (betAmount < 10) {
-        toast.error("La mise minimale est de 10 tokens.");
+        notify.error("La mise minimale est de 10 tokens.");
         return;
       }
 
       if (betAmount > availableBalance) {
-        toast.error("Solde insuffisant pour placer ce jeton.");
+        notify.error("Solde insuffisant pour placer ce jeton.");
         return;
       }
 
@@ -99,7 +91,7 @@ export function RouletteGame() {
 
   const handleSpin = useCallback(async () => {
     if (bets.length === 0) {
-      toast.error("Place au moins un pari avant de lancer la roue.");
+      notify.error("Place au moins un pari avant de lancer la roue.");
       return;
     }
 
@@ -124,7 +116,7 @@ export function RouletteGame() {
       setSpinRequest(nextSpinRequest);
     } catch (error) {
       setPhase(bets.length > 0 ? "betting" : "idle");
-      toast.error(toErrorMessage(error));
+      notify.error(getErrorMessage(error, "Une erreur roulette est survenue."));
     }
   }, [bets]);
 
@@ -151,15 +143,13 @@ export function RouletteGame() {
 
       if (pendingResponse.payout > 0) {
         soundManager.play("win");
-        toast.success(`Gain validé : +${formatTokens(pendingResponse.payout)} tokens`, {
-          duration: 4200,
-        });
+        notify.success(`Gain valide : +${formatTokens(pendingResponse.payout)} tokens`);
         if (navigator.vibrate) {
           navigator.vibrate([60, 40, 90]);
         }
       } else {
         soundManager.play("lose");
-        toast("Aucun gain sur ce tour.");
+        notify.info("Aucun gain sur ce tour.");
       }
 
       setPhase("payout");

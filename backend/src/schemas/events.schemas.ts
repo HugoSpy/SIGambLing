@@ -1,4 +1,4 @@
-import { EventCategory, EventStatus, ProposalStatus } from "@prisma/client";
+import { EventStatus, ProposalStatus } from "@prisma/client";
 import { z } from "zod";
 
 function trimString(value: string) {
@@ -136,7 +136,6 @@ export const createEventSchema = z
   .object({
     title: titleSchema,
     description: optionalTextSchema,
-    category: z.nativeEnum(EventCategory),
     proposal_id: z.string().uuid().optional(),
     image_url: optionalImageSchema,
     options: z.array(optionSchema).min(2).max(6),
@@ -155,7 +154,6 @@ export const updateEventSchema = z
   .object({
     title: titleSchema.optional(),
     description: updatableOptionalTextSchema,
-    category: z.nativeEnum(EventCategory).optional(),
     image_url: updatableOptionalImageSchema,
     options: z.array(optionSchema).min(2).max(6).optional(),
     option_initial_odds: optionInitialOddsSchema,
@@ -179,6 +177,9 @@ export const updateEventSchema = z
 export const placeEventBetSchema = z.object({
   chosen_option: z.string().min(1).max(100).transform(trimString),
   amount: z.coerce.number().int().min(1).max(1_000_000),
+  expected_odds: z.number().min(1.01).max(100).optional(),
+  accept_any_odds_change: z.boolean().optional().default(false),
+  persist_accept_odds_changes: z.boolean().optional().default(false),
 });
 
 export const placeSimpleBetsSchema = z.object({
@@ -188,6 +189,7 @@ export const placeSimpleBetsSchema = z.object({
         eventId: z.string().uuid(),
         chosenOption: z.string().min(1).max(100).transform(trimString),
         amount: z.coerce.number().int().min(1).max(1_000_000),
+        expectedOdds: z.number().min(1.01).max(100).optional(),
       }),
     )
     .min(1)
@@ -196,6 +198,8 @@ export const placeSimpleBetsSchema = z.object({
       (bets) => new Set(bets.map((bet) => bet.eventId)).size === bets.length,
       "Une seule selection par evenement est autorisee dans le panier simple.",
     ),
+  accept_any_odds_change: z.boolean().optional().default(false),
+  persist_accept_odds_changes: z.boolean().optional().default(false),
 });
 
 export const placeParlayBetSchema = z.object({
@@ -204,6 +208,7 @@ export const placeParlayBetSchema = z.object({
       z.object({
         eventId: z.string().uuid(),
         chosenOption: z.string().min(1).max(100).transform(trimString),
+        expectedOdds: z.number().min(1.01).max(100).optional(),
       }),
     )
     .min(2)
@@ -213,6 +218,8 @@ export const placeParlayBetSchema = z.object({
       "Impossible de combiner deux issues du meme evenement.",
     ),
   stake: z.coerce.number().int().min(5).max(500),
+  accept_any_odds_change: z.boolean().optional().default(false),
+  persist_accept_odds_changes: z.boolean().optional().default(false),
 });
 
 export const resolveEventSchema = z.object({
@@ -234,7 +241,6 @@ export const userSearchQuerySchema = z.object({
 export const createProposalSchema = z.object({
   title: z.string().trim().min(10).max(200),
   description: optionalTextSchema,
-  category: z.nativeEnum(EventCategory),
   suggested_date: optionalDateSchema,
 });
 

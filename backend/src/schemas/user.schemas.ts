@@ -6,8 +6,13 @@ export const updateUserProfileSchema = z.object({
     .trim()
     .min(3, "Le pseudo doit contenir au moins 3 caractères.")
     .max(24, "Le pseudo doit contenir au maximum 24 caractères.")
-    .regex(/^[A-Za-z0-9._-]+$/, "Le pseudo contient des caractères non autorisés."),
-});
+    .regex(/^[A-Za-z0-9._-]+$/, "Le pseudo contient des caractères non autorisés.")
+    .optional(),
+  accept_odds_changes: z.boolean().optional(),
+}).refine(
+  (value) => value.pseudo !== undefined || value.accept_odds_changes !== undefined,
+  "Aucune modification transmise.",
+);
 
 export const adjustUserBalanceSchema = z.object({
   amount: z

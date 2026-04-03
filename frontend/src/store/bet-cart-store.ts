@@ -1,12 +1,11 @@
 import { create } from "zustand";
-import type { EventCategory, EventOptionView, EventView } from "../types/event";
+import type { EventOptionView, EventView } from "../types/event";
 
 export type BetCartMode = "simple" | "parlay";
 
 export interface BetCartSelection {
   eventId: string;
   eventTitle: string;
-  category: EventCategory;
   optionLabel: string;
   odds: number;
   minBet: number;
@@ -24,6 +23,7 @@ interface BetCartState {
   setMode: (mode: BetCartMode) => void;
   setParlayStake: (stake: number) => void;
   setSimpleStake: (eventId: string, stake: number) => void;
+  syncSelectionOdds: (updates: Array<{ eventId: string; odds: number }>) => void;
   addSelection: (event: EventView, option: EventOptionView) => void;
   removeSelection: (eventId: string) => void;
   clear: () => void;
@@ -43,13 +43,24 @@ export const useBetCartStore = create<BetCartState>((set) => ({
         selection.eventId === eventId ? { ...selection, simpleStake } : selection,
       ),
     })),
+  syncSelectionOdds: (updates) =>
+    set((state) => {
+      const nextOddsByEventId = new Map(updates.map((update) => [update.eventId, update.odds]));
+
+      return {
+        selections: state.selections.map((selection) =>
+          nextOddsByEventId.has(selection.eventId)
+            ? { ...selection, odds: nextOddsByEventId.get(selection.eventId) ?? selection.odds }
+            : selection,
+        ),
+      };
+    }),
   addSelection: (event, option) =>
     set((state) => {
       const existing = state.selections.find((selection) => selection.eventId === event.id);
       const nextSelection: BetCartSelection = {
         eventId: event.id,
         eventTitle: event.title,
-        category: event.category,
         optionLabel: option.label,
         odds: option.current_odds,
         minBet: event.min_bet,
