@@ -130,9 +130,33 @@ class AuthService {
       throw new AppError("Session expirée, reconnecte-toi.", 401);
     }
 
+    const rotation = await prisma.user.updateMany({
+      where: {
+        id: payload.userId,
+        sessionVersion: payload.sessionVersion,
+      },
+      data: {
+        sessionVersion: {
+          increment: 1,
+        },
+      },
+    });
+
+    if (rotation.count !== 1) {
+      throw new AppError("Session expirée, reconnecte-toi.", 401);
+    }
+
+    const rotatedUser = await prisma.user.findUnique({
+      where: { id: payload.userId },
+    });
+
+    if (!rotatedUser || rotatedUser.isBanned) {
+      throw new AppError("Utilisateur introuvable ou banni.", 401);
+    }
+
     return {
-      user,
-      ...this.buildSession(user),
+      user: rotatedUser,
+      ...this.buildSession(rotatedUser),
     };
   }
 
@@ -144,8 +168,11 @@ class AuthService {
     try {
       const payload = verifyRefreshToken(token);
 
-      await prisma.user.update({
-        where: { id: payload.userId },
+      await prisma.user.updateMany({
+        where: {
+          id: payload.userId,
+          sessionVersion: payload.sessionVersion,
+        },
         data: {
           sessionVersion: {
             increment: 1,
