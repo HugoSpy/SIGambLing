@@ -514,7 +514,7 @@ export function AdminEventsPage() {
                   {editingEvent ? "Edition" : draftProposal ? "Depuis proposition" : "Creation"}
                 </p>
                 <h2 className="mt-2 font-display text-3xl text-brand-text">
-                  {editingEvent ? "Modifier un marché" : "Nouveau marché"}
+                  {editingEvent ? "Modifier un marché" : "Nouvel Evènement"}
                 </h2>
               </div>
               {editingEvent || draftProposal ? (
