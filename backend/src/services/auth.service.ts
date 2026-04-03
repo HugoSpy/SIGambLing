@@ -4,6 +4,7 @@ import { env, isProduction } from "../config/env";
 import { prisma } from "./prisma.service";
 import { AppError } from "../utils/app-error";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../utils/jwt";
+import { buildPseudoFromEpitaEmail, ensureUniquePseudo } from "../utils/pseudo";
 
 interface MicrosoftProfile {
   id: string;
@@ -13,25 +14,6 @@ interface MicrosoftProfile {
   _json: {
     mail?: string;
   };
-}
-
-function normalizePseudo(input: string) {
-  const fallback = input.split("@")[0] ?? "player";
-  const sanitized = fallback.replace(/[^a-zA-Z0-9]/g, "").slice(0, 20);
-  return sanitized.length >= 3 ? sanitized : `EPITA${sanitized}`.slice(0, 20);
-}
-
-async function ensureUniquePseudo(basePseudo: string) {
-  let candidate = basePseudo;
-  let suffix = 1;
-
-  while (await prisma.user.findUnique({ where: { pseudo: candidate } })) {
-    const trimmed = basePseudo.slice(0, Math.max(3, 20 - String(suffix).length));
-    candidate = `${trimmed}${suffix}`;
-    suffix += 1;
-  }
-
-  return candidate;
 }
 
 function getMicrosoftEmail(profile: MicrosoftProfile) {
@@ -71,8 +53,10 @@ class AuthService {
       });
     }
 
-    const basePseudo = normalizePseudo(profile.displayName ?? email);
-    const pseudo = await ensureUniquePseudo(basePseudo);
+    const basePseudo = buildPseudoFromEpitaEmail(email);
+    const pseudo = await ensureUniquePseudo(basePseudo, (candidate) =>
+      prisma.user.findUnique({ where: { pseudo: candidate } }).then((user) => user !== null),
+    );
 
     return prisma.user.create({
       data: {

@@ -2,6 +2,7 @@ import passport from "passport";
 import { UserRole } from "@prisma/client";
 import { Strategy as MicrosoftStrategy } from "passport-microsoft";
 import { prisma } from "../lib/prisma";
+import { buildPseudoFromEpitaEmail, ensureUniquePseudo } from "../utils/pseudo";
 
 const ADMIN_EMAILS = new Set(["maxence.larche@epita.fr"]);
 
@@ -52,7 +53,9 @@ export function configurePassport() {
           });
 
           if (!user) {
-            const pseudo = email.split("@")[0].replace(".", "");
+            const pseudo = await ensureUniquePseudo(buildPseudoFromEpitaEmail(email), (candidate) =>
+              prisma.user.findUnique({ where: { pseudo: candidate } }).then((existingUser) => existingUser !== null),
+            );
 
             user = await prisma.user.create({
               data: {
