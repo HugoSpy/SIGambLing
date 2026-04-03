@@ -21,7 +21,11 @@ import type {
   JackpotState,
   LeaderboardView,
 } from "../types/gamification";
-import type { AuthTokens, AuthUser, MicrosoftRedirectResponse } from "../types/auth";
+import type {
+  AuthUser,
+  MicrosoftRedirectResponse,
+  RefreshSessionResponse,
+} from "../types/auth";
 
 export interface ApiErrorDetails {
   formErrors?: string[];
@@ -74,7 +78,7 @@ function toApiError(error: unknown) {
 }
 
 async function performRefresh() {
-  const response = await refreshClient.post<AuthTokens>("/auth/refresh");
+  const response = await refreshClient.post<RefreshSessionResponse>("/auth/refresh");
   const token = response.data.access_token;
 
   if (!token) {

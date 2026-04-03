@@ -8,6 +8,7 @@ process.env.NODE_ENV = "test";
 
 const { createApp } = require("./app");
 const { env } = require("./config/env");
+const { handleMicrosoftCallbackController } = require("./controllers/auth.controller");
 const { prisma } = require("./lib/prisma");
 const { authService } = require("./services/auth.service");
 const { eventService } = require("./services/event.service");
@@ -91,7 +92,7 @@ test.afterEach(() => {
   }
 });
 
-test("POST /auth/refresh rotates the refresh token and returns a new access token", async () => {
+test("POST /auth/refresh rotates the refresh token and returns only a new access token", async () => {
   stubMethod(authService, "rotateRefreshToken", async (token: string) => {
     assert.equal(token, "old-refresh-token");
 
@@ -116,8 +117,30 @@ test("POST /auth/refresh rotates the refresh token and returns a new access toke
 
   assert.equal(response.status, 200);
   assert.equal(response.body.access_token, "next-access-token");
-  assert.equal(response.body.refresh_token, "next-refresh-token");
+  assert.equal("refresh_token" in response.body, false);
   assert.match(response.headers["set-cookie"][0], /refresh_token=next-refresh-token/);
+});
+
+test("POST /auth/refresh rejects request-body refresh tokens and requires the cookie", async () => {
+  let rotateCalled = false;
+
+  stubMethod(authService, "rotateRefreshToken", async (_token: string) => {
+    rotateCalled = true;
+
+    return {
+      user: { id: "user-1" },
+      accessToken: "next-access-token",
+      refreshToken: "next-refresh-token",
+    };
+  });
+
+  const response = await request
+    .post("/auth/refresh")
+    .send({ refresh_token: "body-refresh-token" });
+
+  assert.equal(response.status, 401);
+  assert.equal(response.body.message, "Refresh token manquant.");
+  assert.equal(rotateCalled, false);
 });
 
 test("POST /auth/logout invalidates the session and clears the refresh cookie", async () => {
@@ -208,26 +231,6 @@ test("GET /auth/microsoft/callback rejects requests with a missing OAuth state b
 });
 
 test("GET /auth/microsoft/callback redirects without leaking an access token in the URL", async () => {
-  const state = jwt.sign(
-    {
-      purpose: "microsoft_oauth_state",
-      nonce: "a".repeat(64),
-    },
-    env.JWT_SECRET,
-    { expiresIn: "10m" },
-  );
-
-  stubMethod(passport, "authenticate", (_strategy: string, _options: unknown, callback?: Function) => {
-    return (request: unknown, response: unknown, next: Function) => {
-      if (callback) {
-        callback(null, { id: "user-1" });
-        return;
-      }
-
-      next();
-    };
-  });
-
   stubMethod(prisma.user, "findUnique", async () => ({
     id: "user-1",
     email: "student@epita.fr",
@@ -246,24 +249,100 @@ test("GET /auth/microsoft/callback redirects without leaking an access token in 
     refreshToken: "browser-refresh-token",
   }));
 
-  stubMethod(authService, "applyRefreshCookie", (response: any, refreshToken: string) => {
-    response.cookie("refresh_token", refreshToken, {
-      httpOnly: true,
-      path: "/auth",
-    });
+  let appliedRefreshToken: string | null = null;
+  let redirectUrl: string | null = null;
+
+  stubMethod(authService, "applyRefreshCookie", (_response: any, refreshToken: string) => {
+    appliedRefreshToken = refreshToken;
   });
 
-  const response = await request
-    .get("/auth/microsoft/callback")
-    .set("Accept", "text/html")
-    .set("Cookie", `microsoft_oauth_state=${state}`)
-    .query({ code: "microsoft-code", state });
+  const mockRequest = {
+    user: { id: "user-1" },
+    accepts: () => "html",
+  };
 
-  assert.equal(response.status, 302);
-  assert.equal(response.headers.location, new URL("/auth/callback", env.FRONTEND_URL).toString());
-  assert.equal(new URL(response.headers.location).searchParams.get("access_token"), null);
-  assert.match(response.headers["set-cookie"][0], /microsoft_oauth_state=;/);
-  assert.match(response.headers["set-cookie"][1], /refresh_token=browser-refresh-token/);
+  const mockResponse = {
+    redirect: (location: string) => {
+      redirectUrl = location;
+    },
+    json: () => {
+      throw new Error("Unexpected JSON response");
+    },
+  };
+
+  await handleMicrosoftCallbackController(
+    mockRequest as any,
+    mockResponse as any,
+    (error?: unknown) => {
+      if (error) {
+        throw error;
+      }
+    },
+  );
+
+  assert.equal(redirectUrl, new URL("/auth/callback", env.FRONTEND_URL).toString());
+  assert.equal(new URL(redirectUrl ?? "").searchParams.get("access_token"), null);
+  assert.equal(appliedRefreshToken, "browser-refresh-token");
+});
+
+test("GET /auth/microsoft/callback JSON response omits the refresh token body field", async () => {
+  stubMethod(prisma.user, "findUnique", async () => ({
+    id: "user-1",
+    email: "student@epita.fr",
+    pseudo: "SigmaStudent",
+    balance: 1000,
+    role: "user",
+    avatarUrl: null,
+    streakDays: 2,
+    acceptOddsChanges: false,
+    lastRewardAt: null,
+    createdAt: new Date("2026-04-01T12:00:00.000Z"),
+  }));
+
+  stubMethod(authService, "buildSession", () => ({
+    accessToken: "browser-access-token",
+    refreshToken: "browser-refresh-token",
+  }));
+
+  let appliedRefreshToken: string | null = null;
+  let jsonPayload: { access_token?: string; refresh_token?: string } | null = null;
+
+  stubMethod(authService, "applyRefreshCookie", (_response: any, refreshToken: string) => {
+    appliedRefreshToken = refreshToken;
+  });
+
+  const mockRequest = {
+    user: { id: "user-1" },
+    accepts: () => "json",
+  };
+
+  const mockResponse = {
+    redirect: () => {
+      throw new Error("Unexpected redirect response");
+    },
+    json: (payload: { access_token?: string; refresh_token?: string }) => {
+      jsonPayload = payload;
+    },
+  };
+
+  await handleMicrosoftCallbackController(
+    mockRequest as any,
+    mockResponse as any,
+    (error?: unknown) => {
+      if (error) {
+        throw error;
+      }
+    },
+  );
+
+  assert.equal(appliedRefreshToken, "browser-refresh-token");
+  if (jsonPayload === null) {
+    throw new Error("Expected JSON callback payload.");
+  }
+
+  const callbackPayload = jsonPayload;
+  assert.equal(callbackPayload.access_token, "browser-access-token");
+  assert.equal("refresh_token" in callbackPayload, false);
 });
 
 test("GET /events returns the authenticated user's open event feed", async () => {

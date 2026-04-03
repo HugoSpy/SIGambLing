@@ -42,7 +42,6 @@ export const handleMicrosoftCallbackController: RequestHandler = async (
     const payload = {
       user: serializeUser(user),
       access_token: accessToken,
-      refresh_token: refreshToken,
     };
 
     const acceptsJson = request.accepts(["json", "html"]) === "json";
@@ -53,7 +52,6 @@ export const handleMicrosoftCallbackController: RequestHandler = async (
     }
 
     const callbackUrl = new URL("/auth/callback", env.FRONTEND_URL);
-    callbackUrl.searchParams.set("access_token", accessToken);
     response.redirect(callbackUrl.toString());
   } catch (error) {
     next(error);
@@ -62,9 +60,7 @@ export const handleMicrosoftCallbackController: RequestHandler = async (
 
 export const refreshController: RequestHandler = async (request, response, next) => {
   try {
-    const refreshToken =
-      request.cookies.refresh_token ??
-      (typeof request.body.refresh_token === "string" ? request.body.refresh_token : undefined);
+    const refreshToken = request.cookies.refresh_token;
 
     if (!refreshToken) {
       throw new AppError("Refresh token manquant.", 401);
@@ -76,7 +72,6 @@ export const refreshController: RequestHandler = async (request, response, next)
     authService.applyRefreshCookie(response, rotatedRefreshToken);
     response.json({
       access_token: accessToken,
-      refresh_token: rotatedRefreshToken,
     });
   } catch (error) {
     next(error);

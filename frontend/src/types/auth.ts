@@ -13,9 +13,8 @@ export interface AuthUser {
   created_at: string;
 }
 
-export interface AuthTokens {
+export interface RefreshSessionResponse {
   access_token: string;
-  refresh_token?: string;
 }
 
 export interface MicrosoftRedirectResponse {

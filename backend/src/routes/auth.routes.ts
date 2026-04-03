@@ -8,7 +8,7 @@ import {
   refreshController,
 } from "../controllers/auth.controller";
 import { validateBody } from "../middleware/validate";
-import { startMicrosoftAuthSchema, refreshSchema } from "../schemas/auth.schemas";
+import { startMicrosoftAuthSchema } from "../schemas/auth.schemas";
 import { AppError } from "../utils/app-error";
 import {
   clearMicrosoftOAuthState,
@@ -80,5 +80,5 @@ authRouter.get("/microsoft/callback", (request, response, next) => {
   )(request, response, next);
 });
 
-authRouter.post("/refresh", strictLimiter, validateBody(refreshSchema), refreshController);
+authRouter.post("/refresh", strictLimiter, refreshController);
 authRouter.post("/logout", strictLimiter, logoutController);
