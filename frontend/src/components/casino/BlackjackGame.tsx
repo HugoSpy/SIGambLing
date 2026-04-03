@@ -1,7 +1,8 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowRight, Coins, Shield, Sparkles, Waves } from "lucide-react";
+import { ArrowLeft, ArrowRight, Coins, Shield, Sparkles, Waves } from "lucide-react";
 import { useCallback, useState } from "react";
+import { Link } from "react-router-dom";
 import { api } from "../../lib/api";
 import { getErrorMessage, notify } from "../../lib/notifications";
 import { soundManager } from "../../lib/casino/soundManager";
@@ -440,7 +441,13 @@ export function BlackjackGame() {
       <Card accent="cyan" className="min-w-[300px]">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-brand-cyan">Salon casino</p>
+            <Link to="/casino">
+              <Button className="gap-2" size="sm" variant="secondary">
+                <ArrowLeft className="h-4 w-4" />
+                Retour au casino
+              </Button>
+            </Link>
+            <p className="mt-4 text-xs uppercase tracking-[0.3em] text-brand-cyan">Salon casino</p>
             <h1 className="mt-3 font-display text-4xl text-brand-text">Blackjack</h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-brand-muted">
               Blackjack paie 3:2 • Dealer tire sur 16 ou moins • Double down disponible
@@ -630,7 +637,7 @@ export function BlackjackGame() {
                     </h2>
                     <p className="mt-2 text-sm leading-7 text-brand-muted">{resultConfig.detail}</p>
                   </div>
-                  <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-right">
+                  <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-center sm:min-w-[160px]">
                     <p className="text-[10px] uppercase tracking-[0.28em] text-white/45">Payout</p>
                     <p className={cn("mt-1 text-xl font-black", payout > 0 ? "text-green-300" : "text-brand-text")}>
                       {payout > 0 ? `+${formatTokens(payout)}` : "0"}

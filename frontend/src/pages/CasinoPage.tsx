@@ -27,9 +27,8 @@ const TABS: {
   {
     id: "roulette",
     label: "Roulette",
-    eyebrow: "Pour miser au bruit",
-    description:
-      "La roue pour celles et ceux qui pensent qu'un plan solide commence par 'on verra bien'.",
+    eyebrow: "Rythme direct",
+    description: "Un tour, une lecture nette, un acces immediat aux mises et au resultat.",
     href: "/casino/roulette",
     accentClassName: "from-emerald-500/20 via-emerald-500/5 to-transparent",
     icon: CircleDot,
@@ -37,9 +36,8 @@ const TABS: {
   {
     id: "blackjack",
     label: "Blackjack",
-    eyebrow: "Pour jouer les strateges",
-    description:
-      "La table pour faire semblant d'avoir une methode, puis blamer le dealer quand elle casse.",
+    eyebrow: "Decision rapide",
+    description: "Une table claire pour suivre la manche, centrer le payout et enchainer sans friction.",
     href: "/casino/blackjack",
     accentClassName: "from-amber-500/20 via-amber-500/5 to-transparent",
     icon: Waves,
@@ -152,7 +150,7 @@ export function CasinoPage() {
               <div>
                 <p className="text-xs uppercase tracking-[0.28em] text-brand-orange">Mode salon</p>
                 <h3 className="mt-2 font-display text-2xl text-brand-text">
-                  Entrez, choisissez votre vice de la minute, puis changez de table sans casser le rythme
+                  Passez d'une table a l'autre sans perdre le fil des mises, des resultats ou du retour au hub casino
                 </h3>
               </div>
               <div className="flex flex-wrap gap-3 text-sm text-brand-muted">

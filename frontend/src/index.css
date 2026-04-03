@@ -42,6 +42,40 @@ a {
 }
 
 @layer components {
+  .interactive-hover {
+    @apply transition-all duration-200 disabled:pointer-events-none disabled:opacity-60;
+  }
+
+  .button-primary-surface {
+    @apply bg-emerald-500 text-zinc-950;
+  }
+
+  .button-secondary-surface {
+    @apply border border-zinc-700 bg-zinc-800 text-zinc-100;
+  }
+
+  .button-danger-surface {
+    @apply bg-red-500 text-white;
+  }
+
+  @media (hover: hover) and (pointer: fine) {
+    .interactive-hover:not(:disabled) {
+      @apply hover:-translate-y-0.5;
+    }
+
+    .button-primary-surface:not(:disabled) {
+      @apply hover:bg-emerald-400;
+    }
+
+    .button-secondary-surface:not(:disabled) {
+      @apply hover:border-zinc-600 hover:bg-zinc-700;
+    }
+
+    .button-danger-surface:not(:disabled) {
+      @apply hover:bg-red-400;
+    }
+  }
+
   .glass-panel {
     @apply border border-brand-line bg-zinc-900/90 shadow-[0_10px_40px_rgba(0,0,0,0.22)] backdrop-blur-sm;
   }

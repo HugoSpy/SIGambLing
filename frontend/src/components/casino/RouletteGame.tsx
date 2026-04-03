@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Coins, Sparkles } from "lucide-react";
+import { ArrowLeft, Coins, Sparkles } from "lucide-react";
+import { Link } from "react-router-dom";
 import { api } from "../../lib/api";
 import { soundManager } from "../../lib/casino/soundManager";
 import { getErrorMessage, notify } from "../../lib/notifications";
@@ -20,6 +21,7 @@ import { RouletteControls } from "./RouletteControls";
 import { RouletteHistory } from "./RouletteHistory";
 import { RouletteStats } from "./RouletteStats";
 import { RouletteWheel } from "./RouletteWheel";
+import { Button } from "../ui/Button";
 
 export function RouletteGame() {
   const queryClient = useQueryClient();
@@ -174,7 +176,13 @@ export function RouletteGame() {
       <Card accent="cyan" className="min-w-[300px]">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-brand-cyan">Salon casino</p>
+            <Link to="/casino">
+              <Button className="gap-2" size="sm" variant="secondary">
+                <ArrowLeft className="h-4 w-4" />
+                Retour au casino
+              </Button>
+            </Link>
+            <p className="mt-4 text-xs uppercase tracking-[0.3em] text-brand-cyan">Salon casino</p>
             <h1 className="mt-3 font-display text-4xl text-brand-text">Roulette Européenne</h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-brand-muted">
               Mise minimum : 10 tokens • Gain maximum : 35:1

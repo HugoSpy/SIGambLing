@@ -28,6 +28,10 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
   const location = useLocation();
   const cartSelectionsCount = useBetCartStore((state) => state.selections.length);
   const setCartOpen = useBetCartStore((state) => state.setOpen);
+  const navLinkClassName =
+    "interactive-hover flex items-center gap-3 rounded-xl border px-3 py-2.5 text-sm";
+  const actionSurfaceClassName =
+    "interactive-hover relative inline-flex h-11 items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900 px-4 text-sm text-zinc-100 shadow-[0_10px_24px_rgba(0,0,0,0.18)]";
   const initials = useMemo(
     () =>
       user.pseudo
@@ -42,8 +46,8 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
   const navItems = useMemo(
     () => [
       { label: "Tableau de bord", icon: LayoutDashboard, href: "/dashboard" },
-      { label: "Evenements", icon: TrendingUp, href: "/events" },
-      { label: "Leaderboard", icon: Medal, href: "/leaderboard" },
+      { label: "Événements", icon: TrendingUp, href: "/events" },
+      { label: "Classement", icon: Medal, href: "/leaderboard" },
       { label: "Casino", icon: Dice3, href: "/casino" },
       { label: "Jackpot", icon: Trophy, href: "/jackpot" },
       { label: "Profil", icon: UserRound, href: "/profile" },
@@ -85,10 +89,10 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
               <NavLink
                 key={item.label}
                 className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm transition-colors",
+                  navLinkClassName,
                   active
-                    ? "bg-emerald-500/10 text-emerald-400"
-                    : "text-zinc-400 hover:bg-zinc-800 hover:text-zinc-100",
+                    ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
+                    : "border-transparent text-zinc-400 hover:border-zinc-700 hover:bg-zinc-800 hover:text-zinc-100",
                 )}
                 to={item.href}
               >
@@ -101,7 +105,10 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
 
         <div className="space-y-3 border-t border-zinc-800 p-4">
           <button
-            className="relative flex w-full items-center justify-between rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-3 text-left text-sm text-zinc-100 transition hover:border-zinc-600 hover:bg-zinc-700"
+            className={cn(
+              actionSurfaceClassName,
+              "w-full justify-between text-left enabled:hover:border-zinc-700 enabled:hover:bg-zinc-800",
+            )}
             onClick={() => setCartOpen(true)}
             type="button"
           >
@@ -146,7 +153,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
                 </p>
               </div>
               <div className="rounded-lg bg-zinc-900 px-3 py-2">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Serie</p>
+                <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Série</p>
                 <p className="mt-1 text-sm font-semibold text-zinc-100">{user.streak_days} j</p>
               </div>
             </div>
@@ -158,7 +165,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
               variant="secondary"
               onClick={() => void onLogout()}
             >
-              Se deconnecter
+              Se déconnecter
             </Button>
           </div>
         </div>
@@ -174,7 +181,10 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
 
             <div className="flex items-center gap-3">
               <button
-                className="relative inline-flex h-10 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-800 px-3 text-zinc-100 transition hover:border-zinc-600 hover:bg-zinc-700"
+                className={cn(
+                  actionSurfaceClassName,
+                  "justify-center px-3 enabled:hover:border-zinc-700 enabled:hover:bg-zinc-800",
+                )}
                 onClick={() => setCartOpen(true)}
                 type="button"
               >
@@ -187,14 +197,14 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
                 ) : null}
               </button>
 
-              <div className="hidden items-center gap-2 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 sm:flex">
+              <div className="hidden h-11 items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900 px-4 shadow-[0_10px_24px_rgba(0,0,0,0.18)] sm:flex">
                 <Coins className="h-4 w-4 text-emerald-400" />
                 <span className="text-sm font-medium text-zinc-100">
                   {formatTokens(user.balance)}
                 </span>
               </div>
 
-              <div className="flex items-center gap-3 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2">
+              <div className="flex h-11 items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900 px-3 shadow-[0_10px_24px_rgba(0,0,0,0.18)]">
                 {user.avatar_url ? (
                   <img
                     alt={`Photo de profil de ${user.pseudo}`}
@@ -223,7 +233,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
                 variant="secondary"
                 onClick={() => void onLogout()}
               >
-                Se deconnecter
+                Se déconnecter
               </Button>
               <Button className="sm:hidden" size="sm" variant="secondary" onClick={() => void onLogout()}>
                 Sortir
