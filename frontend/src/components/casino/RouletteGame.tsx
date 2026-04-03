@@ -233,42 +233,6 @@ export function RouletteGame() {
         </div>
 
         <div className="order-first space-y-6 xl:order-2">
-          <Card className="min-w-[300px]">
-            <div className="flex flex-col gap-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.28em] text-brand-orange">
-                  Lecture de table
-                </p>
-                <h3 className="mt-2 font-display text-2xl text-brand-text">
-                  Mise lisible sur tous les ecrans
-                </h3>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Statut</p>
-                  <p className="mt-2 text-sm font-semibold text-brand-text">{phaseLabel}</p>
-                </div>
-                <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Jeton actif</p>
-                  <p className="mt-2 text-sm font-semibold text-brand-text">
-                    {formatTokens(betAmount)} tokens
-                  </p>
-                </div>
-                <div className="rounded-[20px] border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">
-                    Dernier spin
-                  </p>
-                  <p className="mt-2 text-sm font-semibold text-brand-text">
-                    {lastResult ? `${lastResult.number} ${lastResult.color}` : "Aucun"}
-                  </p>
-                </div>
-              </div>
-              <p className="text-sm leading-7 text-brand-muted">
-                Le panneau de mise passe au-dessus de la grille sur petit ecran, puis revient en
-                colonne laterale seulement quand la largeur laisse la table complete visible.
-              </p>
-            </div>
-          </Card>
           <RouletteControls
             balance={availableBalance}
             betAmount={betAmount}

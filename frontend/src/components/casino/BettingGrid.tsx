@@ -238,10 +238,7 @@ export function BettingGrid({ bets, disabled, onPlaceBet }: BettingGridProps) {
       <div className="border-b border-white/10 px-5 py-4 sm:px-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.28em] text-brand-cyan">Table des mises</p>
-            <h3 className="mt-2 font-display text-2xl text-brand-text">
-              Grille SVG complete et paris speciaux
-            </h3>
+            <p className="text-lg font-bold uppercase tracking-[0.28em] text-brand-cyan">Table des mises</p>
           </div>
           <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-brand-muted">
             {bets.length} mise{bets.length !== 1 ? "s" : ""}
@@ -249,8 +246,8 @@ export function BettingGrid({ bets, disabled, onPlaceBet }: BettingGridProps) {
         </div>
       </div>
 
-      <div className="overflow-x-auto px-3 py-4 sm:px-5">
-        <div className="min-w-[880px]">
+      <div className="px-3 py-4 sm:px-5">
+        <div>
           <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(11,95,58,0.52),rgba(8,35,28,0.96))] p-4 shadow-[0_24px_48px_rgba(0,0,0,0.26)]">
             <svg
               aria-label="Table de roulette"
@@ -441,7 +438,7 @@ export function BettingGrid({ bets, disabled, onPlaceBet }: BettingGridProps) {
                       rx="8"
                       stroke={isHovered ? "#67E8F9" : "rgba(255,255,255,0.16)"}
                       strokeWidth="2"
-                      width={CELL_WIDTH * 2}
+                      width={CELL_WIDTH}
                       x={gridX + sixlineIndex * CELL_WIDTH}
                       y={sixlineY}
                     />
@@ -451,7 +448,7 @@ export function BettingGrid({ bets, disabled, onPlaceBet }: BettingGridProps) {
                       fontSize="11"
                       fontWeight="700"
                       textAnchor="middle"
-                      x={gridX + sixlineIndex * CELL_WIDTH + CELL_WIDTH}
+                      x={gridX + sixlineIndex * CELL_WIDTH + CELL_WIDTH / 2}
                       y={sixlineY + SIXLINE_HEIGHT / 2 + 4}
                     >
                       {sixlineStart}-{sixlineStart + 5}

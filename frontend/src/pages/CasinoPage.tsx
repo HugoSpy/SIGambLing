@@ -86,64 +86,7 @@ export function CasinoPage() {
   return (
     <DashboardShell onLogout={handleLogout} user={user}>
       <div className="space-y-6">
-        <Card accent="cyan" className="overflow-hidden">
-          <div className="relative">
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.18),transparent_42%),radial-gradient(circle_at_bottom_right,rgba(245,158,11,0.14),transparent_36%)]" />
-            <div className="relative grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(280px,0.8fr)]">
-              <div>
-                <p className="text-xs uppercase tracking-[0.3em] text-brand-cyan">Casino club</p>
-                <h1 className="mt-3 font-display text-4xl text-brand-text">
-                  {activeGame
-                    ? "Choisissez votre table, comme si tout cela etait une decision rationnelle"
-                    : "Deux tables. Pas de detour. Pas d'excuse."}
-                </h1>
-                <p className="mt-4 max-w-3xl text-sm leading-7 text-brand-muted">
-                  {activeGame
-                    ? "Roulette pour improviser en public, blackjack pour compter jusqu'a 21 avec une confiance discutable. Le hub reste volontairement simple: vous entrez, vous choisissez, vous assumez."
-                    : "Le casino se limite enfin a l'essentiel: une roue pour les impulsifs, une table de blackjack pour les faux calculateurs. Le reste du cirque peut attendre."}
-                </p>
-                <div className="mt-5 flex flex-wrap gap-3">
-                  {TABS.map((tab) => {
-                    const Icon = tab.icon;
-                    const selected = activeGame === tab.id;
-
-                    return (
-                      <Link key={tab.id} to={tab.href}>
-                        <Button
-                          className={cn(
-                            "gap-2",
-                            selected
-                              ? "bg-emerald-500 text-zinc-950 hover:bg-emerald-400"
-                              : "border border-zinc-700 bg-zinc-900 text-zinc-100 hover:border-zinc-600 hover:bg-zinc-800",
-                          )}
-                          variant={selected ? "primary" : undefined}
-                        >
-                          <Icon className="h-4 w-4" />
-                          {tab.label}
-                        </Button>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-                <div className="rounded-[24px] border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Hub</p>
-                  <p className="mt-2 text-lg font-semibold text-brand-text">Deux jeux, zero bruit</p>
-                </div>
-                <div className="rounded-[24px] border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Roulette</p>
-                  <p className="mt-2 text-lg font-semibold text-brand-text">Chaos rapide et grille lisible</p>
-                </div>
-                <div className="rounded-[24px] border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Blackjack</p>
-                  <p className="mt-2 text-lg font-semibold text-brand-text">Lecture nette sans cinema inutile</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </Card>
+        
 
         {!activeGame ? (
           <div className="grid gap-6 xl:grid-cols-2">
