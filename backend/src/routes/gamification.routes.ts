@@ -2,6 +2,7 @@ import rateLimit from "express-rate-limit";
 import { Router } from "express";
 import {
   claimDailyRewardController,
+  getMyLeaderboardController,
   getMyGamificationStateController,
   getMyJackpotStateController,
   triggerJackpotPayoutController,
@@ -24,5 +25,6 @@ const rewardLimiter = rateLimit({
 gamificationRouter.use(requireAuth);
 gamificationRouter.get("/me", getMyGamificationStateController);
 gamificationRouter.get("/jackpot", getMyJackpotStateController);
+gamificationRouter.get("/leaderboard", getMyLeaderboardController);
 gamificationRouter.post("/daily", rewardLimiter, claimDailyRewardController);
 gamificationRouter.post("/jackpot/payout", requireRole(["admin"]), triggerJackpotPayoutController);

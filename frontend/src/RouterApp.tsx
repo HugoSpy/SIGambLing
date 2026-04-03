@@ -27,6 +27,9 @@ const LoginPage = lazy(() =>
 const JackpotPage = lazy(() =>
   import("./pages/JackpotPage").then((module) => ({ default: module.JackpotPage })),
 );
+const LeaderboardPage = lazy(() =>
+  import("./pages/LeaderboardPage").then((module) => ({ default: module.LeaderboardPage })),
+);
 const ProfilePage = lazy(() =>
   import("./pages/AccountProfilePage").then((module) => ({ default: module.ProfilePage })),
 );
@@ -82,6 +85,7 @@ export default function RouterApp() {
             <Route path="/casino" element={<CasinoPage />} />
             <Route path="/casino/:game" element={<CasinoPage />} />
             <Route path="/jackpot" element={<JackpotPage />} />
+            <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
           </Route>
           <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>

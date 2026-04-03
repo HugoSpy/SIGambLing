@@ -4,6 +4,7 @@ import {
   Coins,
   Dice3,
   LayoutDashboard,
+  Medal,
   ShieldCheck,
   Ticket,
   Trophy,
@@ -42,6 +43,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
     () => [
       { label: "Tableau de bord", icon: LayoutDashboard, href: "/dashboard" },
       { label: "Evenements", icon: TrendingUp, href: "/events" },
+      { label: "Leaderboard", icon: Medal, href: "/leaderboard" },
       { label: "Casino", icon: Dice3, href: "/casino" },
       { label: "Jackpot", icon: Trophy, href: "/jackpot" },
       { label: "Profil", icon: UserRound, href: "/profile" },

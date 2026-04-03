@@ -1,7 +1,8 @@
 import { useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Search } from "lucide-react";
+import { ArrowRight, Search } from "lucide-react";
 import toast from "react-hot-toast";
+import { Link, useSearchParams } from "react-router-dom";
 import { BetDrawer } from "../components/BetDrawer";
 import { EventCard } from "../components/EventCard";
 import { DashboardShell } from "../components/layout/DashboardShell";
@@ -60,10 +61,12 @@ function proposalTone(status: string) {
 export function EventsPage() {
   const queryClient = useQueryClient();
   const { data: user } = useAuthenticatedUser();
+  const [searchParams, setSearchParams] = useSearchParams();
   const ticketCount = useBetCartStore((state) => state.selections.length);
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState<"all" | EventCategory>("all");
   const [status, setStatus] = useState<"all" | EventStatus>("all");
+  const viewTab = searchParams.get("tab") === "my-bets" ? "my-bets" : "all";
   const [selectedBet, setSelectedBet] = useState<{
     event: EventView;
     optionLabel?: string;
@@ -98,8 +101,17 @@ export function EventsPage() {
 
   const filteredEvents = useMemo(() => {
     const normalizedSearch = search.trim().toLocaleLowerCase("fr-FR");
+    const pendingEventIds = new Set(
+      (myBets ?? [])
+        .filter((bet) => bet.status === "PENDING" && bet.event_id)
+        .map((bet) => bet.event_id as string),
+    );
 
     return (events ?? []).filter((event) => {
+      if (viewTab === "my-bets" && !pendingEventIds.has(event.id)) {
+        return false;
+      }
+
       if (category !== "all" && event.category !== category) {
         return false;
       }
@@ -115,7 +127,7 @@ export function EventsPage() {
       const haystack = `${event.title} ${event.description ?? ""} ${formatEventCategory(event.category)}`;
       return haystack.toLocaleLowerCase("fr-FR").includes(normalizedSearch);
     });
-  }, [category, events, search, status]);
+  }, [category, events, myBets, search, status, viewTab]);
 
   if (!user || eventsLoading) {
     return <LoadingScreen label="Chargement des evenements..." />;
@@ -159,6 +171,7 @@ export function EventsPage() {
   };
 
   const activePositions = myBets?.filter((bet) => bet.status === "PENDING").length ?? 0;
+  const activeBetList = myBets?.filter((bet) => bet.status === "PENDING").slice(0, 5) ?? [];
   const totalExposure =
     myBets?.filter((bet) => bet.status === "PENDING").reduce((sum, bet) => sum + bet.stake, 0) ??
     0;
@@ -182,6 +195,31 @@ export function EventsPage() {
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_320px]">
           <div className="space-y-4">
             <Card className="p-4">
+              <div className="flex flex-wrap gap-2">
+                <button
+                  className={`rounded-lg px-3 py-2 text-sm transition ${
+                    viewTab === "all"
+                      ? "bg-emerald-500 text-zinc-950"
+                      : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+                  }`}
+                  onClick={() => setSearchParams({})}
+                  type="button"
+                >
+                  Tous les marches
+                </button>
+                <button
+                  className={`rounded-lg px-3 py-2 text-sm transition ${
+                    viewTab === "my-bets"
+                      ? "bg-emerald-500 text-zinc-950"
+                      : "bg-zinc-800 text-zinc-300 hover:bg-zinc-700"
+                  }`}
+                  onClick={() => setSearchParams({ tab: "my-bets" })}
+                  type="button"
+                >
+                  Mes paris
+                </button>
+              </div>
+
               <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_220px]">
                 <label className="block space-y-2">
                   <span className="text-sm font-medium text-zinc-200">Recherche</span>
@@ -237,6 +275,61 @@ export function EventsPage() {
                 </div>
               </div>
             </Card>
+
+            {viewTab === "my-bets" ? (
+              <Card>
+                <div className="flex items-center justify-between gap-4">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Mes paris actifs</p>
+                    <h2 className="mt-2 text-lg font-semibold text-zinc-100">Exposition en cours</h2>
+                  </div>
+                  <span className="rounded-md bg-zinc-800 px-2 py-1 text-xs text-zinc-400">
+                    {activePositions}
+                  </span>
+                </div>
+
+                <div className="mt-4 space-y-3">
+                  {activeBetList.map((bet) => {
+                    const targetEvent = bet.event_id
+                      ? events?.find((event) => event.id === bet.event_id) ?? null
+                      : bet.legs[0]?.event ?? null;
+                    const linkTarget = targetEvent ? `/events/${targetEvent.id}` : "/events";
+                    const label =
+                      bet.type === "PARLAY"
+                        ? `${bet.legs.length} selections`
+                        : bet.chosen_option ?? "Selection";
+
+                    return (
+                      <Link
+                        className="block rounded-lg border border-zinc-800 bg-zinc-950 p-4 transition hover:border-zinc-700 hover:bg-zinc-900"
+                        key={bet.id}
+                        to={linkTarget}
+                      >
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="min-w-0 flex-1">
+                            <p className="text-sm font-semibold text-zinc-100">
+                              {targetEvent?.title ?? "Pari combine"}
+                            </p>
+                            <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-zinc-500">
+                              <span>{label}</span>
+                              <span>{formatTokens(bet.stake)} engages</span>
+                              <span>{formatTokens(bet.potential_payout)} potentiels</span>
+                            </div>
+                          </div>
+                          <ArrowRight className="mt-0.5 h-4 w-4 text-zinc-500" />
+                        </div>
+                      </Link>
+                    );
+                  })}
+
+                  {activeBetList.length === 0 ? (
+                    <p className="text-sm leading-7 text-zinc-400">
+                      Aucun pari actif pour le moment.
+                    </p>
+                  ) : null}
+                </div>
+              </Card>
+            ) : null}
 
             <div className="flex items-center justify-between text-sm text-zinc-500">
               <span>

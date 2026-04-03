@@ -245,6 +245,70 @@ function serializeBadge(badge: Badge) {
   };
 }
 
+type LeaderboardScope = "global" | "casino";
+
+interface LeaderboardParticipant {
+  userId: string;
+  pseudo: string;
+  avatarUrl: string | null;
+  eventWagered: number;
+  casinoWagered: number;
+  recentActivityAt: Date | null;
+}
+
+function mergeLeaderboardParticipants(
+  users: Array<{ id: string; pseudo: string; avatarUrl: string | null }>,
+  eventRows: Array<{ userId: string; _sum: { amount: number | null }; _max: { createdAt: Date | null } }>,
+  casinoRows: Array<{ userId: string; _sum: { betAmount: number | null }; _max: { createdAt: Date | null } }>,
+) {
+  const participants = new Map<string, LeaderboardParticipant>();
+
+  for (const user of users) {
+    participants.set(user.id, {
+      userId: user.id,
+      pseudo: user.pseudo,
+      avatarUrl: user.avatarUrl,
+      eventWagered: 0,
+      casinoWagered: 0,
+      recentActivityAt: null,
+    });
+  }
+
+  for (const row of eventRows) {
+    const participant = participants.get(row.userId);
+
+    if (!participant) {
+      continue;
+    }
+
+    participant.eventWagered = row._sum.amount ?? 0;
+    participant.recentActivityAt =
+      participant.recentActivityAt && row._max.createdAt
+        ? participant.recentActivityAt > row._max.createdAt
+          ? participant.recentActivityAt
+          : row._max.createdAt
+        : participant.recentActivityAt ?? row._max.createdAt ?? null;
+  }
+
+  for (const row of casinoRows) {
+    const participant = participants.get(row.userId);
+
+    if (!participant) {
+      continue;
+    }
+
+    participant.casinoWagered = row._sum.betAmount ?? 0;
+    participant.recentActivityAt =
+      participant.recentActivityAt && row._max.createdAt
+        ? participant.recentActivityAt > row._max.createdAt
+          ? participant.recentActivityAt
+          : row._max.createdAt
+        : participant.recentActivityAt ?? row._max.createdAt ?? null;
+  }
+
+  return [...participants.values()];
+}
+
 export class GamificationService {
   private getClient(client?: DatabaseClient) {
     return client ?? prisma;
@@ -549,6 +613,110 @@ export class GamificationService {
         gamification: await this.getState(userId, transaction),
       };
     });
+  }
+
+  async getLeaderboard(
+    userId: string,
+    input?: {
+      scope?: LeaderboardScope;
+      limit?: number;
+    },
+  ) {
+    const scope = input?.scope ?? "global";
+    const limit = Math.min(Math.max(input?.limit ?? 10, 1), 50);
+    const since = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+
+    const [eventRows, casinoRows] = await Promise.all([
+      prisma.bet.groupBy({
+        by: ["userId"],
+        where: {
+          createdAt: { gte: since },
+          user: { isBanned: false },
+        },
+        _sum: { amount: true },
+        _max: { createdAt: true },
+      }),
+      prisma.casinoGame.groupBy({
+        by: ["userId"],
+        where: {
+          createdAt: { gte: since },
+          user: { isBanned: false },
+        },
+        _sum: { betAmount: true },
+        _max: { createdAt: true },
+      }),
+    ]);
+
+    const participantIds = [...new Set([
+      ...eventRows.map((row) => row.userId),
+      ...casinoRows.map((row) => row.userId),
+      userId,
+    ])];
+
+    const users = await prisma.user.findMany({
+      where: {
+        id: { in: participantIds },
+        isBanned: false,
+      },
+      select: {
+        id: true,
+        pseudo: true,
+        avatarUrl: true,
+      },
+    });
+
+    const participants = mergeLeaderboardParticipants(users, eventRows, casinoRows)
+      .map((participant) => {
+        const totalWagered =
+          scope === "casino"
+            ? participant.casinoWagered
+            : participant.eventWagered + participant.casinoWagered;
+
+        return {
+          ...participant,
+          totalWagered,
+        };
+      })
+      .filter((participant) => participant.totalWagered > 0 || participant.userId === userId)
+      .sort((left, right) => {
+        if (right.totalWagered !== left.totalWagered) {
+          return right.totalWagered - left.totalWagered;
+        }
+
+        const leftActivity = left.recentActivityAt?.getTime() ?? 0;
+        const rightActivity = right.recentActivityAt?.getTime() ?? 0;
+
+        if (rightActivity !== leftActivity) {
+          return rightActivity - leftActivity;
+        }
+
+        return left.pseudo.localeCompare(right.pseudo, "fr");
+      });
+
+    const ranked = participants.map((participant, index) => ({
+      rank: index + 1,
+      user: {
+        id: participant.userId,
+        pseudo: participant.pseudo,
+        avatar_url: participant.avatarUrl,
+      },
+      total_wagered: participant.totalWagered,
+      casino_wagered: participant.casinoWagered,
+      event_wagered: participant.eventWagered,
+      recent_activity_at: participant.recentActivityAt?.toISOString() ?? null,
+      is_current_user: participant.userId === userId,
+    }));
+
+    const currentUserEntry = ranked.find((entry) => entry.is_current_user) ?? null;
+
+    return {
+      scope,
+      window_days: 60,
+      limit,
+      total_ranked_users: ranked.filter((entry) => entry.total_wagered > 0).length,
+      entries: ranked.slice(0, limit),
+      current_user_entry: currentUserEntry,
+    };
   }
 }
 

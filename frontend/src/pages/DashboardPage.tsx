@@ -1,6 +1,16 @@
 import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Award, Coins, Flame, Gift, ShieldCheck, Ticket, TrendingUp } from "lucide-react";
+import {
+  ArrowRight,
+  Award,
+  Coins,
+  Flame,
+  Gift,
+  Medal,
+  ShieldCheck,
+  Ticket,
+  TrendingUp,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import { Link } from "react-router-dom";
 import { DashboardShell } from "../components/layout/DashboardShell";
@@ -29,6 +39,7 @@ export function DashboardPage() {
     [events],
   );
   const openPositions = myBets?.filter((bet) => bet.status === "PENDING") ?? [];
+  const highlightedOpenPositions = openPositions.slice(0, 4);
   const unlockedBadges = gamification?.badges.filter((badge) => badge.unlocked).length ?? 0;
 
   if (!user) {
@@ -85,47 +96,141 @@ export function DashboardPage() {
         </div>
 
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_360px]">
-          <Card>
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Evenements actifs</p>
-                <h2 className="mt-2 text-lg font-semibold text-zinc-100">A surveiller</h2>
-              </div>
-              <Link className="text-sm font-medium text-emerald-400 transition hover:text-emerald-300" to="/events">
-                Voir tout
-              </Link>
-            </div>
-
-            <div className="mt-4 space-y-3">
-              {activeEvents.map((event) => (
+          <div className="space-y-6">
+            <Card>
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Mes paris actifs</p>
+                  <h2 className="mt-2 text-lg font-semibold text-zinc-100">Positions a couvrir</h2>
+                </div>
                 <Link
-                  className="block rounded-lg border border-zinc-800 bg-zinc-950 p-4 transition hover:border-zinc-700 hover:bg-zinc-900"
-                  key={event.id}
-                  to={`/events/${event.id}`}
+                  className="text-sm font-medium text-emerald-400 transition hover:text-emerald-300"
+                  to="/events?tab=my-bets"
                 >
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-zinc-100">{event.title}</p>
-                      <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-zinc-500">
-                        <span>{formatEventCategory(event.category)}</span>
-                        <span>{formatEventDate(event.closing_at)}</span>
-                        <span>{formatTokens(event.total_pool)}</span>
-                      </div>
-                    </div>
-                    <ArrowRight className="mt-0.5 h-4 w-4 text-zinc-500" />
-                  </div>
+                  Voir mes paris
                 </Link>
-              ))}
+              </div>
 
-              {activeEvents.length === 0 ? (
-                <p className="text-sm leading-7 text-zinc-400">
-                  Aucun marche ouvert pour le moment.
-                </p>
-              ) : null}
-            </div>
-          </Card>
+              <div className="mt-4 space-y-3">
+                {highlightedOpenPositions.map((bet) => {
+                  const targetEvent = bet.event_id
+                    ? events?.find((event) => event.id === bet.event_id) ?? null
+                    : bet.legs[0]?.event ?? null;
+                  const linkTarget = targetEvent ? `/events/${targetEvent.id}` : "/events?tab=my-bets";
+                  const label =
+                    bet.type === "PARLAY"
+                      ? `${bet.legs.length} selections`
+                      : bet.chosen_option ?? "Position ouverte";
+
+                  return (
+                    <Link
+                      className="block rounded-lg border border-zinc-800 bg-zinc-950 p-4 transition hover:border-zinc-700 hover:bg-zinc-900"
+                      key={bet.id}
+                      to={linkTarget}
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-semibold text-zinc-100">
+                            {targetEvent?.title ?? "Pari combine en cours"}
+                          </p>
+                          <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-zinc-500">
+                            <span>{label}</span>
+                            <span>{formatTokens(bet.stake)} engages</span>
+                            <span>{formatTokens(bet.potential_payout)} potentiels</span>
+                          </div>
+                        </div>
+                        <ArrowRight className="mt-0.5 h-4 w-4 text-zinc-500" />
+                      </div>
+                    </Link>
+                  );
+                })}
+
+                {highlightedOpenPositions.length === 0 ? (
+                  <p className="text-sm leading-7 text-zinc-400">
+                    Aucune position ouverte. Ouvrez un marche ou composez un combine.
+                  </p>
+                ) : null}
+              </div>
+            </Card>
+
+            <Card>
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Evenements actifs</p>
+                  <h2 className="mt-2 text-lg font-semibold text-zinc-100">A surveiller</h2>
+                </div>
+                <Link
+                  className="text-sm font-medium text-emerald-400 transition hover:text-emerald-300"
+                  to="/events"
+                >
+                  Voir tout
+                </Link>
+              </div>
+
+              <div className="mt-4 space-y-3">
+                {activeEvents.map((event) => (
+                  <Link
+                    className="block rounded-lg border border-zinc-800 bg-zinc-950 p-4 transition hover:border-zinc-700 hover:bg-zinc-900"
+                    key={event.id}
+                    to={`/events/${event.id}`}
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-semibold text-zinc-100">{event.title}</p>
+                        <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-zinc-500">
+                          <span>{formatEventCategory(event.category)}</span>
+                          <span>{formatEventDate(event.closing_at)}</span>
+                          <span>{formatTokens(event.total_pool)}</span>
+                        </div>
+                      </div>
+                      <ArrowRight className="mt-0.5 h-4 w-4 text-zinc-500" />
+                    </div>
+                  </Link>
+                ))}
+
+                {activeEvents.length === 0 ? (
+                  <p className="text-sm leading-7 text-zinc-400">
+                    Aucun marche ouvert pour le moment.
+                  </p>
+                ) : null}
+              </div>
+            </Card>
+          </div>
 
           <div className="space-y-4">
+            <Card accent="cyan">
+              <p className="text-xs uppercase tracking-[0.24em] text-emerald-300">Leaderboard</p>
+              <h2 className="mt-2 text-lg font-semibold text-zinc-100">Momentum 60 jours</h2>
+              <div className="mt-4 space-y-3 text-sm text-zinc-400">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="inline-flex items-center gap-2">
+                    <Medal className="h-4 w-4 text-amber-300" />
+                    Position
+                  </span>
+                  <span className="text-zinc-100">
+                    {openPositions.length > 0 ? "Classement live" : "Pret a monter"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span>Paris actifs</span>
+                  <span className="text-zinc-100">{openPositions.length}</span>
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span>Exposition ouverte</span>
+                  <span className="text-zinc-100">
+                    {formatTokens(openPositions.reduce((sum, bet) => sum + bet.stake, 0))}
+                  </span>
+                </div>
+              </div>
+              <Link
+                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-emerald-400 transition hover:text-emerald-300"
+                to="/leaderboard"
+              >
+                Ouvrir le leaderboard
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Card>
+
             <Card>
               <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Gamification</p>
               <h2 className="mt-2 text-lg font-semibold text-zinc-100">Etat live</h2>

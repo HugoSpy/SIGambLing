@@ -78,6 +78,29 @@ export interface JackpotState {
   } | null;
 }
 
+export interface LeaderboardEntry {
+  rank: number;
+  user: {
+    id: string;
+    pseudo: string;
+    avatar_url: string | null;
+  };
+  total_wagered: number;
+  casino_wagered: number;
+  event_wagered: number;
+  recent_activity_at: string | null;
+  is_current_user: boolean;
+}
+
+export interface LeaderboardView {
+  scope: "global" | "casino";
+  window_days: number;
+  limit: number;
+  total_ranked_users: number;
+  entries: LeaderboardEntry[];
+  current_user_entry: LeaderboardEntry | null;
+}
+
 export interface GamificationState {
   daily_reward: GamificationDailyRewardState;
   badges: GamificationBadge[];

@@ -37,6 +37,22 @@ export const getMyJackpotStateController: RequestHandler = async (request, respo
   }
 };
 
+export const getMyLeaderboardController: RequestHandler = async (request, response, next) => {
+  try {
+    const userId = getAuthenticatedUserId(request);
+    const scope = request.query.scope === "casino" ? "casino" : "global";
+    const rawLimit =
+      typeof request.query.limit === "string" ? Number.parseInt(request.query.limit, 10) : undefined;
+    const leaderboard = await gamificationService.getLeaderboard(userId, {
+      scope,
+      limit: Number.isFinite(rawLimit) ? rawLimit : undefined,
+    });
+    response.json(leaderboard);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const claimDailyRewardController: RequestHandler = async (request, response, next) => {
   try {
     const userId = getAuthenticatedUserId(request);
