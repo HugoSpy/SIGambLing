@@ -21,8 +21,9 @@ configurePassport();
 
 export function createApp() {
   const app = express();
+  app.set('trust proxy', 1);
   const allowedOrigins = getCorsAllowedOrigins(env.FRONTEND_URL, env.CORS_ALLOWED_ORIGINS);
-
+  
   app.use(
     cors({
       origin(origin, callback) {
