@@ -334,12 +334,6 @@ export async function fetchAdminStatisticsOverview(): Promise<StatisticsOverview
   return response.data;
 }
 
-export async function fetchAdminEventsLeaderboard(): Promise<LeaderboardEvent[]> {
-  const response = await api.get<{ leaderboard: LeaderboardEvent[] }>(
-    "/admin/statistics/events/leaderboard",
-  );
-  return response.data.leaderboard;
-}
 
 export async function requestMicrosoftRedirect() {
   const response = await api.post<MicrosoftRedirectResponse>("/auth/microsoft");
@@ -376,11 +370,6 @@ export interface LeaderboardEvent {
   title: string;
   totalVolume: number;
   betCount: number;
-}
-
-export async function fetchAdminStatisticsOverview() {
-  const response = await api.get<StatisticsOverview>("/admin/statistics/overview");
-  return response.data;
 }
 
 export async function fetchAdminEventsLeaderboard() {
