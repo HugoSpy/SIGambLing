@@ -1,0 +1,911 @@
+# PROJECT_MEMORY.md — SIGambling Living Documentation
+
+**Last Updated:** 2026-04-04  
+**Last Updated By:** GitHub Copilot (auto-generated from codebase analysis)
+
+---
+
+## 1. Project Overview
+
+| Field             | Value                                                                     |
+| ----------------- | ------------------------------------------------------------------------- |
+| **Name**          | SIGambling                                                                |
+| **Purpose**       | Casino & sports-betting platform with virtual currency for EPITA students |
+| **Target Users**  | ~60 EPITA SIGL 2027 students                                              |
+| **Currency**      | Virtual tokens (starting balance: 1,000 tokens/user)                      |
+| **Current Phase** | Week 1 Sprint — MVP deployment (01/04/2026 – 07/04/2026)                  |
+| **Repository**    | https://github.com/HugoSpy/SIGambLing                                     |
+
+---
+
+## 2. Architecture
+
+### Frontend
+
+| Property             | Value                                                            |
+| -------------------- | ---------------------------------------------------------------- |
+| **Framework**        | React 19                                                         |
+| **Language**         | TypeScript 5.7                                                   |
+| **Build Tool**       | Vite 6                                                           |
+| **Routing**          | React Router DOM v7                                              |
+| **Styling**          | Tailwind CSS 3.4                                                 |
+| **State Management** | Zustand 5 (client state) + TanStack React Query 5 (server state) |
+| **Animation**        | Framer Motion 12 + GSAP 3.12                                     |
+| **Forms**            | React Hook Form + Zod validation                                 |
+| **HTTP Client**      | Axios 1.8                                                        |
+| **Notifications**    | React Hot Toast                                                  |
+| **Icons**            | Lucide React                                                     |
+| **Fonts**            | Inter + Space Grotesk (via @fontsource)                          |
+| **Audio**            | Howler.js                                                        |
+
+**Location:** `/frontend`  
+**Entry Point:** `frontend/src/main.tsx`  
+**Dev Port:** `5173`
+
+**Key Dependencies:**
+
+```json
+"react": "^19.0.0",
+"react-router-dom": "^7.0.0",
+"zustand": "^5.0.3",
+"@tanstack/react-query": "^5.66.9",
+"framer-motion": "^12.4.7",
+"gsap": "^3.12.7",
+"zod": "^3.24.2",
+"axios": "^1.8.1",
+"howler": "^2.2.4"
+```
+
+### Backend
+
+| Property             | Value                             |
+| -------------------- | --------------------------------- |
+| **Framework**        | Express 4.21                      |
+| **Language**         | TypeScript 5.7                    |
+| **Runtime**          | Node.js (see `.nvmrc` / engines)  |
+| **ORM**              | Prisma 6.4                        |
+| **Validation**       | Zod 3.24                          |
+| **Authentication**   | Passport.js + passport-microsoft  |
+| **Token Strategy**   | JWT (access 15m + refresh 30d)    |
+| **File Storage**     | Supabase Storage (avatars bucket) |
+| **Image Processing** | Sharp                             |
+| **Logging**          | Winston                           |
+| **Rate Limiting**    | express-rate-limit                |
+| **Security Headers** | Helmet                            |
+
+**Location:** `/backend`  
+**Entry Point:** `backend/src/index.ts`  
+**Dev Port:** `3001`
+
+**Key Dependencies:**
+
+```json
+"express": "^4.21.2",
+"@prisma/client": "^6.4.1",
+"passport": "^0.7.0",
+"passport-microsoft": "^2.1.0",
+"jsonwebtoken": "^9.0.2",
+"bcrypt": "^5.1.1",
+"helmet": "^8.0.0",
+"express-rate-limit": "^7.5.0",
+"zod": "^3.24.2",
+"winston": "^3.17.0",
+"@supabase/supabase-js": "^2.101.1"
+```
+
+### Database
+
+| Property            | Value                          |
+| ------------------- | ------------------------------ |
+| **Provider**        | PostgreSQL 15                  |
+| **Host**            | Supabase                       |
+| **ORM**             | Prisma 6                       |
+| **Schema Location** | `backend/prisma/schema.prisma` |
+
+**Key Models:** `User`, `Event`, `Bet`, `BetLeg`, `CasinoGame`, `Badge`, `Jackpot`, `JackpotContribution`, `EventProposal`, `EventExclusion`, `OddsHistory`, `AdminLog`
+
+### Deployment
+
+**Frontend:**
+
+- Platform: [Not yet deployed / Vercel planned per ARCHITECTURE.md]
+- URL: Pending
+- Status: In Progress
+
+**Backend:**
+
+- Platform: [Not yet deployed / Vercel Serverless planned per ARCHITECTURE.md]
+- URL: Pending
+- Status: In Progress
+
+**Infrastructure Diagram:**
+
+```
+Users (EPITA SIGL 2027)
+        │
+        ▼ HTTPS
+┌───────────────────┐
+│  React SPA        │  Vite + React 19 + Tailwind
+│  (Vercel / CDN)   │  Port 5173 (dev)
+└───────────┬───────┘
+            │ REST API (Bearer JWT)
+            ▼ HTTPS
+┌───────────────────┐
+│  Express API      │  Node.js + TypeScript
+│  (Vercel / NAS)   │  Port 3001 (dev)
+└───────────┬───────┘
+            │ PostgreSQL protocol
+            ▼
+┌───────────────────┐
+│  Supabase         │  PostgreSQL 15
+│  (Hosted DB)      │  + Storage (avatars)
+└───────────────────┘
+            │
+            ▼ OAuth2
+┌───────────────────┐
+│  Microsoft Azure  │  passport-microsoft
+│  (EPITA tenant)   │  scope: openid, profile, email
+└───────────────────┘
+```
+
+---
+
+## 3. Authentication & Security
+
+### OAuth Flow
+
+| Property           | Value                                                           |
+| ------------------ | --------------------------------------------------------------- |
+| **Provider**       | Microsoft (Azure AD)                                            |
+| **Strategy**       | passport-microsoft                                              |
+| **Allowed Domain** | `@epita.fr` only (enforced in passport config)                  |
+| **Tenant**         | `MICROSOFT_TENANT_ID` env var (default: `common`)               |
+| **Scopes**         | `openid`, `profile`, `email`, `User.Read`                       |
+| **Admin Accounts** | Hardcoded set in `passport.ts` (e.g. `maxence.larche@epita.fr`) |
+
+### Token Management
+
+| Token             | Lifetime   | Storage                                   |
+| ----------------- | ---------- | ----------------------------------------- |
+| **Access Token**  | 15 minutes | `Authorization: Bearer` header            |
+| **Refresh Token** | 30 days    | HttpOnly cookie                           |
+| **OAuth State**   | 10 minutes | HttpOnly cookie (`microsoft_oauth_state`) |
+
+**Refresh strategy:** Access token sent in header, refresh token in HttpOnly cookie. `sessionVersion` field in DB invalidates all sessions on forced logout.
+
+### Security Checklist
+
+- [x] OAuth CSRF protection (JWT-signed state parameter in cookie)
+- [x] PKCE-style state nonce validation (`verifyMicrosoftOAuthState`)
+- [x] HttpOnly cookies for refresh token and OAuth state
+- [x] No tokens in localStorage (Bearer in-memory only)
+- [x] Refresh token rotation via `sessionVersion`
+- [x] CORS allowlist (`FRONTEND_URL` env var only)
+- [x] SameSite cookie policy (Lax dev / None+Secure prod)
+- [x] Input validation (Zod schemas on all routes)
+- [x] SQL injection protection (Prisma parameterized queries)
+- [x] XSS protection (Helmet + HttpOnly cookies)
+- [x] Rate limiting (per-route, per-user limiters)
+- [x] Helmet security headers
+- [x] Domain restriction (@epita.fr email enforced)
+- [x] File upload size limit (2 MB avatar cap)
+- [ ] PKCE full implementation (state parameter used, not full PKCE code_challenge)
+- [ ] Sentry error tracking (env var slot exists, optional)
+
+**Recent Security Commits:**
+
+- `4e48fe8` — Remove token from OAuth callback URLs
+- `2b4aa40` — Harden Microsoft OAuth state validation
+
+---
+
+## 4. Features
+
+### Implemented
+
+**Games:**
+
+- [x] **Roulette** — Full European roulette with straight, split, street, corner, six-line, dozen, column, and even-money bets. Server-side RNG (`roulette-rng.ts`). Jackpot contribution on each spin.
+- [x] **Blackjack** — Deal, Hit, Stand, Double Down, Insurance. Multi-phase state machine (`blackjack.service.ts`). Jackpot contribution.
+- [x] **Casino hub page** (`CasinoPage.tsx`)
+
+**Betting System:**
+
+- [x] Simple bets on events (single option)
+- [x] Parlay (combined/accumulator) bets (`BetLeg` model)
+- [x] Live pari-mutuel odds calculation
+- [x] Odds-change confirmation modal before bet placement
+- [x] Odds history chart per event
+
+**User Features:**
+
+- [x] Microsoft OAuth login (EPITA @epita.fr only)
+- [x] Auto-generated pseudo from EPITA email
+- [x] User profile & avatar upload (Supabase Storage, 2MB limit, processed with Sharp)
+- [x] Balance management
+- [x] Personal bet history (`/users/me/bets`)
+- [x] Daily reward claiming with streak system
+- [x] Streak tiers: Bronze (1d), Silver (3d), Gold (7d), Lumineux (14d), Mythique (30d)
+- [x] Leaderboard
+- [x] Badge/gamification system (10+ badge types)
+- [x] Event proposals (users can suggest new events)
+
+**Admin Features:**
+
+- [x] Admin event management (create, update, close, resolve, cancel)
+- [x] Event proposal review (approve/reject with reason)
+- [x] User search
+- [x] Manual balance adjustment
+- [x] Manual badge unlock
+- [x] Statistics overview
+- [x] Events leaderboard (admin view)
+- [x] Jackpot manual payout trigger
+- [x] AdminLog model for audit trail
+
+**Jackpot System:**
+
+- [x] Progressive jackpot fed by casino game wagers (1% / 100 bps contribution rate)
+- [x] Jackpot state per user
+- [x] Admin-triggered payout
+
+### In Progress
+
+- Deployment to production (Vercel + Supabase)
+- User experience polish (animations, sounds)
+
+### Planned / From Roadmap
+
+- Slots game (category mentioned in `CasinoGameType` enum — not yet implemented)
+- Vercel Analytics integration
+- Full Sentry error tracking
+
+---
+
+## 5. API Routes
+
+All routes proxied via Vite dev server from port 5173 → 3001.
+
+### Health
+
+```
+GET  /health
+```
+
+### Authentication (`/auth`)
+
+```
+POST /auth/microsoft              — Get Microsoft OAuth redirect URL
+GET  /auth/microsoft              — Initiate Microsoft OAuth flow
+GET  /auth/microsoft/callback     — OAuth callback handler
+POST /auth/refresh                — Refresh access token (strictLimiter: 10/min)
+POST /auth/logout                 — Logout (strictLimiter: 10/min)
+```
+
+### Users (`/users`) — requires auth
+
+```
+GET    /users/me                  — Get current user profile
+GET    /users/me/bets             — List current user event bets
+PATCH  /users/me                  — Update profile (pseudo, etc.)
+POST   /users/me/avatar           — Upload avatar (multipart, 2MB limit)
+GET    /users                     — Search users (admin only)
+GET    /users/badges/catalog      — List available badges (admin only)
+PATCH  /users/:id/balance         — Adjust user balance (admin only)
+POST   /users/:id/badges          — Unlock badge for user (admin only)
+```
+
+### Events (`/events`) — requires auth
+
+```
+GET    /events                    — List events
+GET    /events/proposals/me       — List my proposals
+POST   /events/proposals          — Submit event proposal
+POST   /events/bets               — Place simple bet(s)
+POST   /events/parlay             — Place parlay (accumulator) bet
+GET    /events/:id                — Get event details
+GET    /events/:id/odds-history   — Get odds history for event
+GET    /events/:id/my-bet         — Get my bet on this event
+POST   /events/:id/bet            — Place bet on event
+```
+
+### Admin Events (`/admin/events`) — requires auth + admin role
+
+```
+GET    /admin/events                              — List all events (admin view)
+GET    /admin/events/proposals                    — List all proposals
+POST   /admin/events/proposals/:proposalId/approve
+POST   /admin/events/proposals/:proposalId/reject
+POST   /admin/events                              — Create event
+PATCH  /admin/events/:id                          — Update event
+POST   /admin/events/:id/close                    — Close event
+POST   /admin/events/:id/resolve                  — Resolve event
+POST   /admin/events/:id/cancel                   — Cancel event
+```
+
+### Admin Statistics (`/admin/statistics`) — requires auth + admin role
+
+```
+GET  /admin/statistics/overview             — Statistics overview
+GET  /admin/statistics/events/leaderboard  — Events leaderboard
+```
+
+> Note: `adminStatisticsRouter` defined in `admin.routes.ts` but not currently mounted in `app.ts`. Verify registration.
+
+### Casino (`/casino`) — requires auth
+
+```
+POST /casino/roulette/spin       — Spin roulette (casinoLimiter: 60/min)
+POST /casino/blackjack/deal      — Deal blackjack hand
+POST /casino/blackjack/hit       — Hit
+POST /casino/blackjack/stand     — Stand
+POST /casino/blackjack/insurance — Insurance decision
+POST /casino/blackjack/double    — Double down
+```
+
+### Rewards/Gamification (`/rewards`) — requires auth
+
+```
+GET  /rewards/me                 — Get gamification state (badges, streak, etc.)
+GET  /rewards/jackpot            — Get jackpot state
+GET  /rewards/leaderboard        — Get leaderboard
+POST /rewards/daily              — Claim daily reward (rewardLimiter: 10/min)
+POST /rewards/jackpot/payout     — Trigger jackpot payout (admin only)
+```
+
+---
+
+## 6. Database Schema
+
+**Provider:** PostgreSQL 15 via Supabase  
+**Schema:** `backend/prisma/schema.prisma`
+
+### Enums
+
+```
+UserRole:        user | validator | admin
+EventStatus:     OPEN | CLOSED | RESOLVED | CANCELLED
+BetStatus:       pending | won | lost | cancelled
+BetType:         SIMPLE | PARLAY
+ProposalStatus:  PENDING | APPROVED | REJECTED
+CasinoGameType:  roulette | blackjack
+CasinoGameResult: win | loss | push
+```
+
+### User
+
+```prisma
+model User {
+  id              String    @id @default(uuid())
+  email           String    @unique          -- @epita.fr only
+  microsoftId     String?   @unique
+  pseudo          String    @unique          -- auto-generated from email
+  avatarUrl       String?
+  balance         Int       @default(1000)  -- virtual tokens
+  role            UserRole  @default(user)
+  isBanned        Boolean   @default(false)
+  sessionVersion  Int       @default(0)     -- token invalidation
+  lastRewardAt    DateTime?
+  streakDays      Int       @default(0)
+  acceptOddsChanges Boolean @default(false)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  // indexes: email, balance(desc) for leaderboard
+}
+```
+
+### Event
+
+```prisma
+model Event {
+  id             String      @id @default(uuid())
+  title          String      @unique
+  description    String?
+  imageUrl       String?
+  options        Json        -- array of option names
+  poolByOption   Json        -- { optionName: Int } pari-mutuel pool
+  totalPool      Int         @default(0)
+  status         EventStatus @default(OPEN)
+  resolvedOption String?
+  closingAt      DateTime?
+  resolvedAt     DateTime?
+  minBet         Int         @default(10)
+  maxBet         Int?
+  createdById    String?
+  validatorId    String?
+  // indexes: status, closingAt, createdAt(desc)
+}
+```
+
+### Bet
+
+```prisma
+model Bet {
+  id           String    @id @default(uuid())
+  userId       String
+  eventId      String?
+  chosenOption String?
+  amount       Int
+  oddAtBet     Decimal?
+  status       BetStatus @default(pending)
+  type         BetType   @default(SIMPLE)
+  potentialWin Int       @default(0)
+  payout       Int       @default(0)
+  createdAt    DateTime  @default(now())
+  resolvedAt   DateTime?
+  legs         BetLeg[]  -- for parlay bets
+}
+```
+
+### BetLeg (Parlay)
+
+```prisma
+model BetLeg {
+  id           String    @id @default(uuid())
+  betId        String    -- parent Bet
+  eventId      String
+  chosenOption String
+  oddsAtBet    Decimal
+  status       BetStatus @default(pending)
+}
+```
+
+### CasinoGame
+
+```prisma
+model CasinoGame {
+  id        String           @id @default(uuid())
+  userId    String
+  gameType  CasinoGameType   -- roulette | blackjack
+  betAmount Int
+  result    CasinoGameResult -- win | loss | push
+  payout    Int
+  gameData  Json             -- full game state snapshot
+  createdAt DateTime
+}
+```
+
+### Jackpot
+
+```prisma
+model Jackpot {
+  id                  String   @id @default(cuid())
+  currentAmount       Int      @default(0)
+  contributionRateBps Int      @default(100)  -- 100 bps = 1%
+  totalContributed    Int
+  lastWinnerId        String?
+  lastWinAmount       Int?
+  lastWinAt           DateTime?
+}
+```
+
+### Other Models
+
+- **Badge** — `(userId, badgeType)` unique constraint, stores `unlockedAt`
+- **EventProposal** — user-submitted event suggestions with PENDING/APPROVED/REJECTED status
+- **EventExclusion** — excludes specific users from specific events
+- **OddsHistory** — time-series of odds per event option
+- **AdminLog** — audit log for admin actions (actionType, targetId, details JSON)
+- **JackpotContribution** — per-wager contribution records
+
+**Database Indexes (key):**
+
+- `User`: email, balance DESC (leaderboard)
+- `Event`: status, closingAt, createdAt DESC
+- `Bet`: userId, eventId, (type, status), createdAt DESC
+- `CasinoGame`: userId, createdAt DESC
+- `AdminLog`: adminId, createdAt DESC
+
+---
+
+## 7. Environment Variables
+
+### Frontend (`frontend/.env`)
+
+```env
+VITE_API_URL=http://localhost:3001
+VITE_SENTRY_DSN=                     # optional
+```
+
+### Backend (`backend/.env`)
+
+```env
+NODE_ENV=development
+PORT=3001
+
+# Database (Supabase PostgreSQL)
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/sigambling
+DIRECT_URL=postgresql://postgres:postgres@localhost:5432/sigambling
+
+# JWT
+JWT_SECRET=change-me-access-secret
+JWT_REFRESH_SECRET=change-me-refresh-secret
+
+# Microsoft OAuth (Azure AD)
+MICROSOFT_CLIENT_ID=your-microsoft-client-id
+MICROSOFT_CLIENT_SECRET=your-microsoft-client-secret
+MICROSOFT_TENANT_ID=common
+MICROSOFT_CALLBACK_URL=http://localhost:3001/auth/microsoft/callback
+
+# CORS & URLs
+FRONTEND_URL=http://localhost:5173
+API_BASE_URL=http://localhost:3001
+COOKIE_DOMAIN=                        # empty for localhost
+
+# Supabase Storage (optional — for avatar uploads)
+SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_AVATARS_BUCKET=avatars
+
+# Error tracking (optional)
+SENTRY_DSN=
+```
+
+> **Required** (validation fails at startup if missing): `DATABASE_URL`, `DIRECT_URL`, `JWT_SECRET`, `JWT_REFRESH_SECRET`, `MICROSOFT_CLIENT_ID`, `MICROSOFT_CLIENT_SECRET`, `MICROSOFT_CALLBACK_URL`, `FRONTEND_URL`, `API_BASE_URL`
+
+---
+
+## 8. Known Issues
+
+**Potential Bug — Admin Statistics Route Not Mounted:**  
+`adminStatisticsRouter` is defined in `backend/src/routes/admin.routes.ts` but not mounted in `backend/src/app.ts`. The `/admin/statistics/*` routes may be unreachable.  
+→ Location: `backend/src/app.ts` — needs `app.use("/admin/statistics", adminStatisticsRouter)`
+
+**No TODO/FIXME comments found** in the TypeScript codebase at time of analysis.
+
+**Minor — seed.ts mentions hackathon event** which is test data only.
+
+---
+
+## 9. Recent Changes
+
+Based on last 40 git commits:
+
+**Security Fixes:**
+
+- `4e48fe8` — Remove token from OAuth callback URLs (token leak prevention)
+- `2b4aa40` — Harden Microsoft OAuth state validation (CSRF hardening)
+
+**Features Added:**
+
+- `3c14c64` — Add blackjack insurance flow and card faces
+- `c02375b` — Add leaderboard and active bets surfaces
+- `3ec0196` — Add expandable combined bet details
+- `280cb1f` — Harden categoryless event UX
+- `c9d9434` — Implement EPITA default pseudo generation
+- `cd3c9f8` — Implement odds-change confirmation flow for bets
+- `2273638` — Harden event odds smoothing
+
+**Bug Fixes:**
+
+- `21c4fa7` — Sweep French event and gamification copy
+- `d6891e6` — Polish casino navigation and hover UX
+- `bd60309` / `a08ace4` — Revert GitHub onboarding bonus claim (reverted twice, unstable feature)
+- `0d44e76` — Fix live event odds to pure pari-mutuel
+
+**Earlier Milestones:**
+
+- `2a85ba8` — Roulette implemented
+- `1ec3e58` — Blackjack V1
+- `81f79c3` — Events feature added
+- `d881d5a` — Initial project setup
+
+---
+
+## 10. Development Workflow
+
+### Setup
+
+**Backend:**
+
+```bash
+cd backend
+npm install
+cp .env.example .env      # fill in values
+npx prisma generate
+npx prisma db push
+npx prisma db seed        # optional: seed test data
+npm run dev               # nodemon on port 3001
+```
+
+**Frontend:**
+
+```bash
+cd frontend
+npm install
+cp .env.example .env      # fill in VITE_API_URL
+npm run dev               # vite on port 5173
+```
+
+### Testing
+
+```bash
+# Backend unit tests
+cd backend && npm run test:unit
+
+# Backend integration tests
+cd backend && npm run test:integration
+
+# All backend tests
+cd backend && npm test
+
+# Validate env vars
+cd backend && npm run qa:validate-env
+```
+
+Test files: `backend/tests/*.test.ts`, `backend/src/**/*.integration.test.ts`
+
+### Build & Deploy
+
+```bash
+# Frontend
+cd frontend && npm run build   # tsc --noEmit check + vite build
+
+# Backend
+cd backend && npm run build    # tsc -p tsconfig.json
+cd backend && npm start        # node dist/src/index.js
+```
+
+---
+
+## 11. Key Decisions & Trade-offs
+
+**Technology Choices:**
+
+| Decision                      | Rationale                                                                            |
+| ----------------------------- | ------------------------------------------------------------------------------------ |
+| Vite over CRA                 | Faster dev server, better ESM support, smaller bundles                               |
+| Prisma over TypeORM           | Type-safe query builder, better DX, migrations, Supabase compatibility               |
+| Microsoft OAuth only          | EPITA provides Azure AD — no password management needed, guaranteed @epita.fr domain |
+| Virtual currency only         | Legal compliance — no real money gambling, educational context                       |
+| Bearer JWT + HttpOnly refresh | Security best practice: no tokens in localStorage, auto-rotation via sessionVersion  |
+| Pari-mutuel odds              | Fair odds system — pool redistributes to winners proportionally                      |
+| Supabase                      | Free tier covers student project needs, built-in storage for avatars                 |
+| Zustand + React Query split   | Zustand for auth/UI state, React Query for server state caching                      |
+
+**Trade-offs:**
+
+- `adminStatisticsRouter` defined but not mounted in `app.ts` (see Known Issues)
+- GitHub onboarding bonus feature was reverted (two reverts in git history — feature was unstable)
+- `sessionVersion` adds one DB query per authenticated request (security vs. performance)
+- No WebSockets — real-time features (if needed) would require polling or SSE
+
+---
+
+## 12. Performance Optimizations
+
+**Frontend:**
+
+- Lazy loading for all page components (`React.lazy` + `Suspense` in `RouterApp.tsx`)
+- Manual Vite code splitting chunks:
+  - `react-vendor`: react, react-dom, react-router-dom, zustand
+  - `query-vendor`: @tanstack/react-query, axios, zod
+  - `motion-vendor`: framer-motion, gsap, lucide-react
+
+**Backend:**
+
+- Database indexes on all high-frequency query fields (email, userId, eventId, status, createdAt)
+- `balance DESC` index for leaderboard queries
+- Per-route rate limiting to prevent abuse
+
+**Database:**
+
+- Composite indexes on `(type, status)` for bet queries
+- `(eventId, option)` index on OddsHistory for time-series queries
+
+---
+
+## 13. Project File Structure
+
+```
+SIGambling/
+├── PROJECT_MEMORY.md          ← this file
+├── README.md
+├── CLEANUP_SUMMARY.md
+├── DEBUG_REPORT.md
+├── package.json               ← root (workspace scripts)
+├── requirements.txt           ← Python deps (legacy/unused?)
+├── start.py                   ← legacy startup script?
+│
+├── docs/
+│   ├── ARCHITECTURE.md
+│   ├── ROADMAP.md
+│   ├── BETTING_SYSTEM.md
+│   ├── BLACKJACK_GUIDE.md
+│   ├── ROULETTE_GUIDE.md
+│   ├── SPECS_EVENT.md
+│   ├── PRODUCT_BRIEF.md
+│   └── ADMIN_STATISTICS_SPECS.md
+│
+├── frontend/
+│   ├── vite.config.ts         ← proxy config, port 5173
+│   ├── tailwind.config.ts
+│   └── src/
+│       ├── main.tsx           ← entry point
+│       ├── RouterApp.tsx      ← route definitions + lazy loading
+│       ├── index.css
+│       ├── components/
+│       │   ├── casino/        ← Roulette + Blackjack UI components
+│       │   ├── layout/        ← Navbar, ErrorBoundary, LoadingScreen
+│       │   └── ui/            ← design system primitives
+│       ├── hooks/
+│       │   ├── useAuthenticatedUser.ts
+│       │   ├── useGamificationState.ts
+│       │   └── useSessionBootstrap.ts
+│       ├── lib/
+│       │   ├── api.ts         ← axios instance
+│       │   ├── utils.ts
+│       │   ├── event-utils.ts
+│       │   ├── notifications.ts
+│       │   └── casino/        ← casino-specific helpers
+│       ├── pages/
+│       │   ├── LoginPage.tsx
+│       │   ├── DashboardPage.tsx
+│       │   ├── CasinoPage.tsx
+│       │   ├── EventsMarketsPage.tsx
+│       │   ├── EventDetailPage.tsx
+│       │   ├── LeaderboardPage.tsx
+│       │   ├── JackpotPage.tsx
+│       │   ├── AccountProfilePage.tsx
+│       │   ├── AuthCallbackPage.tsx
+│       │   └── admin/
+│       │       ├── AdminEventsPage.tsx
+│       │       └── AdminStatisticsPage.tsx
+│       ├── routes/
+│       │   └── ProtectedRoute.tsx
+│       ├── store/
+│       │   ├── auth-store.ts      ← Zustand auth state
+│       │   └── bet-cart-store.ts  ← Zustand bet cart
+│       └── types/
+│
+└── backend/
+    ├── prisma/
+    │   ├── schema.prisma      ← single source of truth for DB
+    │   └── seed.ts            ← test data seeder
+    ├── src/
+    │   ├── index.ts           ← server entry (listen on PORT)
+    │   ├── app.ts             ← express factory (createApp)
+    │   ├── config/
+    │   │   ├── env.ts         ← Zod-validated env schema
+    │   │   └── passport.ts    ← Microsoft OAuth strategy
+    │   ├── routes/            ← express routers
+    │   ├── controllers/       ← request handlers
+    │   ├── services/          ← business logic
+    │   │   ├── blackjack.service.ts
+    │   │   ├── roulette.service.ts
+    │   │   ├── event.service.ts
+    │   │   ├── gamification.service.ts
+    │   │   ├── jackpot.service.ts
+    │   │   ├── auth.service.ts
+    │   │   ├── user.service.ts
+    │   │   ├── storage.service.ts ← Supabase avatar storage
+    │   │   └── prisma.service.ts
+    │   ├── middleware/
+    │   │   ├── require-auth.ts    ← JWT validation + sessionVersion check
+    │   │   ├── require-role.ts    ← RBAC
+    │   │   ├── validate.ts        ← Zod body validation
+    │   │   ├── error-handler.ts
+    │   │   ├── request-logger.ts
+    │   │   └── not-found.ts
+    │   ├── schemas/           ← Zod input schemas
+    │   ├── utils/
+    │   │   ├── jwt.ts             ← sign/verify access+refresh tokens
+    │   │   ├── oauth-state.ts     ← CSRF state cookie helpers
+    │   │   ├── roulette-rng.ts    ← server-side RNG
+    │   │   ├── pseudo.ts          ← EPITA email → pseudo generation
+    │   │   ├── app-error.ts
+    │   │   ├── logger.ts
+    │   │   └── user-serializer.ts
+    │   └── types/
+    └── tests/
+        ├── blackjack.service.test.ts
+        ├── event.service.test.ts
+        ├── gamification.service.test.ts
+        └── pseudo.test.ts
+```
+
+---
+
+## 14. Quick Reference
+
+### Start Development
+
+```bash
+# Terminal 1 — Backend
+cd backend && npm run dev
+
+# Terminal 2 — Frontend
+cd frontend && npm run dev
+```
+
+### Access Points (Dev)
+
+| Service       | URL                             |
+| ------------- | ------------------------------- |
+| Frontend      | http://localhost:5173           |
+| Backend API   | http://localhost:3001           |
+| Health check  | http://localhost:3001/health    |
+| Prisma Studio | `npx prisma studio` (port 5555) |
+
+### Common Commands
+
+```bash
+# Validate all env vars (backend)
+cd backend && npm run qa:validate-env
+
+# Reset database (DESTRUCTIVE)
+cd backend && npx prisma migrate reset
+
+# Re-generate Prisma client after schema changes
+cd backend && npx prisma generate
+
+# Push schema changes to DB (no migration file)
+cd backend && npx prisma db push
+
+# Seed test data
+cd backend && npx prisma db seed
+
+# View/edit database in browser
+cd backend && npx prisma studio
+
+# TypeScript check (frontend)
+cd frontend && npx tsc --noEmit
+
+# Run all backend tests
+cd backend && npm test
+```
+
+### Admin Access
+
+- Role: `admin` (stored in DB)
+- Granted automatically on login for email addresses in the hardcoded `ADMIN_EMAILS` set in `backend/src/config/passport.ts`
+- Currently: `maxence.larche@epita.fr`
+
+### User Roles
+
+| Role        | Capabilities                                                    |
+| ----------- | --------------------------------------------------------------- |
+| `user`      | Login, bet, play casino, propose events, claim daily reward     |
+| `validator` | [Not yet implemented — reserved role]                           |
+| `admin`     | All user capabilities + manage events, manage users, view stats |
+
+---
+
+## 15. Contact & Resources
+
+**Repository:** https://github.com/HugoSpy/SIGambLing  
+**Branch:** `main`  
+**Team:** EPITA SIGL 2027 students + `maxence.larche@epita.fr` (admin)
+
+**Documentation:**
+
+- [Architecture](docs/ARCHITECTURE.md)
+- [Roadmap](docs/ROADMAP.md)
+- [Betting System](docs/BETTING_SYSTEM.md)
+- [Blackjack Guide](docs/BLACKJACK_GUIDE.md)
+- [Roulette Guide](docs/ROULETTE_GUIDE.md)
+- [Event Specs](docs/SPECS_EVENT.md)
+- [Admin Statistics Specs](docs/ADMIN_STATISTICS_SPECS.md)
+- [Product Brief](docs/PRODUCT_BRIEF.md)
+
+---
+
+## How to Update This File
+
+This is a living document. Update it when:
+
+- ✅ Implementing new features
+- ✅ Fixing bugs or security issues
+- ✅ Changing architecture or deployment
+- ✅ Adding/removing dependencies
+- ✅ Updating environment variables
+- ✅ Adding new API routes
+- ✅ Changing DB schema
+
+**Quick update via Copilot:**
+
+```
+@workspace update PROJECT_MEMORY.md based on recent changes
+```
+
+**Last Updated By:** GitHub Copilot  
+**Last Updated Date:** 2026-04-04

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Pencil, Search, ShieldBan, ShieldCheck, X } from "lucide-react";
 import toast from "react-hot-toast";
+import { StatisticsTab } from "../../components/admin/StatisticsTab";
 import { DashboardShell } from "../../components/layout/DashboardShell";
 import { LoadingScreen } from "../../components/layout/LoadingScreen";
 import { Button } from "../../components/ui/Button";
@@ -159,7 +160,7 @@ function buildProbabilityRowsFromEvent(event: AdminEventView) {
 export function AdminEventsPage() {
   const queryClient = useQueryClient();
   const { data: user } = useAuthenticatedUser();
-  const [view, setView] = useState<"markets" | "proposals" | "users">("markets");
+  const [view, setView] = useState<"markets" | "proposals" | "users" | "statistics">("markets");
   const [editingEvent, setEditingEvent] = useState<AdminEventView | null>(null);
   const [draftProposal, setDraftProposal] = useState<EventProposalView | null>(null);
   const [form, setForm] = useState<EventFormState>(emptyFormState);
@@ -504,8 +505,21 @@ export function AdminEventsPage() {
             Joueurs
             {view === "users" ? <span className="absolute inset-x-0 bottom-0 h-0.5 bg-emerald-500" /> : null}
           </button>
+          <button
+            className={`relative px-4 py-3 text-sm font-medium transition ${
+              view === "statistics" ? "text-emerald-400" : "text-zinc-400 hover:text-zinc-100"
+            }`}
+            onClick={() => setView("statistics")}
+            type="button"
+          >
+            Statistiques
+            {view === "statistics" ? <span className="absolute inset-x-0 bottom-0 h-0.5 bg-emerald-500" /> : null}
+          </button>
         </div>
 
+        {view === "statistics" ? <StatisticsTab /> : null}
+
+        {view !== "statistics" ? (
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[420px_minmax(0,1fr)]">
           <Card className="min-w-[300px]">
             <div className="flex items-center justify-between gap-4">
@@ -1243,6 +1257,7 @@ export function AdminEventsPage() {
             ) : null}
           </div>
         </div>
+        ) : null}
       </div>
 
       <Modal

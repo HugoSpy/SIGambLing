@@ -13,6 +13,7 @@ import { casinoRouter } from "./routes/casino.routes";
 import { adminEventsRouter, eventsRouter } from "./routes/events.routes";
 import { gamificationRouter } from "./routes/gamification.routes";
 import { healthRouter } from "./routes/health.routes";
+import { adminStatisticsRouter } from "./routes/admin.routes";
 import { userRouter } from "./routes/user.routes";
 
 configurePassport();
@@ -38,6 +39,7 @@ export function createApp() {
   app.use("/casino", casinoRouter);
   app.use("/events", eventsRouter);
   app.use("/admin/events", adminEventsRouter);
+  app.use("/admin/statistics", adminStatisticsRouter);
   app.use("/rewards", gamificationRouter);
   app.use("/users", userRouter);
 

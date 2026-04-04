@@ -27,6 +27,20 @@ import type {
   RefreshSessionResponse,
 } from "../types/auth";
 
+export interface StatisticsOverview {
+  totalBets: { value: number; percentageChange: number; trend: "up" | "down" };
+  activeUsers: { total: number; online: number };
+  totalVolume: { value: number; formatted: string };
+}
+
+export interface LeaderboardEvent {
+  rank: number;
+  eventId: string;
+  title: string;
+  totalVolume: number;
+  betCount: number;
+}
+
 export interface ApiErrorDetails {
   formErrors?: string[];
   fieldErrors?: Record<string, string[] | undefined>;
@@ -313,6 +327,18 @@ export async function rejectAdminProposal(proposalId: string, reason: string) {
     { reason },
   );
   return response.data;
+}
+
+export async function fetchAdminStatisticsOverview(): Promise<StatisticsOverview> {
+  const response = await api.get<StatisticsOverview>("/admin/statistics/overview");
+  return response.data;
+}
+
+export async function fetchAdminEventsLeaderboard(): Promise<LeaderboardEvent[]> {
+  const response = await api.get<{ leaderboard: LeaderboardEvent[] }>(
+    "/admin/statistics/events/leaderboard",
+  );
+  return response.data.leaderboard;
 }
 
 export async function requestMicrosoftRedirect() {

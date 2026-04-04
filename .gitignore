@@ -22,3 +22,7 @@ pnpm-debug.log*
 .vscode/
 backend/prisma/*.db
 backend/prisma/*.db-journal
+
+.agents/
+.codex
+.omx/
