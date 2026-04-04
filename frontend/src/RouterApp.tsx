@@ -36,6 +36,9 @@ const ProfilePage = lazy(() =>
 const AdminEventsPage = lazy(() =>
   import("./pages/admin/AdminEventsPage").then((module) => ({ default: module.AdminEventsPage })),
 );
+const AdminStatisticsPage = lazy(() =>
+  import("./pages/admin/AdminStatisticsPage").then((module) => ({ default: module.AdminStatisticsPage })),
+);
 
 function LandingRedirect() {
   const status = useAuthStore((state) => state.status);
@@ -90,6 +93,7 @@ export default function RouterApp() {
           </Route>
           <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
             <Route path="/admin/events" element={<AdminEventsPage />} />
+            <Route path="/admin/statistics" element={<AdminStatisticsPage />} />
           </Route>
           <Route path="*" element={<Navigate replace to="/" />} />
         </Routes>

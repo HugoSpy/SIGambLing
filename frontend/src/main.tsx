@@ -11,6 +11,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import App from "./RouterApp";
+import { purgeLegacyAuthStorage } from "./store/auth-store";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -20,6 +21,8 @@ const queryClient = new QueryClient({
     },
   },
 });
+
+purgeLegacyAuthStorage();
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>

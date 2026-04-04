@@ -33,6 +33,7 @@ function StatCard({
       <div className="flex items-start gap-4">
         <div className={`rounded-lg p-3 ${iconBg}`}>{icon}</div>
         <div className="min-w-0 flex-1">
+        <div className="flex-1 min-w-0">
           <p className="text-sm text-zinc-400">{label}</p>
           <p className="mt-1 text-3xl font-bold text-zinc-100">{value}</p>
           <p className={`mt-2 text-sm ${subtextColor}`}>{subtext}</p>
@@ -140,26 +141,45 @@ export function AdminStatisticsPage() {
               <h2 className="mb-6 text-lg font-bold text-zinc-100">
                 Événements les plus populaires
               </h2>
+<<<<<<< HEAD
               {leaderboard.length === 0 ? (
                 <p className="py-8 text-center text-sm text-zinc-500">
                   Aucun événement avec des paris.
                 </p>
+=======
+
+              {leaderboard.length === 0 ? (
+                <p className="py-8 text-center text-sm text-zinc-500">Aucun événement avec des paris.</p>
+>>>>>>> 0d9dab1de27bfd84518f791cea4e8bef99520d82
               ) : (
                 <div className="space-y-3">
                   {leaderboard.map((event) => (
                     <div
+<<<<<<< HEAD
                       className="flex items-center gap-4 rounded-lg border border-zinc-800 bg-zinc-950/50 p-4 transition hover:border-zinc-700"
                       key={event.eventId}
+=======
+                      key={event.eventId}
+                      className="flex items-center gap-4 rounded-lg border border-zinc-800 bg-zinc-950/50 p-4 transition hover:border-zinc-700"
+>>>>>>> 0d9dab1de27bfd84518f791cea4e8bef99520d82
                     >
                       <div className="w-8 shrink-0 text-center">
                         <span className="text-xl font-bold text-zinc-500">#{event.rank}</span>
                       </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 0d9dab1de27bfd84518f791cea4e8bef99520d82
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium text-zinc-100">{event.title}</p>
                         <p className="mt-0.5 text-xs text-zinc-500">
                           {event.betCount} pari{event.betCount !== 1 ? "s" : ""}
                         </p>
                       </div>
+<<<<<<< HEAD
+=======
+
+>>>>>>> 0d9dab1de27bfd84518f791cea4e8bef99520d82
                       <div className="shrink-0 text-right">
                         <p className="text-xl font-bold text-zinc-100">
                           {event.totalVolume.toLocaleString("fr-FR")}

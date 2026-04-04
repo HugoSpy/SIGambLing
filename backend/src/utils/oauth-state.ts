@@ -2,6 +2,7 @@ import crypto from "node:crypto";
 import jwt from "jsonwebtoken";
 import type { Request, Response } from "express";
 import { env, isProduction } from "../config/env";
+import { resolveRefreshCookieSameSite } from "../config/security";
 import { AppError } from "./app-error";
 
 const MICROSOFT_OAUTH_STATE_COOKIE = "microsoft_oauth_state";
@@ -16,10 +17,17 @@ type MicrosoftOAuthStatePayload = {
 };
 
 function getMicrosoftOAuthStateCookieOptions() {
+  const sameSite = resolveRefreshCookieSameSite({
+    frontendUrl: env.FRONTEND_URL,
+    apiBaseUrl: env.API_BASE_URL,
+    isProduction,
+    explicitPolicy: env.COOKIE_SAME_SITE,
+  });
+
   return {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction ? ("none" as const) : ("lax" as const),
+    sameSite,
     maxAge: MICROSOFT_OAUTH_STATE_TTL_MS,
     path: "/auth",
     domain: env.COOKIE_DOMAIN || undefined,
@@ -41,10 +49,17 @@ export function issueMicrosoftOAuthState(response: Response) {
 }
 
 export function clearMicrosoftOAuthState(response: Response) {
+  const sameSite = resolveRefreshCookieSameSite({
+    frontendUrl: env.FRONTEND_URL,
+    apiBaseUrl: env.API_BASE_URL,
+    isProduction,
+    explicitPolicy: env.COOKIE_SAME_SITE,
+  });
+
   response.clearCookie(MICROSOFT_OAUTH_STATE_COOKIE, {
     httpOnly: true,
     secure: isProduction,
-    sameSite: isProduction ? ("none" as const) : ("lax" as const),
+    sameSite,
     path: "/auth",
     domain: env.COOKIE_DOMAIN || undefined,
   });

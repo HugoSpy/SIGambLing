@@ -221,7 +221,7 @@ export function LeaderboardPage() {
           <div className="flex items-center justify-between gap-4">
             <div>
               <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Retour jeu</p>
-              <h2 className="mt-2 text-lg font-semibold text-zinc-100">Relancer une session</h2>
+              <h2 className="mt-2 text-lg font-semibold text-zinc-100">Voir les évènements</h2>
             </div>
             <Link
               className="inline-flex items-center gap-2 text-sm font-medium text-emerald-400 transition hover:text-emerald-300"

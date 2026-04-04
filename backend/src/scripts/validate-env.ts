@@ -80,6 +80,8 @@ const callbackUrl = process.env.MICROSOFT_CALLBACK_URL;
 const databaseUrl = process.env.DATABASE_URL;
 const directUrl = process.env.DIRECT_URL;
 const cookieDomain = process.env.COOKIE_DOMAIN?.trim();
+const cookieSameSite = process.env.COOKIE_SAME_SITE?.trim().toLowerCase();
+const corsAllowedOrigins = process.env.CORS_ALLOWED_ORIGINS?.trim();
 const supabaseUrl = process.env.SUPABASE_URL?.trim();
 const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
 const avatarsBucket = process.env.SUPABASE_AVATARS_BUCKET?.trim() || "avatars";
@@ -133,6 +135,30 @@ if (parsedApiBaseUrl && parsedFrontendUrl) {
   }
 }
 
+if (cookieSameSite && !["lax", "strict", "none"].includes(cookieSameSite)) {
+  errors.push("COOKIE_SAME_SITE must be one of: lax, strict, none.");
+}
+
+if (cookieSameSite === "none" && nodeEnv === "production" && parsedApiBaseUrl?.protocol !== "https:") {
+  errors.push("COOKIE_SAME_SITE=none requires an https API_BASE_URL in production.");
+}
+
+if (corsAllowedOrigins) {
+  for (const origin of corsAllowedOrigins.split(",")) {
+    const candidate = origin.trim();
+
+    if (candidate.length === 0) {
+      continue;
+    }
+
+    const parsedOrigin = tryParseUrl(candidate, "CORS_ALLOWED_ORIGINS", errors);
+
+    if (parsedOrigin && parsedOrigin.origin !== candidate.replace(/\/$/, "")) {
+      warnings.push(`CORS_ALLOWED_ORIGINS entry "${candidate}" includes a path; only its origin will be used.`);
+    }
+  }
+}
+
 const derivedSupabaseUrl = databaseUrl ? deriveSupabaseUrl(databaseUrl) : null;
 const effectiveSupabaseUrl = supabaseUrl || derivedSupabaseUrl;
 
@@ -156,6 +182,8 @@ const summary = [
   `NODE_ENV=${nodeEnv}`,
   `API_BASE_URL=${apiBaseUrl ?? "<missing>"}`,
   `FRONTEND_URL=${frontendUrl ?? "<missing>"}`,
+  `CORS_ALLOWED_ORIGINS=${corsAllowedOrigins ?? "<default frontend origin>"}`,
+  `COOKIE_SAME_SITE=${cookieSameSite ?? "<auto>"}`,
   `MICROSOFT_CALLBACK_URL=${callbackUrl ?? "<missing>"}`,
   `SUPABASE_URL=${effectiveSupabaseUrl ?? "<disabled>"}`,
   `SUPABASE_AVATARS_BUCKET=${avatarsBucket}`,

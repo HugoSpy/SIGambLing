@@ -5,6 +5,7 @@ import helmet from "helmet";
 import passport from "passport";
 import { env } from "./config/env";
 import { configurePassport } from "./config/passport";
+import { getCorsAllowedOrigins, isCorsOriginAllowed } from "./config/security";
 import { errorHandler } from "./middleware/error-handler";
 import { notFoundHandler } from "./middleware/not-found";
 import { requestLogger } from "./middleware/request-logger";
@@ -20,10 +21,13 @@ configurePassport();
 
 export function createApp() {
   const app = express();
+  const allowedOrigins = getCorsAllowedOrigins(env.FRONTEND_URL, env.CORS_ALLOWED_ORIGINS);
 
   app.use(
     cors({
-      origin: env.FRONTEND_URL,
+      origin(origin, callback) {
+        callback(null, isCorsOriginAllowed(origin, allowedOrigins));
+      },
       credentials: true,
       optionsSuccessStatus: 200,
     }),

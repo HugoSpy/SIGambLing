@@ -1,6 +1,7 @@
 import { UserRole, type User } from "@prisma/client";
 import type { Response } from "express";
 import { env, isProduction } from "../config/env";
+import { resolveRefreshCookieSameSite } from "../config/security";
 import { prisma } from "./prisma.service";
 import { AppError } from "../utils/app-error";
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from "../utils/jwt";
@@ -76,10 +77,17 @@ class AuthService {
   }
 
   applyRefreshCookie(response: Response, refreshToken: string) {
+    const sameSite = resolveRefreshCookieSameSite({
+      frontendUrl: env.FRONTEND_URL,
+      apiBaseUrl: env.API_BASE_URL,
+      isProduction,
+      explicitPolicy: env.COOKIE_SAME_SITE,
+    });
+
     response.cookie("refresh_token", refreshToken, {
       httpOnly: true,
       secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
+      sameSite,
       maxAge: 30 * 24 * 60 * 60 * 1000,
       path: "/auth",
       domain: env.COOKIE_DOMAIN || undefined,
@@ -87,10 +95,17 @@ class AuthService {
   }
 
   clearRefreshCookie(response: Response) {
+    const sameSite = resolveRefreshCookieSameSite({
+      frontendUrl: env.FRONTEND_URL,
+      apiBaseUrl: env.API_BASE_URL,
+      isProduction,
+      explicitPolicy: env.COOKIE_SAME_SITE,
+    });
+
     response.clearCookie("refresh_token", {
       httpOnly: true,
       secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
+      sameSite,
       path: "/auth",
       domain: env.COOKIE_DOMAIN || undefined,
     });
@@ -115,9 +130,33 @@ class AuthService {
       throw new AppError("Session expirée, reconnecte-toi.", 401);
     }
 
+    const rotation = await prisma.user.updateMany({
+      where: {
+        id: payload.userId,
+        sessionVersion: payload.sessionVersion,
+      },
+      data: {
+        sessionVersion: {
+          increment: 1,
+        },
+      },
+    });
+
+    if (rotation.count !== 1) {
+      throw new AppError("Session expirée, reconnecte-toi.", 401);
+    }
+
+    const rotatedUser = await prisma.user.findUnique({
+      where: { id: payload.userId },
+    });
+
+    if (!rotatedUser || rotatedUser.isBanned) {
+      throw new AppError("Utilisateur introuvable ou banni.", 401);
+    }
+
     return {
-      user,
-      ...this.buildSession(user),
+      user: rotatedUser,
+      ...this.buildSession(rotatedUser),
     };
   }
 
@@ -129,8 +168,11 @@ class AuthService {
     try {
       const payload = verifyRefreshToken(token);
 
-      await prisma.user.update({
-        where: { id: payload.userId },
+      await prisma.user.updateMany({
+        where: {
+          id: payload.userId,
+          sessionVersion: payload.sessionVersion,
+        },
         data: {
           sessionVersion: {
             increment: 1,

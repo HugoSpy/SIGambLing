@@ -1,5 +1,4 @@
 import { create } from "zustand";
-import { createJSONStorage, persist } from "zustand/middleware";
 import type { AuthUser } from "../types/auth";
 
 export type AuthStatus = "idle" | "loading" | "authenticated" | "anonymous";
@@ -17,44 +16,43 @@ interface AuthState {
   clearSession: () => void;
 }
 
-export const useAuthStore = create<AuthState>()(
-  persist(
-    (set) => ({
+const LEGACY_AUTH_STORAGE_KEYS = ["sigambling-auth", "sig_token", "sig_user"] as const;
+
+export function purgeLegacyAuthStorage() {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  for (const storageKey of LEGACY_AUTH_STORAGE_KEYS) {
+    window.localStorage.removeItem(storageKey);
+  }
+}
+
+export const useAuthStore = create<AuthState>()((set) => ({
+  user: null,
+  accessToken: null,
+  status: "idle",
+  setStatus: (status) => set({ status }),
+  setAccessToken: (token) => set({ accessToken: token }),
+  setUser: (user) => set({ user }),
+  setSession: ({ user, accessToken }) =>
+    set({
+      user,
+      accessToken,
+      status: "authenticated",
+    }),
+  updateBalance: (balance) =>
+    set((state) => ({
+      user: state.user ? { ...state.user, balance } : null,
+    })),
+  updateOddsPreference: (acceptOddsChanges) =>
+    set((state) => ({
+      user: state.user ? { ...state.user, accept_odds_changes: acceptOddsChanges } : null,
+    })),
+  clearSession: () =>
+    set({
       user: null,
       accessToken: null,
-      status: "idle",
-      setStatus: (status) => set({ status }),
-      setAccessToken: (token) => set({ accessToken: token }),
-      setUser: (user) => set({ user }),
-      setSession: ({ user, accessToken }) =>
-        set({
-          user,
-          accessToken,
-          status: "authenticated",
-        }),
-      updateBalance: (balance) =>
-        set((state) => ({
-          user: state.user ? { ...state.user, balance } : null,
-        })),
-      updateOddsPreference: (acceptOddsChanges) =>
-        set((state) => ({
-          user: state.user ? { ...state.user, accept_odds_changes: acceptOddsChanges } : null,
-        })),
-      clearSession: () =>
-        set({
-          user: null,
-          accessToken: null,
-          status: "anonymous",
-        }),
+      status: "anonymous",
     }),
-    {
-      name: "sigambling-auth",
-      storage: createJSONStorage(() => localStorage),
-      partialize: (state) => ({
-        user: state.user,
-        accessToken: state.accessToken,
-        status: state.status,
-      }),
-    },
-  ),
-);
+}));
