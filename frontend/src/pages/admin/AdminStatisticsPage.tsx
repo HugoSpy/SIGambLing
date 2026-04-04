@@ -28,12 +28,11 @@ function StatCard({
   icon: React.ReactNode;
   iconBg: string;
 }) {
-  return (
+return (
     <div className="rounded-xl border border-zinc-800 bg-zinc-900 p-6">
       <div className="flex items-start gap-4">
         <div className={`rounded-lg p-3 ${iconBg}`}>{icon}</div>
         <div className="min-w-0 flex-1">
-        <div className="flex-1 min-w-0">
           <p className="text-sm text-zinc-400">{label}</p>
           <p className="mt-1 text-3xl font-bold text-zinc-100">{value}</p>
           <p className={`mt-2 text-sm ${subtextColor}`}>{subtext}</p>
