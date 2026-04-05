@@ -36,7 +36,8 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
   const cartSelectionsCount = useBetCartStore((state) => state.selections.length);
   const setCartOpen = useBetCartStore((state) => state.setOpen);
   const { data: gamificationData } = useGamificationState();
-  const rewardAvailable = gamificationData?.daily_reward.streak_status === "claim_available";
+  const rewardAvailable = gamificationData != null && !gamificationData.daily_reward.claimed_today;
+  console.log("[DashboardShell] rewardAvailable:", rewardAvailable, "| streak_status:", gamificationData?.daily_reward.streak_status, "| claimed_today:", gamificationData?.daily_reward.claimed_today);
   const rewardAmount =
     (gamificationData?.daily_reward.base_amount ?? 0) +
     (gamificationData?.daily_reward.streak_bonus ?? 0);

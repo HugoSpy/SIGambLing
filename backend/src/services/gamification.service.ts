@@ -418,9 +418,9 @@ export class GamificationService {
   private buildRewardState(user: User) {
     const now = new Date();
     const claimedToday = hasClaimedToday(user.lastRewardAt, now);
-    const streakAlive = user.lastRewardAt
-      ? claimedToday || canContinueStreak(user.lastRewardAt, now)
-      : false;
+    const streakAlive = !user.lastRewardAt
+      || claimedToday
+      || canContinueStreak(user.lastRewardAt, now);
     const currentStreak = streakAlive ? user.streakDays : 0;
     const nextStreak = streakAlive ? user.streakDays + (claimedToday ? 1 : 0) : 1;
     const nextClaimAt = new Date(startOfUtcDay(now).getTime() + 24 * 60 * 60 * 1000);
