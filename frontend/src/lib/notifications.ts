@@ -1,11 +1,28 @@
 import type { AxiosError } from "axios";
 import toast from "react-hot-toast";
 
+type ZodFlattenDetails = {
+  fieldErrors?: Record<string, string[] | undefined>;
+  formErrors?: string[];
+};
+
 export function getErrorMessage(error: unknown, fallback = "Une erreur est survenue.") {
-  // Axios HTTP error — read the backend JSON message first
-  const axiosError = error as AxiosError<{ message?: string; details?: unknown }>;
-  if (axiosError?.response?.data?.message) {
-    return axiosError.response.data.message;
+  const axiosError = error as AxiosError<{ message?: string; details?: ZodFlattenDetails }>;
+  if (axiosError?.response?.data) {
+    const { message, details } = axiosError.response.data;
+
+    // Zod validation error — extract human-readable field messages
+    if (message === "Validation error" && details) {
+      const fieldErrors = Object.values(details.fieldErrors ?? {})
+        .flat()
+        .filter(Boolean) as string[];
+      const formErrors = details.formErrors ?? [];
+      const all = [...formErrors, ...fieldErrors];
+      if (all.length > 0) return all.join(" · ");
+      return "Données invalides. Vérifiez les valeurs saisies.";
+    }
+
+    if (message) return message;
   }
 
   if (error instanceof Error && error.message) {
