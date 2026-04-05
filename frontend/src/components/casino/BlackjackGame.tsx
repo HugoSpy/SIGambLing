@@ -688,7 +688,7 @@ export function BlackjackGame() {
       return;
     }
     if (bet > balance) {
-      notify.error("Solde insuffisant.");
+      notify.error(`Solde insuffisant : vous avez ${balance} token${balance <= 1 ? "" : "s"} mais vous misez ${bet}.`);
       return;
     }
 
@@ -721,7 +721,7 @@ export function BlackjackGame() {
       }
     } catch (error) {
       setGameState("BETTING");
-      notify.error(getErrorMessage(error, "Erreur lors de la distribution."));
+      notify.error(getErrorMessage(error, "Impossible de distribuer les cartes. Réessayez."));
     } finally {
       setLoading(false);
     }
@@ -758,7 +758,7 @@ export function BlackjackGame() {
         resolveGame(data);
       }
     } catch (error) {
-      notify.error(getErrorMessage(error, "Erreur."));
+      notify.error(getErrorMessage(error, "Impossible de tirer une carte. Réessayez."));
     } finally {
       setLoading(false);
     }
@@ -792,7 +792,7 @@ export function BlackjackGame() {
       resolveGame(data);
     } catch (error) {
       if (!isSplitActive) setGameState("PLAYER_TURN");
-      notify.error(getErrorMessage(error, "Erreur."));
+      notify.error(getErrorMessage(error, "Impossible de rester. Réessayez."));
     } finally {
       setLoading(false);
     }
@@ -829,7 +829,7 @@ export function BlackjackGame() {
       resolveGame(data);
     } catch (error) {
       if (!isSplitActive) setGameState("PLAYER_TURN");
-      notify.error(getErrorMessage(error, "Erreur."));
+      notify.error(getErrorMessage(error, "Impossible de doubler. Vérifiez votre solde."));
     } finally {
       setLoading(false);
     }

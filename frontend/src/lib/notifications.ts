@@ -1,6 +1,13 @@
+import type { AxiosError } from "axios";
 import toast from "react-hot-toast";
 
 export function getErrorMessage(error: unknown, fallback = "Une erreur est survenue.") {
+  // Axios HTTP error — read the backend JSON message first
+  const axiosError = error as AxiosError<{ message?: string; details?: unknown }>;
+  if (axiosError?.response?.data?.message) {
+    return axiosError.response.data.message;
+  }
+
   if (error instanceof Error && error.message) {
     return error.message;
   }

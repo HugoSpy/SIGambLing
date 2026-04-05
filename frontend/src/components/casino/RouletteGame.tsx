@@ -65,12 +65,12 @@ export function RouletteGame() {
       }
 
       if (betAmount < 10) {
-        notify.error("La mise minimale est de 10 tokens.");
+        notify.error(`Mise minimale : 10 tokens. Vous avez entré ${betAmount} token${betAmount <= 1 ? "" : "s"}.`);
         return;
       }
 
       if (betAmount > availableBalance) {
-        notify.error("Solde insuffisant pour placer ce jeton.");
+        notify.error(`Solde insuffisant. Solde disponible : ${availableBalance} tokens, mise demandée : ${betAmount} tokens.`);
         return;
       }
 
@@ -118,7 +118,7 @@ export function RouletteGame() {
       setSpinRequest(nextSpinRequest);
     } catch (error) {
       setPhase(bets.length > 0 ? "betting" : "idle");
-      notify.error(getErrorMessage(error, "Une erreur roulette est survenue."));
+      notify.error(getErrorMessage(error, "Erreur lors du lancer de la roue. Vérifiez votre solde et réessayez."));
     }
   }, [bets]);
 
