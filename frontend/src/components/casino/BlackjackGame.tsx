@@ -15,6 +15,8 @@ import type {
   BlackjackDealResponse,
   BlackjackGameState,
   BlackjackResult,
+  SplitHandDisplay,
+  SplitHandResult,
 } from "../../types/blackjack";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
@@ -73,6 +75,12 @@ const GAME_STATE_COPY: Record<
 
 function isRedSuit(suit: string) {
   return RED_SUITS.has(suit);
+}
+
+function getBlackjackRankValue(rank: string): number {
+  if (rank === "A") return 11;
+  if (["J", "Q", "K"].includes(rank)) return 10;
+  return parseInt(rank, 10);
 }
 
 function CardCenter({ card }: { card?: BlackjackCard }) {
@@ -223,9 +231,9 @@ function HandTotal({
   );
 }
 
-function getResultConfig(result: BlackjackResult) {
+function getResultConfig(result: BlackjackResult | "bust") {
   const config: Record<
-    BlackjackResult,
+    BlackjackResult | "bust",
     { label: string; amountColor: string; borderClass: string; ringClass: string; isWin: boolean }
   > = {
     win: {
@@ -292,6 +300,7 @@ function ResultModal({
   resultConfig,
   payout,
   bet,
+  splitResults,
   onClose,
 }: {
   show: boolean;
@@ -299,6 +308,7 @@ function ResultModal({
   resultConfig: ReturnType<typeof getResultConfig> | null;
   payout: number;
   bet: number;
+  splitResults?: SplitHandResult[] | null;
   onClose: () => void;
 }) {
   useEffect(() => {
@@ -306,6 +316,95 @@ function ResultModal({
     const timer = setTimeout(onClose, 4000);
     return () => clearTimeout(timer);
   }, [show, onClose]);
+
+  if (splitResults && splitResults.length === 2) {
+    const totalBet = splitResults.reduce((s, r) => s + r.bet, 0);
+    const netChange = payout - totalBet;
+    const hasWin = splitResults.some((r) => r.result === "win");
+    const overallBorderClass = hasWin ? "border-emerald-500/70" : "border-red-500/70";
+
+    return (
+      <AnimatePresence>
+        {show ? (
+          <motion.div
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }}
+            transition={{ duration: 0.15 }}
+          >
+            <div className="absolute inset-0 bg-black/30" onClick={onClose} />
+            <motion.div
+              animate={{ opacity: 1, y: 0 }}
+              className={cn(
+                "relative z-10 w-full max-w-[300px] rounded-2xl border-2 bg-zinc-900/95 px-6 py-5 text-center shadow-2xl",
+                overallBorderClass,
+              )}
+              exit={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 20 }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+            >
+              <p className="text-[11px] font-black uppercase tracking-[0.36em] text-white/60">
+                RÉSULTAT SPLIT
+              </p>
+
+              <div className="mt-3 space-y-2">
+                {splitResults.map((r, i) => {
+                  const cfg = getResultConfig(r.result);
+                  const net = r.payout - r.bet;
+                  return (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2"
+                    >
+                      <span className="text-xs font-semibold text-white/70">Main {i + 1}</span>
+                      <span className={cn("text-xs font-black uppercase", cfg.amountColor)}>
+                        {cfg.label}
+                      </span>
+                      <span className={cn("text-sm font-black", cfg.amountColor)}>
+                        {net > 0 ? `+${formatTokens(net)}` : net === 0 ? "±0" : `-${formatTokens(r.bet)}`}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="mt-3 border-t border-white/10 pt-3">
+                <p className="text-xs text-white/45">Total</p>
+                <motion.p
+                  animate={{ scale: [1, 1.08, 1] }}
+                  className={cn(
+                    "mt-1 text-2xl font-black",
+                    netChange > 0
+                      ? "text-emerald-400"
+                      : netChange < 0
+                        ? "text-red-400"
+                        : "text-orange-400",
+                  )}
+                  transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
+                >
+                  {netChange > 0
+                    ? `+${formatTokens(netChange)}`
+                    : netChange < 0
+                      ? `-${formatTokens(-netChange)}`
+                      : "±0"}
+                </motion.p>
+                <p className="mt-0.5 text-[11px] text-white/40">tokens</p>
+              </div>
+
+              <button
+                className="mt-4 w-full rounded-xl bg-white/10 py-2 text-xs font-bold text-white/80 transition hover:bg-white/20"
+                onClick={onClose}
+                type="button"
+              >
+                Rejouer
+              </button>
+            </motion.div>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    );
+  }
 
   const amountDisplay =
     result === "push"
@@ -368,6 +467,105 @@ function ResultModal({
   );
 }
 
+function SplitHandsArea({
+  splitHands,
+  currentSplitHand,
+  gameState,
+  isDisabled,
+  canDouble,
+  onHit,
+  onStand,
+  onDouble,
+}: {
+  splitHands: SplitHandDisplay[];
+  currentSplitHand: 0 | 1;
+  gameState: BlackjackGameState;
+  isDisabled: boolean;
+  canDouble: boolean;
+  onHit: () => void;
+  onStand: () => void;
+  onDouble: () => void;
+}) {
+  return (
+    <div className="flex flex-col gap-3">
+      <div className="grid grid-cols-2 gap-3">
+        {splitHands.map((hand, i) => {
+          const isActive = i === currentSplitHand && gameState === "PLAYER_TURN";
+          return (
+            <div
+              key={i}
+              className={cn(
+                "rounded-[28px] border border-white/10 bg-black/10 p-3 backdrop-blur-sm transition-all duration-300",
+                isActive ? "ring-2 ring-brand-cyan" : hand.done ? "opacity-60" : "",
+              )}
+            >
+              <div className="mb-2 flex items-center justify-between gap-2">
+                <div>
+                  <p className="flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.3em] text-white/55">
+                    Main {i + 1}
+                    {isActive ? (
+                      <span className="animate-pulse text-brand-cyan">▶</span>
+                    ) : null}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="flex min-h-8 min-w-8 items-center justify-center rounded-full border-2 border-amber-300 bg-amber-900/75 px-2 text-xs font-bold text-amber-100">
+                    {formatTokens(hand.bet)}
+                  </div>
+                  <HandTotal label="Total" total={hand.total} />
+                </div>
+              </div>
+              <div className="flex min-h-[100px] flex-wrap gap-2">
+                <AnimatePresence mode="popLayout">
+                  {hand.hand.map((card, ci) => (
+                    <PlayingCard
+                      key={`split-${i}-${ci}-${card.rank}-${card.suit}`}
+                      card={card}
+                      index={ci}
+                    />
+                  ))}
+                </AnimatePresence>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {gameState === "PLAYER_TURN" ? (
+        <div className="mt-2 flex flex-wrap justify-center gap-2">
+          <p className="w-full text-center text-xs text-white/50">
+            Jouez la Main {currentSplitHand + 1}
+          </p>
+          <Button
+            aria-label="Tirer une carte"
+            className="bg-sky-500 text-zinc-950 hover:bg-sky-400"
+            disabled={isDisabled}
+            onClick={onHit}
+          >
+            Tirer
+          </Button>
+          <Button
+            aria-label="Rester avec la main actuelle"
+            className="bg-amber-500 text-zinc-950 hover:bg-amber-400"
+            disabled={isDisabled}
+            onClick={onStand}
+          >
+            Rester
+          </Button>
+          <Button
+            aria-label="Doubler la mise et tirer une carte"
+            className="bg-zinc-100 text-zinc-950 hover:bg-white"
+            disabled={isDisabled || !canDouble}
+            onClick={onDouble}
+          >
+            Doubler
+          </Button>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export function BlackjackGame() {
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
@@ -390,12 +588,31 @@ export function BlackjackGame() {
   const [loading, setLoading] = useState(false);
   const [showResultModal, setShowResultModal] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
+  // Split state
+  const [splitHands, setSplitHands] = useState<SplitHandDisplay[] | null>(null);
+  const [currentSplitHand, setCurrentSplitHand] = useState<0 | 1>(0);
+  const [splitResults, setSplitResults] = useState<SplitHandResult[] | null>(null);
 
   const balance = user?.balance ?? 0;
   const isPlaying = gameState === "PLAYER_TURN";
+  const isSplitActive = splitHands !== null;
   const insuranceCost = currentBet > 0 ? Math.max(1, Math.floor(currentBet / 2)) : 0;
-  const canDouble = isPlaying && playerHand.length === 2 && balance >= currentBet;
-  const canInsure = isPlaying && insuranceAvailable && insuranceCost > 0 && balance >= insuranceCost;
+
+  const splitActiveHand = isSplitActive ? (splitHands[currentSplitHand] ?? null) : null;
+  const canDouble = isPlaying && (
+    isSplitActive
+      ? splitActiveHand?.hand.length === 2 && balance >= (splitActiveHand?.bet ?? 0)
+      : playerHand.length === 2 && balance >= currentBet
+  );
+  const canInsure = isPlaying && !isSplitActive && insuranceAvailable && insuranceCost > 0 && balance >= insuranceCost;
+  const canSplit =
+    isPlaying &&
+    !isSplitActive &&
+    playerHand.length === 2 &&
+    playerHand[0] !== undefined &&
+    playerHand[1] !== undefined &&
+    getBlackjackRankValue(playerHand[0].rank) === getBlackjackRankValue(playerHand[1].rank) &&
+    balance >= currentBet;
   const isDisabled = loading || gameState === "DEALING" || gameState === "DEALER_TURN";
   const canAdjustBet = !loading && (gameState === "BETTING" || gameState === "GAME_OVER");
 
@@ -433,6 +650,36 @@ export function BlackjackGame() {
       }
     },
     [playerHand, queryClient, updateBalance],
+  );
+
+  const handleSplitResponse = useCallback(
+    (data: BlackjackActionResponse) => {
+      if (data.status === "split_playing") {
+        setSplitHands(data.split_hands ?? null);
+        setCurrentSplitHand((data.current_split_hand as 0 | 1) ?? 0);
+        if (data.new_balance !== undefined) {
+          updateBalance(data.new_balance);
+          void queryClient.invalidateQueries({ queryKey: ["gamification"] });
+          void queryClient.invalidateQueries({ queryKey: ["jackpot"] });
+        }
+      } else if (data.status === "resolved" && data.split_results) {
+        setSplitResults(data.split_results);
+        setSplitHands(null);
+        setDealerHandFinal(data.dealer_hand_final ?? []);
+        setDealerTotal(data.dealer_total ?? 0);
+        setPayout(data.payout ?? 0);
+        if (data.new_balance !== undefined) {
+          updateBalance(data.new_balance);
+          void queryClient.invalidateQueries({ queryKey: ["gamification"] });
+          void queryClient.invalidateQueries({ queryKey: ["jackpot"] });
+        }
+        setGameState("GAME_OVER");
+        setShowResultModal(true);
+        const hasWin = data.split_results.some((r) => r.result === "win");
+        soundManager.play(hasWin ? "win" : "lose");
+      }
+    },
+    [updateBalance, queryClient],
   );
 
   const handleBet = useCallback(async () => {
@@ -494,6 +741,11 @@ export function BlackjackGame() {
       });
       const data = response.data;
 
+      if (data.status === "split_playing" || (data.status === "resolved" && data.split_results)) {
+        handleSplitResponse(data);
+        return;
+      }
+
       if (data.player_hand) {
         setPlayerHand(data.player_hand);
         setPlayerTotal(data.player_total ?? calcHandTotal(data.player_hand));
@@ -510,7 +762,7 @@ export function BlackjackGame() {
     } finally {
       setLoading(false);
     }
-  }, [gameId, insuranceBet, resolveGame]);
+  }, [gameId, insuranceBet, resolveGame, handleSplitResponse]);
 
   const handleStand = useCallback(async () => {
     if (!gameId) {
@@ -518,24 +770,33 @@ export function BlackjackGame() {
     }
 
     setLoading(true);
-    setGameState("DEALER_TURN");
+    if (!isSplitActive) {
+      setGameState("DEALER_TURN");
+    }
     soundManager.play("click");
 
     try {
       const response = await api.post<BlackjackActionResponse>("/casino/blackjack/stand", {
         game_id: gameId,
       });
-      setInsuranceBet(response.data.insurance_bet ?? insuranceBet);
-      setInsurancePayout(response.data.insurance_payout ?? 0);
-      setInsuranceAvailable(response.data.insurance_available ?? false);
-      resolveGame(response.data);
+      const data = response.data;
+
+      if (data.status === "split_playing" || (data.status === "resolved" && data.split_results)) {
+        handleSplitResponse(data);
+        return;
+      }
+
+      setInsuranceBet(data.insurance_bet ?? insuranceBet);
+      setInsurancePayout(data.insurance_payout ?? 0);
+      setInsuranceAvailable(data.insurance_available ?? false);
+      resolveGame(data);
     } catch (error) {
-      setGameState("PLAYER_TURN");
+      if (!isSplitActive) setGameState("PLAYER_TURN");
       notify.error(getErrorMessage(error, "Erreur."));
     } finally {
       setLoading(false);
     }
-  }, [gameId, insuranceBet, resolveGame]);
+  }, [gameId, insuranceBet, resolveGame, handleSplitResponse, isSplitActive]);
 
   const handleDouble = useCallback(async () => {
     if (!gameId) {
@@ -543,27 +804,36 @@ export function BlackjackGame() {
     }
 
     setLoading(true);
-    setGameState("DEALER_TURN");
+    if (!isSplitActive) {
+      setGameState("DEALER_TURN");
+    }
     soundManager.play("chip");
 
     try {
       const response = await api.post<BlackjackActionResponse>("/casino/blackjack/double", {
         game_id: gameId,
       });
-      if ((response.data.player_hand?.length ?? playerHand.length) > playerHand.length) {
+      const data = response.data;
+
+      if (data.status === "split_playing" || (data.status === "resolved" && data.split_results)) {
+        handleSplitResponse(data);
+        return;
+      }
+
+      if ((data.player_hand?.length ?? playerHand.length) > playerHand.length) {
         setCurrentBet((prev) => prev * 2);
       }
-      setInsuranceBet(response.data.insurance_bet ?? insuranceBet);
-      setInsurancePayout(response.data.insurance_payout ?? 0);
-      setInsuranceAvailable(response.data.insurance_available ?? false);
-      resolveGame(response.data);
+      setInsuranceBet(data.insurance_bet ?? insuranceBet);
+      setInsurancePayout(data.insurance_payout ?? 0);
+      setInsuranceAvailable(data.insurance_available ?? false);
+      resolveGame(data);
     } catch (error) {
-      setGameState("PLAYER_TURN");
+      if (!isSplitActive) setGameState("PLAYER_TURN");
       notify.error(getErrorMessage(error, "Erreur."));
     } finally {
       setLoading(false);
     }
-  }, [gameId, insuranceBet, playerHand.length, resolveGame]);
+  }, [gameId, insuranceBet, playerHand.length, resolveGame, handleSplitResponse, isSplitActive]);
 
   const handleInsurance = useCallback(async () => {
     if (!gameId) {
@@ -599,6 +869,30 @@ export function BlackjackGame() {
     }
   }, [gameId, insuranceCost, queryClient, resolveGame, updateBalance]);
 
+  const handleSplit = useCallback(async () => {
+    if (!gameId) return;
+
+    setLoading(true);
+    soundManager.play("chip");
+
+    try {
+      const response = await api.post<BlackjackActionResponse>("/casino/blackjack/split", {
+        game_id: gameId,
+      });
+      const data = response.data;
+
+      if (data.status === "split_playing" || (data.status === "resolved" && data.split_results)) {
+        handleSplitResponse(data);
+      } else if (data.status === "resolved") {
+        resolveGame(data);
+      }
+    } catch (error) {
+      notify.error(getErrorMessage(error, "Impossible de splitter."));
+    } finally {
+      setLoading(false);
+    }
+  }, [gameId, handleSplitResponse, resolveGame]);
+
   const handleNewGame = useCallback(() => {
     setShowResultModal(false);
     setGameState("BETTING");
@@ -614,6 +908,9 @@ export function BlackjackGame() {
     setInsuranceAvailable(false);
     setPlayerTotal(0);
     setDealerTotal(0);
+    setSplitHands(null);
+    setCurrentSplitHand(0);
+    setSplitResults(null);
   }, []);
 
   useEffect(() => {
@@ -634,6 +931,10 @@ export function BlackjackGame() {
           setInsuranceBet(data.insurance_bet);
           setInsuranceAvailable(data.insurance_available);
           setGameState("PLAYER_TURN");
+          if (data.split_hands) {
+            setSplitHands(data.split_hands);
+            setCurrentSplitHand((data.current_split_hand as 0 | 1) ?? 0);
+          }
         }
       })
       .catch(() => {
@@ -652,17 +953,19 @@ export function BlackjackGame() {
   const showHiddenCard = gameState !== "GAME_OVER" && gameState !== "DEALER_TURN";
   const stateCopy = GAME_STATE_COPY[gameState];
   const resultText =
-    result === "blackjack"
-      ? "Blackjack naturel"
-      : result === "win"
-        ? "Victoire"
-        : result === "push"
-          ? "Egalite"
-          : result === "bust"
-            ? "Bust"
-            : result === "loss"
-              ? "Defaite"
-              : "En attente";
+    splitResults
+      ? `Main 1: ${splitResults[0]?.result ?? ""} / Main 2: ${splitResults[1]?.result ?? ""}`
+      : result === "blackjack"
+        ? "Blackjack naturel"
+        : result === "win"
+          ? "Victoire"
+          : result === "push"
+            ? "Egalite"
+            : result === "bust"
+              ? "Bust"
+              : result === "loss"
+                ? "Defaite"
+                : "En attente";
   const resultConfig = result ? getResultConfig(result) : null;
 
   if (isCheckingSession) {
@@ -682,6 +985,7 @@ export function BlackjackGame() {
         result={result}
         resultConfig={resultConfig}
         show={showResultModal}
+        splitResults={splitResults}
       />
       <Link to="/casino">
         <Button className="gap-2" size="sm" variant="secondary">
@@ -728,7 +1032,12 @@ export function BlackjackGame() {
         <div
           className={cn(
             "relative overflow-hidden rounded-[36px] border border-amber-200/20 p-4 shadow-[0_30px_80px_rgba(0,0,0,0.32)] sm:p-5 xl:flex xl:flex-col xl:h-full ring-2 ring-transparent transition-all duration-500",
-            gameState === "GAME_OVER" && resultConfig?.ringClass,
+            gameState === "GAME_OVER" && !splitResults && resultConfig?.ringClass,
+            gameState === "GAME_OVER" && splitResults
+              ? splitResults.some((r) => r.result === "win")
+                ? "ring-emerald-500"
+                : "ring-red-500"
+              : "",
           )}
           style={{
             background:
@@ -779,86 +1088,111 @@ export function BlackjackGame() {
               </div>
             </div>
 
-            <div className="rounded-[28px] border border-white/10 bg-black/10 p-3 backdrop-blur-sm">
-              <div className="mb-2 flex items-center justify-between gap-3">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/55">
-                    Joueur
-                  </p>
-                  <p className="mt-2 text-sm text-white/70">{stateCopy.detail}</p>
-                </div>
-                <div className="flex flex-wrap items-center gap-2">
-                  {currentBet > 0 && gameState !== "BETTING" ? (
-                    <div className="flex min-h-10 min-w-10 items-center justify-center rounded-full border-2 border-amber-300 bg-amber-900/75 px-2 text-xs font-bold text-amber-100 shadow-lg">
-                      {formatTokens(currentBet)}
-                    </div>
-                  ) : null}
-                  {playerHand.length > 0 ? (
-                    <HandTotal
-                      helper={playerHand.length > 0 ? `${playerHand.length} carte(s)` : undefined}
-                      isBlackjack={playerIsBlackjack}
-                      label="Total joueur"
-                      total={playerTotal}
-                    />
-                  ) : null}
-                  {gameState === "PLAYER_TURN" ? (
-                    <span className="animate-pulse rounded-full bg-brand-cyan/20 px-3 py-1 text-xs text-brand-cyan">
-                      Votre tour
-                    </span>
-                  ) : null}
-                </div>
+            {isSplitActive ? (
+              <div className="rounded-[28px] border border-white/10 bg-black/10 p-3 backdrop-blur-sm">
+                <SplitHandsArea
+                  canDouble={canDouble}
+                  currentSplitHand={currentSplitHand}
+                  gameState={gameState}
+                  isDisabled={isDisabled}
+                  onDouble={() => void handleDouble()}
+                  onHit={() => void handleHit()}
+                  onStand={() => void handleStand()}
+                  splitHands={splitHands}
+                />
               </div>
-              <div className="flex min-h-[100px] flex-wrap gap-3">
-                <AnimatePresence mode="popLayout">
-                  {playerHand.map((card, index) => (
-                    <PlayingCard
-                      key={`player-${index}-${card.rank}-${card.suit}`}
-                      card={card}
-                      index={index}
-                    />
-                  ))}
-                </AnimatePresence>
-              </div>
+            ) : (
+              <div className="rounded-[28px] border border-white/10 bg-black/10 p-3 backdrop-blur-sm">
+                <div className="mb-2 flex items-center justify-between gap-3">
+                  <div>
+                    <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/55">
+                      Joueur
+                    </p>
+                    <p className="mt-2 text-sm text-white/70">{stateCopy.detail}</p>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-2">
+                    {currentBet > 0 && gameState !== "BETTING" ? (
+                      <div className="flex min-h-10 min-w-10 items-center justify-center rounded-full border-2 border-amber-300 bg-amber-900/75 px-2 text-xs font-bold text-amber-100 shadow-lg">
+                        {formatTokens(currentBet)}
+                      </div>
+                    ) : null}
+                    {playerHand.length > 0 ? (
+                      <HandTotal
+                        helper={playerHand.length > 0 ? `${playerHand.length} carte(s)` : undefined}
+                        isBlackjack={playerIsBlackjack}
+                        label="Total joueur"
+                        total={playerTotal}
+                      />
+                    ) : null}
+                    {gameState === "PLAYER_TURN" ? (
+                      <span className="animate-pulse rounded-full bg-brand-cyan/20 px-3 py-1 text-xs text-brand-cyan">
+                        Votre tour
+                      </span>
+                    ) : null}
+                  </div>
+                </div>
+                <div className="flex min-h-[100px] flex-wrap gap-3">
+                  <AnimatePresence mode="popLayout">
+                    {playerHand.map((card, index) => (
+                      <PlayingCard
+                        key={`player-${index}-${card.rank}-${card.suit}`}
+                        card={card}
+                        index={index}
+                      />
+                    ))}
+                  </AnimatePresence>
+                </div>
 
-              {gameState === "PLAYER_TURN" ? (
-                <div className="mt-4 flex flex-wrap justify-center gap-2">
-                  {canInsure && dealerUpcard?.rank === "A" ? (
+                {gameState === "PLAYER_TURN" ? (
+                  <div className="mt-4 flex flex-wrap justify-center gap-2">
+                    {canInsure && dealerUpcard?.rank === "A" ? (
+                      <Button
+                        aria-label="Prendre l'assurance"
+                        className="bg-emerald-500 text-zinc-950 hover:bg-emerald-400"
+                        disabled={isDisabled}
+                        onClick={() => void handleInsurance()}
+                      >
+                        Assurance
+                      </Button>
+                    ) : null}
+                    {canSplit ? (
+                      <Button
+                        aria-label="Splitter la main en deux"
+                        className="bg-purple-500 text-zinc-950 hover:bg-purple-400"
+                        disabled={isDisabled}
+                        onClick={() => void handleSplit()}
+                      >
+                        Split
+                      </Button>
+                    ) : null}
                     <Button
-                      aria-label="Prendre l'assurance"
-                      className="bg-emerald-500 text-zinc-950 hover:bg-emerald-400"
+                      aria-label="Tirer une carte"
+                      className="bg-sky-500 text-zinc-950 hover:bg-sky-400"
                       disabled={isDisabled}
-                      onClick={() => void handleInsurance()}
+                      onClick={() => void handleHit()}
                     >
-                      Assurance
+                      Tirer
                     </Button>
-                  ) : null}
-                  <Button
-                    aria-label="Tirer une carte"
-                    className="bg-sky-500 text-zinc-950 hover:bg-sky-400"
-                    disabled={isDisabled}
-                    onClick={() => void handleHit()}
-                  >
-                    Tirer
-                  </Button>
-                  <Button
-                    aria-label="Rester avec la main actuelle"
-                    className="bg-amber-500 text-zinc-950 hover:bg-amber-400"
-                    disabled={isDisabled}
-                    onClick={() => void handleStand()}
-                  >
-                    Rester
-                  </Button>
-                  <Button
-                    aria-label="Doubler la mise et tirer une carte"
-                    className="bg-zinc-100 text-zinc-950 hover:bg-white"
-                    disabled={isDisabled || !canDouble}
-                    onClick={() => void handleDouble()}
-                  >
-                    Doubler
-                  </Button>
-                </div>
-              ) : null}
-            </div>
+                    <Button
+                      aria-label="Rester avec la main actuelle"
+                      className="bg-amber-500 text-zinc-950 hover:bg-amber-400"
+                      disabled={isDisabled}
+                      onClick={() => void handleStand()}
+                    >
+                      Rester
+                    </Button>
+                    <Button
+                      aria-label="Doubler la mise et tirer une carte"
+                      className="bg-zinc-100 text-zinc-950 hover:bg-white"
+                      disabled={isDisabled || !canDouble}
+                      onClick={() => void handleDouble()}
+                    >
+                      Doubler
+                    </Button>
+                  </div>
+                ) : null}
+              </div>
+            )}
           </div>
 
         </div>
@@ -884,7 +1218,7 @@ export function BlackjackGame() {
                 <div className="flex items-start gap-2">
                   <Waves className="mt-0.5 h-4 w-4 shrink-0 text-brand-cyan" />
                   <p className="text-xs leading-5 text-brand-muted">
-                    Dealer tire sur 16 ou moins • Assurance = 50% de la mise sur As visible
+                    Dealer tire sur 16 ou moins • Assurance = 50% de la mise sur As visible • Split disponible sur deux cartes de même valeur
                   </p>
                 </div>
               </div>

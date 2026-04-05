@@ -77,3 +77,13 @@ export const blackjackInsuranceController: RequestHandler = async (request, resp
     next(error);
   }
 };
+
+export const blackjackSplitController: RequestHandler = async (request, response, next) => {
+  try {
+    const userId = getAuthUserId(request);
+    const result = await blackjackService.splitHand(userId, request.body.game_id);
+    response.json(result);
+  } catch (error) {
+    next(error);
+  }
+};

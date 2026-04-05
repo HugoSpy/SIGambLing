@@ -6,6 +6,21 @@ export interface BlackjackCard {
 export type BlackjackGameState = "BETTING" | "DEALING" | "PLAYER_TURN" | "DEALER_TURN" | "GAME_OVER";
 export type BlackjackResult = "win" | "loss" | "push" | "blackjack" | "bust";
 
+export interface SplitHandDisplay {
+  hand: BlackjackCard[];
+  total: number;
+  bet: number;
+  done: boolean;
+}
+
+export interface SplitHandResult {
+  hand: BlackjackCard[];
+  total: number;
+  bet: number;
+  result: "win" | "loss" | "push" | "bust";
+  payout: number;
+}
+
 export interface BlackjackDealResponse {
   game_id: string;
   player_hand: BlackjackCard[];
@@ -35,6 +50,8 @@ export interface BlackjackCurrentGameResponse {
   insurance_bet: number;
   insurance_available: boolean;
   status: "playing";
+  split_hands?: SplitHandDisplay[];
+  current_split_hand?: 0 | 1;
 }
 
 export interface BlackjackActionResponse {
@@ -42,11 +59,15 @@ export interface BlackjackActionResponse {
   player_total?: number;
   dealer_hand_final?: BlackjackCard[];
   dealer_total?: number;
-  status: "playing" | "resolved";
+  status: "playing" | "resolved" | "split_playing";
   result?: BlackjackResult;
   payout?: number;
   insurance_bet?: number;
   insurance_payout?: number;
   insurance_available?: boolean;
   new_balance?: number;
+  // Split fields
+  split_hands?: SplitHandDisplay[];
+  current_split_hand?: 0 | 1;
+  split_results?: SplitHandResult[];
 }

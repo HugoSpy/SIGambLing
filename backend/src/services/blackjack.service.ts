@@ -12,6 +12,12 @@ export interface BlackjackCard {
   suit: Suit;
 }
 
+interface SplitHandState {
+  hand: BlackjackCard[];
+  bet: number;
+  done: boolean;
+}
+
 interface ActiveGame {
   userId: string;
   initialBet: number;
@@ -24,6 +30,9 @@ interface ActiveGame {
   insuranceResolved: boolean;
   insuranceAvailable: boolean;
   dealerHasBlackjack: boolean;
+  splitHands?: [SplitHandState, SplitHandState];
+  currentSplitHand?: 0 | 1;
+  isSplitAces?: boolean;
 }
 
 const SUITS: Suit[] = ["hearts", "diamonds", "clubs", "spades"];
@@ -71,6 +80,16 @@ function handTotal(cards: BlackjackCard[]): number {
   return total;
 }
 
+function getBlackjackValue(rank: Rank): number {
+  if (rank === "A") return 11;
+  if (["J", "Q", "K"].includes(rank)) return 10;
+  return parseInt(rank);
+}
+
+function isSplittable(card1: BlackjackCard, card2: BlackjackCard): boolean {
+  return getBlackjackValue(card1.rank) === getBlackjackValue(card2.rank);
+}
+
 function generateGameId(): string {
   return `bj_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
 }
@@ -83,6 +102,17 @@ function canOfferInsurance(game: ActiveGame): boolean {
     game.playerHand.length === 2 &&
     game.dealerHand[0]?.rank === "A"
   );
+}
+
+function formatSplitHands(
+  game: ActiveGame,
+): Array<{ hand: BlackjackCard[]; total: number; bet: number; done: boolean }> {
+  return game.splitHands!.map((h) => ({
+    hand: h.hand,
+    total: handTotal(h.hand),
+    bet: h.bet,
+    done: h.done,
+  }));
 }
 
 class BlackjackService {
@@ -276,6 +306,180 @@ class BlackjackService {
     };
   }
 
+  // ── Split helpers ────────────────────────────────────────────────────────────
+
+  private async advanceSplitHand(userId: string, gameId: string, game: ActiveGame) {
+    const handIndex = game.currentSplitHand!;
+
+    if (handIndex === 0) {
+      game.currentSplitHand = 1;
+      const hand1 = game.splitHands![1]!;
+
+      // Auto-stand hand 1 when it's split aces or already 21
+      if (game.isSplitAces || handTotal(hand1.hand) === 21) {
+        hand1.done = true;
+        return this.dealerPlayForSplit(userId, gameId, game);
+      }
+
+      return {
+        status: "split_playing" as const,
+        split_hands: formatSplitHands(game),
+        current_split_hand: 1 as const,
+      };
+    }
+
+    return this.dealerPlayForSplit(userId, gameId, game);
+  }
+
+  private async dealerPlayForSplit(userId: string, gameId: string, game: ActiveGame) {
+    game.insuranceAvailable = false;
+
+    while (handTotal(game.dealerHand) < 17) {
+      const card = game.deck.pop();
+      if (!card) break;
+      game.dealerHand.push(card);
+    }
+
+    const dealerTotal = handTotal(game.dealerHand);
+    const dealerBusted = dealerTotal > 21;
+
+    let totalPayout = 0;
+    const splitResults: Array<{
+      hand: BlackjackCard[];
+      total: number;
+      bet: number;
+      result: "win" | "loss" | "push" | "bust";
+      payout: number;
+    }> = [];
+
+    for (const splitHand of game.splitHands!) {
+      const playerTotal = handTotal(splitHand.hand);
+      const playerBusted = playerTotal > 21;
+
+      let result: "win" | "loss" | "push" | "bust";
+      let payout: number;
+
+      if (playerBusted) {
+        result = "bust";
+        payout = 0;
+      } else if (dealerBusted || playerTotal > dealerTotal) {
+        result = "win";
+        payout = splitHand.bet * 2;
+      } else if (playerTotal === dealerTotal) {
+        result = "push";
+        payout = splitHand.bet;
+      } else {
+        result = "loss";
+        payout = 0;
+      }
+
+      totalPayout += payout;
+      splitResults.push({ hand: splitHand.hand, total: playerTotal, bet: splitHand.bet, result, payout });
+    }
+
+    this.cleanupGame(gameId, userId);
+
+    if (totalPayout > 0) {
+      await prisma.user.update({
+        where: { id: userId },
+        data: { balance: { increment: totalPayout } },
+      });
+    }
+
+    const wins = splitResults.filter((r) => r.result === "win").length;
+    const losses = splitResults.filter((r) => r.result === "loss" || r.result === "bust").length;
+    const overallResult: "win" | "loss" | "push" =
+      wins > 0 && losses === 0 ? "win" : losses > 0 && wins === 0 ? "loss" : "push";
+
+    const totalBet = game.splitHands!.reduce((sum, h) => sum + h.bet, 0);
+    const savedBet = game.bet;
+    game.bet = totalBet;
+
+    await this.saveGame(userId, game, overallResult, totalPayout, {
+      split: true,
+      split_results: splitResults as unknown as Prisma.InputJsonValue,
+      dealer_total: dealerTotal,
+      dealer_busted: dealerBusted,
+    });
+
+    game.bet = savedBet;
+
+    const updatedUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { balance: true },
+    });
+
+    return {
+      status: "resolved" as const,
+      split_results: splitResults,
+      dealer_hand_final: game.dealerHand,
+      dealer_total: dealerTotal,
+      payout: totalPayout,
+      new_balance: updatedUser?.balance ?? 0,
+    };
+  }
+
+  private async hitSplitHand(userId: string, gameId: string, game: ActiveGame) {
+    const handIndex = game.currentSplitHand!;
+    const splitHand = game.splitHands![handIndex]!;
+
+    const card = game.deck.pop();
+    if (!card) throw new AppError("Le deck est vide.", 500);
+    splitHand.hand.push(card);
+
+    const total = handTotal(splitHand.hand);
+
+    if (total >= 21) {
+      splitHand.done = true;
+      return this.advanceSplitHand(userId, gameId, game);
+    }
+
+    return {
+      status: "split_playing" as const,
+      split_hands: formatSplitHands(game),
+      current_split_hand: handIndex as 0 | 1,
+    };
+  }
+
+  private async standSplitHand(userId: string, gameId: string, game: ActiveGame) {
+    game.splitHands![game.currentSplitHand!]!.done = true;
+    return this.advanceSplitHand(userId, gameId, game);
+  }
+
+  private async doubleSplitHand(userId: string, gameId: string, game: ActiveGame) {
+    const handIndex = game.currentSplitHand!;
+    const splitHand = game.splitHands![handIndex]!;
+
+    if (splitHand.hand.length !== 2) {
+      throw new AppError("Le double down n'est disponible qu'avec 2 cartes.", 400);
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { balance: true } });
+    if (!user || user.balance < splitHand.bet) {
+      throw new AppError("Balance insuffisante pour doubler.", 400);
+    }
+
+    await prisma.$transaction(async (transaction) => {
+      const debited = await transaction.user.updateMany({
+        where: { id: userId, balance: { gte: splitHand.bet } },
+        data: { balance: { decrement: splitHand.bet } },
+      });
+      if (debited.count !== 1) throw new AppError("Balance insuffisante pour doubler.", 400);
+      await jackpotService.recordCasinoContribution(userId, splitHand.bet, "blackjack", gameId, transaction);
+    });
+
+    splitHand.bet *= 2;
+
+    const card = game.deck.pop();
+    if (!card) throw new AppError("Le deck est vide.", 500);
+    splitHand.hand.push(card);
+    splitHand.done = true;
+
+    return this.advanceSplitHand(userId, gameId, game);
+  }
+
+  // ── Public methods ───────────────────────────────────────────────────────────
+
   async deal(userId: string, bet: number) {
     const existingGameId = userGameMap.get(userId);
     if (existingGameId && activeSessions.has(existingGameId)) {
@@ -414,6 +618,11 @@ class BlackjackService {
 
   async hit(userId: string, gameId: string) {
     const game = this.getActiveGame(userId, gameId);
+
+    if (game.splitHands) {
+      return this.hitSplitHand(userId, gameId, game);
+    }
+
     const dealerPeekResult = await this.resolvePendingDealerPeek(userId, gameId, game);
     if (dealerPeekResult) {
       return dealerPeekResult;
@@ -470,6 +679,11 @@ class BlackjackService {
 
   async stand(userId: string, gameId: string) {
     const game = this.getActiveGame(userId, gameId);
+
+    if (game.splitHands) {
+      return this.standSplitHand(userId, gameId, game);
+    }
+
     const dealerPeekResult = await this.resolvePendingDealerPeek(userId, gameId, game);
     if (dealerPeekResult) {
       return dealerPeekResult;
@@ -479,6 +693,11 @@ class BlackjackService {
 
   async double(userId: string, gameId: string) {
     const game = this.getActiveGame(userId, gameId);
+
+    if (game.splitHands) {
+      return this.doubleSplitHand(userId, gameId, game);
+    }
+
     const dealerPeekResult = await this.resolvePendingDealerPeek(userId, gameId, game);
     if (dealerPeekResult) {
       return dealerPeekResult;
@@ -527,6 +746,24 @@ class BlackjackService {
     if (!gameId) return null;
     const game = activeSessions.get(gameId);
     if (!game) return null;
+
+    if (game.splitHands) {
+      const currentHand = game.splitHands[game.currentSplitHand!]!;
+      return {
+        game_id: gameId,
+        player_hand: currentHand.hand,
+        player_total: handTotal(currentHand.hand),
+        dealer_upcard: game.dealerHand[0]!,
+        dealer_visible_total: handTotal([game.dealerHand[0]!]),
+        bet: game.initialBet,
+        initial_bet: game.initialBet,
+        insurance_bet: 0,
+        insurance_available: false,
+        status: "playing" as const,
+        split_hands: formatSplitHands(game),
+        current_split_hand: game.currentSplitHand!,
+      };
+    }
 
     return {
       game_id: gameId,
@@ -592,6 +829,89 @@ class BlackjackService {
       insurance_payout: 0,
       insurance_available: false,
       new_balance: updatedUser?.balance ?? Math.max(0, user.balance - insuranceBet),
+    };
+  }
+
+  async splitHand(userId: string, gameId: string) {
+    const game = this.getActiveGame(userId, gameId);
+
+    if (game.splitHands) {
+      throw new AppError("Vous avez déjà splitté.", 400);
+    }
+
+    if (game.playerHand.length !== 2) {
+      throw new AppError("Le split n'est disponible qu'avec 2 cartes.", 400);
+    }
+
+    const [card1, card2] = game.playerHand as [BlackjackCard, BlackjackCard];
+    if (!isSplittable(card1, card2)) {
+      throw new AppError("Les deux cartes doivent avoir la même valeur pour splitter.", 400);
+    }
+
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { balance: true } });
+    if (!user || user.balance < game.initialBet) {
+      throw new AppError("Balance insuffisante pour le split.", 400);
+    }
+
+    await prisma.$transaction(async (transaction) => {
+      const debited = await transaction.user.updateMany({
+        where: { id: userId, balance: { gte: game.initialBet } },
+        data: { balance: { decrement: game.initialBet } },
+      });
+      if (debited.count !== 1) throw new AppError("Balance insuffisante pour le split.", 400);
+      await jackpotService.recordCasinoContribution(userId, game.initialBet, "blackjack", gameId, transaction);
+    });
+
+    const newCard1 = game.deck.pop();
+    const newCard2 = game.deck.pop();
+    if (!newCard1 || !newCard2) throw new AppError("Le deck est vide.", 500);
+
+    const isSplitAcesFlag = card1.rank === "A";
+
+    const hand0: SplitHandState = { hand: [card1, newCard1], bet: game.initialBet, done: false };
+    const hand1: SplitHandState = { hand: [card2, newCard2], bet: game.initialBet, done: false };
+
+    game.splitHands = [hand0, hand1];
+    game.currentSplitHand = 0;
+    game.isSplitAces = isSplitAcesFlag;
+    game.insuranceAvailable = false;
+
+    if (isSplitAcesFlag) {
+      hand0.done = true;
+      hand1.done = true;
+      return this.dealerPlayForSplit(userId, gameId, game);
+    }
+
+    // Auto-advance if hand 0 immediately has 21
+    if (handTotal(hand0.hand) === 21) {
+      hand0.done = true;
+      game.currentSplitHand = 1;
+      if (handTotal(hand1.hand) === 21) {
+        hand1.done = true;
+        return this.dealerPlayForSplit(userId, gameId, game);
+      }
+      const updatedUser = await prisma.user.findUnique({
+        where: { id: userId },
+        select: { balance: true },
+      });
+      return {
+        status: "split_playing" as const,
+        split_hands: formatSplitHands(game),
+        current_split_hand: 1 as const,
+        new_balance: updatedUser?.balance ?? 0,
+      };
+    }
+
+    const updatedUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { balance: true },
+    });
+
+    return {
+      status: "split_playing" as const,
+      split_hands: formatSplitHands(game),
+      current_split_hand: 0 as const,
+      new_balance: updatedUser?.balance ?? 0,
     };
   }
 }
