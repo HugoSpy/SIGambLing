@@ -512,7 +512,12 @@ export function AdminEventsPage() {
       title: proposal.title,
       description: proposal.description ?? "",
       image_url: "",
-      options: createDefaultProbabilityRows(),
+      options:
+        proposal.options.length >= 2
+          ? proposal.options.map((label) =>
+              createProbabilityRow(label, String(Math.round(100 / proposal.options.length))),
+            )
+          : createDefaultProbabilityRows(),
       closing_at: proposal.suggested_date ? toDateTimeLocalValue(proposal.suggested_date) : "",
       min_bet: "10",
       max_bet: "",
