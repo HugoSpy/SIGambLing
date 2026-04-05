@@ -3,9 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 import {
   ArrowRight,
   Award,
+  Clock,
   Coins,
   Flame,
   Gift,
+  Inbox,
   Medal,
   ShieldCheck,
   Ticket,
@@ -20,8 +22,16 @@ import { Card } from "../components/ui/Card";
 import { useAuthenticatedUser } from "../hooks/useAuthenticatedUser";
 import { useGamificationState } from "../hooks/useGamificationState";
 import { fetchEvents, fetchMyEventBets, logoutRequest } from "../lib/api";
-import { formatEventDate } from "../lib/event-utils";
+import { formatEventBetStatus, formatEventDate } from "../lib/event-utils";
 import { formatTokens } from "../lib/utils";
+import type { EventBetStatus } from "../types/event";
+
+function betStatusBadgeClass(status: EventBetStatus) {
+  if (status === "WON") return "border-emerald-500/25 bg-emerald-500/15 text-emerald-300";
+  if (status === "LOST") return "border-red-500/25 bg-red-500/15 text-red-300";
+  if (status === "CANCELLED") return "border-zinc-700 bg-zinc-700/50 text-zinc-400";
+  return "border-sky-500/25 bg-sky-500/15 text-sky-300";
+}
 
 export function DashboardPage() {
   const { data: user } = useAuthenticatedUser();
@@ -35,12 +45,28 @@ export function DashboardPage() {
     queryFn: fetchMyEventBets,
   });
 
-  const activeEvents = useMemo(
-    () => (events ?? []).filter((event) => event.status === "OPEN").slice(0, 5),
+  const popularEvents = useMemo(
+    () =>
+      (events ?? [])
+        .slice()
+        .sort((a, b) => b.total_pool - a.total_pool)
+        .slice(0, 5),
     [events],
   );
+
   const openPositions = myBets?.filter((bet) => bet.status === "PENDING") ?? [];
   const highlightedOpenPositions = openPositions.slice(0, 4);
+
+  const recentHistory = useMemo(
+    () =>
+      (myBets ?? [])
+        .filter((b) => b.status !== "PENDING")
+        .slice()
+        .sort((a, b) => new Date(b.placed_at).getTime() - new Date(a.placed_at).getTime())
+        .slice(0, 5),
+    [myBets],
+  );
+
   const unlockedBadges = gamification?.badges.filter((badge) => badge.unlocked).length ?? 0;
 
   if (!user) {
@@ -98,11 +124,58 @@ export function DashboardPage() {
 
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_360px]">
           <div className="space-y-6">
+            {/* Événements populaires */}
             <Card>
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Mes paris actifs</p>
-                  <h2 className="mt-2 text-lg font-semibold text-zinc-100">Positions a couvrir</h2>
+                  <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">
+                    Événements populaires
+                  </p>
+                  <h2 className="mt-2 flex items-center gap-2 text-lg font-semibold text-zinc-100">
+                    <Flame className="h-5 w-5 text-orange-400" />
+                    Top marchés
+                  </h2>
+                </div>
+                <Link
+                  className="text-sm font-medium text-emerald-400 transition hover:text-emerald-300"
+                  to="/events"
+                >
+                  Voir tout
+                </Link>
+              </div>
+
+              <div className="mt-4 space-y-2">
+                {popularEvents.map((event) => (
+                  <Link
+                    className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 transition hover:border-zinc-700 hover:bg-zinc-900"
+                    key={event.id}
+                    to={`/events/${event.id}`}
+                  >
+                    <p className="min-w-0 flex-1 truncate text-sm font-medium text-zinc-100">
+                      {event.title}
+                    </p>
+                    <span className="ml-4 shrink-0 text-sm font-semibold text-emerald-400">
+                      {formatTokens(event.total_pool)}
+                    </span>
+                  </Link>
+                ))}
+
+                {popularEvents.length === 0 && (
+                  <p className="text-sm leading-7 text-zinc-400">
+                    Aucun événement disponible pour le moment.
+                  </p>
+                )}
+              </div>
+            </Card>
+
+            {/* Mes positions */}
+            <Card>
+              <div className="flex items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">
+                    Mes positions
+                  </p>
+                  <h2 className="mt-2 text-lg font-semibold text-zinc-100">Paris en cours</h2>
                 </div>
                 <Link
                   className="text-sm font-medium text-emerald-400 transition hover:text-emerald-300"
@@ -113,54 +186,92 @@ export function DashboardPage() {
               </div>
 
               <div className="mt-4">
-                <ActiveEventBetsList
-                  bets={highlightedOpenPositions}
-                  emptyMessage="Aucune position ouverte. Ouvrez un marché ou composez un combiné."
-                  events={events}
-                  fallbackLinkTarget="/events?tab=my-bets"
-                />
+                {highlightedOpenPositions.length === 0 ? (
+                  <div className="flex flex-col items-center gap-2 py-6 text-center">
+                    <Inbox className="h-8 w-8 text-zinc-600" />
+                    <p className="text-sm text-zinc-500">Aucune position ouverte.</p>
+                    <Link
+                      className="mt-1 text-sm font-medium text-emerald-400 hover:text-emerald-300"
+                      to="/events"
+                    >
+                      Parcourir les marchés
+                    </Link>
+                  </div>
+                ) : (
+                  <ActiveEventBetsList
+                    bets={highlightedOpenPositions}
+                    emptyMessage="Aucune position ouverte."
+                    events={events}
+                    fallbackLinkTarget="/events?tab=my-bets"
+                  />
+                )}
               </div>
             </Card>
 
+            {/* Historique des paris */}
             <Card>
               <div className="flex items-center justify-between gap-4">
                 <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Événements actifs</p>
-                  <h2 className="mt-2 text-lg font-semibold text-zinc-100">A surveiller</h2>
+                  <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">
+                    Historique des paris
+                  </p>
+                  <h2 className="mt-2 text-lg font-semibold text-zinc-100">Derniers résultats</h2>
                 </div>
                 <Link
                   className="text-sm font-medium text-emerald-400 transition hover:text-emerald-300"
-                  to="/events"
+                  to="/history"
                 >
-                  Voir tout
+                  Voir tout l'historique
                 </Link>
               </div>
 
-              <div className="mt-4 space-y-3">
-                {activeEvents.map((event) => (
-                  <Link
-                    className="block rounded-lg border border-zinc-800 bg-zinc-950 p-4 transition hover:border-zinc-700 hover:bg-zinc-900"
-                    key={event.id}
-                    to={`/events/${event.id}`}
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="min-w-0 flex-1">
-                        <p className="text-sm font-semibold text-zinc-100">{event.title}</p>
-                        <div className="mt-1 flex flex-wrap items-center gap-3 text-xs text-zinc-500">
-                          <span>{formatEventDate(event.closing_at)}</span>
-                          <span>{formatTokens(event.total_pool)}</span>
+              <div className="mt-4 space-y-2">
+                {recentHistory.length === 0 ? (
+                  <div className="flex flex-col items-center gap-2 py-6 text-center">
+                    <Clock className="h-8 w-8 text-zinc-600" />
+                    <p className="text-sm text-zinc-500">Aucun pari résolu pour le moment.</p>
+                  </div>
+                ) : (
+                  recentHistory.map((bet) => {
+                    const isParlay = bet.type === "PARLAY";
+                    const title = isParlay
+                      ? `Combiné ${bet.legs.length} sélections`
+                      : (events?.find((e) => e.id === bet.event_id)?.title ?? "Pari simple");
+                    const payout = bet.actual_payout ?? 0;
+                    const gain = payout - bet.stake;
+
+                    return (
+                      <div
+                        className="flex items-center justify-between gap-4 rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3"
+                        key={bet.id}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-medium text-zinc-100">{title}</p>
+                          <p className="mt-0.5 text-xs text-zinc-500">
+                            Mise : {formatTokens(bet.stake)} · {formatEventDate(bet.placed_at)}
+                          </p>
+                        </div>
+                        <div className="flex shrink-0 flex-col items-end gap-1">
+                          <span
+                            className={`inline-flex items-center rounded border px-2 py-0.5 text-xs font-medium ${betStatusBadgeClass(bet.status)}`}
+                          >
+                            {formatEventBetStatus(bet.status)}
+                          </span>
+                          {bet.status === "WON" && (
+                            <span className="text-xs font-semibold text-emerald-400">
+                              +{formatTokens(gain)}
+                            </span>
+                          )}
+                          {bet.status === "LOST" && (
+                            <span className="text-xs font-semibold text-red-400">
+                              -{formatTokens(bet.stake)}
+                            </span>
+                          )}
                         </div>
                       </div>
-                      <ArrowRight className="mt-0.5 h-4 w-4 text-zinc-500" />
-                    </div>
-                  </Link>
-                ))}
-
-                {activeEvents.length === 0 ? (
-                  <p className="text-sm leading-7 text-zinc-400">
-                    Aucun marché ouvert pour le moment.
-                  </p>
-                ) : null}
+                    );
+                  })
+                )}
               </div>
             </Card>
           </div>
@@ -241,14 +352,16 @@ export function DashboardPage() {
 
             <Card>
               <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Jackpot</p>
-              <h2 className="mt-2 text-lg font-semibold text-zinc-100">Pot permanent</h2>
+              <h2 className="mt-2 text-lg font-semibold text-zinc-100">Jackpot</h2>
               <div className="mt-4 space-y-3 text-sm text-zinc-400">
                 <div className="flex items-center justify-between gap-3">
                   <span className="inline-flex items-center gap-2">
                     <Coins className="h-4 w-4 text-emerald-400" />
                     Pot
                   </span>
-                  <span className="text-zinc-100">{formatTokens(gamification?.jackpot.current_pot ?? 0)}</span>
+                  <span className="text-zinc-100">
+                    {formatTokens(gamification?.jackpot.current_pot ?? 0)}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <span className="inline-flex items-center gap-2">
@@ -281,7 +394,9 @@ export function DashboardPage() {
               <div className="mt-4 space-y-3 text-sm text-zinc-400">
                 <div className="flex items-center justify-between gap-3">
                   <span>Email</span>
-                  <span className="max-w-[180px] truncate text-right text-zinc-100">{user.email}</span>
+                  <span className="max-w-[180px] truncate text-right text-zinc-100">
+                    {user.email}
+                  </span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <span>Pseudo</span>

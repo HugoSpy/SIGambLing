@@ -1,5 +1,5 @@
-import { Suspense, lazy, type ReactNode } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Suspense, lazy, useEffect, type ReactNode } from "react";
+import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AppErrorBoundary } from "./components/layout/AppErrorBoundary";
 import { LoadingScreen } from "./components/layout/LoadingScreen";
 import { useSessionBootstrap } from "./hooks/useSessionBootstrap";
@@ -39,6 +39,17 @@ const AdminEventsPage = lazy(() =>
 const AdminStatisticsPage = lazy(() =>
   import("./pages/admin/AdminStatisticsPage").then((module) => ({ default: module.AdminStatisticsPage })),
 );
+const HistoryPage = lazy(() =>
+  import("./pages/HistoryPage").then((module) => ({ default: module.HistoryPage })),
+);
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [pathname]);
+  return null;
+}
 
 function LandingRedirect() {
   const status = useAuthStore((state) => state.status);
@@ -70,6 +81,7 @@ export default function RouterApp() {
   return (
     <AppErrorBoundary>
       <Suspense fallback={<LoadingScreen label="Chargement de l'interface..." />}>
+        <ScrollToTop />
         <Routes>
           <Route path="/" element={<LandingRedirect />} />
           <Route
@@ -90,6 +102,7 @@ export default function RouterApp() {
             <Route path="/jackpot" element={<JackpotPage />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/history" element={<HistoryPage />} />
           </Route>
           <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
             <Route path="/admin/events" element={<AdminEventsPage />} />
