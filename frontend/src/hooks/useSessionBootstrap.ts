@@ -40,13 +40,10 @@ export function useSessionBootstrap() {
         const user = await fetchCurrentUser();
         console.log("[bootstrap] fetchCurrentUser() returned:", user);
 
-        if (!cancelled) {
-          console.log("[bootstrap] calling setUser() then setStatus('authenticated')");
-          setUser(user);
-          setStatus("authenticated");
-        } else {
-          console.log("[bootstrap] cancelled before setUser/setStatus — skipping");
-        }
+        console.log("[bootstrap] calling setUser() then setStatus('authenticated')");
+        setUser(user);
+        setStatus("authenticated");
+
       } catch (err) {
         console.error("[bootstrap] caught error:", err);
         if (!cancelled) {
