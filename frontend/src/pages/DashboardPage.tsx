@@ -54,7 +54,21 @@ export function DashboardPage() {
     [events],
   );
 
-  const openPositions = myBets?.filter((bet) => bet.status === "PENDING") ?? [];
+  const openPositions = useMemo(
+    () =>
+      (myBets ?? []).filter((bet) => {
+        if (bet.status !== "PENDING") return false;
+        if (bet.type === "PARLAY") {
+          return bet.legs.every(
+            (leg) => leg.event.status === "OPEN" || leg.event.status === "CLOSED",
+          );
+        }
+        const event = events?.find((e) => e.id === bet.event_id);
+        if (!event) return true;
+        return event.status === "OPEN" || event.status === "CLOSED";
+      }),
+    [myBets, events],
+  );
   const highlightedOpenPositions = openPositions.slice(0, 4);
 
   const recentHistory = useMemo(
