@@ -24,6 +24,19 @@ export interface BlackjackDealResponse {
   is_immediate?: boolean;
 }
 
+export interface BlackjackCurrentGameResponse {
+  game_id: string;
+  player_hand: BlackjackCard[];
+  player_total: number;
+  dealer_upcard: BlackjackCard;
+  dealer_visible_total: number;
+  bet: number;
+  initial_bet: number;
+  insurance_bet: number;
+  insurance_available: boolean;
+  status: "playing";
+}
+
 export interface BlackjackActionResponse {
   player_hand?: BlackjackCard[];
   player_total?: number;

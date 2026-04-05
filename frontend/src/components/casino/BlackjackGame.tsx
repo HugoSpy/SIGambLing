@@ -11,6 +11,7 @@ import { useAuthStore } from "../../store/auth-store";
 import type {
   BlackjackActionResponse,
   BlackjackCard,
+  BlackjackCurrentGameResponse,
   BlackjackDealResponse,
   BlackjackGameState,
   BlackjackResult,
@@ -388,6 +389,7 @@ export function BlackjackGame() {
   const [insuranceAvailable, setInsuranceAvailable] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showResultModal, setShowResultModal] = useState(false);
+  const [isCheckingSession, setIsCheckingSession] = useState(true);
 
   const balance = user?.balance ?? 0;
   const isPlaying = gameState === "PLAYER_TURN";
@@ -614,6 +616,37 @@ export function BlackjackGame() {
     setDealerTotal(0);
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+    api
+      .get<BlackjackCurrentGameResponse | null>("/casino/blackjack/current")
+      .then((response) => {
+        if (cancelled) return;
+        const data = response.data;
+        if (data) {
+          setGameId(data.game_id);
+          setPlayerHand(data.player_hand);
+          setPlayerTotal(data.player_total);
+          setDealerUpcard(data.dealer_upcard);
+          setDealerTotal(data.dealer_visible_total);
+          setCurrentBet(data.bet);
+          setBet(data.initial_bet);
+          setInsuranceBet(data.insurance_bet);
+          setInsuranceAvailable(data.insurance_available);
+          setGameState("PLAYER_TURN");
+        }
+      })
+      .catch(() => {
+        // réseau injoignable ou erreur serveur : on affiche simplement l'écran de mise
+      })
+      .finally(() => {
+        if (!cancelled) setIsCheckingSession(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const playerIsBlackjack = playerTotal === 21 && playerHand.length === 2;
   const dealerDisplayHand = dealerHandFinal ?? (dealerUpcard ? [dealerUpcard] : []);
   const showHiddenCard = gameState !== "GAME_OVER" && gameState !== "DEALER_TURN";
@@ -631,6 +664,15 @@ export function BlackjackGame() {
               ? "Defaite"
               : "En attente";
   const resultConfig = result ? getResultConfig(result) : null;
+
+  if (isCheckingSession) {
+    return (
+      <div className="flex min-h-[200px] items-center justify-center">
+        <p className="text-sm text-brand-muted">Chargement...</p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col gap-3">
       <ResultModal

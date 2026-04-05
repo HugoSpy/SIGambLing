@@ -58,6 +58,16 @@ export const blackjackDoubleController: RequestHandler = async (request, respons
   }
 };
 
+export const blackjackCurrentController: RequestHandler = (request, response, next) => {
+  try {
+    const userId = getAuthUserId(request);
+    const result = blackjackService.getCurrentGame(userId);
+    response.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const blackjackInsuranceController: RequestHandler = async (request, response, next) => {
   try {
     const userId = getAuthUserId(request);

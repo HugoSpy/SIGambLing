@@ -1,6 +1,7 @@
 import rateLimit from "express-rate-limit";
 import { Router } from "express";
 import {
+  blackjackCurrentController,
   blackjackDealController,
   blackjackDoubleController,
   blackjackHitController,
@@ -35,6 +36,8 @@ casinoRouter.post(
   validateBody(rouletteSpinSchema),
   spinRouletteController,
 );
+
+casinoRouter.get("/blackjack/current", requireAuth, blackjackCurrentController);
 
 casinoRouter.post(
   "/blackjack/deal",

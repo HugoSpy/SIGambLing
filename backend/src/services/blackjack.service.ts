@@ -521,6 +521,26 @@ class BlackjackService {
     return this.dealerPlay(userId, gameId, game);
   }
 
+  getCurrentGame(userId: string) {
+    const gameId = userGameMap.get(userId);
+    if (!gameId) return null;
+    const game = activeSessions.get(gameId);
+    if (!game) return null;
+
+    return {
+      game_id: gameId,
+      player_hand: game.playerHand,
+      player_total: handTotal(game.playerHand),
+      dealer_upcard: game.dealerHand[0]!,
+      dealer_visible_total: handTotal([game.dealerHand[0]!]),
+      bet: game.bet,
+      initial_bet: game.initialBet,
+      insurance_bet: game.insuranceBet,
+      insurance_available: canOfferInsurance(game),
+      status: "playing" as const,
+    };
+  }
+
   async insure(userId: string, gameId: string) {
     const game = this.getActiveGame(userId, gameId);
 
