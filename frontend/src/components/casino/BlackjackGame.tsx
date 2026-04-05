@@ -869,6 +869,32 @@ export function BlackjackGame() {
     }
   }, [gameId, insuranceCost, queryClient, resolveGame, updateBalance]);
 
+  const handleDeclineInsurance = useCallback(async () => {
+    if (!gameId) {
+      return;
+    }
+
+    setLoading(true);
+    soundManager.play("click");
+
+    try {
+      const response = await api.post<BlackjackActionResponse>("/casino/blackjack/decline-insurance", {
+        game_id: gameId,
+      });
+      const data = response.data;
+
+      setInsuranceAvailable(false);
+
+      if (data.status === "resolved") {
+        resolveGame(data);
+      }
+    } catch (error) {
+      notify.error(getErrorMessage(error, "Erreur lors du refus d'assurance."));
+    } finally {
+      setLoading(false);
+    }
+  }, [gameId, resolveGame]);
+
   const handleSplit = useCallback(async () => {
     if (!gameId) return;
 
@@ -1146,49 +1172,65 @@ export function BlackjackGame() {
                 {gameState === "PLAYER_TURN" ? (
                   <div className="mt-4 flex flex-wrap justify-center gap-2">
                     {canInsure && dealerUpcard?.rank === "A" ? (
-                      <Button
-                        aria-label="Prendre l'assurance"
-                        className="bg-emerald-500 text-zinc-950 hover:bg-emerald-400"
-                        disabled={isDisabled}
-                        onClick={() => void handleInsurance()}
-                      >
-                        Assurance
-                      </Button>
-                    ) : null}
-                    {canSplit ? (
-                      <Button
-                        aria-label="Splitter la main en deux"
-                        className="bg-purple-500 text-zinc-950 hover:bg-purple-400"
-                        disabled={isDisabled}
-                        onClick={() => void handleSplit()}
-                      >
-                        Split
-                      </Button>
-                    ) : null}
-                    <Button
-                      aria-label="Tirer une carte"
-                      className="bg-sky-500 text-zinc-950 hover:bg-sky-400"
-                      disabled={isDisabled}
-                      onClick={() => void handleHit()}
-                    >
-                      Tirer
-                    </Button>
-                    <Button
-                      aria-label="Rester avec la main actuelle"
-                      className="bg-amber-500 text-zinc-950 hover:bg-amber-400"
-                      disabled={isDisabled}
-                      onClick={() => void handleStand()}
-                    >
-                      Rester
-                    </Button>
-                    <Button
-                      aria-label="Doubler la mise et tirer une carte"
-                      className="bg-zinc-100 text-zinc-950 hover:bg-white"
-                      disabled={isDisabled || !canDouble}
-                      onClick={() => void handleDouble()}
-                    >
-                      Doubler
-                    </Button>
+                      <>
+                        <p className="w-full text-center text-xs text-amber-300">
+                          Le dealer montre un As — souhaitez-vous prendre l'assurance ?
+                        </p>
+                        <Button
+                          aria-label="Prendre l'assurance"
+                          className="bg-emerald-500 text-zinc-950 hover:bg-emerald-400"
+                          disabled={isDisabled}
+                          onClick={() => void handleInsurance()}
+                        >
+                          Assurance ({insuranceCost})
+                        </Button>
+                        <Button
+                          aria-label="Refuser l'assurance"
+                          className="bg-zinc-600 text-zinc-100 hover:bg-zinc-500"
+                          disabled={isDisabled}
+                          onClick={() => void handleDeclineInsurance()}
+                        >
+                          Refuser
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        {canSplit ? (
+                          <Button
+                            aria-label="Splitter la main en deux"
+                            className="bg-purple-500 text-zinc-950 hover:bg-purple-400"
+                            disabled={isDisabled}
+                            onClick={() => void handleSplit()}
+                          >
+                            Split
+                          </Button>
+                        ) : null}
+                        <Button
+                          aria-label="Tirer une carte"
+                          className="bg-sky-500 text-zinc-950 hover:bg-sky-400"
+                          disabled={isDisabled}
+                          onClick={() => void handleHit()}
+                        >
+                          Tirer
+                        </Button>
+                        <Button
+                          aria-label="Rester avec la main actuelle"
+                          className="bg-amber-500 text-zinc-950 hover:bg-amber-400"
+                          disabled={isDisabled}
+                          onClick={() => void handleStand()}
+                        >
+                          Rester
+                        </Button>
+                        <Button
+                          aria-label="Doubler la mise et tirer une carte"
+                          className="bg-zinc-100 text-zinc-950 hover:bg-white"
+                          disabled={isDisabled || !canDouble}
+                          onClick={() => void handleDouble()}
+                        >
+                          Doubler
+                        </Button>
+                      </>
+                    )}
                   </div>
                 ) : null}
               </div>

@@ -779,6 +779,29 @@ class BlackjackService {
     };
   }
 
+  async declineInsurance(userId: string, gameId: string) {
+    const game = this.getActiveGame(userId, gameId);
+
+    if (!canOfferInsurance(game)) {
+      throw new AppError("L'assurance n'est pas disponible pour cette manche.", 400);
+    }
+
+    game.insuranceResolved = true;
+    game.insuranceAvailable = false;
+
+    if (game.dealerHasBlackjack) {
+      return this.settleDealerBlackjack(userId, gameId, game);
+    }
+
+    return {
+      player_hand: game.playerHand,
+      player_total: handTotal(game.playerHand),
+      status: "playing" as const,
+      insurance_bet: 0,
+      insurance_available: false,
+    };
+  }
+
   async insure(userId: string, gameId: string) {
     const game = this.getActiveGame(userId, gameId);
 

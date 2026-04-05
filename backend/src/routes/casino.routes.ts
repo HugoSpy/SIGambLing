@@ -3,6 +3,7 @@ import { Router } from "express";
 import {
   blackjackCurrentController,
   blackjackDealController,
+  blackjackDeclineInsuranceController,
   blackjackDoubleController,
   blackjackHitController,
   blackjackInsuranceController,
@@ -70,6 +71,14 @@ casinoRouter.post(
   casinoLimiter,
   validateBody(blackjackActionSchema),
   blackjackInsuranceController,
+);
+
+casinoRouter.post(
+  "/blackjack/decline-insurance",
+  requireAuth,
+  casinoLimiter,
+  validateBody(blackjackActionSchema),
+  blackjackDeclineInsuranceController,
 );
 
 casinoRouter.post(
