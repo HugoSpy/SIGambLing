@@ -225,42 +225,42 @@ function HandTotal({
 function getResultConfig(result: BlackjackResult) {
   const config: Record<
     BlackjackResult,
-    { badge: string; title: string; detail: string; className: string; surfaceClassName: string }
+    { label: string; amountColor: string; borderClass: string; ringClass: string; isWin: boolean }
   > = {
     win: {
-      badge: "Victoire",
-      title: "La table vous rend enfin quelque chose.",
-      detail: "Votre main bat celle du dealer. Vous pouvez relancer sans perdre le fil.",
-      className: "text-green-300",
-      surfaceClassName: "border-green-500/30 bg-green-500/10",
+      label: "GAGNÉ",
+      amountColor: "text-emerald-400",
+      borderClass: "border-emerald-500/70",
+      ringClass: "ring-emerald-500",
+      isWin: true,
     },
     blackjack: {
-      badge: "Blackjack",
-      title: "21 en deux cartes, difficile de faire plus clair.",
-      detail: "Paiement maximise et recapitulatif visible sans masquer la table.",
-      className: "text-yellow-300",
-      surfaceClassName: "border-yellow-500/30 bg-yellow-500/10",
+      label: "BLACKJACK",
+      amountColor: "text-yellow-400",
+      borderClass: "border-yellow-400/70",
+      ringClass: "ring-emerald-500",
+      isWin: true,
     },
     loss: {
-      badge: "Defaite",
-      title: "Le dealer prend la manche. Quelle surprise.",
-      detail: "Lisez les totaux, ajustez la mise, puis relancez quand vous voulez.",
-      className: "text-red-300",
-      surfaceClassName: "border-red-500/30 bg-red-500/10",
+      label: "PERDU",
+      amountColor: "text-red-400",
+      borderClass: "border-red-500/70",
+      ringClass: "ring-red-500",
+      isWin: false,
     },
     bust: {
-      badge: "Bust",
-      title: "Vous avez force une carte de trop.",
-      detail: "Le recap reste visible pour comprendre la manche avant la suivante.",
-      className: "text-red-300",
-      surfaceClassName: "border-red-500/30 bg-red-500/10",
+      label: "BUST",
+      amountColor: "text-red-400",
+      borderClass: "border-red-500/70",
+      ringClass: "ring-red-500",
+      isWin: false,
     },
     push: {
-      badge: "Egalite",
-      title: "Personne ne brille, personne ne tombe.",
-      detail: "La manche se termine a egalite. Vous pouvez repartir immediatement.",
-      className: "text-slate-200",
-      surfaceClassName: "border-white/15 bg-white/5",
+      label: "ÉGALITÉ",
+      amountColor: "text-orange-400",
+      borderClass: "border-orange-500/70",
+      ringClass: "ring-orange-500",
+      isWin: false,
     },
   };
 
@@ -290,27 +290,28 @@ function ResultModal({
   result,
   resultConfig,
   payout,
-  playerTotal,
-  dealerTotal,
-  insuranceBet,
-  insurancePayout,
+  bet,
   onClose,
 }: {
   show: boolean;
   result: BlackjackResult | null;
   resultConfig: ReturnType<typeof getResultConfig> | null;
   payout: number;
-  playerTotal: number;
-  dealerTotal: number;
-  insuranceBet: number;
-  insurancePayout: number;
+  bet: number;
   onClose: () => void;
 }) {
   useEffect(() => {
     if (!show) return;
-    const timer = setTimeout(onClose, 5000);
+    const timer = setTimeout(onClose, 4000);
     return () => clearTimeout(timer);
   }, [show, onClose]);
+
+  const amountDisplay =
+    result === "push"
+      ? "±0"
+      : resultConfig?.isWin
+        ? `+${formatTokens(payout)}`
+        : `-${formatTokens(bet)}`;
 
   return (
     <AnimatePresence>
@@ -320,64 +321,45 @@ function ResultModal({
           className="fixed inset-0 z-50 flex items-center justify-center p-4"
           exit={{ opacity: 0 }}
           initial={{ opacity: 0 }}
-          transition={{ duration: 0.2 }}
+          transition={{ duration: 0.15 }}
         >
-          <div
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-            onClick={onClose}
-          />
+          <div className="absolute inset-0 bg-black/30" onClick={onClose} />
           <motion.div
-            animate={{ opacity: 1, scale: 1 }}
+            animate={{ opacity: 1, y: 0 }}
             className={cn(
-              "relative z-10 w-full max-w-sm rounded-[32px] border p-6",
-              resultConfig.surfaceClassName,
+              "relative z-10 w-full max-w-[260px] rounded-2xl border-2 bg-zinc-900/95 px-6 py-5 text-center shadow-2xl",
+              resultConfig.borderClass,
             )}
-            exit={{ opacity: 0, scale: 0.85 }}
-            initial={{ opacity: 0, scale: 0.85 }}
-            transition={{ type: "spring", damping: 22, stiffness: 320 }}
+            exit={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.18, ease: "easeOut" }}
           >
-            <p className={cn("text-xs uppercase tracking-[0.32em]", resultConfig.className)}>
-              {resultConfig.badge}
+            <p
+              className={cn(
+                "text-[11px] font-black uppercase tracking-[0.36em]",
+                resultConfig.amountColor,
+              )}
+            >
+              {resultConfig.label}
             </p>
-            <h2 className="mt-2 font-display text-3xl text-brand-text">{resultConfig.title}</h2>
 
-            <div className="mt-5 grid grid-cols-2 gap-3">
-              <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3">
-                <p className="text-[10px] uppercase tracking-[0.28em] text-white/45">Payout</p>
-                <p className={cn("mt-1 text-xl font-black", payout > 0 ? "text-emerald-300" : "text-brand-text")}>
-                  {payout > 0 ? `+${formatTokens(payout)}` : "0"}
-                </p>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3">
-                <p className="text-[10px] uppercase tracking-[0.28em] text-white/45">Votre total</p>
-                <p className="mt-1 text-xl font-black text-brand-text">{playerTotal}</p>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3">
-                <p className="text-[10px] uppercase tracking-[0.28em] text-white/45">Total dealer</p>
-                <p className="mt-1 text-xl font-black text-brand-text">{dealerTotal}</p>
-              </div>
-              <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3">
-                <p className="text-[10px] uppercase tracking-[0.28em] text-white/45">Assurance</p>
-                <p className="mt-1 text-sm font-black text-brand-text">
-                  {insuranceBet > 0
-                    ? insurancePayout > 0
-                      ? `+${formatTokens(insurancePayout)}`
-                      : `−${formatTokens(insuranceBet)}`
-                    : "Aucune"}
-                </p>
-              </div>
-            </div>
+            <motion.p
+              animate={{ scale: [1, 1.08, 1] }}
+              className={cn("mt-2 font-black leading-none", resultConfig.amountColor)}
+              style={{ fontSize: "2.6rem" }}
+              transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
+            >
+              {amountDisplay}
+            </motion.p>
+            <p className="mt-1 text-[11px] text-white/40">tokens</p>
 
             <button
-              className="mt-5 w-full rounded-2xl bg-emerald-500 py-3 text-sm font-bold text-zinc-950 transition hover:bg-emerald-400"
+              className="mt-4 w-full rounded-xl bg-white/10 py-2 text-xs font-bold text-white/80 transition hover:bg-white/20"
               onClick={onClose}
               type="button"
             >
               Rejouer
             </button>
-            <p className="mt-3 text-center text-[11px] text-white/35">
-              Fermeture automatique dans 5 s
-            </p>
           </motion.div>
         </motion.div>
       ) : null}
@@ -652,12 +634,9 @@ export function BlackjackGame() {
   return (
     <div className="flex flex-col gap-3">
       <ResultModal
-        dealerTotal={dealerTotal}
-        insuranceBet={insuranceBet}
-        insurancePayout={insurancePayout}
+        bet={currentBet}
         onClose={handleNewGame}
         payout={payout}
-        playerTotal={playerTotal}
         result={result}
         resultConfig={resultConfig}
         show={showResultModal}
@@ -705,7 +684,10 @@ export function BlackjackGame() {
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px] xl:h-[calc(100vh-18rem)] min-h-0">
         <div
-          className="relative overflow-hidden rounded-[36px] border border-amber-200/20 p-4 shadow-[0_30px_80px_rgba(0,0,0,0.32)] sm:p-5 xl:flex xl:flex-col xl:h-full"
+          className={cn(
+            "relative overflow-hidden rounded-[36px] border border-amber-200/20 p-4 shadow-[0_30px_80px_rgba(0,0,0,0.32)] sm:p-5 xl:flex xl:flex-col xl:h-full ring-2 ring-transparent transition-all duration-500",
+            gameState === "GAME_OVER" && resultConfig?.ringClass,
+          )}
           style={{
             background:
               "radial-gradient(circle at top, rgba(40,123,88,0.88), rgba(10,50,32,0.98) 62%)",
