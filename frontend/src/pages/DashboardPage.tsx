@@ -54,21 +54,38 @@ export function DashboardPage() {
     [events],
   );
 
-  const openPositions = useMemo(
-    () =>
-      (myBets ?? []).filter((bet) => {
-        if (bet.status !== "PENDING") return false;
-        if (bet.type === "PARLAY") {
-          return bet.legs.every(
-            (leg) => leg.event.status === "OPEN" || leg.event.status === "CLOSED",
-          );
-        }
-        const event = events?.find((e) => e.id === bet.event_id);
-        if (!event) return true;
-        return event.status === "OPEN" || event.status === "CLOSED";
-      }),
-    [myBets, events],
-  );
+  const openPositions = useMemo(() => {
+    const bets = myBets ?? [];
+
+    if (bets.length > 0) {
+      console.log("[DEBUG] Structure complète d'un bet :", JSON.parse(JSON.stringify(bets[0])));
+      console.log("[DEBUG] Tous les bets reçus :", bets.map((b) => ({
+        id: b.id,
+        type: b.type,
+        "bet.status": b.status,
+        "bet.event_id": (b as any).event_id,
+        "bet.event": (b as any).event,
+        "bet.event_status": (b as any).event_status,
+        "bet.event?.status": (b as any).event?.status,
+        legs: b.type === "PARLAY" ? b.legs?.map((l: any) => ({ event_id: l.event_id, event: l.event, "event?.status": l.event?.status })) : undefined,
+      })));
+    }
+
+    const result = bets.filter((bet) => {
+      if (bet.status !== "PENDING") return false;
+      if (bet.type === "PARLAY") {
+        return bet.legs.every(
+          (leg) => leg.event.status === "OPEN" || leg.event.status === "CLOSED",
+        );
+      }
+      const event = events?.find((e) => e.id === bet.event_id);
+      if (!event) return true;
+      return event.status === "OPEN" || event.status === "CLOSED";
+    });
+
+    console.log(`[DEBUG] Après filtre openPositions : ${result.length} / ${bets.length} bets`);
+    return result;
+  }, [myBets, events]);
   const highlightedOpenPositions = openPositions.slice(0, 4);
 
   const recentHistory = useMemo(
