@@ -102,6 +102,17 @@ export const unlockUserBadgeController: RequestHandler = async (request, respons
   }
 };
 
+export const updateUserRewardController: RequestHandler = async (request, response, next) => {
+  try {
+    const adminId = getAuthenticatedUserId(request);
+    const userId = String(request.params.id);
+    const user = await userService.updateUserReward(adminId, userId, request.body);
+    response.json({ user });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const listAvailableBadgesController: RequestHandler = async (_request, response, next) => {
   try {
     const badges = userService.listAvailableBadges();

@@ -263,6 +263,11 @@ export async function unlockAdminUserBadge(userId: string, badgeKey: string) {
   return response.data;
 }
 
+export async function updateAdminUserReward(userId: string, action: "reset" | "mark_claimed") {
+  const response = await api.patch<{ user: AdminUserLookup }>(`/users/${userId}/reward`, { action });
+  return response.data.user;
+}
+
 export async function fetchAdminEvents(status?: EventStatus) {
   const response = await api.get<{ events: AdminEventView[] }>("/admin/events", {
     params: status ? { status } : undefined,

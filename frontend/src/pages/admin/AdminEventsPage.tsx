@@ -24,6 +24,7 @@ import {
   triggerAdminJackpotPayout,
   unlockAdminUserBadge,
   updateAdminEvent,
+  updateAdminUserReward,
 } from "../../lib/api";
 import {
   formatEventDate,
@@ -1034,6 +1035,74 @@ export function AdminEventsPage() {
                             ? "Mise a jour..."
                             : "Appliquer l'ajustement"}
                         </Button>
+                      </div>
+
+                      <div className="space-y-3 rounded-[22px] border border-white/10 bg-white/5 p-4">
+                        {(() => {
+                          const lastReward = selectedAdminUser.last_reward_at;
+                          const claimedToday = (() => {
+                            if (!lastReward) return false;
+                            const d = new Date(lastReward);
+                            const now = new Date();
+                            return (
+                              d.getUTCFullYear() === now.getUTCFullYear() &&
+                              d.getUTCMonth() === now.getUTCMonth() &&
+                              d.getUTCDate() === now.getUTCDate()
+                            );
+                          })();
+                          return (
+                            <>
+                              <div>
+                                <p className="text-sm font-semibold text-brand-text">
+                                  Récompense journalière
+                                </p>
+                                <p className="mt-1 text-xs text-brand-muted">
+                                  {claimedToday
+                                    ? `Réclamée aujourd'hui à ${new Date(lastReward!).toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}.`
+                                    : lastReward
+                                      ? `Dernière réclamation le ${new Date(lastReward).toLocaleDateString("fr-FR")}.`
+                                      : "Jamais réclamée."}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                <span
+                                  className={`rounded-full px-3 py-1 text-xs font-medium ${
+                                    claimedToday
+                                      ? "border border-brand-orange/35 bg-brand-orange/10 text-brand-orange"
+                                      : "border border-emerald-500/35 bg-emerald-500/10 text-emerald-400"
+                                  }`}
+                                >
+                                  {claimedToday ? "Réclamée" : "Disponible"}
+                                </span>
+                                <Button
+                                  disabled={actionKey === `reward-${selectedAdminUser.id}`}
+                                  onClick={() =>
+                                    void runAction(
+                                      `reward-${selectedAdminUser.id}`,
+                                      async () => {
+                                        const updated = await updateAdminUserReward(
+                                          selectedAdminUser.id,
+                                          claimedToday ? "reset" : "mark_claimed",
+                                        );
+                                        await refreshAdminUserData(updated.id);
+                                      },
+                                      claimedToday
+                                        ? "Récompense réinitialisée."
+                                        : "Récompense marquée comme réclamée.",
+                                    )
+                                  }
+                                  variant="secondary"
+                                >
+                                  {actionKey === `reward-${selectedAdminUser.id}`
+                                    ? "Mise à jour..."
+                                    : claimedToday
+                                      ? "Réinitialiser"
+                                      : "Marquer réclamée"}
+                                </Button>
+                              </div>
+                            </>
+                          );
+                        })()}
                       </div>
 
                       <div className="space-y-3 rounded-[22px] border border-white/10 bg-white/5 p-4">

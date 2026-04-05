@@ -9,6 +9,7 @@ import {
   searchUsersController,
   unlockUserBadgeController,
   updateCurrentUserController,
+  updateUserRewardController,
   uploadCurrentUserAvatarController,
 } from "../controllers/user.controller";
 import { requireAuth } from "../middleware/require-auth";
@@ -18,6 +19,7 @@ import {
   adjustUserBalanceSchema,
   unlockUserBadgeSchema,
   updateUserProfileSchema,
+  updateUserRewardSchema,
 } from "../schemas/user.schemas";
 import { AppError } from "../utils/app-error";
 
@@ -98,4 +100,12 @@ userRouter.post(
   userLimiter,
   validateBody(unlockUserBadgeSchema),
   unlockUserBadgeController,
+);
+userRouter.patch(
+  "/:id/reward",
+  requireAuth,
+  requireRole(["admin"]),
+  userLimiter,
+  validateBody(updateUserRewardSchema),
+  updateUserRewardController,
 );

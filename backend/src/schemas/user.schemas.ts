@@ -29,6 +29,11 @@ export const unlockUserBadgeSchema = z.object({
   badge_key: z.string().trim().min(1, "Le badge est requis.").max(50, "Badge invalide."),
 });
 
+export const updateUserRewardSchema = z.object({
+  action: z.enum(["reset", "mark_claimed"]),
+});
+
 export type UpdateUserProfileInput = z.infer<typeof updateUserProfileSchema>;
 export type AdjustUserBalanceInput = z.infer<typeof adjustUserBalanceSchema>;
 export type UnlockUserBadgeInput = z.infer<typeof unlockUserBadgeSchema>;
+export type UpdateUserRewardInput = z.infer<typeof updateUserRewardSchema>;

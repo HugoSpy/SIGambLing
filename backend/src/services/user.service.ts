@@ -6,6 +6,7 @@ import type {
   AdjustUserBalanceInput,
   UnlockUserBadgeInput,
   UpdateUserProfileInput,
+  UpdateUserRewardInput,
 } from "../schemas/user.schemas";
 import type { UploadedFile } from "../types/upload";
 import { prisma } from "./prisma.service";
@@ -337,6 +338,45 @@ class UserService {
         already_unlocked: existingBadge !== null,
       };
     });
+  }
+
+  async updateUserReward(adminId: string, userId: string, input: UpdateUserRewardInput) {
+    const updatedUser = await prisma.$transaction(async (transaction) => {
+      const user = await transaction.user.findUnique({ where: { id: userId } });
+
+      if (!user || user.isBanned) {
+        throw new AppError("Utilisateur introuvable.", 404);
+      }
+
+      const data =
+        input.action === "reset"
+          ? { lastRewardAt: null as Date | null, streakDays: 0 }
+          : { lastRewardAt: new Date() };
+
+      const persistedUser = await transaction.user.update({
+        where: { id: userId },
+        data,
+        include: {
+          badges: {
+            select: { badgeType: true },
+            orderBy: { unlockedAt: "desc" },
+          },
+        },
+      });
+
+      await transaction.adminLog.create({
+        data: {
+          adminId,
+          actionType: "user_reward_updated",
+          targetId: userId,
+          details: { action: input.action },
+        },
+      });
+
+      return persistedUser;
+    });
+
+    return serializeAdminUserSummary(updatedUser);
   }
 
   listAvailableBadges() {
