@@ -84,6 +84,15 @@ export function DashboardPage() {
     });
 
     console.log(`[DEBUG] Après filtre openPositions : ${result.length} / ${bets.length} bets`);
+    console.log("[DEBUG] Bets après filtre :", result.map(b => ({
+      id: b.id,
+      status: b.status,
+      event_id: b.event_id,
+      event_status: (b as any).event_status,
+      event: (b as any).event,
+      chosen_option: (b as any).chosen_option,
+      _found_in_events: events?.find((e) => e.id === b.event_id) ?? null,
+    })));
     return result;
   }, [myBets, events]);
   const highlightedOpenPositions = openPositions.slice(0, 4);
