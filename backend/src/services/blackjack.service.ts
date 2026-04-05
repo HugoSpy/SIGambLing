@@ -219,16 +219,17 @@ class BlackjackService {
     const playerTotal = handTotal(game.playerHand);
     const dealerTotal = handTotal(game.dealerHand);
     const dealerBusted = dealerTotal > 21;
+    const playerBusted = playerTotal > 21;
 
     let result: "win" | "loss" | "push";
     let resolvedResult: string;
     let payout: number;
 
-    if (dealerBusted || playerTotal > dealerTotal) {
+    if (!playerBusted && (dealerBusted || playerTotal > dealerTotal)) {
       result = "win";
       resolvedResult = "win";
       payout = game.bet * 2;
-    } else if (playerTotal === dealerTotal) {
+    } else if (!playerBusted && playerTotal === dealerTotal) {
       result = "push";
       resolvedResult = "push";
       payout = game.bet;
