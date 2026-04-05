@@ -15,6 +15,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import type { AuthUser } from "../../types/auth";
 import { cn, formatTokens } from "../../lib/utils";
 import { useBetCartStore } from "../../store/bet-cart-store";
+import { useAuthStore } from "../../store/auth-store";
 import { BetCartDrawer } from "../BetCartDrawer";
 import { Button } from "../ui/Button";
 
@@ -26,6 +27,7 @@ interface DashboardShellProps {
 
 export function DashboardShell({ user, onLogout, children }: DashboardShellProps) {
   const location = useLocation();
+  const liveBalance = useAuthStore((state) => state.user?.balance ?? user.balance);
   const cartSelectionsCount = useBetCartStore((state) => state.selections.length);
   const setCartOpen = useBetCartStore((state) => state.setOpen);
   const navLinkClassName =
@@ -149,7 +151,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
               <div className="rounded-lg bg-zinc-900 px-3 py-2">
                 <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Solde</p>
                 <p className="mt-1 text-sm font-semibold text-emerald-400">
-                  {formatTokens(user.balance)}
+                  {formatTokens(liveBalance)}
                 </p>
               </div>
               <div className="rounded-lg bg-zinc-900 px-3 py-2">
@@ -200,7 +202,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
               <div className="hidden h-11 items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900 px-4 shadow-[0_10px_24px_rgba(0,0,0,0.18)] sm:flex">
                 <Coins className="h-4 w-4 text-emerald-400" />
                 <span className="text-sm font-medium text-zinc-100">
-                  {formatTokens(user.balance)}
+                  {formatTokens(liveBalance)}
                 </span>
               </div>
 
