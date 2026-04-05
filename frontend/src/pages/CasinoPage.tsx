@@ -150,18 +150,8 @@ export function CasinoPage() {
               <div>
                 <p className="text-xs uppercase tracking-[0.28em] text-brand-orange">Mode salon</p>
                 <h3 className="mt-2 font-display text-2xl text-brand-text">
-                  Passez d'une table a l'autre sans perdre le fil des mises, des resultats ou du retour au hub casino
+                  Pour les moins chanceux d'entre vous qui galèrent à gagner sur des évènements live...
                 </h3>
-              </div>
-              <div className="flex flex-wrap gap-3 text-sm text-brand-muted">
-                <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
-                  <Sparkles className="mr-2 inline h-4 w-4 text-brand-cyan" />
-                  Navigation casino epuree
-                </span>
-                <span className="rounded-full border border-white/10 bg-white/5 px-4 py-2">
-                  <Coins className="mr-2 inline h-4 w-4 text-brand-orange" />
-                  Lecture rapide des mises
-                </span>
               </div>
             </div>
           </Card>
