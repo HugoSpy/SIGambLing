@@ -114,18 +114,6 @@ export function CasinoPage() {
 
                     <p className="max-w-xl text-sm leading-7 text-brand-muted">{tab.description}</p>
 
-                    <div className="grid gap-3 text-sm text-zinc-200 sm:grid-cols-3">
-                      <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-                        Interface nette
-                      </div>
-                      <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-                        Parcours mobile
-                      </div>
-                      <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-                        Entree directe
-                      </div>
-                    </div>
-
                     <div className="mt-auto">
                       <Link to={tab.href}>
                         <Button className="gap-2" size="lg">
