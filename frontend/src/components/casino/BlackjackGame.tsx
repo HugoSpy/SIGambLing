@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowLeft, ArrowRight, Coins, Shield, Sparkles, Waves } from "lucide-react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { api } from "../../lib/api";
 import { getErrorMessage, notify } from "../../lib/notifications";
@@ -285,6 +285,106 @@ function calcHandTotal(hand: BlackjackCard[]): number {
   return total;
 }
 
+function ResultModal({
+  show,
+  result,
+  resultConfig,
+  payout,
+  playerTotal,
+  dealerTotal,
+  insuranceBet,
+  insurancePayout,
+  onClose,
+}: {
+  show: boolean;
+  result: BlackjackResult | null;
+  resultConfig: ReturnType<typeof getResultConfig> | null;
+  payout: number;
+  playerTotal: number;
+  dealerTotal: number;
+  insuranceBet: number;
+  insurancePayout: number;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    if (!show) return;
+    const timer = setTimeout(onClose, 5000);
+    return () => clearTimeout(timer);
+  }, [show, onClose]);
+
+  return (
+    <AnimatePresence>
+      {show && result && resultConfig ? (
+        <motion.div
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4"
+          exit={{ opacity: 0 }}
+          initial={{ opacity: 0 }}
+          transition={{ duration: 0.2 }}
+        >
+          <div
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            onClick={onClose}
+          />
+          <motion.div
+            animate={{ opacity: 1, scale: 1 }}
+            className={cn(
+              "relative z-10 w-full max-w-sm rounded-[32px] border p-6",
+              resultConfig.surfaceClassName,
+            )}
+            exit={{ opacity: 0, scale: 0.85 }}
+            initial={{ opacity: 0, scale: 0.85 }}
+            transition={{ type: "spring", damping: 22, stiffness: 320 }}
+          >
+            <p className={cn("text-xs uppercase tracking-[0.32em]", resultConfig.className)}>
+              {resultConfig.badge}
+            </p>
+            <h2 className="mt-2 font-display text-3xl text-brand-text">{resultConfig.title}</h2>
+
+            <div className="mt-5 grid grid-cols-2 gap-3">
+              <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3">
+                <p className="text-[10px] uppercase tracking-[0.28em] text-white/45">Payout</p>
+                <p className={cn("mt-1 text-xl font-black", payout > 0 ? "text-emerald-300" : "text-brand-text")}>
+                  {payout > 0 ? `+${formatTokens(payout)}` : "0"}
+                </p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3">
+                <p className="text-[10px] uppercase tracking-[0.28em] text-white/45">Votre total</p>
+                <p className="mt-1 text-xl font-black text-brand-text">{playerTotal}</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3">
+                <p className="text-[10px] uppercase tracking-[0.28em] text-white/45">Total dealer</p>
+                <p className="mt-1 text-xl font-black text-brand-text">{dealerTotal}</p>
+              </div>
+              <div className="rounded-2xl border border-white/10 bg-black/25 px-4 py-3">
+                <p className="text-[10px] uppercase tracking-[0.28em] text-white/45">Assurance</p>
+                <p className="mt-1 text-sm font-black text-brand-text">
+                  {insuranceBet > 0
+                    ? insurancePayout > 0
+                      ? `+${formatTokens(insurancePayout)}`
+                      : `−${formatTokens(insuranceBet)}`
+                    : "Aucune"}
+                </p>
+              </div>
+            </div>
+
+            <button
+              className="mt-5 w-full rounded-2xl bg-emerald-500 py-3 text-sm font-bold text-zinc-950 transition hover:bg-emerald-400"
+              onClick={onClose}
+              type="button"
+            >
+              Rejouer
+            </button>
+            <p className="mt-3 text-center text-[11px] text-white/35">
+              Fermeture automatique dans 5 s
+            </p>
+          </motion.div>
+        </motion.div>
+      ) : null}
+    </AnimatePresence>
+  );
+}
+
 export function BlackjackGame() {
   const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
@@ -305,6 +405,7 @@ export function BlackjackGame() {
   const [insurancePayout, setInsurancePayout] = useState(0);
   const [insuranceAvailable, setInsuranceAvailable] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showResultModal, setShowResultModal] = useState(false);
 
   const balance = user?.balance ?? 0;
   const isPlaying = gameState === "PLAYER_TURN";
@@ -338,6 +439,7 @@ export function BlackjackGame() {
         }
 
         setGameState("GAME_OVER");
+        setShowResultModal(true);
 
         if (finalResult === "blackjack" || finalResult === "win") {
           soundManager.play("win");
@@ -514,6 +616,7 @@ export function BlackjackGame() {
   }, [gameId, insuranceCost, queryClient, resolveGame, updateBalance]);
 
   const handleNewGame = useCallback(() => {
+    setShowResultModal(false);
     setGameState("BETTING");
     setGameId(null);
     setPlayerHand([]);
@@ -548,6 +651,17 @@ export function BlackjackGame() {
   const resultConfig = result ? getResultConfig(result) : null;
   return (
     <div className="flex flex-col gap-3">
+      <ResultModal
+        dealerTotal={dealerTotal}
+        insuranceBet={insuranceBet}
+        insurancePayout={insurancePayout}
+        onClose={handleNewGame}
+        payout={payout}
+        playerTotal={playerTotal}
+        result={result}
+        resultConfig={resultConfig}
+        show={showResultModal}
+      />
       <Link to="/casino">
         <Button className="gap-2" size="sm" variant="secondary">
           <ArrowLeft className="h-4 w-4" />
@@ -730,61 +844,6 @@ export function BlackjackGame() {
           </Card>
 
           <Card className="min-w-[300px] p-4">
-            {gameState === "GAME_OVER" && result && resultConfig ? (
-              <motion.div
-                animate={{ opacity: 1, y: 0 }}
-                className={cn(
-                  "mb-3 rounded-[24px] border px-3 py-3",
-                  resultConfig.surfaceClassName,
-                )}
-                initial={{ opacity: 0, y: -10 }}
-              >
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
-                    <p className={cn("text-xs uppercase tracking-[0.28em]", resultConfig.className)}>
-                      {resultConfig.badge}
-                    </p>
-                    <h2 className="mt-2 font-display text-2xl text-brand-text">
-                      {resultConfig.title}
-                    </h2>
-                    <p className="mt-2 text-sm leading-7 text-brand-muted">{resultConfig.detail}</p>
-                  </div>
-                  <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 text-center sm:min-w-[160px]">
-                    <p className="text-[10px] uppercase tracking-[0.28em] text-white/45">Payout</p>
-                    <p className={cn("mt-1 text-xl font-black", payout > 0 ? "text-green-300" : "text-brand-text")}>
-                      {payout > 0 ? `+${formatTokens(payout)}` : "0"}
-                    </p>
-                  </div>
-                </div>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-                    <p className="text-[10px] uppercase tracking-[0.28em] text-white/45">
-                      Votre total final
-                    </p>
-                    <p className="mt-1 text-lg font-black text-brand-text">{playerTotal}</p>
-                  </div>
-                  <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-                    <p className="text-[10px] uppercase tracking-[0.28em] text-white/45">
-                      Total dealer
-                    </p>
-                    <p className="mt-1 text-lg font-black text-brand-text">{dealerTotal}</p>
-                  </div>
-                  <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3 sm:col-span-2">
-                    <p className="text-[10px] uppercase tracking-[0.28em] text-white/45">
-                      Assurance
-                    </p>
-                    <p className="mt-1 text-lg font-black text-brand-text">
-                      {insuranceBet > 0
-                        ? insurancePayout > 0
-                          ? `Cout ${formatTokens(insuranceBet)} • Retour ${formatTokens(insurancePayout)}`
-                          : `Cout ${formatTokens(insuranceBet)} • Non declenchee`
-                        : "Aucune assurance prise"}
-                    </p>
-                  </div>
-                </div>
-              </motion.div>
-            ) : null}
-
             {(gameState === "BETTING" || gameState === "GAME_OVER") ? (
               <div className="space-y-3">
                 <div>
