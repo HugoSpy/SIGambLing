@@ -563,16 +563,16 @@ export function BlackjackGame() {
 
   return (
     <div className="space-y-6">
+      <Link to="/casino">
+        <Button className="gap-2" size="sm" variant="secondary">
+          <ArrowLeft className="h-4 w-4" />
+          Retour au casino
+        </Button>
+      </Link>
       <Card accent="cyan" className="min-w-[300px]">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
-            <Link to="/casino">
-              <Button className="gap-2" size="sm" variant="secondary">
-                <ArrowLeft className="h-4 w-4" />
-                Retour au casino
-              </Button>
-            </Link>
-            <p className="mt-4 text-xs uppercase tracking-[0.3em] text-brand-cyan">Salon casino</p>
+            <p className="text-xs uppercase tracking-[0.3em] text-brand-cyan">Salon casino</p>
             <h1 className="mt-3 font-display text-4xl text-brand-text">Blackjack</h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-brand-muted">
               Blackjack paie 3:2 • Dealer tire sur 16 ou moins • Assurance sur As visible
