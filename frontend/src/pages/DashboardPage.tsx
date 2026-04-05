@@ -81,6 +81,8 @@ export function DashboardPage() {
 
   const unlockedBadges = gamification?.badges.filter((badge) => badge.unlocked).length ?? 0;
 
+  console.log("[DEBUG] bets filtrés :", openPositions.map(b => ({ id: b.id, bet_status: b.status, event_status: b.event?.status, event_title: b.event?.title })));
+
   if (!user) {
     return <LoadingScreen label="Chargement de votre espace..." />;
   }
@@ -247,8 +249,8 @@ export function DashboardPage() {
                   recentHistory.map((bet) => {
                     const isParlay = bet.type === "PARLAY";
                     const title = isParlay
-                      ? `Combiné ${bet.legs.length} sélections`
-                      : (events?.find((e) => e.id === bet.event_id)?.title ?? "Pari simple");
+                      ? (bet.legs[0]?.event.title ?? "Pari combiné")
+                      : (bet.event?.title ?? "Pari");
                     const payout = bet.actual_payout ?? 0;
                     const gain = payout - bet.stake;
 
@@ -260,6 +262,11 @@ export function DashboardPage() {
                         <div className="min-w-0 flex-1">
                           <p className="truncate text-sm font-medium text-zinc-100">{title}</p>
                           <p className="mt-0.5 text-xs text-zinc-500">
+                            {isParlay
+                              ? `${bet.legs.length} sélections · `
+                              : bet.chosen_option
+                                ? `${bet.chosen_option} · `
+                                : ""}
                             Mise : {formatTokens(bet.stake)} · {formatEventDate(bet.placed_at)}
                           </p>
                         </div>

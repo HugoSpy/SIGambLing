@@ -55,7 +55,7 @@ export function ActiveEventBetsList({
         const linkTarget = targetEvent ? `/events/${targetEvent.id}` : fallbackLinkTarget;
         const isParlay = bet.type === "PARLAY" && bet.legs.length > 0;
         const isExpanded = expandedBets.has(bet.id);
-        const betTitle = isParlay ? `Combiné ${bet.legs.length} sélections` : targetEvent?.title ?? "Pari simple";
+        const betTitle = isParlay ? (bet.legs[0]?.event.title ?? "Pari combiné") : (bet.event?.title ?? "Pari");
         const betLabel = isParlay ? `${bet.legs.length} sélections` : bet.chosen_option ?? "Sélection";
 
         return (
