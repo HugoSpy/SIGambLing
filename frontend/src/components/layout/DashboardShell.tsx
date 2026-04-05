@@ -1,8 +1,9 @@
-import { type ReactNode, useMemo } from "react";
-import { motion } from "framer-motion";
+import { type ReactNode, useMemo, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Coins,
   Dice3,
+  Gift,
   LayoutDashboard,
   Medal,
   ShieldCheck,
@@ -10,14 +11,16 @@ import {
   Trophy,
   TrendingUp,
   UserRound,
+  X,
 } from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
 import type { AuthUser } from "../../types/auth";
 import { cn, formatTokens } from "../../lib/utils";
 import { useBetCartStore } from "../../store/bet-cart-store";
 import { useAuthStore } from "../../store/auth-store";
 import { BetCartDrawer } from "../BetCartDrawer";
 import { Button } from "../ui/Button";
+import { useGamificationState, claimDailyReward } from "../../hooks/useGamificationState";
 
 interface DashboardShellProps {
   user: AuthUser;
@@ -27,9 +30,37 @@ interface DashboardShellProps {
 
 export function DashboardShell({ user, onLogout, children }: DashboardShellProps) {
   const location = useLocation();
+  const navigate = useNavigate();
   const liveBalance = useAuthStore((state) => state.user?.balance ?? user.balance);
+  const updateBalance = useAuthStore((state) => state.updateBalance);
   const cartSelectionsCount = useBetCartStore((state) => state.selections.length);
   const setCartOpen = useBetCartStore((state) => state.setOpen);
+  const { data: gamificationData } = useGamificationState();
+  const rewardAvailable = gamificationData?.daily_reward.streak_status === "claim_available";
+  const rewardAmount =
+    (gamificationData?.daily_reward.base_amount ?? 0) +
+    (gamificationData?.daily_reward.streak_bonus ?? 0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isClaiming, setIsClaiming] = useState(false);
+
+  async function handleClaimReward() {
+    setIsClaiming(true);
+    try {
+      const result = await claimDailyReward();
+      updateBalance(result.user.balance);
+    } finally {
+      setIsClaiming(false);
+      setIsModalOpen(false);
+      void navigate("/profile");
+    }
+  }
+
+  function handleProfileClick(event: React.MouseEvent) {
+    if (rewardAvailable) {
+      event.preventDefault();
+      setIsModalOpen(true);
+    }
+  }
   const navLinkClassName =
     "interactive-hover flex items-center gap-3 rounded-xl border px-3 py-2.5 text-sm";
   const actionSurfaceClassName =
@@ -86,6 +117,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
             const active =
               location.pathname === item.href ||
               (item.href !== "/dashboard" && location.pathname.startsWith(`${item.href}/`));
+            const isProfile = item.href === "/profile";
 
             return (
               <NavLink
@@ -97,8 +129,14 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
                     : "border-transparent text-zinc-400 hover:border-zinc-700 hover:bg-zinc-800 hover:text-zinc-100",
                 )}
                 to={item.href}
+                onClick={isProfile ? handleProfileClick : undefined}
               >
-                <Icon className="h-4 w-4" />
+                <span className="relative">
+                  <Icon className="h-4 w-4" />
+                  {isProfile && rewardAvailable && (
+                    <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-zinc-900 animate-pulse" />
+                  )}
+                </span>
                 <span>{item.label}</span>
               </NavLink>
             );
@@ -263,6 +301,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
             const active =
               location.pathname === item.href ||
               (item.href !== "/dashboard" && location.pathname.startsWith(`${item.href}/`));
+            const isProfile = item.href === "/profile";
 
             return (
               <NavLink
@@ -272,8 +311,14 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
                   active ? "bg-emerald-500/10 text-emerald-400" : "text-zinc-400",
                 )}
                 to={item.href}
+                onClick={isProfile ? handleProfileClick : undefined}
               >
-                <Icon className="h-4 w-4" />
+                <span className="relative">
+                  <Icon className="h-4 w-4" />
+                  {isProfile && rewardAvailable && (
+                    <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-zinc-900 animate-pulse" />
+                  )}
+                </span>
                 <span className="mt-1 truncate">{item.label}</span>
               </NavLink>
             );
@@ -282,6 +327,78 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
       </nav>
 
       <BetCartDrawer />
+
+      <AnimatePresence>
+        {isModalOpen && (
+          <motion.div
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4"
+            exit={{ opacity: 0 }}
+            initial={{ opacity: 0 }}
+          >
+            <motion.div
+              className="absolute inset-0 bg-zinc-950/80 backdrop-blur-sm"
+              onClick={() => setIsModalOpen(false)}
+            />
+            <motion.div
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              className="relative z-10 w-full max-w-sm rounded-2xl border border-zinc-800 bg-zinc-900 p-6 shadow-[0_24px_64px_rgba(0,0,0,0.5)]"
+              exit={{ opacity: 0, scale: 0.95, y: 8 }}
+              initial={{ opacity: 0, scale: 0.95, y: 8 }}
+              transition={{ duration: 0.2 }}
+            >
+              <button
+                className="absolute right-4 top-4 rounded-lg p-1 text-zinc-500 hover:bg-zinc-800 hover:text-zinc-100"
+                onClick={() => setIsModalOpen(false)}
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </button>
+
+              <div className="mb-5 flex flex-col items-center gap-3 text-center">
+                <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-emerald-500/10">
+                  <Gift className="h-7 w-7 text-emerald-400" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-zinc-100">Récompense quotidienne</h2>
+                  {gamificationData && (
+                    <p className="mt-1 text-sm text-zinc-400">
+                      Série actuelle :{" "}
+                      <span className="font-medium text-zinc-100">
+                        {gamificationData.daily_reward.current_streak} jour
+                        {gamificationData.daily_reward.current_streak > 1 ? "s" : ""}
+                      </span>
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              <div className="mb-5 rounded-xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-center">
+                <p className="text-xs uppercase tracking-widest text-emerald-500/70">
+                  Vous allez recevoir
+                </p>
+                <p className="mt-1 text-3xl font-bold text-emerald-400">
+                  {formatTokens(rewardAmount)}
+                </p>
+                {gamificationData && gamificationData.daily_reward.streak_bonus > 0 && (
+                  <p className="mt-1 text-xs text-zinc-500">
+                    dont +{formatTokens(gamificationData.daily_reward.streak_bonus)} bonus de série
+                  </p>
+                )}
+              </div>
+
+              <Button
+                disabled={isClaiming}
+                fullWidth
+                variant="primary"
+                onClick={() => void handleClaimReward()}
+              >
+                {isClaiming ? "Récupération…" : "Récupérer"}
+              </Button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
