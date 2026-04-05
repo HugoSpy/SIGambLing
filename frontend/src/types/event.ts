@@ -62,6 +62,14 @@ export interface EventBetView {
   id: string;
   user_id: string;
   event_id: string | null;
+  event: {
+    id: string;
+    title: string;
+    status: EventStatus;
+    resolved_option: string | null;
+    closing_at: string | null;
+    image_url: string | null;
+  } | null;
   chosen_option: string | null;
   type: EventBetType;
   status: EventBetStatus;

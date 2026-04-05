@@ -68,6 +68,9 @@ const betSelect = {
   legs: {
     select: betLegSelect,
   },
+  event: {
+    select: eventSummarySelect,
+  },
 } satisfies Prisma.BetSelect;
 
 const excludedUserSelect = {
@@ -556,6 +559,7 @@ function serializeBet(bet: BetRecord) {
     id: bet.id,
     user_id: bet.userId,
     event_id: bet.eventId,
+    event: bet.event ? serializeEventSummary(bet.event) : null,
     chosen_option: bet.chosenOption,
     type: bet.type,
     status: serializeBetStatus(bet.status),
