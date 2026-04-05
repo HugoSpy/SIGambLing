@@ -19,6 +19,7 @@ interface BetCartState {
   mode: BetCartMode;
   parlayStake: number;
   selections: BetCartSelection[];
+  betCooldowns: Record<string, number>;
   setOpen: (open: boolean) => void;
   setMode: (mode: BetCartMode) => void;
   setParlayStake: (stake: number) => void;
@@ -27,6 +28,7 @@ interface BetCartState {
   addSelection: (event: EventView, option: EventOptionView) => void;
   removeSelection: (eventId: string) => void;
   clear: () => void;
+  recordBetCooldown: (eventIds: string[]) => void;
 }
 
 export const useBetCartStore = create<BetCartState>((set) => ({
@@ -34,6 +36,7 @@ export const useBetCartStore = create<BetCartState>((set) => ({
   mode: "simple",
   parlayStake: 5,
   selections: [],
+  betCooldowns: {},
   setOpen: (open) => set({ open }),
   setMode: (mode) => set({ mode }),
   setParlayStake: (parlayStake) => set({ parlayStake }),
@@ -89,4 +92,11 @@ export const useBetCartStore = create<BetCartState>((set) => ({
       mode: "simple",
       open: false,
     }),
+  recordBetCooldown: (eventIds) =>
+    set((state) => ({
+      betCooldowns: {
+        ...state.betCooldowns,
+        ...Object.fromEntries(eventIds.map((id) => [id, Date.now()])),
+      },
+    })),
 }));

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import { Ticket, Trash2, X } from "lucide-react";
@@ -28,7 +28,15 @@ export function BetCartDrawer() {
   const syncSelectionOdds = useBetCartStore((state) => state.syncSelectionOdds);
   const removeSelection = useBetCartStore((state) => state.removeSelection);
   const clear = useBetCartStore((state) => state.clear);
+  const betCooldowns = useBetCartStore((state) => state.betCooldowns);
+  const recordBetCooldown = useBetCartStore((state) => state.recordBetCooldown);
   const [submitting, setSubmitting] = useState(false);
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => setTick((t) => t + 1), 1000);
+    return () => clearInterval(interval);
+  }, []);
   const [oddsConflict, setOddsConflict] = useState<OddsConflictDetails | null>(null);
   const [rememberOddsChoice, setRememberOddsChoice] = useState(false);
 
@@ -92,6 +100,7 @@ export function BetCartDrawer() {
       }
 
       updateBalance(outcome.new_balance);
+      recordBetCooldown(selections.map((s) => s.eventId));
       clear();
       setOddsConflict(null);
       await invalidateBetQueries();
@@ -138,6 +147,7 @@ export function BetCartDrawer() {
       }
 
       updateBalance(outcome.new_balance);
+      recordBetCooldown(selections.map((s) => s.eventId));
       clear();
       setOddsConflict(null);
       await invalidateBetQueries();
@@ -177,6 +187,15 @@ export function BetCartDrawer() {
       conflict: oddsConflict,
     });
   };
+
+  const getCooldownRemaining = (eventId: string) =>
+    Math.max(0, 30 - Math.floor((Date.now() - (betCooldowns[eventId] ?? 0)) / 1000));
+
+  const maxCooldown = selections.reduce(
+    (max, s) => Math.max(max, getCooldownRemaining(s.eventId)),
+    0,
+  );
+  const hasActiveCooldown = maxCooldown > 0;
 
   const parlayDisabled =
     selections.length < 2 ||
@@ -345,6 +364,7 @@ export function BetCartDrawer() {
                           className="mt-5"
                           disabled={
                             submitting ||
+                            hasActiveCooldown ||
                             selections.some(
                               (selection) =>
                                 !Number.isFinite(selection.simpleStake) ||
@@ -356,7 +376,7 @@ export function BetCartDrawer() {
                           fullWidth
                           onClick={() => void submitSimple()}
                         >
-                          {submitting ? "Validation..." : "Valider les paris simples"}
+                          {submitting ? "Validation..." : hasActiveCooldown ? `Attendre ${maxCooldown}s` : "Valider les paris simples"}
                         </Button>
                       </>
                     ) : (
@@ -400,11 +420,11 @@ export function BetCartDrawer() {
                         </div>
                         <Button
                           className="mt-5"
-                          disabled={submitting || parlayDisabled}
+                          disabled={submitting || parlayDisabled || hasActiveCooldown}
                           fullWidth
                           onClick={() => void submitParlay()}
                         >
-                          {submitting ? "Validation..." : "Valider le combine"}
+                          {submitting ? "Validation..." : hasActiveCooldown ? `Attendre ${maxCooldown}s` : "Valider le combine"}
                         </Button>
                       </>
                     )}

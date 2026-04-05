@@ -1356,6 +1356,21 @@ class EventService {
         throw new AppError("Utilisateur introuvable.", 404);
       }
 
+      const recentBet = await transaction.bet.findFirst({
+        where: {
+          userId,
+          eventId,
+          createdAt: { gte: new Date(Date.now() - 30000) },
+        },
+      });
+
+      if (recentBet) {
+        throw new AppError(
+          "Vous devez attendre 30 secondes entre deux paris sur le même événement.",
+          429,
+        );
+      }
+
       const event = await transaction.event.findUnique({
         where: {
           id: eventId,
@@ -1572,6 +1587,21 @@ class EventService {
 
       if (!user || user.isBanned) {
         throw new AppError("Utilisateur introuvable.", 404);
+      }
+
+      const recentBet = await transaction.bet.findFirst({
+        where: {
+          userId,
+          eventId: { in: eventIds },
+          createdAt: { gte: new Date(Date.now() - 30000) },
+        },
+      });
+
+      if (recentBet) {
+        throw new AppError(
+          "Vous devez attendre 30 secondes entre deux paris sur le même événement.",
+          429,
+        );
       }
 
       const events = await transaction.event.findMany({
@@ -1840,6 +1870,21 @@ class EventService {
 
       if (!user || user.isBanned) {
         throw new AppError("Utilisateur introuvable.", 404);
+      }
+
+      const recentBet = await transaction.bet.findFirst({
+        where: {
+          userId,
+          eventId: { in: [...uniqueEventIds] },
+          createdAt: { gte: new Date(Date.now() - 30000) },
+        },
+      });
+
+      if (recentBet) {
+        throw new AppError(
+          "Vous devez attendre 30 secondes entre deux paris sur le même événement.",
+          429,
+        );
       }
 
       const events = await transaction.event.findMany({

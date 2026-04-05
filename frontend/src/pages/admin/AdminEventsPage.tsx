@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Pencil, Search, ShieldBan, ShieldCheck, X } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import { ChevronDown, Pencil, Search, ShieldBan, ShieldCheck, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { StatisticsTab } from "../../components/admin/StatisticsTab";
 import { DashboardShell } from "../../components/layout/DashboardShell";
@@ -147,6 +148,28 @@ function initialOddsToProbability(odds: number, totalImplied: number) {
   return (((1 / odds) / totalImplied) * 100).toFixed(1).replace(/\.0$/, "");
 }
 
+function updateProbabilityWithRebalance(
+  options: ProbabilityRow[],
+  changedId: string,
+  newValue: string,
+): ProbabilityRow[] {
+  const newNum = Number(newValue);
+  const clamped = Math.min(100, Math.max(0, Number.isFinite(newNum) ? newNum : 0));
+  const others = options.filter((o) => o.id !== changedId);
+  const sumOthers = others.reduce((sum, o) => sum + (Number(o.probability) || 0), 0);
+  const remaining = 100 - clamped;
+
+  return options.map((o) => {
+    if (o.id === changedId) {
+      return { ...o, probability: String(clamped) };
+    }
+    const otherValue = Number(o.probability) || 0;
+    const newProb =
+      sumOthers === 0 ? remaining / others.length : (otherValue / sumOthers) * remaining;
+    return { ...o, probability: newProb.toFixed(1).replace(/\.0$/, "") };
+  });
+}
+
 function buildProbabilityRowsFromEvent(event: AdminEventView) {
   const totalImplied = event.options.reduce((sum, option) => sum + 1 / option.initial_odds, 0);
 
@@ -155,6 +178,108 @@ function buildProbabilityRowsFromEvent(event: AdminEventView) {
       option.label,
       initialOddsToProbability(option.initial_odds, totalImplied),
     ),
+  );
+}
+
+interface AdminEventCardProps {
+  event: AdminEventView;
+  actionKey: string | null;
+  onEdit: () => void;
+  onClose: () => void;
+  onResolve: () => void;
+  onCancel: () => void;
+}
+
+function AdminEventCard({ event, actionKey, onEdit, onClose, onResolve, onCancel }: AdminEventCardProps) {
+  return (
+    <Card className="min-w-[300px]">
+      <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <span className={`rounded-full border px-3 py-1 text-[11px] uppercase tracking-[0.24em] ${statusTone(event.status)}`}>
+              {formatEventStatus(event.status)}
+            </span>
+          </div>
+          <h2 className="mt-4 font-display text-3xl text-brand-text">{event.title}</h2>
+          <p className="mt-3 text-sm leading-7 text-brand-muted">
+            {event.description || "Aucune description fournie."}
+          </p>
+          <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-brand-muted">
+            <span>Pool {formatTokens(event.total_pool)}</span>
+            <span>Clôture {formatEventDate(event.closing_at)}</span>
+            <span>{event.bet_count} paris</span>
+          </div>
+          {event.excluded_users.length > 0 ? (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {event.excluded_users.map((entry) => (
+                <span
+                  className="rounded-full border border-brand-orange/35 bg-brand-orange/10 px-3 py-1 text-xs text-brand-orangeSoft"
+                  key={entry.id}
+                >
+                  {entry.pseudo}
+                </span>
+              ))}
+            </div>
+          ) : null}
+        </div>
+
+        <div className="flex flex-col gap-3 xl:min-w-[230px]">
+          <Button
+            disabled={event.status !== "OPEN"}
+            onClick={onEdit}
+            variant="secondary"
+          >
+            <Pencil className="mr-2 h-4 w-4" />
+            Editer
+          </Button>
+          <Button
+            disabled={actionKey === `close-${event.id}` || event.status !== "OPEN"}
+            onClick={onClose}
+            variant="secondary"
+          >
+            Clore
+          </Button>
+          <Button
+            disabled={
+              actionKey === `resolve-${event.id}` ||
+              (event.status !== "OPEN" && event.status !== "CLOSED")
+            }
+            onClick={onResolve}
+          >
+            <ShieldCheck className="mr-2 h-4 w-4" />
+            Resoudre
+          </Button>
+          <Button
+            disabled={
+              actionKey === `cancel-${event.id}` ||
+              event.status === "RESOLVED" ||
+              event.status === "CANCELLED"
+            }
+            onClick={onCancel}
+            variant="danger"
+          >
+            Annuler
+          </Button>
+        </div>
+      </div>
+
+      <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+        {event.options.map((option) => (
+          <div
+            className="rounded-[22px] border border-white/10 bg-white/5 p-4"
+            key={option.label}
+          >
+            <div className="flex items-center justify-between gap-3">
+              <span className="font-medium text-brand-text">{option.label}</span>
+              <span className="text-brand-cyan">{formatEventOdds(option.odds)}</span>
+            </div>
+            <p className="mt-2 text-xs text-brand-muted">
+              {option.percentage.toFixed(1)}% - {formatTokens(option.pool)} tokens
+            </p>
+          </div>
+        ))}
+      </div>
+    </Card>
   );
 }
 
@@ -176,6 +301,7 @@ export function AdminEventsPage() {
   const [actionKey, setActionKey] = useState<string | null>(null);
   const [resolveTarget, setResolveTarget] = useState<AdminEventView | null>(null);
   const [resolvedOption, setResolvedOption] = useState("");
+  const [terminatedOpen, setTerminatedOpen] = useState(false);
 
   const { data: events, isLoading } = useQuery({
     queryKey: ["admin-events"],
@@ -342,6 +468,14 @@ export function AdminEventsPage() {
     return (foundUsers ?? []).filter((entry) => !selectedIds.has(entry.id));
   }, [foundUsers, selectedExcludedUsers]);
 
+  const openEvents = useMemo(
+    () => (events ?? []).filter((e) => e.status === "OPEN"),
+    [events],
+  );
+  const terminatedEvents = useMemo(
+    () => (events ?? []).filter((e) => e.status !== "OPEN"),
+    [events],
+  );
   const probabilityTotal = useMemo(() => calculateProbabilityTotal(form.options), [form.options]);
   const currentMargin = useMemo(
     () =>
@@ -667,10 +801,10 @@ export function AdminEventsPage() {
                         onChange={(event) =>
                           setForm((current) => ({
                             ...current,
-                            options: current.options.map((entry) =>
-                              entry.id === row.id
-                                ? { ...entry, probability: event.target.value }
-                                : entry,
+                            options: updateProbabilityWithRebalance(
+                              current.options,
+                              row.id,
+                              event.target.value,
                             ),
                           }))
                         }
@@ -1212,117 +1346,101 @@ export function AdminEventsPage() {
               </div>
             ) : null}
 
-            {view === "markets"
-              ? (events ?? []).map((event) => (
-              <Card className="min-w-[300px]" key={event.id}>
-                <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className={`rounded-full border px-3 py-1 text-[11px] uppercase tracking-[0.24em] ${statusTone(event.status)}`}>
-                        {formatEventStatus(event.status)}
-                      </span>
-                    </div>
-                    <h2 className="mt-4 font-display text-3xl text-brand-text">{event.title}</h2>
-                    <p className="mt-3 text-sm leading-7 text-brand-muted">
-                      {event.description || "Aucune description fournie."}
+            {view === "markets" ? (
+              <>
+                {openEvents.length > 0 ? (
+                  <div className="space-y-4">
+                    <p className="text-sm font-medium text-zinc-400">
+                      Événements ouverts ({openEvents.length})
                     </p>
-                    <div className="mt-4 flex flex-wrap items-center gap-4 text-xs text-brand-muted">
-                      <span>Pool {formatTokens(event.total_pool)}</span>
-                      <span>Clôture {formatEventDate(event.closing_at)}</span>
-                      <span>{event.bet_count} paris</span>
-                    </div>
-                    {event.excluded_users.length > 0 ? (
-                      <div className="mt-4 flex flex-wrap gap-2">
-                        {event.excluded_users.map((entry) => (
-                          <span
-                            className="rounded-full border border-brand-orange/35 bg-brand-orange/10 px-3 py-1 text-xs text-brand-orangeSoft"
-                            key={entry.id}
-                          >
-                            {entry.pseudo}
-                          </span>
-                        ))}
-                      </div>
-                    ) : null}
+                    {openEvents.map((event) => (
+                      <AdminEventCard
+                        actionKey={actionKey}
+                        event={event}
+                        key={event.id}
+                        onCancel={() =>
+                          void runAction(
+                            `cancel-${event.id}`,
+                            () => cancelAdminEvent(event.id),
+                            "Événement annulé et remboursé.",
+                          )
+                        }
+                        onClose={() =>
+                          void runAction(
+                            `close-${event.id}`,
+                            () => closeAdminEvent(event.id),
+                            "Événement clos.",
+                          )
+                        }
+                        onEdit={() => applyEventToForm(event)}
+                        onResolve={() => setResolveTarget(event)}
+                      />
+                    ))}
                   </div>
+                ) : null}
 
-                  <div className="flex flex-col gap-3 xl:min-w-[230px]">
-                    <Button
-                      disabled={event.status !== "OPEN"}
-                      onClick={() => applyEventToForm(event)}
-                      variant="secondary"
+                {terminatedEvents.length > 0 ? (
+                  <div className="space-y-4">
+                    <button
+                      className="flex items-center gap-2 text-sm font-medium text-zinc-400 transition hover:text-zinc-200"
+                      onClick={() => setTerminatedOpen((prev) => !prev)}
+                      type="button"
                     >
-                      <Pencil className="mr-2 h-4 w-4" />
-                      Editer
-                    </Button>
-                    <Button
-                      disabled={actionKey === `close-${event.id}` || event.status !== "OPEN"}
-                      onClick={() =>
-                        void runAction(
-                          `close-${event.id}`,
-                          () => closeAdminEvent(event.id),
-                          "Événement clos.",
-                        )
-                      }
-                      variant="secondary"
-                    >
-                      Clore
-                    </Button>
-                    <Button
-                      disabled={
-                        actionKey === `resolve-${event.id}` ||
-                        (event.status !== "OPEN" && event.status !== "CLOSED")
-                      }
-                      onClick={() => setResolveTarget(event)}
-                    >
-                      <ShieldCheck className="mr-2 h-4 w-4" />
-                      Resoudre
-                    </Button>
-                    <Button
-                      disabled={
-                        actionKey === `cancel-${event.id}` ||
-                        event.status === "RESOLVED" ||
-                        event.status === "CANCELLED"
-                      }
-                      onClick={() =>
-                        void runAction(
-                          `cancel-${event.id}`,
-                          () => cancelAdminEvent(event.id),
-                          "Événement annulé et remboursé.",
-                        )
-                      }
-                      variant="danger"
-                    >
-                      Annuler
-                    </Button>
+                      <motion.span
+                        animate={{ rotate: terminatedOpen ? 180 : 0 }}
+                        className="inline-flex"
+                        transition={{ duration: 0.2 }}
+                      >
+                        <ChevronDown className="h-4 w-4" />
+                      </motion.span>
+                      Événements terminés ({terminatedEvents.length})
+                    </button>
+                    <AnimatePresence initial={false}>
+                      {terminatedOpen ? (
+                        <motion.div
+                          animate={{ height: "auto", opacity: 1 }}
+                          className="space-y-4 overflow-hidden"
+                          exit={{ height: 0, opacity: 0 }}
+                          initial={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.25, ease: "easeInOut" }}
+                        >
+                          {terminatedEvents.map((event) => (
+                            <AdminEventCard
+                              actionKey={actionKey}
+                              event={event}
+                              key={event.id}
+                              onCancel={() =>
+                                void runAction(
+                                  `cancel-${event.id}`,
+                                  () => cancelAdminEvent(event.id),
+                                  "Événement annulé et remboursé.",
+                                )
+                              }
+                              onClose={() =>
+                                void runAction(
+                                  `close-${event.id}`,
+                                  () => closeAdminEvent(event.id),
+                                  "Événement clos.",
+                                )
+                              }
+                              onEdit={() => applyEventToForm(event)}
+                              onResolve={() => setResolveTarget(event)}
+                            />
+                          ))}
+                        </motion.div>
+                      ) : null}
+                    </AnimatePresence>
                   </div>
-                </div>
+                ) : null}
 
-                <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                  {event.options.map((option) => (
-                    <div
-                      className="rounded-[22px] border border-white/10 bg-white/5 p-4"
-                      key={option.label}
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <span className="font-medium text-brand-text">{option.label}</span>
-                        <span className="text-brand-cyan">{formatEventOdds(option.odds)}</span>
-                      </div>
-                      <p className="mt-2 text-xs text-brand-muted">
-                        {option.percentage.toFixed(1)}% - {formatTokens(option.pool)} tokens
-                      </p>
-                    </div>
-                  ))}
-                </div>
-              </Card>
-              ))
-              : null}
-
-            {view === "markets" && (events ?? []).length === 0 ? (
-              <Card className="min-w-[300px]">
-                <p className="text-sm leading-7 text-brand-muted">
-                  Aucun événement admin à afficher pour le moment.
-                </p>
-              </Card>
+                {openEvents.length === 0 && terminatedEvents.length === 0 ? (
+                  <Card className="min-w-[300px]">
+                    <p className="text-sm leading-7 text-brand-muted">
+                      Aucun événement admin à afficher pour le moment.
+                    </p>
+                  </Card>
+                ) : null}
+              </>
             ) : null}
           </div>
         </div>

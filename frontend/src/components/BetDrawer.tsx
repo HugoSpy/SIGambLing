@@ -6,6 +6,7 @@ import { formatEventOdds } from "../lib/event-utils";
 import { getErrorMessage, notify } from "../lib/notifications";
 import { cn, formatTokens } from "../lib/utils";
 import { useAuthStore } from "../store/auth-store";
+import { useBetCartStore } from "../store/bet-cart-store";
 import type { OddsConflictDetails, EventView } from "../types/event";
 import { OddsChangeModal } from "./OddsChangeModal";
 import { Button } from "./ui/Button";
@@ -24,11 +25,19 @@ export function BetDrawer({ event, open, onClose, initialOption }: BetDrawerProp
   const updateOddsPreference = useAuthStore((state) => state.updateOddsPreference);
   const currentBalance = useAuthStore((state) => state.user?.balance ?? 0);
   const alwaysAcceptOddsChanges = useAuthStore((state) => state.user?.accept_odds_changes ?? false);
+  const betCooldowns = useBetCartStore((state) => state.betCooldowns);
+  const recordBetCooldown = useBetCartStore((state) => state.recordBetCooldown);
   const [selectedOption, setSelectedOption] = useState("");
   const [amount, setAmount] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [oddsConflict, setOddsConflict] = useState<OddsConflictDetails | null>(null);
   const [rememberOddsChoice, setRememberOddsChoice] = useState(false);
+  const [, setTick] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => setTick((t) => t + 1), 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   useEffect(() => {
     if (event) {
@@ -97,6 +106,7 @@ export function BetDrawer({ event, open, onClose, initialOption }: BetDrawerProp
       }
 
       updateBalance(outcome.new_balance);
+      recordBetCooldown([event.id]);
       await invalidateBetQueries(event.id);
 
       notify.success("Pari enregistré.");
@@ -124,6 +134,11 @@ export function BetDrawer({ event, open, onClose, initialOption }: BetDrawerProp
       expectedOdds: latestOdds,
     });
   };
+
+  const cooldownRemaining = event
+    ? Math.max(0, 30 - Math.floor((Date.now() - (betCooldowns[event.id] ?? 0)) / 1000))
+    : 0;
+  const onCooldown = cooldownRemaining > 0;
 
   return (
     <>
@@ -266,6 +281,7 @@ export function BetDrawer({ event, open, onClose, initialOption }: BetDrawerProp
                 className="flex-1"
                 disabled={
                   submitting ||
+                  onCooldown ||
                   !event.can_bet ||
                   !selectedOption ||
                   !Number.isFinite(amount) ||
@@ -275,7 +291,7 @@ export function BetDrawer({ event, open, onClose, initialOption }: BetDrawerProp
                 }
                 onClick={() => void submitBet()}
               >
-                {submitting ? "Validation..." : "Confirmer"}
+                {submitting ? "Validation..." : onCooldown ? `Attendre ${cooldownRemaining}s` : "Confirmer"}
               </Button>
             </div>
           </div>
