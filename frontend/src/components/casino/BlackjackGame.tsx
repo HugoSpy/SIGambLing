@@ -746,6 +746,11 @@ export function BlackjackGame() {
                   <p className="mt-2 text-sm text-white/70">{stateCopy.detail}</p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
+                  {currentBet > 0 && gameState !== "BETTING" ? (
+                    <div className="flex min-h-10 min-w-10 items-center justify-center rounded-full border-2 border-amber-300 bg-amber-900/75 px-2 text-xs font-bold text-amber-100 shadow-lg">
+                      {formatTokens(currentBet)}
+                    </div>
+                  ) : null}
                   {playerHand.length > 0 ? (
                     <HandTotal
                       helper={playerHand.length > 0 ? `${playerHand.length} carte(s)` : undefined}
@@ -772,16 +777,48 @@ export function BlackjackGame() {
                   ))}
                 </AnimatePresence>
               </div>
+
+              {gameState === "PLAYER_TURN" ? (
+                <div className="mt-4 flex flex-wrap justify-center gap-2">
+                  {canInsure && dealerUpcard?.rank === "A" ? (
+                    <Button
+                      aria-label="Prendre l'assurance"
+                      className="bg-emerald-500 text-zinc-950 hover:bg-emerald-400"
+                      disabled={isDisabled}
+                      onClick={() => void handleInsurance()}
+                    >
+                      Assurance
+                    </Button>
+                  ) : null}
+                  <Button
+                    aria-label="Tirer une carte"
+                    className="bg-sky-500 text-zinc-950 hover:bg-sky-400"
+                    disabled={isDisabled}
+                    onClick={() => void handleHit()}
+                  >
+                    Tirer
+                  </Button>
+                  <Button
+                    aria-label="Rester avec la main actuelle"
+                    className="bg-amber-500 text-zinc-950 hover:bg-amber-400"
+                    disabled={isDisabled}
+                    onClick={() => void handleStand()}
+                  >
+                    Rester
+                  </Button>
+                  <Button
+                    aria-label="Doubler la mise et tirer une carte"
+                    className="bg-zinc-100 text-zinc-950 hover:bg-white"
+                    disabled={isDisabled || !canDouble}
+                    onClick={() => void handleDouble()}
+                  >
+                    Doubler
+                  </Button>
+                </div>
+              ) : null}
             </div>
           </div>
 
-          {currentBet > 0 && gameState !== "BETTING" ? (
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2">
-              <div className="flex min-h-14 min-w-14 items-center justify-center rounded-full border-2 border-amber-300 bg-amber-900/75 px-3 text-sm font-bold text-amber-100 shadow-lg">
-                {formatTokens(currentBet)}
-              </div>
-            </div>
-          ) : null}
         </div>
 
         <div className="flex flex-col gap-3 xl:h-full xl:overflow-y-auto">
@@ -799,19 +836,6 @@ export function BlackjackGame() {
                 <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">Payout</p>
                 <p className="mt-1 font-display text-xl text-brand-text">
                   {payout > 0 ? `+${formatTokens(payout)}` : "0"}
-                </p>
-              </div>
-              <div className="rounded-[24px] border border-white/10 bg-white/5 px-3 py-2">
-                <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">Assurance</p>
-                <p className="mt-1 font-display text-xl text-brand-text">
-                  {insuranceBet > 0 ? formatTokens(insuranceBet) : "0"}
-                </p>
-                <p className="mt-1 text-xs text-brand-muted">
-                  {insurancePayout > 0
-                    ? `Retour ${formatTokens(insurancePayout)}`
-                    : insuranceAvailable
-                      ? `Cout ${formatTokens(insuranceCost)}`
-                      : "Inactive"}
                 </p>
               </div>
               <div className="rounded-[24px] border border-white/10 bg-white/5 px-3 py-2 sm:col-span-2 xl:col-span-1">
@@ -908,50 +932,6 @@ export function BlackjackGame() {
                 </Button>
               ) : null}
 
-              {gameState === "PLAYER_TURN" ? (
-                <>
-                  <Button
-                    aria-label="Prendre l'assurance"
-                    className="flex-1 bg-teal-100 text-zinc-950 hover:bg-white"
-                    disabled={isDisabled || !canInsure}
-                    onClick={() => void handleInsurance()}
-                  >
-                    Assurance
-                  </Button>
-                  <Button
-                    aria-label="Tirer une carte"
-                    className="flex-1 bg-sky-500 text-zinc-950 hover:bg-sky-400"
-                    disabled={isDisabled}
-                    onClick={() => void handleHit()}
-                  >
-                    Tirer
-                  </Button>
-                  <Button
-                    aria-label="Rester avec la main actuelle"
-                    className="flex-1 bg-amber-500 text-zinc-950 hover:bg-amber-400"
-                    disabled={isDisabled}
-                    onClick={() => void handleStand()}
-                  >
-                    Rester
-                  </Button>
-                  <Button
-                    aria-label="Doubler la mise et tirer une carte"
-                    className="flex-1 bg-zinc-100 text-zinc-950 hover:bg-white"
-                    disabled={isDisabled || !canDouble}
-                    onClick={() => void handleDouble()}
-                  >
-                    Doubler
-                  </Button>
-                </>
-              ) : null}
-
-              {(gameState === "DEALING" || gameState === "DEALER_TURN") ? (
-                <div className="flex flex-1 items-center justify-center rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-                  <span className="animate-pulse text-sm text-brand-muted">
-                    {gameState === "DEALING" ? "Distribution en cours..." : "Le dealer joue..."}
-                  </span>
-                </div>
-              ) : null}
             </div>
           </Card>
         </div>
