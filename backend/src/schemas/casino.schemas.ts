@@ -69,7 +69,7 @@ export const rouletteSpinSchema = z.object({
     .array(
       z.object({
         type: rouletteBetTypeSchema,
-        amount: z.coerce.number().int().min(10).max(10000),
+        amount: z.coerce.number().int().min(10),
       }),
     )
     .min(1)
@@ -79,7 +79,7 @@ export const rouletteSpinSchema = z.object({
 export type RouletteSpinInput = z.infer<typeof rouletteSpinSchema>;
 
 export const blackjackDealSchema = z.object({
-  bet: z.coerce.number().int().min(1).max(100000),
+  bet: z.coerce.number().int().min(1),
 });
 
 export const blackjackActionSchema = z.object({
