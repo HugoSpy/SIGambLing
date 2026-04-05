@@ -1,4 +1,5 @@
 import { type ReactNode, useMemo, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Coins,
@@ -21,6 +22,7 @@ import { useAuthStore } from "../../store/auth-store";
 import { BetCartDrawer } from "../BetCartDrawer";
 import { Button } from "../ui/Button";
 import { useGamificationState, claimDailyReward } from "../../hooks/useGamificationState";
+import { fetchAdminProposals } from "../../lib/api";
 
 interface DashboardShellProps {
   user: AuthUser;
@@ -37,6 +39,12 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
   const setCartOpen = useBetCartStore((state) => state.setOpen);
   const { data: gamificationData } = useGamificationState();
   const rewardAvailable = gamificationData != null && !gamificationData.daily_reward.claimed_today;
+  const { data: adminProposals } = useQuery({
+    queryKey: ["admin-proposals"],
+    queryFn: () => fetchAdminProposals(),
+    enabled: user.role === "admin",
+  });
+  const pendingProposalsCount = (adminProposals ?? []).filter((p) => p.status === "PENDING").length;
   console.log("[DashboardShell] rewardAvailable:", rewardAvailable, "| streak_status:", gamificationData?.daily_reward.streak_status, "| claimed_today:", gamificationData?.daily_reward.claimed_today);
   const rewardAmount =
     (gamificationData?.daily_reward.base_amount ?? 0) +
@@ -119,6 +127,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
               location.pathname === item.href ||
               (item.href !== "/dashboard" && location.pathname.startsWith(`${item.href}/`));
             const isProfile = item.href === "/profile";
+            const isAdmin = item.href === "/admin/events";
 
             return (
               <NavLink
@@ -139,6 +148,11 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
                   )}
                 </span>
                 <span>{item.label}</span>
+                {isAdmin && pendingProposalsCount > 0 && (
+                  <span className="ml-auto inline-flex min-w-5 items-center justify-center rounded-full bg-red-500 px-1.5 py-0.5 text-[10px] font-bold text-white">
+                    {pendingProposalsCount}
+                  </span>
+                )}
               </NavLink>
             );
           })}
@@ -303,6 +317,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
               location.pathname === item.href ||
               (item.href !== "/dashboard" && location.pathname.startsWith(`${item.href}/`));
             const isProfile = item.href === "/profile";
+            const isAdmin = item.href === "/admin/events";
 
             return (
               <NavLink
@@ -318,6 +333,11 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
                   <Icon className="h-4 w-4" />
                   {isProfile && rewardAvailable && (
                     <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-zinc-900 animate-pulse" />
+                  )}
+                  {isAdmin && pendingProposalsCount > 0 && (
+                    <span className="absolute -right-1 -top-1 inline-flex min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
+                      {pendingProposalsCount}
+                    </span>
                   )}
                 </span>
                 <span className="mt-1 truncate">{item.label}</span>

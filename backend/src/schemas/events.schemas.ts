@@ -242,6 +242,11 @@ export const createProposalSchema = z.object({
   title: z.string().trim().min(10).max(200),
   description: optionalTextSchema,
   suggested_date: optionalDateSchema,
+  options: z
+    .array(z.string().trim().min(1).max(200))
+    .min(2, "Au moins 2 options requises.")
+    .max(6, "Maximum 6 options.")
+    .optional(),
 });
 
 export const rejectProposalSchema = z.object({

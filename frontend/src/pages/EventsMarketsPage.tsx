@@ -70,6 +70,7 @@ export function EventsPage() {
     description: "",
     suggested_date: "",
   });
+  const [proposalOptions, setProposalOptions] = useState<string[]>(["", ""]);
 
   const {
     data: events,
@@ -131,6 +132,12 @@ export function EventsPage() {
       return;
     }
 
+    const trimmedOptions = proposalOptions.map((o) => o.trim());
+    if (trimmedOptions.some((o) => o.length === 0)) {
+      toast.error("Toutes les options doivent être renseignées.");
+      return;
+    }
+
     try {
       setProposalSubmitting(true);
       await createProposal({
@@ -139,6 +146,7 @@ export function EventsPage() {
         suggested_date: proposalForm.suggested_date
           ? new Date(proposalForm.suggested_date).toISOString()
           : null,
+        options: trimmedOptions,
       });
       setProposalOpen(false);
       setProposalForm({
@@ -146,6 +154,7 @@ export function EventsPage() {
         description: "",
         suggested_date: "",
       });
+      setProposalOptions(["", ""]);
       await queryClient.invalidateQueries({ queryKey: ["my-proposals"] });
       toast.success("Proposition envoyée.");
     } catch (error) {
@@ -370,7 +379,10 @@ export function EventsPage() {
 
       <Modal
         description="Soumettez une idée de marché. Un admin pourra ensuite la configurer avec les cotes."
-        onClose={() => setProposalOpen(false)}
+        onClose={() => {
+          setProposalOpen(false);
+          setProposalOptions(["", ""]);
+        }}
         open={proposalOpen}
         title="Proposer un événement"
       >
@@ -412,6 +424,45 @@ export function EventsPage() {
                 value={proposalForm.suggested_date}
               />
             </label>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-zinc-200">Issues possibles</span>
+              <span className="text-xs text-zinc-500">{proposalOptions.length}/6</span>
+            </div>
+            {proposalOptions.map((option, index) => (
+              <div className="flex items-center gap-2" key={index}>
+                <input
+                  className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none transition focus:border-emerald-500"
+                  onChange={(event) => {
+                    const updated = [...proposalOptions];
+                    updated[index] = event.target.value;
+                    setProposalOptions(updated);
+                  }}
+                  placeholder={`Option ${index + 1}`}
+                  value={option}
+                />
+                {proposalOptions.length > 2 ? (
+                  <button
+                    className="shrink-0 rounded-lg border border-zinc-700 bg-zinc-900 px-3 py-3 text-xs text-zinc-400 transition hover:border-red-500/50 hover:bg-red-500/10 hover:text-red-400"
+                    onClick={() => setProposalOptions(proposalOptions.filter((_, i) => i !== index))}
+                    type="button"
+                  >
+                    ✕
+                  </button>
+                ) : null}
+              </div>
+            ))}
+            {proposalOptions.length < 6 ? (
+              <button
+                className="w-full rounded-lg border border-dashed border-zinc-700 bg-transparent py-2 text-sm text-zinc-500 transition hover:border-emerald-500/50 hover:text-emerald-400"
+                onClick={() => setProposalOptions([...proposalOptions, ""])}
+                type="button"
+              >
+                + Ajouter une option
+              </button>
+            ) : null}
           </div>
 
           <Button disabled={proposalSubmitting} fullWidth onClick={() => void submitProposal()}>

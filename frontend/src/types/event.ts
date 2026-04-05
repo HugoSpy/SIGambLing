@@ -168,6 +168,7 @@ export interface EventProposalView {
   title: string;
   description: string | null;
   suggested_date: string | null;
+  options: string[];
   status: ProposalStatus;
   created_at: string;
   reviewed_at: string | null;
@@ -209,4 +210,5 @@ export interface CreateProposalPayload {
   title: string;
   description?: string | null;
   suggested_date?: string | null;
+  options?: string[];
 }

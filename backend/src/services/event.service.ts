@@ -660,6 +660,7 @@ function serializeProposal(proposal: ProposalRecord) {
     title: proposal.title,
     description: proposal.description,
     suggested_date: proposal.suggestedDate?.toISOString() ?? null,
+    options: proposal.options,
     status: serializeProposalStatus(proposal.status),
     created_at: proposal.createdAt.toISOString(),
     reviewed_at: proposal.reviewedAt?.toISOString() ?? null,
@@ -2378,6 +2379,7 @@ class EventService {
         title: input.title,
         description: input.description,
         suggestedDate: input.suggested_date,
+        options: input.options ?? [],
       },
       include: {
         user: {

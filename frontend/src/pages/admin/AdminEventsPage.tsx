@@ -958,6 +958,18 @@ export function AdminEventsPage() {
                     <p className="mt-2 text-sm leading-7 text-brand-muted">
                       {proposal.description || "Aucune description fournie."}
                     </p>
+                    {proposal.options && proposal.options.length > 0 ? (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {proposal.options.map((opt, i) => (
+                          <span
+                            className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[11px] text-brand-muted"
+                            key={i}
+                          >
+                            {opt}
+                          </span>
+                        ))}
+                      </div>
+                    ) : null}
                     <p className="mt-2 text-xs text-brand-muted">
                       Par {proposal.user.pseudo} · Suggestion {formatEventDate(proposal.suggested_date)}
                     </p>

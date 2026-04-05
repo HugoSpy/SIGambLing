@@ -1,7 +1,7 @@
 # PROJECT_MEMORY.md — SIGambling Living Documentation
 
-**Last Updated:** 2026-04-04  
-**Last Updated By:** GitHub Copilot (auto-generated from codebase analysis)
+**Last Updated:** 2026-04-05  
+**Last Updated By:** Claude (session recap 04/04 → 05/04/2026)
 
 ---
 
@@ -108,15 +108,26 @@
 
 **Frontend:**
 
-- Platform: [Not yet deployed / Vercel planned per ARCHITECTURE.md]
-- URL: Pending
-- Status: In Progress
+- Platform: Vercel
+- URL: https://www.sigambling.fr (domaine custom via Cloudflare)
+- Status: ✅ Live
+- Config: `frontend/vercel.json` — SPA rewrites (toutes les routes → `/index.html`)
 
 **Backend:**
 
-- Platform: [Not yet deployed / Vercel Serverless planned per ARCHITECTURE.md]
-- URL: Pending
-- Status: In Progress
+- Platform: VM Ubuntu 24 hébergée sur Proxmox
+- URL: https://api.sigambling.fr (exposé via Cloudflare Tunnel)
+- Status: ✅ Live
+- Process manager: PM2 (auto-restart au boot via systemd)
+- SSH: `ssh sigambling` (alias dans `~/.ssh/config` via Cloudflare Tunnel — `ssh.sigambling.fr`)
+
+**Env vars prod notables:**
+
+```env
+COOKIE_DOMAIN=.sigambling.fr   # point devant pour cross-subdomain (www + api)
+FRONTEND_URL=https://www.sigambling.fr
+NODE_ENV=production
+```
 
 **Infrastructure Diagram:**
 
@@ -126,27 +137,34 @@ Users (EPITA SIGL 2027)
         ▼ HTTPS
 ┌───────────────────┐
 │  React SPA        │  Vite + React 19 + Tailwind
-│  (Vercel / CDN)   │  Port 5173 (dev)
+│  Vercel + CDN     │  https://www.sigambling.fr
 └───────────┬───────┘
             │ REST API (Bearer JWT)
             ▼ HTTPS
-┌───────────────────┐
-│  Express API      │  Node.js + TypeScript
-│  (Vercel / NAS)   │  Port 3001 (dev)
-└───────────┬───────┘
-            │ PostgreSQL protocol
-            ▼
-┌───────────────────┐
-│  Supabase         │  PostgreSQL 15
-│  (Hosted DB)      │  + Storage (avatars)
-└───────────────────┘
-            │
-            ▼ OAuth2
-┌───────────────────┐
-│  Microsoft Azure  │  passport-microsoft
-│  (EPITA tenant)   │  scope: openid, profile, email
-└───────────────────┘
+┌───────────────────┐    ┌──────────────────────┐
+│  Cloudflare       │───▶│  Express API          │
+│  Tunnel           │    │  VM Ubuntu 24/Proxmox │  PM2 + systemd
+└───────────────────┘    │  https://api.sigambling.fr
+                         └───────────┬──────────┘
+                                     │ PostgreSQL protocol
+                                     ▼
+                         ┌───────────────────┐
+                         │  Supabase         │  PostgreSQL 15
+                         │  (Hosted DB)      │  + Storage (avatars)
+                         └───────────────────┘
+                                     │
+                                     ▼ OAuth2
+                         ┌───────────────────┐
+                         │  Microsoft Azure  │  passport-microsoft
+                         │  (EPITA tenant)   │  scope: openid, profile, email
+                         └───────────────────┘
 ```
+
+**Notes infra:**
+
+- `app.set('trust proxy', 1)` dans `app.ts` → express-rate-limit fonctionne correctement derrière Cloudflare
+- `cloudflared` service systemd : `After=network-online.target` ajouté pour fix démarrage
+- Réseau VM : bridge vmbr0 → bridge isolé `10.10.10.x` (IP statique via netplan) ; gateway manquante sur nouveau bridge → cloudflared passe via le host Proxmox
 
 ---
 
@@ -206,7 +224,14 @@ Users (EPITA SIGL 2027)
 **Games:**
 
 - [x] **Roulette** — Full European roulette with straight, split, street, corner, six-line, dozen, column, and even-money bets. Server-side RNG (`roulette-rng.ts`). Jackpot contribution on each spin.
-- [x] **Blackjack** — Deal, Hit, Stand, Double Down, Insurance. Multi-phase state machine (`blackjack.service.ts`). Jackpot contribution.
+- [x] **Blackjack** — Deal, Hit, Stand, Double Down, Insurance, Split. Multi-phase state machine (`blackjack.service.ts`). Jackpot contribution.
+  - Modal résultat centré style Stake (GAGNÉ/PERDU/ÉGALITÉ + montant, sans flou)
+  - Ring coloré autour de la table selon résultat (emerald/red/orange)
+  - Boutons d’action sur la table (Tirer/Rester/Doubler/Assurance)
+  - Split complet (deux mains, résolution indépendante, split d’As)
+  - Déclin d’assurance explicite (`POST /casino/blackjack/decline-insurance`)
+  - Restauration de partie après refresh (`GET /casino/blackjack/current`)
+  - Fix bust → toujours DÉFAITE même si dealer bust aussi
 - [x] **Casino hub page** (`CasinoPage.tsx`)
 
 **Betting System:**
@@ -223,12 +248,14 @@ Users (EPITA SIGL 2027)
 - [x] Auto-generated pseudo from EPITA email
 - [x] User profile & avatar upload (Supabase Storage, 2MB limit, processed with Sharp)
 - [x] Balance management
-- [x] Personal bet history (`/users/me/bets`)
+- [x] Balance navbar temps réel via Zustand (`liveBalance` dans `DashboardShell`)
+- [x] Personal bet history (`/users/me/bets`) + page `/history` complète (paginated + filtres)
 - [x] Daily reward claiming with streak system
 - [x] Streak tiers: Bronze (1d), Silver (3d), Gold (7d), Lumineux (14d), Mythique (30d)
 - [x] Leaderboard
 - [x] Badge/gamification system (10+ badge types)
 - [x] Event proposals (users can suggest new events)
+- [x] ScrollToTop au changement de route
 
 **Admin Features:**
 
@@ -237,20 +264,34 @@ Users (EPITA SIGL 2027)
 - [x] User search
 - [x] Manual balance adjustment
 - [x] Manual badge unlock
-- [x] Statistics overview
-- [x] Events leaderboard (admin view)
+- [x] Statistics overview (vraies données DB via `getStatisticsOverview`)
+- [x] Events leaderboard admin (top 5 par volume via `getEventsLeaderboard`)
 - [x] Jackpot manual payout trigger
 - [x] AdminLog model for audit trail
+- [x] Sections événements collapsées (ouverts visibles, terminés repliés)
+- [x] Sliders de cotes liés lors de création d’événement (total = 100%)
+- [x] Badge notification sur onglet « Propositions » si pending
 
 **Jackpot System:**
 
 - [x] Progressive jackpot fed by casino game wagers (1% / 100 bps contribution rate)
-- [x] Jackpot state per user
+- [x] Jackpot state per user (libellé « Jackpot » — anciennement « Pot permanent »)
 - [x] Admin-triggered payout
+
+**Betting:**
+
+- [x] Rate limit 30s par `(userId, eventId)` sur placement de pari (anti-spam)
+- [x] « Événements populaires » 🔥 (top 5 par `totalPool`) dans le dashboard
+- [x] « Mes positions » filtre PENDING sur événements OPEN/CLOSED uniquement
+
+**Gamification :**
+
+- [x] Pastille verte `animate-pulse` sur bouton Profil sidebar si récompense disponible
+- [x] Modal récompense quotidienne au clic sur Profil (avant navigation)
+- [x] Fix `streakAlive` pour nouveaux utilisateurs (`lastRewardAt === null` → `claim_available`)
 
 ### In Progress
 
-- Deployment to production (Vercel + Supabase)
 - User experience polish (animations, sounds)
 
 ### Planned / From Roadmap
@@ -325,21 +366,24 @@ POST   /admin/events/:id/cancel                   — Cancel event
 ### Admin Statistics (`/admin/statistics`) — requires auth + admin role
 
 ```
-GET  /admin/statistics/overview             — Statistics overview
-GET  /admin/statistics/events/leaderboard  — Events leaderboard
+GET  /admin/statistics/overview             — Statistics overview (totalBets, activeUsers, totalVolume)
+GET  /admin/statistics/events/leaderboard   — Top 5 événements par volume
 ```
 
-> Note: `adminStatisticsRouter` defined in `admin.routes.ts` but not currently mounted in `app.ts`. Verify registration.
+> `adminStatisticsRouter` monté dans `app.ts` sur `/admin/statistics`. ✅ Fonctionnel en prod.
 
 ### Casino (`/casino`) — requires auth
 
 ```
-POST /casino/roulette/spin       — Spin roulette (casinoLimiter: 60/min)
-POST /casino/blackjack/deal      — Deal blackjack hand
-POST /casino/blackjack/hit       — Hit
-POST /casino/blackjack/stand     — Stand
-POST /casino/blackjack/insurance — Insurance decision
-POST /casino/blackjack/double    — Double down
+GET  /casino/blackjack/current        — Restaurer partie en cours après refresh
+POST /casino/roulette/spin            — Spin roulette (casinoLimiter: 60/min)
+POST /casino/blackjack/deal           — Deal blackjack hand
+POST /casino/blackjack/hit            — Hit
+POST /casino/blackjack/stand          — Stand
+POST /casino/blackjack/insurance      — Insurance decision
+POST /casino/blackjack/double         — Double down
+POST /casino/blackjack/split          — Split (deux mains)
+POST /casino/blackjack/decline-insurance — Refus assurance explicite
 ```
 
 ### Rewards/Gamification (`/rewards`) — requires auth
@@ -546,41 +590,90 @@ SENTRY_DSN=
 
 ## 8. Known Issues
 
-**Potential Bug — Admin Statistics Route Not Mounted:**  
-`adminStatisticsRouter` is defined in `backend/src/routes/admin.routes.ts` but not mounted in `backend/src/app.ts`. The `/admin/statistics/*` routes may be unreachable.  
-→ Location: `backend/src/app.ts` — needs `app.use("/admin/statistics", adminStatisticsRouter)`
+**No active critical bugs.** Issues identifiés et corrigés lors de la session 04–05/04/2026 :
 
-**No TODO/FIXME comments found** in the TypeScript codebase at time of analysis.
+- ~~Admin Statistics Route Not Mounted~~ — fixé, `adminStatisticsRouter` correctement monté dans `app.ts`
+- ~~Session loader infini en prod~~ — fixé (race condition `cancelled=true` dans `useSessionBootstrap`)
+- ~~Refresh token manquant en prod~~ — fixé (`COOKIE_DOMAIN` mal configuré)
+- ~~Blackjack bust affiché comme victoire~~ — fixé
+- ~~Dealer As → résolution immédiate sans assurance~~ — fixé
+- ~~Balance non mise à jour en temps réel après casino~~ — fixé (Zustand `liveBalance`)
+- ~~Paris sur événements terminés dans « Mes positions »~~ — fixé
+- ~~Noms d’événements « Pari simple » au lieu du vrai titre~~ — fixé
 
-**Minor — seed.ts mentions hackathon event** which is test data only.
+**Remaining known trade-offs:**
+
+- `sessionVersion` adds one DB query per authenticated request (security vs. performance)
+- GitHub onboarding bonus feature was reverted (two reverts in git history — feature was unstable)
+- No WebSockets — real-time features (if needed) would require polling or SSE
+- `validator` role in DB not yet implemented
 
 ---
 
 ## 9. Recent Changes
 
-Based on last 40 git commits:
+### Session 04/04 → 05/04/2026 (session principale de déploiement + features)
+
+**Déploiement prod :**
+
+- Frontend déployé sur Vercel : `https://www.sigambling.fr` (domaine custom via Cloudflare)
+- Backend déployé sur VM Ubuntu 24 (Proxmox) via Cloudflare Tunnel : `https://api.sigambling.fr`
+- PM2 + systemd pour auto-restart ; `trust proxy = 1` pour express-rate-limit
+- Fix `COOKIE_DOMAIN=.sigambling.fr` pour cross-subdomain cookies
+- Fix CORS `FRONTEND_URL=https://www.sigambling.fr`
+
+**Blackjack :**
+
+- Split d’As et split classique (`POST /casino/blackjack/split`)
+- Déclin assurance explicite (`POST /casino/blackjack/decline-insurance`)
+- Restauration de partie après refresh (`GET /casino/blackjack/current`)
+- Modal résultat style Stake + ring de couleur selon issue
+- Fix bust → toujours DÉFAITE
+- Dealer As → assurance proposée avant résolution
+
+**Dashboard :**
+
+- Section « Événements populaires » 🔥 (top 5 `totalPool`)
+- « Mes positions » : filtrage PENDING sur événements OPEN/CLOSED
+- Historique des paris (5 derniers + page `/history` avec pagination et filtres)
+- « Pot permanent » renommé en « Jackpot »
+- ScrollToTop au changement de route
+- Balance navbar temps réel (`liveBalance` dans Zustand)
+
+**Admin :**
+
+- Onglet « Statistiques » avec vraies données DB
+- Événements collapsés (ouverts visibles, terminés repliés)
+- Sliders de cotes liés (creéation événement, total = 100%)
+- Badge notification si proposals pending
+
+**Gamification :**
+
+- Pastille verte animate-pulse sur bouton Profil si récompense disponible
+- Modal récompense quotidienne au clic Profil
+- Fix `streakAlive` pour nouveaux utilisateurs (`lastRewardAt === null`)
+
+**Bugs fixés :**
+
+- Session loader infini en prod (race condition `cancelled=true`)
+- `/admin/statistics` 404 (dist/ stale, tsconfig excluait les fichiers de test)
+- Noms d’événements affichés comme « Pari simple »
+
+### Commits précédents (avant 04/04/2026)
 
 **Security Fixes:**
 
-- `4e48fe8` — Remove token from OAuth callback URLs (token leak prevention)
-- `2b4aa40` — Harden Microsoft OAuth state validation (CSRF hardening)
+- `4e48fe8` — Remove token from OAuth callback URLs
+- `2b4aa40` — Harden Microsoft OAuth state validation
 
 **Features Added:**
 
 - `3c14c64` — Add blackjack insurance flow and card faces
 - `c02375b` — Add leaderboard and active bets surfaces
 - `3ec0196` — Add expandable combined bet details
-- `280cb1f` — Harden categoryless event UX
 - `c9d9434` — Implement EPITA default pseudo generation
 - `cd3c9f8` — Implement odds-change confirmation flow for bets
 - `2273638` — Harden event odds smoothing
-
-**Bug Fixes:**
-
-- `21c4fa7` — Sweep French event and gamification copy
-- `d6891e6` — Polish casino navigation and hover UX
-- `bd60309` / `a08ace4` — Revert GitHub onboarding bonus claim (reverted twice, unstable feature)
-- `0d44e76` — Fix live event odds to pure pari-mutuel
 
 **Earlier Milestones:**
 
@@ -717,13 +810,16 @@ SIGambling/
 │   └── ADMIN_STATISTICS_SPECS.md
 │
 ├── frontend/
+│   ├── vercel.json                ← SPA rewrites (toutes routes → /index.html)
 │   ├── vite.config.ts         ← proxy config, port 5173
 │   ├── tailwind.config.ts
 │   └── src/
 │       ├── main.tsx           ← entry point
-│       ├── RouterApp.tsx      ← route definitions + lazy loading
+│       ├── RouterApp.tsx      ← route definitions + lazy loading + ScrollToTop
 │       ├── index.css
 │       ├── components/
+│       │   ├── admin/
+│       │   │   └── StatisticsTab.tsx    ← onglet stats admin
 │       │   ├── casino/        ← Roulette + Blackjack UI components
 │       │   ├── layout/        ← Navbar, ErrorBoundary, LoadingScreen
 │       │   └── ui/            ← design system primitives
@@ -745,11 +841,12 @@ SIGambling/
 │       │   ├── EventDetailPage.tsx
 │       │   ├── LeaderboardPage.tsx
 │       │   ├── JackpotPage.tsx
+│       │   ├── HistoryPage.tsx          ← historique des paris paginé
 │       │   ├── AccountProfilePage.tsx
 │       │   ├── AuthCallbackPage.tsx
 │       │   └── admin/
 │       │       ├── AdminEventsPage.tsx
-│       │       └── AdminStatisticsPage.tsx
+│       │       └── AdminStatisticsPage.tsx  ← page stats standalone
 │       ├── routes/
 │       │   └── ProtectedRoute.tsx
 │       ├── store/
@@ -825,6 +922,14 @@ cd frontend && npm run dev
 | Backend API   | http://localhost:3001           |
 | Health check  | http://localhost:3001/health    |
 | Prisma Studio | `npx prisma studio` (port 5555) |
+
+### Access Points (Production)
+
+| Service     | URL                                                          |
+| ----------- | ------------------------------------------------------------ |
+| Frontend    | https://www.sigambling.fr                                    |
+| Backend API | https://api.sigambling.fr                                    |
+| SSH (prod)  | `ssh sigambling` (via Cloudflare Tunnel `ssh.sigambling.fr`) |
 
 ### Common Commands
 

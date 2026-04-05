@@ -169,6 +169,7 @@ model EventProposal {
   title           String         @db.VarChar(200)
   description     String?        @db.Text
   suggestedDate   DateTime?
+  options         String[]       @default([])
   status          ProposalStatus @default(PENDING)
   reviewedById    String?        @db.Uuid
   reviewedAt      DateTime?
