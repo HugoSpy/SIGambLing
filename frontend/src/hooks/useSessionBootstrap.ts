@@ -3,7 +3,6 @@ import { fetchCurrentUser, refreshSession } from "../lib/api";
 import { useAuthStore } from "../store/auth-store";
 
 export function useSessionBootstrap() {
-  const accessToken = useAuthStore((state) => state.accessToken);
   const status = useAuthStore((state) => state.status);
   const setStatus = useAuthStore((state) => state.setStatus);
   const setUser = useAuthStore((state) => state.setUser);
@@ -20,6 +19,8 @@ export function useSessionBootstrap() {
       setStatus("loading");
 
       try {
+        const accessToken = useAuthStore.getState().accessToken;
+
         if (!accessToken) {
           const token = await refreshSession();
 
@@ -46,5 +47,5 @@ export function useSessionBootstrap() {
     return () => {
       cancelled = true;
     };
-  }, [accessToken, clearSession, setStatus, setUser, status]);
+  }, [clearSession, setStatus, setUser, status]);
 }
