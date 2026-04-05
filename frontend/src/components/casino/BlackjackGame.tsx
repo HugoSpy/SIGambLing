@@ -546,42 +546,24 @@ export function BlackjackGame() {
               ? "Defaite"
               : "En attente";
   const resultConfig = result ? getResultConfig(result) : null;
-  const actionHint =
-    gameState === "BETTING"
-      ? "Choisissez la mise puis distribuez."
-      : gameState === "PLAYER_TURN"
-        ? canDouble
-          ? insuranceAvailable
-            ? "Le dealer montre un As. Vous pouvez assurer maintenant, sinon continuer la manche."
-            : "Tirer pour pousser, rester pour securiser, doubler si la lecture est nette."
-          : insuranceAvailable
-            ? "Le dealer montre un As. Assurance disponible avant votre premiere action."
-            : "Tirer pour pousser ou rester pour verrouiller la main."
-        : gameState === "GAME_OVER"
-          ? "Le recap de manche reste visible pendant que vous preparez la suivante."
-          : "Patientez pendant la resolution de la manche.";
-
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-3">
       <Link to="/casino">
         <Button className="gap-2" size="sm" variant="secondary">
           <ArrowLeft className="h-4 w-4" />
           Retour au casino
         </Button>
       </Link>
-      <Card accent="cyan" className="min-w-[300px]">
-        <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+      <Card accent="cyan" className="min-w-[300px] p-4">
+        <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-brand-cyan">Salon casino</p>
-            <h1 className="mt-3 font-display text-4xl text-brand-text">Blackjack</h1>
-            <p className="mt-3 max-w-3xl text-sm leading-7 text-brand-muted">
-              Blackjack paie 3:2 • Dealer tire sur 16 ou moins • Assurance sur As visible
-            </p>
+            <h1 className="mt-1 font-display text-2xl text-brand-text">Blackjack</h1>
           </div>
 
-          <div className="grid gap-3 sm:grid-cols-3">
-            <div className="flex items-center gap-3 rounded-[22px] border border-white/10 bg-white/5 px-4 py-3">
-              <Coins className="h-5 w-5 text-brand-cyan" />
+          <div className="grid gap-2 sm:grid-cols-3">
+            <div className="flex items-center gap-3 rounded-[22px] border border-white/10 bg-white/5 px-3 py-2">
+              <Coins className="h-4 w-4 text-brand-cyan" />
               <div>
                 <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Solde</p>
                 <p className="text-sm font-semibold text-brand-text">
@@ -589,15 +571,15 @@ export function BlackjackGame() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3 rounded-[22px] border border-white/10 bg-white/5 px-4 py-3">
-              <Sparkles className="h-5 w-5 text-amber-300" />
+            <div className="flex items-center gap-3 rounded-[22px] border border-white/10 bg-white/5 px-3 py-2">
+              <Sparkles className="h-4 w-4 text-amber-300" />
               <div>
                 <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Etat</p>
                 <p className={cn("text-sm font-semibold", stateCopy.tone)}>{stateCopy.label}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 rounded-[22px] border border-white/10 bg-white/5 px-4 py-3">
-              <Shield className="h-5 w-5 text-emerald-300" />
+            <div className="flex items-center gap-3 rounded-[22px] border border-white/10 bg-white/5 px-3 py-2">
+              <Shield className="h-4 w-4 text-emerald-300" />
               <div>
                 <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Resultat</p>
                 <p className="text-sm font-semibold text-brand-text">{resultText}</p>
@@ -607,9 +589,9 @@ export function BlackjackGame() {
         </div>
       </Card>
 
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px] xl:h-[calc(100vh-18rem)] min-h-0">
         <div
-          className="relative overflow-hidden rounded-[36px] border border-amber-200/20 p-5 shadow-[0_30px_80px_rgba(0,0,0,0.32)] sm:p-8"
+          className="relative overflow-hidden rounded-[36px] border border-amber-200/20 p-4 shadow-[0_30px_80px_rgba(0,0,0,0.32)] sm:p-5 xl:flex xl:flex-col xl:h-full"
           style={{
             background:
               "radial-gradient(circle at top, rgba(40,123,88,0.88), rgba(10,50,32,0.98) 62%)",
@@ -620,9 +602,9 @@ export function BlackjackGame() {
             Table principale
           </div>
 
-          <div className="grid gap-6 pt-12">
-            <div className="rounded-[28px] border border-white/10 bg-black/10 p-5 backdrop-blur-sm">
-              <div className="mb-4 flex items-center justify-between gap-3">
+          <div className="grid gap-3 pt-10 xl:flex-1 xl:min-h-0 xl:content-start">
+            <div className="rounded-[28px] border border-white/10 bg-black/10 p-3 backdrop-blur-sm">
+              <div className="mb-2 flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/55">
                     Dealer
@@ -643,7 +625,7 @@ export function BlackjackGame() {
                   />
                 ) : null}
               </div>
-              <div className="flex min-h-[132px] flex-wrap gap-3">
+              <div className="flex min-h-[100px] flex-wrap gap-3">
                 <AnimatePresence mode="popLayout">
                   {dealerDisplayHand.map((card, index) => (
                     <PlayingCard
@@ -659,8 +641,8 @@ export function BlackjackGame() {
               </div>
             </div>
 
-            <div className="rounded-[28px] border border-white/10 bg-black/10 p-5 backdrop-blur-sm">
-              <div className="mb-4 flex items-center justify-between gap-3">
+            <div className="rounded-[28px] border border-white/10 bg-black/10 p-3 backdrop-blur-sm">
+              <div className="mb-2 flex items-center justify-between gap-3">
                 <div>
                   <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/55">
                     Joueur
@@ -683,7 +665,7 @@ export function BlackjackGame() {
                   ) : null}
                 </div>
               </div>
-              <div className="flex min-h-[132px] flex-wrap gap-3">
+              <div className="flex min-h-[100px] flex-wrap gap-3">
                 <AnimatePresence mode="popLayout">
                   {playerHand.map((card, index) => (
                     <PlayingCard
@@ -706,29 +688,29 @@ export function BlackjackGame() {
           ) : null}
         </div>
 
-        <div className="space-y-6">
-          <Card className="min-w-[300px]">
-            <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-              <div className="rounded-[24px] border border-white/10 bg-white/5 p-4">
+        <div className="flex flex-col gap-3 xl:h-full xl:overflow-y-auto">
+          <Card className="min-w-[300px] p-4">
+            <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
+              <div className="rounded-[24px] border border-white/10 bg-white/5 px-3 py-2">
                 <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">Mise courante</p>
-                <p className="mt-3 font-display text-3xl text-brand-text">
+                <p className="mt-1 font-display text-xl text-brand-text">
                   {formatTokens(
                     gameState === "BETTING" || gameState === "GAME_OVER" ? bet : currentBet || bet,
                   )}
                 </p>
               </div>
-              <div className="rounded-[24px] border border-white/10 bg-white/5 p-4">
+              <div className="rounded-[24px] border border-white/10 bg-white/5 px-3 py-2">
                 <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">Payout</p>
-                <p className="mt-3 font-display text-3xl text-brand-text">
+                <p className="mt-1 font-display text-xl text-brand-text">
                   {payout > 0 ? `+${formatTokens(payout)}` : "0"}
                 </p>
               </div>
-              <div className="rounded-[24px] border border-white/10 bg-white/5 p-4">
+              <div className="rounded-[24px] border border-white/10 bg-white/5 px-3 py-2">
                 <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">Assurance</p>
-                <p className="mt-3 font-display text-3xl text-brand-text">
+                <p className="mt-1 font-display text-xl text-brand-text">
                   {insuranceBet > 0 ? formatTokens(insuranceBet) : "0"}
                 </p>
-                <p className="mt-2 text-xs text-brand-muted">
+                <p className="mt-1 text-xs text-brand-muted">
                   {insurancePayout > 0
                     ? `Retour ${formatTokens(insurancePayout)}`
                     : insuranceAvailable
@@ -736,24 +718,23 @@ export function BlackjackGame() {
                       : "Inactive"}
                 </p>
               </div>
-              <div className="rounded-[24px] border border-white/10 bg-white/5 p-4 sm:col-span-2 xl:col-span-1">
-                <div className="flex items-start gap-3">
-                  <Waves className="mt-0.5 h-5 w-5 text-brand-cyan" />
-                  <p className="text-sm leading-7 text-brand-muted">
-                    Le dealer tire sur 16 ou moins. L'assurance coute 50% de la mise initiale et
-                    ne reste visible que sur un As expose avant votre premiere action.
+              <div className="rounded-[24px] border border-white/10 bg-white/5 px-3 py-2 sm:col-span-2 xl:col-span-1">
+                <div className="flex items-start gap-2">
+                  <Waves className="mt-0.5 h-4 w-4 shrink-0 text-brand-cyan" />
+                  <p className="text-xs leading-5 text-brand-muted">
+                    Dealer tire sur 16 ou moins • Assurance = 50% de la mise sur As visible
                   </p>
                 </div>
               </div>
             </div>
           </Card>
 
-          <Card className="min-w-[300px]">
+          <Card className="min-w-[300px] p-4">
             {gameState === "GAME_OVER" && result && resultConfig ? (
               <motion.div
                 animate={{ opacity: 1, y: 0 }}
                 className={cn(
-                  "mb-5 rounded-[24px] border px-4 py-4",
+                  "mb-3 rounded-[24px] border px-3 py-3",
                   resultConfig.surfaceClassName,
                 )}
                 initial={{ opacity: 0, y: -10 }}
@@ -805,10 +786,10 @@ export function BlackjackGame() {
             ) : null}
 
             {(gameState === "BETTING" || gameState === "GAME_OVER") ? (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <div>
                   <p className="text-xs uppercase tracking-[0.3em] text-brand-muted">Votre mise</p>
-                  <div className="mt-3 flex items-center gap-3">
+                  <div className="mt-2 flex items-center gap-3">
                     <button
                       aria-label="Diviser la mise par 2"
                       className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl border border-brand-line bg-white/5 text-sm font-bold text-brand-text transition-all hover:border-brand-cyan/40 hover:bg-white/10 disabled:opacity-40"
@@ -866,12 +847,7 @@ export function BlackjackGame() {
               </div>
             ) : null}
 
-            <div className="mt-5 rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
-              <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">Aide de manche</p>
-              <p className="mt-2 text-sm leading-7 text-brand-muted">{actionHint}</p>
-            </div>
-
-            <div className="mt-6 flex flex-wrap gap-3">
+            <div className="mt-3 flex flex-wrap gap-3">
               {(gameState === "BETTING" || gameState === "GAME_OVER") ? (
                 <Button
                   aria-label="Parier et démarrer la partie"
