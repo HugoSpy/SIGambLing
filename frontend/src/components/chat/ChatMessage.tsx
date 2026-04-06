@@ -59,22 +59,22 @@ export function ChatMessage({ message, currentUserId, currentUserPseudo }: ChatM
       {message.user.avatarUrl ? (
         <img
           alt={message.user.pseudo}
-          className="h-7 w-7 flex-shrink-0 rounded-full object-cover"
+          className="h-8 w-8 flex-shrink-0 rounded-full object-cover"
           src={message.user.avatarUrl}
           onError={(e) => {
             e.currentTarget.src = "/default-avatar.svg";
           }}
         />
       ) : (
-        <div className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-[10px] font-bold text-emerald-400">
+        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-xs font-bold text-emerald-400">
           {initials}
         </div>
       )}
 
       <div className={`flex max-w-[75%] flex-col gap-0.5 ${isOwn ? "items-end" : "items-start"}`}>
-        <span className="text-[10px] text-zinc-500">{message.user.pseudo}</span>
+        <span className="text-xs text-zinc-400">{message.user.pseudo}</span>
         <div
-          className={`rounded-xl px-3 py-1.5 text-sm break-words ${
+          className={`rounded-xl px-3 py-2 text-[15px] leading-snug break-words ${
             isOwn
               ? "bg-emerald-600/20 text-emerald-100"
               : "bg-zinc-800 text-zinc-100"
@@ -82,7 +82,7 @@ export function ChatMessage({ message, currentUserId, currentUserPseudo }: ChatM
         >
           {renderContent(message.content, currentUserPseudo)}
         </div>
-        <span className="text-[9px] text-zinc-600">
+        <span className="text-[10px] text-zinc-500">
           {relativeTime(message.createdAt)}
         </span>
       </div>
