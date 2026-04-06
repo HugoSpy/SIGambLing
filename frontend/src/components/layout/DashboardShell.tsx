@@ -392,7 +392,17 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
       </nav>
 
       <BetCartDrawer />
-      <ChatPanel open={chatOpen} onClose={() => setChatOpen(false)} initialWidth={user.chat_panel_width} />
+      <ChatPanel
+        open={chatOpen}
+        onClose={() => setChatOpen(false)}
+        initialPrefs={{
+          width:  user.chat_panel_width,
+          height: user.chat_panel_height,
+          x:      user.chat_panel_x,
+          y:      user.chat_panel_y,
+          zoom:   user.chat_zoom,
+        }}
+      />
     </div>
   );
 }

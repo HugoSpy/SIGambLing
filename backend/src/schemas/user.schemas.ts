@@ -34,7 +34,11 @@ export const updateUserRewardSchema = z.object({
 });
 
 export const updateChatPreferencesSchema = z.object({
-  chatPanelWidth: z.number().int().min(240).max(600),
+  chatPanelWidth:  z.number().int().min(240).max(800).optional(),
+  chatPanelHeight: z.number().int().min(300).max(900).optional(),
+  chatPanelX:      z.number().int().optional(),
+  chatPanelY:      z.number().int().optional(),
+  chatZoom:        z.number().int().min(75).max(150).optional(),
 });
 
 export type UpdateChatPreferencesInput = z.infer<typeof updateChatPreferencesSchema>;

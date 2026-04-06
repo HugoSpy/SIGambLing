@@ -66,6 +66,10 @@ model User {
   acceptOddsChanges Boolean   @default(false)
   lastSeenAt      DateTime?
   chatPanelWidth  Int?
+  chatPanelHeight Int?
+  chatPanelX      Int?
+  chatPanelY      Int?
+  chatZoom        Int?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   bets            Bet[]

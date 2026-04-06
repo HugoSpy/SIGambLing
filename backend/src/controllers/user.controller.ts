@@ -126,9 +126,22 @@ export const listAvailableBadgesController: RequestHandler = async (_request, re
 export const updateChatPreferencesController: RequestHandler = async (request, response, next) => {
   try {
     const userId = getAuthenticatedUserId(request);
-    const { chatPanelWidth } = request.body as { chatPanelWidth: number };
-    await prisma.user.update({ where: { id: userId }, data: { chatPanelWidth } });
-    response.json({ chatPanelWidth });
+    const { chatPanelWidth, chatPanelHeight, chatPanelX, chatPanelY, chatZoom } =
+      request.body as {
+        chatPanelWidth?: number;
+        chatPanelHeight?: number;
+        chatPanelX?: number;
+        chatPanelY?: number;
+        chatZoom?: number;
+      };
+    const data: Record<string, number> = {};
+    if (chatPanelWidth  != null) data.chatPanelWidth  = chatPanelWidth;
+    if (chatPanelHeight != null) data.chatPanelHeight = chatPanelHeight;
+    if (chatPanelX      != null) data.chatPanelX      = chatPanelX;
+    if (chatPanelY      != null) data.chatPanelY      = chatPanelY;
+    if (chatZoom        != null) data.chatZoom        = chatZoom;
+    await prisma.user.update({ where: { id: userId }, data });
+    response.json(data);
   } catch (error) {
     next(error);
   }
