@@ -10,9 +10,8 @@ import ReactDOM from "react-dom/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
+import { Analytics } from "@vercel/analytics/react";
 import App from "./RouterApp";
-import { inject } from '@vercel/analytics';
-inject();
 import { purgeLegacyAuthStorage } from "./store/auth-store";
 
 const queryClient = new QueryClient({
@@ -42,6 +41,7 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
           },
         }}
       />
+      <Analytics />
     </QueryClientProvider>
   </React.StrictMode>,
 );
