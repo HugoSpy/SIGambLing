@@ -3,18 +3,24 @@ import { prisma } from "../services/prisma.service";
 
 export const getPublicStats: RequestHandler = async (_request, response, next) => {
   try {
-    const [totalUsers, totalBets, balanceResult] = await Promise.all([
+    const [totalUsers, totalBets, balanceResult, eventVolumeResult, casinoVolumeResult] = await Promise.all([
       prisma.user.count({ where: { isBanned: false } }),
       prisma.bet.count(),
       prisma.user.aggregate({ _sum: { balance: true } }),
+      prisma.bet.aggregate({ _sum: { amount: true } }),
+      prisma.casinoGame.aggregate({ _sum: { betAmount: true } }),
     ]);
 
     const totalTokens = balanceResult._sum.balance ?? 0;
+    const eventVolume = eventVolumeResult._sum.amount ?? 0;
+    const casinoVolume = casinoVolumeResult._sum.betAmount ?? 0;
 
     response.json({
       totalUsers,
       totalBets,
       totalTokens,
+      eventVolume,
+      casinoVolume,
     });
   } catch (error) {
     next(error);
@@ -45,7 +51,9 @@ export const getStatisticsOverview: RequestHandler = async (_request, response, 
     const previousWeekStart = new Date(currentWeekStart);
     previousWeekStart.setDate(currentWeekStart.getDate() - 7);
 
-    const [currentWeekBets, previousWeekBets, totalUsers, volumeResult] =
+    const onlineThreshold = new Date(now.getTime() - 15 * 60 * 1000);
+
+    const [currentWeekBets, previousWeekBets, totalUsers, volumeResult, onlineCount] =
       await Promise.all([
         prisma.bet.count({
           where: { createdAt: { gte: currentWeekStart } },
@@ -55,6 +63,9 @@ export const getStatisticsOverview: RequestHandler = async (_request, response, 
         }),
         prisma.user.count(),
         prisma.bet.aggregate({ _sum: { amount: true } }),
+        prisma.user.count({
+          where: { lastSeenAt: { gte: onlineThreshold } },
+        }),
       ]);
 
     const percentageChange =
@@ -72,7 +83,7 @@ export const getStatisticsOverview: RequestHandler = async (_request, response, 
       },
       activeUsers: {
         total: totalUsers,
-        online: 0,
+        online: onlineCount,
       },
       totalVolume: {
         value: totalVolume,

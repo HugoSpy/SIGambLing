@@ -110,28 +110,28 @@ export function StatisticsTab() {
 
       <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <StatCard
-          icon={<Users className="h-5 w-5 text-emerald-400" />}
-          iconBg="bg-emerald-500/10"
-          label="Utilisateurs inscrits"
-          subtext="comptes non bannis"
+          icon={<Coins className="h-5 w-5 text-purple-400" />}
+          iconBg="bg-purple-500/10"
+          label="Tokens pariés (events)"
+          subtext="volume all-time événements"
           subtextColor="text-zinc-400"
-          value={publicStats ? publicStats.totalUsers.toLocaleString("fr-FR") : dash}
+          value={publicStats ? formatTokens(publicStats.eventVolume) : dash}
         />
         <StatCard
           icon={<Coins className="h-5 w-5 text-amber-400" />}
           iconBg="bg-amber-500/10"
+          label="Tokens pariés (casino)"
+          subtext="volume all-time casino"
+          subtextColor="text-zinc-400"
+          value={publicStats ? formatTokens(publicStats.casinoVolume) : dash}
+        />
+        <StatCard
+          icon={<Coins className="h-5 w-5 text-sky-400" />}
+          iconBg="bg-sky-500/10"
           label="Tokens en circulation"
           subtext="solde total des joueurs"
           subtextColor="text-zinc-400"
           value={publicStats ? formatTokens(publicStats.totalTokens) : dash}
-        />
-        <StatCard
-          icon={<Activity className="h-5 w-5 text-sky-400" />}
-          iconBg="bg-sky-500/10"
-          label="Total paris (all-time)"
-          subtext="tous événements confondus"
-          subtextColor="text-zinc-400"
-          value={publicStats ? publicStats.totalBets.toLocaleString("fr-FR") : dash}
         />
       </div>
 

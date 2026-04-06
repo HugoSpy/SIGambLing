@@ -38,6 +38,10 @@ export const requireAuth: RequestHandler = async (request, _response, next) => {
     };
     (request as { auth?: typeof authPayload }).auth = authPayload;
     request.user = authPayload;
+
+    // Fire-and-forget — update lastSeenAt without blocking the request
+    prisma.user.update({ where: { id: user.id }, data: { lastSeenAt: new Date() } }).catch(() => {});
+
     next();
   } catch (error) {
     next(error);

@@ -31,6 +31,8 @@ export interface PublicStats {
   totalUsers: number;
   totalBets: number;
   totalTokens: number;
+  eventVolume: number;
+  casinoVolume: number;
 }
 
 export interface StatisticsOverview {
