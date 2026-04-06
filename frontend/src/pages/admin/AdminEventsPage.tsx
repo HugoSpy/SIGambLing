@@ -718,6 +718,7 @@ export function AdminEventsPage() {
             Propositions
             {view === "proposals" ? <span className="absolute inset-x-0 bottom-0 h-0.5 bg-emerald-500" /> : null}
           </button>
+          {user?.role === "admin" && (
           <button
             className={`relative px-4 py-3 text-sm font-medium transition ${
               view === "users" ? "text-emerald-400" : "text-zinc-400 hover:text-zinc-100"
@@ -728,6 +729,8 @@ export function AdminEventsPage() {
             Joueurs
             {view === "users" ? <span className="absolute inset-x-0 bottom-0 h-0.5 bg-emerald-500" /> : null}
           </button>
+          )}
+          {user?.role === "admin" && (
           <button
             className={`relative px-4 py-3 text-sm font-medium transition ${
               view === "statistics" ? "text-emerald-400" : "text-zinc-400 hover:text-zinc-100"
@@ -738,6 +741,7 @@ export function AdminEventsPage() {
             Statistiques
             {view === "statistics" ? <span className="absolute inset-x-0 bottom-0 h-0.5 bg-emerald-500" /> : null}
           </button>
+          )}
         </div>
 
         {view === "statistics" ? <StatisticsTab /> : null}

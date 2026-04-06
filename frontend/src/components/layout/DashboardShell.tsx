@@ -48,7 +48,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
   const { data: adminProposals } = useQuery({
     queryKey: ["admin-proposals"],
     queryFn: () => fetchAdminProposals(),
-    enabled: user.role === "admin",
+    enabled: user.role === "admin" || user.role === "validator",
   });
   const pendingProposalsCount = (adminProposals ?? []).filter((p) => p.status === "PENDING").length;
   const navLinkClassName =
@@ -75,7 +75,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
       { label: "Jackpot", icon: Trophy, href: "/jackpot" },
       { label: "Récompense", icon: Gift, href: "/rewards" },
       { label: "Profil", icon: UserRound, href: "/profile" },
-      ...(user.role === "admin"
+      ...(user.role === "admin" || user.role === "validator"
         ? [{ label: "Admin", icon: ShieldCheck, href: "/admin/events" }]
         : []),
     ],
@@ -324,7 +324,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
       </div>
 
       <nav className="fixed bottom-0 inset-x-0 z-40 border-t border-zinc-800 bg-zinc-900/95 px-2 py-2 backdrop-blur lg:hidden">
-        <div className={`grid gap-1 ${user.role === "admin" ? "grid-cols-9" : "grid-cols-8"}`}>
+        <div className={`grid gap-1 ${user.role === "admin" || user.role === "validator" ? "grid-cols-9" : "grid-cols-8"}`}>
           {navItems.map((item) => {
             const Icon = item.icon;
             const active =

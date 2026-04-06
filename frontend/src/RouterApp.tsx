@@ -108,7 +108,7 @@ export default function RouterApp() {
             <Route path="/rewards" element={<RewardsPage />} />
             <Route path="/history" element={<HistoryPage />} />
           </Route>
-          <Route element={<ProtectedRoute allowedRoles={["admin"]} />}>
+          <Route element={<ProtectedRoute allowedRoles={["admin", "validator"]} />}>
             <Route path="/admin/events" element={<AdminEventsPage />} />
             <Route path="/admin/statistics" element={<AdminStatisticsPage />} />
           </Route>

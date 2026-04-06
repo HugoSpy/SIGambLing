@@ -70,7 +70,7 @@ eventsRouter.get("/:id/odds-history", getEventOddsHistoryController);
 eventsRouter.get("/:id/my-bet", getMyEventBetController);
 eventsRouter.post("/:id/bet", betLimiter, validateBody(placeEventBetSchema), placeEventBetController);
 
-adminEventsRouter.use(requireAuth, requireRole(["admin"]), adminLimiter);
+adminEventsRouter.use(requireAuth, requireRole(["admin", "validator"]), adminLimiter);
 adminEventsRouter.get("/", listAdminEventsController);
 adminEventsRouter.get("/proposals", listAdminProposalsController);
 adminEventsRouter.get("/proposals/saved", listSavedProposalsController);

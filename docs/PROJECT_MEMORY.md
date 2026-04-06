@@ -1,7 +1,7 @@
 # PROJECT_MEMORY.md — SIGambling Living Documentation
 
-**Last Updated:** 2026-04-05  
-**Last Updated By:** Claude (session recap 04/04 → 05/04/2026)
+**Last Updated:** 2026-04-06  
+**Last Updated By:** Claude (session recap 06/04/2026)
 
 ---
 
@@ -13,7 +13,7 @@
 | **Purpose**       | Casino & sports-betting platform with virtual currency for EPITA students |
 | **Target Users**  | ~60 EPITA SIGL 2027 students                                              |
 | **Currency**      | Virtual tokens (starting balance: 1,000 tokens/user)                      |
-| **Current Phase** | Week 1 Sprint — MVP deployment (01/04/2026 – 07/04/2026)                  |
+| **Current Phase** | Production — fully deployed & feature-complete                            |
 | **Repository**    | https://github.com/HugoSpy/SIGambLing                                     |
 
 ---
@@ -53,7 +53,9 @@
 "gsap": "^3.12.7",
 "zod": "^3.24.2",
 "axios": "^1.8.1",
-"howler": "^2.2.4"
+"howler": "^2.2.4",
+"canvas-confetti": "^1.9.4",
+"@vercel/analytics": "^2.0.1"
 ```
 
 ### Backend
@@ -102,7 +104,7 @@
 | **ORM**             | Prisma 6                       |
 | **Schema Location** | `backend/prisma/schema.prisma` |
 
-**Key Models:** `User`, `Event`, `Bet`, `BetLeg`, `CasinoGame`, `Badge`, `Jackpot`, `JackpotContribution`, `EventProposal`, `EventExclusion`, `OddsHistory`, `AdminLog`
+**Key Models:** `User`, `Event`, `Bet`, `BetLeg`, `CasinoGame`, `Badge`, `Jackpot`, `JackpotContribution`, `EventProposal`, `EventExclusion`, `OddsHistory`, `AdminLog`, `ChatMessage`, `ChatBan`
 
 ### Deployment
 
@@ -172,14 +174,14 @@ Users (EPITA SIGL 2027)
 
 ### OAuth Flow
 
-| Property           | Value                                                           |
-| ------------------ | --------------------------------------------------------------- |
-| **Provider**       | Microsoft (Azure AD)                                            |
-| **Strategy**       | passport-microsoft                                              |
-| **Allowed Domain** | `@epita.fr` only (enforced in passport config)                  |
-| **Tenant**         | `MICROSOFT_TENANT_ID` env var (default: `common`)               |
-| **Scopes**         | `openid`, `profile`, `email`, `User.Read`                       |
-| **Admin Accounts** | Hardcoded set in `passport.ts` (e.g. `maxence.larche@epita.fr`) |
+| Property           | Value                                             |
+| ------------------ | ------------------------------------------------- |
+| **Provider**       | Microsoft (Azure AD)                              |
+| **Strategy**       | passport-microsoft                                |
+| **Allowed Domain** | `@epita.fr` only (enforced in passport config)    |
+| **Tenant**         | `MICROSOFT_TENANT_ID` env var (default: `common`) |
+| **Scopes**         | `openid`, `profile`, `email`, `User.Read`         |
+| **Admin Accounts** | Managed in DB (`role` field) — no hardcoded list  |
 
 ### Token Management
 
@@ -290,15 +292,43 @@ Users (EPITA SIGL 2027)
 - [x] Modal récompense quotidienne au clic sur Profil (avant navigation)
 - [x] Fix `streakAlive` pour nouveaux utilisateurs (`lastRewardAt === null` → `claim_available`)
 
-### In Progress
+**Chat System (temps réel) :**
 
-- User experience polish (animations, sounds)
+- [x] SSE-based real-time chat (`/chat/stream` endpoint, heartbeat 15s)
+- [x] Envoi de messages (`POST /chat/message`, max 300 chars)
+- [x] Historique (derniers 50 messages au chargement)
+- [x] Rate limiting : 3 msgs / 3s (serveur + client), admins exemptés
+- [x] Banwords filter (`banwords.txt`) + mute escalation (1h/offense, permanent à 3)
+- [x] @mentions avec autocomplete (`MentionDropdown`, `GET /users/mention-search?q=`)
+- [x] Highlight mentions (jaune = mention d'un autre, bleu = mention de soi)
+- [x] Notification sonore Howler pour mentions quand chat fermé
+- [x] Badge unread + unread mentions (Zustand `chat-store`)
+- [x] Panel drag (header mousedown), resize (left/top/top-left handles)
+- [x] Zoom chat : 75/90/100/110/125/150%
+- [x] Toutes les préférences panel persistées en DB (`PATCH /users/me/chat-preferences`)
+- [x] Ban status endpoint (`GET /chat/ban-status`)
+- [x] Admins bypass toutes les restrictions (rate limit, ban, mute, banwords)
 
-### Planned / From Roadmap
+**Login & Analytics :**
 
-- Slots game (category mentioned in `CasinoGameType` enum — not yet implemented)
-- Vercel Analytics integration
-- Full Sentry error tracking
+- [x] LoginPage redesignée : hero "Pariez sur l'avenir", feature cards 4 colonnes, stats publiques
+- [x] Endpoint public `GET /stats` (stats affichées sur la login page)
+- [x] Vercel Analytics intégré (`@vercel/analytics` injecté dans `main.tsx`)
+
+**Pages ajoutées :**
+
+- [x] RewardsPage (`/rewards`) — page dédiée récompenses quotidiennes, countdown HH:MM:SS, confetti (`canvas-confetti`)
+
+**Backend Maintenance :**
+
+- [x] Cron job quotidien (02:00) — purge `odds_history` des événements resolved/cancelled > 24h
+- [x] Winston log rotation : `DailyRotateFile` (50MB/14j combinés, 20MB/30j erreurs)
+- [x] Banword loader (`banword-loader.ts`) — normalisation unicode, matching intelligent (word-boundary pour mots courts)
+
+### Planned / Optionnel
+
+- Slots game (mentionné dans `CasinoGameType` enum — pas prioritaire, pourrait changer)
+- Full Sentry error tracking (env var slot existe)
 
 ---
 
@@ -306,10 +336,11 @@ Users (EPITA SIGL 2027)
 
 All routes proxied via Vite dev server from port 5173 → 3001.
 
-### Health
+### Health & Public
 
 ```
 GET  /health
+GET  /stats                       — Public statistics (login page)
 ```
 
 ### Authentication (`/auth`)
@@ -331,8 +362,19 @@ PATCH  /users/me                  — Update profile (pseudo, etc.)
 POST   /users/me/avatar           — Upload avatar (multipart, 2MB limit)
 GET    /users                     — Search users (admin only)
 GET    /users/badges/catalog      — List available badges (admin only)
+GET    /users/mention-search      — Mention autocomplete (?q=)
+PATCH  /users/me/chat-preferences — Persist chat panel state (width, height, x, y, zoom)
 PATCH  /users/:id/balance         — Adjust user balance (admin only)
 POST   /users/:id/badges          — Unlock badge for user (admin only)
+```
+
+### Chat (`/chat`) — requires auth
+
+```
+GET    /chat/history              — Last 50 messages (chronological)
+GET    /chat/ban-status           — Get user's ban/mute record
+POST   /chat/message              — Send message (max 300 chars)
+GET    /chat/stream               — SSE real-time stream (heartbeat 15s)
 ```
 
 ### Events (`/events`) — requires auth
@@ -433,6 +475,13 @@ model User {
   acceptOddsChanges Boolean @default(false)
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+  // Chat panel preferences
+  chatPanelWidth  Int?
+  chatPanelHeight Int?
+  chatPanelX      Int?
+  chatPanelY      Int?
+  chatZoom        Int?
+  lastSeenAt      DateTime?
   // indexes: email, balance(desc) for leaderboard
 }
 ```
@@ -530,6 +579,8 @@ model Jackpot {
 - **OddsHistory** — time-series of odds per event option
 - **AdminLog** — audit log for admin actions (actionType, targetId, details JSON)
 - **JackpotContribution** — per-wager contribution records
+- **ChatMessage** — real-time chat messages (userId, content, createdAt)
+- **ChatBan** — user ban/mute tracking (mutedUntil, banCount, escalating)
 
 **Database Indexes (key):**
 
@@ -590,29 +641,77 @@ SENTRY_DSN=
 
 ## 8. Known Issues
 
-**No active critical bugs.** Issues identifiés et corrigés lors de la session 04–05/04/2026 :
+**No active critical bugs.**
 
-- ~~Admin Statistics Route Not Mounted~~ — fixé, `adminStatisticsRouter` correctement monté dans `app.ts`
-- ~~Session loader infini en prod~~ — fixé (race condition `cancelled=true` dans `useSessionBootstrap`)
-- ~~Refresh token manquant en prod~~ — fixé (`COOKIE_DOMAIN` mal configuré)
+- ~~Avatar upload 503~~ — fixé (env vars Supabase configurées en prod)
+- ~~Admin Statistics Route Not Mounted~~ — fixé
+- ~~Session loader infini en prod~~ — fixé
+- ~~Refresh token manquant en prod~~ — fixé
 - ~~Blackjack bust affiché comme victoire~~ — fixé
 - ~~Dealer As → résolution immédiate sans assurance~~ — fixé
-- ~~Balance non mise à jour en temps réel après casino~~ — fixé (Zustand `liveBalance`)
+- ~~Balance non mise à jour en temps réel~~ — fixé
 - ~~Paris sur événements terminés dans « Mes positions »~~ — fixé
-- ~~Noms d’événements « Pari simple » au lieu du vrai titre~~ — fixé
+- ~~Noms d’événements « Pari simple »~~ — fixé
+- ~~Winston logs sans rotation~~ — fixé (DailyRotateFile 50MB/14j + 20MB/30j)
 
 **Remaining known trade-offs:**
 
 - `sessionVersion` adds one DB query per authenticated request (security vs. performance)
-- GitHub onboarding bonus feature was reverted (two reverts in git history — feature was unstable)
-- No WebSockets — real-time features (if needed) would require polling or SSE
-- `validator` role in DB not yet implemented
+- GitHub onboarding bonus feature was reverted (unstable)
+- Chat uses SSE (server → client only), no full WebSocket duplex
+- `validator` role gives event management access but not user/stats/jackpot management
 
 ---
 
 ## 9. Recent Changes
 
-### Session 04/04 → 05/04/2026 (session principale de déploiement + features)
+### Session 05/04 → 06/04/2026
+
+**Chat system (complet) :**
+
+- SSE real-time chat avec broadcast à tous les clients connectés
+- Rate limiting 3 msgs/3s, banwords filter + mute escalation (1h → permanent à 3)
+- @mentions avec autocomplete, highlight jaune/bleu, son Howler
+- Panel drag/resize/zoom (75-150%) persisté en DB
+- Models Prisma : `ChatMessage`, `ChatBan` + 5 champs User (chat preferences)
+- 3 migrations appliquées en prod
+
+**Login & Analytics :**
+
+- LoginPage redesignée (hero, feature cards, stats publiques)
+- Endpoint `GET /stats` (public)
+- Vercel Analytics intégré (`@vercel/analytics`)
+- `canvas-confetti` ajouté pour animations
+
+**RewardsPage :**
+
+- Page dédiée `/rewards` avec countdown, confetti, claim direct
+
+**Backend :**
+
+- Cron job purge `odds_history` (quotidien 02:00)
+- Winston `DailyRotateFile` (rotation logs)
+- `banword-loader.ts` (normalisation unicode, matching intelligent)
+- Admin hardcode `ADMIN_EMAILS` supprimé → rôle admin géré uniquement en DB
+
+**Admin :**
+
+- Saved proposals (bookmark)
+- Event exclusion UI
+- User reward management (reset/mark claimed)
+
+**Statistiques admin :**
+
+- 6 cards : Weekly bets, Active users, Total volume, Event tokens, Casino tokens, Circulating tokens
+- Auto-refresh 30s, 3 APIs en parallèle
+- Events leaderboard
+
+**Bugs fixés :**
+
+- Avatar upload 503 (env vars Supabase)
+- Winston logs sans rotation
+
+### Session 04/04 → 05/04/2026 (déploiement + features)
 
 **Déploiement prod :**
 
@@ -757,10 +856,10 @@ cd backend && npm start        # node dist/src/index.js
 
 **Trade-offs:**
 
-- `adminStatisticsRouter` defined but not mounted in `app.ts` (see Known Issues)
-- GitHub onboarding bonus feature was reverted (two reverts in git history — feature was unstable)
 - `sessionVersion` adds one DB query per authenticated request (security vs. performance)
-- No WebSockets — real-time features (if needed) would require polling or SSE
+- GitHub onboarding bonus feature was reverted (unstable)
+- Chat SSE = unidirectional (server → client). HTTP POST for sending messages
+- `validator` role in DB enum — reserved but not yet used
 
 ---
 
@@ -801,13 +900,8 @@ SIGambling/
 │
 ├── docs/
 │   ├── ARCHITECTURE.md
-│   ├── ROADMAP.md
-│   ├── BETTING_SYSTEM.md
-│   ├── BLACKJACK_GUIDE.md
-│   ├── ROULETTE_GUIDE.md
-│   ├── SPECS_EVENT.md
 │   ├── PRODUCT_BRIEF.md
-│   └── ADMIN_STATISTICS_SPECS.md
+│   └── PROJECT_MEMORY.md      ← this file (living documentation)
 │
 ├── frontend/
 │   ├── vercel.json                ← SPA rewrites (toutes routes → /index.html)
@@ -819,12 +913,14 @@ SIGambling/
 │       ├── index.css
 │       ├── components/
 │       │   ├── admin/
-│       │   │   └── StatisticsTab.tsx    ← onglet stats admin
+│       │   │   └── StatisticsTab.tsx    ← onglet stats admin (6 cards, auto-refresh 30s)
 │       │   ├── casino/        ← Roulette + Blackjack UI components
-│       │   ├── layout/        ← Navbar, ErrorBoundary, LoadingScreen
+│       │   ├── chat/          ← ChatPanel, ChatMessage, MentionDropdown
+│       │   ├── layout/        ← DashboardShell, ErrorBoundary, LoadingScreen
 │       │   └── ui/            ← design system primitives
 │       ├── hooks/
 │       │   ├── useAuthenticatedUser.ts
+│       │   ├── useChatStream.ts       ← SSE hook, unread counting
 │       │   ├── useGamificationState.ts
 │       │   └── useSessionBootstrap.ts
 │       ├── lib/
@@ -844,6 +940,7 @@ SIGambling/
 │       │   ├── HistoryPage.tsx          ← historique des paris paginé
 │       │   ├── AccountProfilePage.tsx
 │       │   ├── AuthCallbackPage.tsx
+│       │   ├── RewardsPage.tsx          ← récompenses quotidiennes + confetti
 │       │   └── admin/
 │       │       ├── AdminEventsPage.tsx
 │       │       └── AdminStatisticsPage.tsx  ← page stats standalone
@@ -851,7 +948,8 @@ SIGambling/
 │       │   └── ProtectedRoute.tsx
 │       ├── store/
 │       │   ├── auth-store.ts      ← Zustand auth state
-│       │   └── bet-cart-store.ts  ← Zustand bet cart
+│       │   ├── bet-cart-store.ts  ← Zustand bet cart
+│       │   └── chat-store.ts     ← Zustand chat (isOpen, unreadCount, unreadMentions)
 │       └── types/
 │
 └── backend/
@@ -869,7 +967,9 @@ SIGambling/
     │   ├── services/          ← business logic
     │   │   ├── blackjack.service.ts
     │   │   ├── roulette.service.ts
+    │   │   ├── chat.service.ts       ← SSE broadcast, rate limiting, banwords, mentions
     │   │   ├── event.service.ts
+    │   │   ├── casino.service.ts
     │   │   ├── gamification.service.ts
     │   │   ├── jackpot.service.ts
     │   │   ├── auth.service.ts
@@ -889,8 +989,10 @@ SIGambling/
     │   │   ├── oauth-state.ts     ← CSRF state cookie helpers
     │   │   ├── roulette-rng.ts    ← server-side RNG
     │   │   ├── pseudo.ts          ← EPITA email → pseudo generation
+    │   │   ├── banword-loader.ts  ← banwords.txt loader + matching
+    │   │   ├── cron.ts            ← odds_history cleanup (daily 02:00)
     │   │   ├── app-error.ts
-    │   │   ├── logger.ts
+    │   │   ├── logger.ts          ← Winston + DailyRotateFile
     │   │   └── user-serializer.ts
     │   └── types/
     └── tests/
@@ -961,17 +1063,17 @@ cd backend && npm test
 
 ### Admin Access
 
-- Role: `admin` (stored in DB)
-- Granted automatically on login for email addresses in the hardcoded `ADMIN_EMAILS` set in `backend/src/config/passport.ts`
+- Role: `admin` (stored in DB, managed via DB only — no hardcoded list)
+- First admin must be set manually in DB: `UPDATE "User" SET role = 'admin' WHERE email = '...'`
 - Currently: `maxence.larche@epita.fr`
 
 ### User Roles
 
-| Role        | Capabilities                                                    |
-| ----------- | --------------------------------------------------------------- |
-| `user`      | Login, bet, play casino, propose events, claim daily reward     |
-| `validator` | [Not yet implemented — reserved role]                           |
-| `admin`     | All user capabilities + manage events, manage users, view stats |
+| Role        | Capabilities                                                                               |
+| ----------- | ------------------------------------------------------------------------------------------ |
+| `user`      | Login, bet, play casino, propose events, claim daily reward, chat                          |
+| `validator` | All user capabilities + manage events (CRUD, resolve, close, cancel, proposals)            |
+| `admin`     | All validator capabilities + manage users (balance, badges, reward), stats, jackpot payout |
 
 ---
 
@@ -984,12 +1086,6 @@ cd backend && npm test
 **Documentation:**
 
 - [Architecture](docs/ARCHITECTURE.md)
-- [Roadmap](docs/ROADMAP.md)
-- [Betting System](docs/BETTING_SYSTEM.md)
-- [Blackjack Guide](docs/BLACKJACK_GUIDE.md)
-- [Roulette Guide](docs/ROULETTE_GUIDE.md)
-- [Event Specs](docs/SPECS_EVENT.md)
-- [Admin Statistics Specs](docs/ADMIN_STATISTICS_SPECS.md)
 - [Product Brief](docs/PRODUCT_BRIEF.md)
 
 ---
@@ -1013,4 +1109,4 @@ This is a living document. Update it when:
 ```
 
 **Last Updated By:** GitHub Copilot  
-**Last Updated Date:** 2026-04-04
+**Last Updated Date:** 2026-04-06

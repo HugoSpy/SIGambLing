@@ -4,8 +4,6 @@ import { Strategy as MicrosoftStrategy } from "passport-microsoft";
 import { prisma } from "../lib/prisma";
 import { buildPseudoFromEpitaEmail, ensureUniquePseudo } from "../utils/pseudo";
 
-const ADMIN_EMAILS = new Set(["maxence.larche@epita.fr"]);
-
 interface MicrosoftProfile {
   id: string;
   displayName?: string;
@@ -36,7 +34,6 @@ export function configurePassport() {
         try {
           const email = profile.emails?.[0]?.value?.toLowerCase();
           const microsoftId = profile.id;
-          const targetRole = email && ADMIN_EMAILS.has(email) ? UserRole.admin : UserRole.user;
 
           if (!email) {
             return done(new Error("No email found in profile"));
@@ -63,16 +60,14 @@ export function configurePassport() {
                 microsoftId,
                 pseudo,
                 balance: 1000,
-                role: targetRole,
+                role: UserRole.user,
               },
             });
-          } else if (user.microsoftId !== microsoftId || (user.role !== targetRole && ADMIN_EMAILS.has(email))) {
+          } else if (user.microsoftId !== microsoftId) {
             user = await prisma.user.update({
               where: { id: user.id },
               data: {
-                email,
                 microsoftId,
-                role: targetRole,
               },
             });
           }
