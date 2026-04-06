@@ -45,7 +45,6 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
     enabled: user.role === "admin",
   });
   const pendingProposalsCount = (adminProposals ?? []).filter((p) => p.status === "PENDING").length;
-  console.log("[DashboardShell] rewardAvailable:", rewardAvailable, "| streak_status:", gamificationData?.daily_reward.streak_status, "| claimed_today:", gamificationData?.daily_reward.claimed_today);
   const rewardAmount =
     (gamificationData?.daily_reward.base_amount ?? 0) +
     (gamificationData?.daily_reward.streak_bonus ?? 0);

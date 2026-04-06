@@ -32,9 +32,9 @@ export const useAuthStore = create<AuthState>()((set) => ({
   user: null,
   accessToken: null,
   status: "idle",
-  setStatus: (status) => { console.log("[auth-store] setStatus:", status); set({ status }); },
+  setStatus: (status) => set({ status }),
   setAccessToken: (token) => set({ accessToken: token }),
-  setUser: (user) => { console.log("[auth-store] setUser:", user); set({ user }); },
+  setUser: (user) => set({ user }),
   setSession: ({ user, accessToken }) =>
     set({
       user,
@@ -49,5 +49,5 @@ export const useAuthStore = create<AuthState>()((set) => ({
     set((state) => ({
       user: state.user ? { ...state.user, accept_odds_changes: acceptOddsChanges } : null,
     })),
-  clearSession: () => { console.log("[auth-store] clearSession called"); set({ user: null, accessToken: null, status: "anonymous" }); },
+  clearSession: () => set({ user: null, accessToken: null, status: "anonymous" }),
 }));

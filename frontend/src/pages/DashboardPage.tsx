@@ -81,8 +81,6 @@ export function DashboardPage() {
 
   const unlockedBadges = gamification?.badges.filter((badge) => badge.unlocked).length ?? 0;
 
-  console.log("[DEBUG] bets filtrés :", openPositions.map(b => ({ id: b.id, bet_status: b.status, event_status: b.event?.status, event_title: b.event?.title })));
-
   if (!user) {
     return <LoadingScreen label="Chargement de votre espace..." />;
   }

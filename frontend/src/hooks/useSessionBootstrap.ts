@@ -10,47 +10,33 @@ export function useSessionBootstrap() {
 
   useEffect(() => {
     let cancelled = false;
-    const accessTokenAtStart = useAuthStore.getState().accessToken;
-    console.log("[bootstrap] useEffect — status:", status, "| accessToken present:", !!accessTokenAtStart);
 
     if (status !== "idle") {
-      console.log("[bootstrap] skipping — status is not idle:", status);
       return;
     }
 
     const bootstrap = async () => {
       setStatus("loading");
-      console.log("[bootstrap] setStatus('loading') called");
 
       try {
         const accessToken = useAuthStore.getState().accessToken;
-        console.log("[bootstrap] accessToken in store:", !!accessToken);
 
         if (!accessToken) {
-          console.log("[bootstrap] no accessToken — calling refreshSession()...");
           const token = await refreshSession();
-          console.log("[bootstrap] refreshSession() returned:", token ? "token present" : "null/undefined");
 
           if (!token) {
             throw new Error("Aucune session active.");
           }
         }
 
-        console.log("[bootstrap] calling fetchCurrentUser()...");
         const user = await fetchCurrentUser();
-        console.log("[bootstrap] fetchCurrentUser() returned:", user);
 
-        console.log("[bootstrap] calling setUser() then setStatus('authenticated')");
         setUser(user);
         setStatus("authenticated");
 
       } catch (err) {
-        console.error("[bootstrap] caught error:", err);
         if (!cancelled) {
-          console.log("[bootstrap] calling clearSession()");
           clearSession();
-        } else {
-          console.log("[bootstrap] cancelled — skipping clearSession()");
         }
       }
     };
@@ -58,7 +44,6 @@ export function useSessionBootstrap() {
     void bootstrap();
 
     return () => {
-      console.log("[bootstrap] cleanup — marking cancelled=true");
       cancelled = true;
     };
   }, [clearSession, setStatus, setUser, status]);

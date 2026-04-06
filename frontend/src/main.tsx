@@ -11,6 +11,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 import App from "./RouterApp";
+import { inject } from '@vercel/analytics';
+inject();
 import { purgeLegacyAuthStorage } from "./store/auth-store";
 
 const queryClient = new QueryClient({
