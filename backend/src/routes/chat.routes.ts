@@ -40,7 +40,7 @@ chatRouter.get("/ban-status", requireAuth, async (req, res, next) => {
 // POST /chat/message — send a message
 chatRouter.post("/message", requireAuth, validateBody(messageSchema), async (req, res, next) => {
   try {
-    const message = await sendMessage(req.user!.id, req.body.content as string);
+    const message = await sendMessage(req.user!.id, req.body.content as string, req.user!.role);
     res.status(201).json(message);
   } catch (err) {
     if (err instanceof AppError) {

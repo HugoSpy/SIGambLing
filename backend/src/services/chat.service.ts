@@ -74,23 +74,27 @@ export async function getHistory() {
 
 // ─── Send message ─────────────────────────────────────────────────────────────
 
-export async function sendMessage(userId: string, content: string) {
-  // Rate limit
-  if (!checkRateLimit(userId)) {
-    throw new AppError("rate_limited", 429);
-  }
+export async function sendMessage(userId: string, content: string, role?: string) {
+  const isAdmin = role === "admin";
 
-  // Check ban/mute
-  const ban = await prisma.chatBan.findUnique({ where: { userId } });
-  if (ban?.permanent) {
-    throw new AppError("permanently_banned", 403);
-  }
-  if (ban?.mutedUntil && ban.mutedUntil > new Date()) {
-    throw new AppError("muted", 403, { mutedUntil: ban.mutedUntil.toISOString() });
+  if (!isAdmin) {
+    // Rate limit
+    if (!checkRateLimit(userId)) {
+      throw new AppError("rate_limited", 429);
+    }
+
+    // Check ban/mute
+    const ban = await prisma.chatBan.findUnique({ where: { userId } });
+    if (ban?.permanent) {
+      throw new AppError("permanently_banned", 403);
+    }
+    if (ban?.mutedUntil && ban.mutedUntil > new Date()) {
+      throw new AppError("muted", 403, { mutedUntil: ban.mutedUntil.toISOString() });
+    }
   }
 
   // Check banwords
-  if (containsBanword(content)) {
+  if (!isAdmin && containsBanword(content)) {
     // Increment ban count; escalate if needed
     const updated = await prisma.chatBan.upsert({
       where: { userId },
