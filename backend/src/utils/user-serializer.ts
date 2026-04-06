@@ -12,5 +12,6 @@ export function serializeUser(user: User) {
     accept_odds_changes: user.acceptOddsChanges,
     last_reward_at: user.lastRewardAt?.toISOString() ?? null,
     created_at: user.createdAt.toISOString(),
+    chat_panel_width: user.chatPanelWidth ?? null,
   };
 }

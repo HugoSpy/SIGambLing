@@ -6,8 +6,10 @@ import {
   getCurrentUserController,
   listAvailableBadgesController,
   listCurrentUserEventBetsController,
+  mentionSearchController,
   searchUsersController,
   unlockUserBadgeController,
+  updateChatPreferencesController,
   updateCurrentUserController,
   updateUserRewardController,
   uploadCurrentUserAvatarController,
@@ -18,6 +20,7 @@ import { validateBody } from "../middleware/validate";
 import {
   adjustUserBalanceSchema,
   unlockUserBadgeSchema,
+  updateChatPreferencesSchema,
   updateUserProfileSchema,
   updateUserRewardSchema,
 } from "../schemas/user.schemas";
@@ -82,6 +85,8 @@ const uploadAvatarMiddleware: RequestHandler = (request, response, next) => {
 userRouter.get("/me", requireAuth, getCurrentUserController);
 userRouter.get("/me/bets", requireAuth, listCurrentUserEventBetsController);
 userRouter.patch("/me", requireAuth, userLimiter, validateBody(updateUserProfileSchema), updateCurrentUserController);
+userRouter.patch("/me/chat-preferences", requireAuth, validateBody(updateChatPreferencesSchema), updateChatPreferencesController);
+userRouter.get("/mention-search", requireAuth, mentionSearchController);
 userRouter.post("/me/avatar", requireAuth, userLimiter, uploadAvatarMiddleware, uploadCurrentUserAvatarController);
 userRouter.get("/", requireAuth, requireRole(["admin"]), searchUsersController);
 userRouter.get("/badges/catalog", requireAuth, requireRole(["admin"]), listAvailableBadgesController);

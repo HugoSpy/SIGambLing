@@ -33,6 +33,11 @@ export const updateUserRewardSchema = z.object({
   action: z.enum(["reset", "mark_claimed"]),
 });
 
+export const updateChatPreferencesSchema = z.object({
+  chatPanelWidth: z.number().int().min(240).max(600),
+});
+
+export type UpdateChatPreferencesInput = z.infer<typeof updateChatPreferencesSchema>;
 export type UpdateUserProfileInput = z.infer<typeof updateUserProfileSchema>;
 export type AdjustUserBalanceInput = z.infer<typeof adjustUserBalanceSchema>;
 export type UnlockUserBadgeInput = z.infer<typeof unlockUserBadgeSchema>;

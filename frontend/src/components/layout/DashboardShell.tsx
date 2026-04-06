@@ -1,4 +1,4 @@
-import { type ReactNode, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
@@ -24,6 +24,7 @@ import { Button } from "../ui/Button";
 import { useGamificationState } from "../../hooks/useGamificationState";
 import { fetchAdminProposals } from "../../lib/api";
 import { ChatPanel } from "../chat/ChatPanel";
+import { useChatStore } from "../../store/chat-store";
 
 interface DashboardShellProps {
   user: AuthUser;
@@ -34,6 +35,11 @@ interface DashboardShellProps {
 export function DashboardShell({ user, onLogout, children }: DashboardShellProps) {
   const location = useLocation();
   const [chatOpen, setChatOpen] = useState(false);
+  const { setOpen: setChatStoreOpen, unreadCount, unreadMentions, clearUnread } = useChatStore();
+
+  useEffect(() => {
+    setChatStoreOpen(chatOpen);
+  }, [chatOpen, setChatStoreOpen]);
   const liveBalance = useAuthStore((state) => state.user?.balance ?? user.balance);
   const cartSelectionsCount = useBetCartStore((state) => state.selections.length);
   const setCartOpen = useBetCartStore((state) => state.setOpen);
@@ -140,11 +146,29 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
               "w-full justify-between text-left enabled:hover:border-zinc-700 enabled:hover:bg-zinc-800",
               chatOpen && "border-emerald-500/20 bg-emerald-500/10 text-emerald-400",
             )}
-            onClick={() => setChatOpen((v) => !v)}
+            onClick={() => {
+              setChatOpen((v) => {
+                if (!v) clearUnread();
+                return !v;
+              });
+            }}
             type="button"
           >
             <span className="inline-flex items-center gap-2">
-              <MessageSquare className="h-4 w-4 text-emerald-400" />
+              <span className="relative">
+                <MessageSquare className="h-4 w-4 text-emerald-400" />
+                {unreadCount > 0 && (
+                  <span
+                    className={`absolute -right-1.5 -top-1.5 flex h-[14px] min-w-[14px] items-center justify-center rounded-full px-0.5 text-[8px] font-bold ${
+                      unreadMentions > 0
+                        ? "animate-pulse bg-yellow-400 text-black"
+                        : "bg-red-500 text-white"
+                    }`}
+                  >
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
+              </span>
               Chat
             </span>
           </button>
@@ -340,17 +364,35 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
               "flex flex-col items-center justify-center rounded-lg px-1 py-2 text-[10px] transition-colors",
               chatOpen ? "bg-emerald-500/10 text-emerald-400" : "text-zinc-400",
             )}
-            onClick={() => setChatOpen((v) => !v)}
+            onClick={() => {
+              setChatOpen((v) => {
+                if (!v) clearUnread();
+                return !v;
+              });
+            }}
             type="button"
           >
-            <MessageSquare className="h-4 w-4" />
+            <span className="relative">
+              <MessageSquare className="h-4 w-4" />
+              {unreadCount > 0 && (
+                <span
+                  className={`absolute -right-1.5 -top-1.5 flex h-[14px] min-w-[14px] items-center justify-center rounded-full px-0.5 text-[8px] font-bold ${
+                    unreadMentions > 0
+                      ? "animate-pulse bg-yellow-400 text-black"
+                      : "bg-red-500 text-white"
+                  }`}
+                >
+                  {unreadCount > 99 ? "99+" : unreadCount}
+                </span>
+              )}
+            </span>
             <span className="mt-1">Chat</span>
           </button>
         </div>
       </nav>
 
       <BetCartDrawer />
-      <ChatPanel open={chatOpen} onClose={() => setChatOpen(false)} />
+      <ChatPanel open={chatOpen} onClose={() => setChatOpen(false)} initialWidth={user.chat_panel_width} />
     </div>
   );
 }

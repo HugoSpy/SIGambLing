@@ -20,9 +20,31 @@ interface ChatMessageProps {
     };
   };
   currentUserId?: string;
+  currentUserPseudo?: string;
 }
 
-export function ChatMessage({ message, currentUserId }: ChatMessageProps) {
+function renderContent(text: string, currentUserPseudo: string | undefined) {
+  const parts = text.split(/(@\w+)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith("@")) {
+      const pseudo = part.slice(1);
+      const isMentioned = pseudo.toLowerCase() === currentUserPseudo?.toLowerCase();
+      return (
+        <span
+          key={i}
+          className={`rounded px-0.5 font-semibold ${
+            isMentioned ? "bg-yellow-400/30 text-yellow-300" : "text-blue-400"
+          }`}
+        >
+          {part}
+        </span>
+      );
+    }
+    return <span key={i}>{part}</span>;
+  });
+}
+
+export function ChatMessage({ message, currentUserId, currentUserPseudo }: ChatMessageProps) {
   const isOwn = message.user.id === currentUserId;
   const initials = message.user.pseudo
     .split(" ")
@@ -58,7 +80,7 @@ export function ChatMessage({ message, currentUserId }: ChatMessageProps) {
               : "bg-zinc-800 text-zinc-100"
           }`}
         >
-          {message.content}
+          {renderContent(message.content, currentUserPseudo)}
         </div>
         <span className="text-[9px] text-zinc-600">
           {relativeTime(message.createdAt)}

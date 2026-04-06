@@ -11,6 +11,7 @@ export interface AuthUser {
   accept_odds_changes: boolean;
   last_reward_at: string | null;
   created_at: string;
+  chat_panel_width: number | null;
 }
 
 export interface RefreshSessionResponse {

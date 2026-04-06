@@ -65,6 +65,7 @@ model User {
   streakDays      Int         @default(0)
   acceptOddsChanges Boolean   @default(false)
   lastSeenAt      DateTime?
+  chatPanelWidth  Int?
   createdAt       DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   bets            Bet[]

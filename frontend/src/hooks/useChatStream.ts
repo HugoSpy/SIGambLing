@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useRef } from "react";
 import { useAuthStore } from "../store/auth-store";
+import { useChatStore } from "../store/chat-store";
 
 export interface ChatMessageData {
   id: string;
   content: string;
   createdAt: string;
+  mentionedUserIds?: string[];
   user: {
     id: string;
     pseudo: string;
@@ -15,9 +17,11 @@ export interface ChatMessageData {
 interface UseChatStreamOptions {
   onMessage: (msg: ChatMessageData) => void;
   enabled: boolean;
+  /** Return true when the scroll container is near the bottom (< 80px away) */
+  isNearBottom: () => boolean;
 }
 
-export function useChatStream({ onMessage, enabled }: UseChatStreamOptions) {
+export function useChatStream({ onMessage, enabled, isNearBottom }: UseChatStreamOptions) {
   const readerRef = useRef<ReadableStreamDefaultReader<Uint8Array> | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   const bufferRef = useRef("");
@@ -61,6 +65,16 @@ export function useChatStream({ onMessage, enabled }: UseChatStreamOptions) {
             try {
               const msg = JSON.parse(json) as ChatMessageData;
               onMessage(msg);
+
+              // Count unread when the chat is closed or user scrolled up
+              const { isOpen, addUnread } = useChatStore.getState();
+              const currentUserId = useAuthStore.getState().user?.id;
+              if (!isOpen || !isNearBottom()) {
+                const isMention =
+                  currentUserId != null &&
+                  (msg.mentionedUserIds?.includes(currentUserId) ?? false);
+                addUnread(isMention);
+              }
             } catch {
               // ignore malformed lines
             }
@@ -73,7 +87,7 @@ export function useChatStream({ onMessage, enabled }: UseChatStreamOptions) {
       // Reconnect after 3 s on unexpected disconnect
       setTimeout(() => void connect(), 3000);
     }
-  }, [enabled, onMessage]);
+  }, [enabled, onMessage, isNearBottom]);
 
   useEffect(() => {
     if (!enabled) return;

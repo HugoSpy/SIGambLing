@@ -4,6 +4,7 @@ import { eventService } from "../services/event.service";
 import { userService } from "../services/user.service";
 import type { UploadedFile } from "../types/upload";
 import { AppError } from "../utils/app-error";
+import { prisma } from "../lib/prisma";
 
 function getAuthenticatedUserId(request: Parameters<RequestHandler>[0]) {
   const authUser = (request as { auth?: { id?: string } }).auth;
@@ -117,6 +118,39 @@ export const listAvailableBadgesController: RequestHandler = async (_request, re
   try {
     const badges = userService.listAvailableBadges();
     response.json({ badges });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateChatPreferencesController: RequestHandler = async (request, response, next) => {
+  try {
+    const userId = getAuthenticatedUserId(request);
+    const { chatPanelWidth } = request.body as { chatPanelWidth: number };
+    await prisma.user.update({ where: { id: userId }, data: { chatPanelWidth } });
+    response.json({ chatPanelWidth });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const mentionSearchController: RequestHandler = async (request, response, next) => {
+  try {
+    const query = String(request.query.q ?? "").trim().slice(0, 50);
+    if (!query) {
+      response.json({ users: [] });
+      return;
+    }
+    const users = await prisma.user.findMany({
+      where: {
+        isBanned: false,
+        pseudo: { contains: query, mode: "insensitive" },
+      },
+      orderBy: { pseudo: "asc" },
+      take: 5,
+      select: { id: true, pseudo: true, avatarUrl: true },
+    });
+    response.json({ users });
   } catch (error) {
     next(error);
   }

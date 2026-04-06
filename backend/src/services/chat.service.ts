@@ -116,7 +116,18 @@ export async function sendMessage(userId: string, content: string) {
     },
   });
 
-  broadcastMessage(message);
+  // Extract @mentions and resolve to user ids for the SSE payload
+  const mentionedPseudos = [...content.matchAll(/@(\w+)/g)].map((m) => m[1]);
+  let mentionedUserIds: string[] = [];
+  if (mentionedPseudos.length > 0) {
+    const mentionedUsers = await prisma.user.findMany({
+      where: { pseudo: { in: mentionedPseudos } },
+      select: { id: true },
+    });
+    mentionedUserIds = mentionedUsers.map((u) => u.id);
+  }
+
+  broadcastMessage({ ...message, mentionedUserIds });
   return message;
 }
 
