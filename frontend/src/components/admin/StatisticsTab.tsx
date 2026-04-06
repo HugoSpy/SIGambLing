@@ -1,12 +1,20 @@
 import { useEffect, useState } from "react";
-import { Activity, TrendingUp, Users } from "lucide-react";
+import { Activity, Coins, TrendingUp, Users } from "lucide-react";
 import toast from "react-hot-toast";
 import {
   fetchAdminStatisticsOverview,
   fetchAdminEventsLeaderboard,
+  fetchPublicStats,
   type StatisticsOverview,
   type LeaderboardEvent,
+  type PublicStats,
 } from "../../lib/api";
+
+function formatTokens(n: number): string {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M";
+  if (n >= 1_000) return (n / 1_000).toFixed(0) + "K";
+  return n.toString();
+}
 
 function StatCard({
   label,
@@ -39,17 +47,20 @@ function StatCard({
 
 export function StatisticsTab() {
   const [stats, setStats] = useState<StatisticsOverview | null>(null);
+  const [publicStats, setPublicStats] = useState<PublicStats | null>(null);
   const [leaderboard, setLeaderboard] = useState<LeaderboardEvent[]>([]);
 
   useEffect(() => {
     const load = async () => {
       try {
-        const [overview, lb] = await Promise.all([
+        const [overview, lb, pub] = await Promise.all([
           fetchAdminStatisticsOverview(),
           fetchAdminEventsLeaderboard(),
+          fetchPublicStats(),
         ]);
         setStats(overview);
         setLeaderboard(lb);
+        setPublicStats(pub);
       } catch {
         toast.error("Impossible de charger les statistiques.");
       }
@@ -94,6 +105,33 @@ export function StatisticsTab() {
           subtext="tokens pariés"
           subtextColor="text-zinc-400"
           value={stats ? stats.totalVolume.formatted : dash}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
+        <StatCard
+          icon={<Users className="h-5 w-5 text-emerald-400" />}
+          iconBg="bg-emerald-500/10"
+          label="Utilisateurs inscrits"
+          subtext="comptes non bannis"
+          subtextColor="text-zinc-400"
+          value={publicStats ? publicStats.totalUsers.toLocaleString("fr-FR") : dash}
+        />
+        <StatCard
+          icon={<Coins className="h-5 w-5 text-amber-400" />}
+          iconBg="bg-amber-500/10"
+          label="Tokens en circulation"
+          subtext="solde total des joueurs"
+          subtextColor="text-zinc-400"
+          value={publicStats ? formatTokens(publicStats.totalTokens) : dash}
+        />
+        <StatCard
+          icon={<Activity className="h-5 w-5 text-sky-400" />}
+          iconBg="bg-sky-500/10"
+          label="Total paris (all-time)"
+          subtext="tous événements confondus"
+          subtextColor="text-zinc-400"
+          value={publicStats ? publicStats.totalBets.toLocaleString("fr-FR") : dash}
         />
       </div>
 
