@@ -165,7 +165,6 @@ authRouter.get("/microsoft/callback", (request, response, next) => {
     },
   )(request, response, next);
 });
-});
 
 authRouter.post("/refresh", strictLimiter, refreshController);
 authRouter.post("/logout", strictLimiter, logoutController);
