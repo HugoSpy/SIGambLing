@@ -40,6 +40,15 @@ export function createApp() {
   app.use(passport.initialize());
   app.use(requestLogger);
 
+  // Serve avatar files from local storage
+  app.use("/avatars", (_req, res, next) => {
+    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+    next();
+  }, express.static(env.AVATAR_STORAGE_DIR, {
+    maxAge: "1h",
+    immutable: false,
+  }));
+
   app.use("/health", healthRouter);
   app.use("/stats", publicStatsRouter);
   app.use("/auth", authRouter);

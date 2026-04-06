@@ -34,21 +34,6 @@ function tryParseUrl(value: string, label: string, errors: string[]) {
   }
 }
 
-function deriveSupabaseUrl(databaseUrl: string) {
-  try {
-    const host = new URL(databaseUrl).hostname;
-    const match = host.match(/^db\.([^.]+)\.supabase\.co$/);
-
-    if (!match) {
-      return null;
-    }
-
-    return `https://${match[1]}.supabase.co`;
-  } catch {
-    return null;
-  }
-}
-
 loadEnvFile();
 
 const requiredKeys = [
@@ -82,9 +67,8 @@ const directUrl = process.env.DIRECT_URL;
 const cookieDomain = process.env.COOKIE_DOMAIN?.trim();
 const cookieSameSite = process.env.COOKIE_SAME_SITE?.trim().toLowerCase();
 const corsAllowedOrigins = process.env.CORS_ALLOWED_ORIGINS?.trim();
-const supabaseUrl = process.env.SUPABASE_URL?.trim();
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim();
-const avatarsBucket = process.env.SUPABASE_AVATARS_BUCKET?.trim() || "avatars";
+const avatarStorageDir = process.env.AVATAR_STORAGE_DIR?.trim();
+const avatarPublicBaseUrl = process.env.AVATAR_PUBLIC_BASE_URL?.trim();
 
 const parsedApiBaseUrl =
   apiBaseUrl && apiBaseUrl.trim().length > 0
@@ -100,7 +84,7 @@ const parsedCallbackUrl =
     : null;
 
 if (databaseUrl && directUrl && databaseUrl !== directUrl) {
-  warnings.push("DATABASE_URL and DIRECT_URL differ. Confirm both point to the same Supabase/Postgres project.");
+  warnings.push("DATABASE_URL and DIRECT_URL differ. Confirm both point to the same Postgres project.");
 }
 
 if (parsedApiBaseUrl && parsedCallbackUrl) {
@@ -159,23 +143,12 @@ if (corsAllowedOrigins) {
   }
 }
 
-const derivedSupabaseUrl = databaseUrl ? deriveSupabaseUrl(databaseUrl) : null;
-const effectiveSupabaseUrl = supabaseUrl || derivedSupabaseUrl;
-
-if (!effectiveSupabaseUrl) {
-  warnings.push(
-    "Supabase project URL could not be derived from DATABASE_URL. Avatar uploads will require SUPABASE_URL.",
-  );
+if (!avatarStorageDir) {
+  warnings.push("AVATAR_STORAGE_DIR is not set. Defaulting to /var/www/sigambling/avatars.");
 }
 
-if (!supabaseServiceRoleKey) {
-  warnings.push(
-    `SUPABASE_SERVICE_ROLE_KEY is missing. Avatar uploads to bucket "${avatarsBucket}" will be unavailable.`,
-  );
-}
-
-if (supabaseUrl) {
-  tryParseUrl(supabaseUrl, "SUPABASE_URL", errors);
+if (!avatarPublicBaseUrl) {
+  warnings.push("AVATAR_PUBLIC_BASE_URL is not set. Defaulting to /avatars.");
 }
 
 const summary = [
@@ -185,8 +158,8 @@ const summary = [
   `CORS_ALLOWED_ORIGINS=${corsAllowedOrigins ?? "<default frontend origin>"}`,
   `COOKIE_SAME_SITE=${cookieSameSite ?? "<auto>"}`,
   `MICROSOFT_CALLBACK_URL=${callbackUrl ?? "<missing>"}`,
-  `SUPABASE_URL=${effectiveSupabaseUrl ?? "<disabled>"}`,
-  `SUPABASE_AVATARS_BUCKET=${avatarsBucket}`,
+  `AVATAR_STORAGE_DIR=${avatarStorageDir ?? "/var/www/sigambling/avatars"}`,
+  `AVATAR_PUBLIC_BASE_URL=${avatarPublicBaseUrl ?? "/avatars"}`,
 ];
 
 if (errors.length > 0) {

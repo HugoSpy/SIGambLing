@@ -34,9 +34,8 @@ const envSchema = z.object({
   COOKIE_DOMAIN: z.string().optional(),
   COOKIE_SAME_SITE: z.enum(["lax", "strict", "none"]).optional(),
   CORS_ALLOWED_ORIGINS: z.string().optional(),
-  SUPABASE_URL: z.string().url().optional(),
-  SUPABASE_SERVICE_ROLE_KEY: z.string().min(1).optional(),
-  SUPABASE_AVATARS_BUCKET: z.string().min(1).default("avatars"),
+  AVATAR_STORAGE_DIR: z.string().min(1).default("/var/www/sigambling/avatars"),
+  AVATAR_PUBLIC_BASE_URL: z.string().min(1).default("/avatars"),
   SENTRY_DSN: z.string().optional(),
 });
 
