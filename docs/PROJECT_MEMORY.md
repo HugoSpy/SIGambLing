@@ -60,20 +60,20 @@
 
 ### Backend
 
-| Property             | Value                             |
-| -------------------- | --------------------------------- |
-| **Framework**        | Express 4.21                      |
-| **Language**         | TypeScript 5.7                    |
-| **Runtime**          | Node.js (see `.nvmrc` / engines)  |
-| **ORM**              | Prisma 6.4                        |
-| **Validation**       | Zod 3.24                          |
-| **Authentication**   | Passport.js + passport-microsoft  |
-| **Token Strategy**   | JWT (access 15m + refresh 30d)    |
-| **File Storage**     | Supabase Storage (avatars bucket) |
-| **Image Processing** | Sharp                             |
-| **Logging**          | Winston                           |
-| **Rate Limiting**    | express-rate-limit                |
-| **Security Headers** | Helmet                            |
+| Property             | Value                                             |
+| -------------------- | ------------------------------------------------- |
+| **Framework**        | Express 4.21                                      |
+| **Language**         | TypeScript 5.7                                    |
+| **Runtime**          | Node.js (see `.nvmrc` / engines)                  |
+| **ORM**              | Prisma 6.4                                        |
+| **Validation**       | Zod 3.24                                          |
+| **Authentication**   | Passport.js + passport-microsoft                  |
+| **Token Strategy**   | JWT (access 15m + refresh 30d)                    |
+| **File Storage**     | Local disk on NAS (`/var/www/sigambling/avatars`) |
+| **Image Processing** | Sharp                                             |
+| **Logging**          | Winston                                           |
+| **Rate Limiting**    | express-rate-limit                                |
+| **Security Headers** | Helmet                                            |
 
 **Location:** `/backend`  
 **Entry Point:** `backend/src/index.ts`  
@@ -91,18 +91,17 @@
 "helmet": "^8.0.0",
 "express-rate-limit": "^7.5.0",
 "zod": "^3.24.2",
-"winston": "^3.17.0",
-"@supabase/supabase-js": "^2.101.1"
+"winston": "^3.17.0"
 ```
 
 ### Database
 
-| Property            | Value                          |
-| ------------------- | ------------------------------ |
-| **Provider**        | PostgreSQL 15                  |
-| **Host**            | Supabase                       |
-| **ORM**             | Prisma 6                       |
-| **Schema Location** | `backend/prisma/schema.prisma` |
+| Property            | Value                                |
+| ------------------- | ------------------------------------ |
+| **Provider**        | PostgreSQL 15                        |
+| **Host**            | VM Ubuntu NAS (local 127.0.0.1:5432) |
+| **ORM**             | Prisma 6                             |
+| **Schema Location** | `backend/prisma/schema.prisma`       |
 
 **Key Models:** `User`, `Event`, `Bet`, `BetLeg`, `CasinoGame`, `Badge`, `Jackpot`, `JackpotContribution`, `EventProposal`, `EventExclusion`, `OddsHistory`, `AdminLog`, `ChatMessage`, `ChatBan`
 
@@ -148,18 +147,21 @@ Users (EPITA SIGL 2027)
 │  Tunnel           │    │  VM Ubuntu 24/Proxmox │  PM2 + systemd
 └───────────────────┘    │  https://api.sigambling.fr
                          └───────────┬──────────┘
-                                     │ PostgreSQL protocol
-                                     ▼
-                         ┌───────────────────┐
-                         │  Supabase         │  PostgreSQL 15
-                         │  (Hosted DB)      │  + Storage (avatars)
-                         └───────────────────┘
                                      │
-                                     ▼ OAuth2
-                         ┌───────────────────┐
-                         │  Microsoft Azure  │  passport-microsoft
-                         │  (EPITA tenant)   │  scope: openid, profile, email
-                         └───────────────────┘
+                         ┌───────────┴──────────┐
+                         │                      │
+                         ▼ PostgreSQL            ▼ Filesystem
+              ┌───────────────────┐   ┌───────────────────────┐
+              │  PostgreSQL 15    │   │  Local avatar storage │
+              │  127.0.0.1:5432   │   │  /var/www/sigambling/ │
+              │  DB: sigambling   │   │  avatars/             │
+              └───────────────────┘   └───────────────────────┘
+                         │
+                         ▼ OAuth2
+              ┌───────────────────┐
+              │  Microsoft Azure  │  passport-microsoft
+              │  (EPITA tenant)   │  scope: openid, profile, email
+              └───────────────────┘
 ```
 
 **Notes infra:**
@@ -248,7 +250,7 @@ Users (EPITA SIGL 2027)
 
 - [x] Microsoft OAuth login (EPITA @epita.fr only)
 - [x] Auto-generated pseudo from EPITA email
-- [x] User profile & avatar upload (Supabase Storage, 2MB limit, processed with Sharp)
+- [x] User profile & avatar upload (local NAS storage, 2MB limit, processed with Sharp)
 - [x] Balance management
 - [x] Balance navbar temps réel via Zustand (`liveBalance` dans `DashboardShell`)
 - [x] Personal bet history (`/users/me/bets`) + page `/history` complète (paginated + filtres)
@@ -442,7 +444,7 @@ POST /rewards/jackpot/payout     — Trigger jackpot payout (admin only)
 
 ## 6. Database Schema
 
-**Provider:** PostgreSQL 15 via Supabase  
+**Provider:** PostgreSQL 15 on VM Ubuntu NAS (127.0.0.1:5432)  
 **Schema:** `backend/prisma/schema.prisma`
 
 ### Enums
@@ -607,9 +609,9 @@ VITE_SENTRY_DSN=                     # optional
 NODE_ENV=development
 PORT=3001
 
-# Database (Supabase PostgreSQL)
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/sigambling
-DIRECT_URL=postgresql://postgres:postgres@localhost:5432/sigambling
+# Database (PostgreSQL on NAS)
+DATABASE_URL=postgresql://sigambling:<password>@127.0.0.1:5432/sigambling?schema=public
+DIRECT_URL=postgresql://sigambling:<password>@127.0.0.1:5432/sigambling?schema=public
 
 # JWT
 JWT_SECRET=change-me-access-secret
@@ -626,10 +628,9 @@ FRONTEND_URL=http://localhost:5173
 API_BASE_URL=http://localhost:3001
 COOKIE_DOMAIN=                        # empty for localhost
 
-# Supabase Storage (optional — for avatar uploads)
-SUPABASE_URL=
-SUPABASE_SERVICE_ROLE_KEY=
-SUPABASE_AVATARS_BUCKET=avatars
+# Avatar Storage (local NAS disk)
+AVATAR_STORAGE_DIR=/var/www/sigambling/avatars
+AVATAR_PUBLIC_BASE_URL=/avatars
 
 # Error tracking (optional)
 SENTRY_DSN=
@@ -643,7 +644,7 @@ SENTRY_DSN=
 
 **No active critical bugs.**
 
-- ~~Avatar upload 503~~ — fixé (env vars Supabase configurées en prod)
+- ~~Avatar upload 503~~ — fixé (migration vers stockage local NAS terminée)
 - ~~Admin Statistics Route Not Mounted~~ — fixé
 - ~~Session loader infini en prod~~ — fixé
 - ~~Refresh token manquant en prod~~ — fixé
@@ -664,6 +665,55 @@ SENTRY_DSN=
 ---
 
 ## 9. Recent Changes
+
+### Session 06/04/2026 — Migration hors Supabase (terminée)
+
+**Migration base de données :**
+
+- PostgreSQL n'utilise plus Supabase — migré vers PostgreSQL auto-hébergé sur la VM Ubuntu du NAS
+- Base cible : `sigambling`, utilisateur PostgreSQL : `sigambling`
+- Connexion backend → DB via `127.0.0.1:5432` (local sur la VM)
+- Prisma fonctionne sur cette base PostgreSQL NAS
+- Les tables métier ont été restaurées depuis le dump Supabase et validées
+- DataGrip fonctionne via tunnel SSH pour l'administration
+- PostgreSQL écoute en local uniquement sur la VM (tunnel SSH pour l'accès externe)
+
+**Migration storage avatars :**
+
+- Supabase Storage n'est plus utilisé
+- `@supabase/supabase-js` supprimé du backend (package.json + code source)
+- `storage.service.ts` réécrit : utilise `fs` + `path` pour écriture disque local
+- Avatars stockés dans `/var/www/sigambling/avatars` sur le NAS
+- Avatars servis publiquement via `/avatars/...` (express.static dans `app.ts`)
+- Header `Cross-Origin-Resource-Policy: cross-origin` posé sur `/avatars` pour compatibilité frontend cross-origin
+- URL avatar absolue (résolution de `AVATAR_PUBLIC_BASE_URL` relatif contre `API_BASE_URL`)
+- `env.ts` et `validate-env.ts` adaptés : variables `SUPABASE_*` supprimées, `AVATAR_STORAGE_DIR` et `AVATAR_PUBLIC_BASE_URL` ajoutées
+- `.env` et `.env.example` mis à jour
+- Les anciennes `avatarUrl` Supabase déjà en base restent tolérées (pas de migration destructrice)
+- Un upload avatar testé avec succès — fichier `.webp` présent sur le NAS
+
+**Variables d'environnement ajoutées :**
+
+```env
+AVATAR_STORAGE_DIR=/var/www/sigambling/avatars
+AVATAR_PUBLIC_BASE_URL=/avatars
+```
+
+**Variables d'environnement supprimées :**
+
+```env
+SUPABASE_URL
+SUPABASE_SERVICE_ROLE_KEY (ou SUPABASE_SERVICE_KEY)
+SUPABASE_AVATARS_BUCKET
+```
+
+**Surveillance post-migration :**
+
+- Vérifier les permissions du dossier `/var/www/sigambling/avatars` après changement d'utilisateur PM2
+- Sauvegarder régulièrement la base PostgreSQL du NAS et le dossier avatars
+- Les anciens avatars Supabase restent visibles tant que leurs URLs historiques existent en base
+- Si besoin futur, un script SQL pourra réécrire les anciennes `avatarUrl`
+- Les logs PM2 peuvent contenir d'anciennes erreurs Supabase sans impact courant
 
 ### Session 05/04 → 06/04/2026
 
@@ -708,7 +758,7 @@ SENTRY_DSN=
 
 **Bugs fixés :**
 
-- Avatar upload 503 (env vars Supabase)
+- Avatar upload 503 (migré vers stockage local NAS)
 - Winston logs sans rotation
 
 ### Session 04/04 → 05/04/2026 (déploiement + features)
@@ -846,12 +896,12 @@ cd backend && npm start        # node dist/src/index.js
 | Decision                      | Rationale                                                                            |
 | ----------------------------- | ------------------------------------------------------------------------------------ |
 | Vite over CRA                 | Faster dev server, better ESM support, smaller bundles                               |
-| Prisma over TypeORM           | Type-safe query builder, better DX, migrations, Supabase compatibility               |
+| Prisma over TypeORM           | Type-safe query builder, better DX, migrations, PostgreSQL compatibility             |
 | Microsoft OAuth only          | EPITA provides Azure AD — no password management needed, guaranteed @epita.fr domain |
 | Virtual currency only         | Legal compliance — no real money gambling, educational context                       |
 | Bearer JWT + HttpOnly refresh | Security best practice: no tokens in localStorage, auto-rotation via sessionVersion  |
 | Pari-mutuel odds              | Fair odds system — pool redistributes to winners proportionally                      |
-| Supabase                      | Free tier covers student project needs, built-in storage for avatars                 |
+| Self-hosted PostgreSQL + NAS  | Full control, no external dependency, avatar storage on local disk                   |
 | Zustand + React Query split   | Zustand for auth/UI state, React Query for server state caching                      |
 
 **Trade-offs:**
@@ -974,7 +1024,7 @@ SIGambling/
     │   │   ├── jackpot.service.ts
     │   │   ├── auth.service.ts
     │   │   ├── user.service.ts
-    │   │   ├── storage.service.ts ← Supabase avatar storage
+    │   │   ├── storage.service.ts ← Local disk avatar storage (NAS)
     │   │   └── prisma.service.ts
     │   ├── middleware/
     │   │   ├── require-auth.ts    ← JWT validation + sessionVersion check

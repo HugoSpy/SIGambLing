@@ -1,10 +1,13 @@
 import type { RequestHandler } from "express";
 import { URL } from "node:url";
-import { env } from "../config/env";
+import { env, isProduction } from "../config/env";
 import { authService } from "../services/auth.service";
 import { prisma } from "../services/prisma.service";
 import { AppError } from "../utils/app-error";
+import { logger } from "../utils/logger";
 import { serializeUser } from "../utils/user-serializer";
+
+const P = "[MS_AUTH][CONTROLLER]";
 
 export const getMicrosoftRedirectController: RequestHandler = (request, response) => {
   const prompt = typeof request.body.prompt === "string" ? request.body.prompt : "select_account";
@@ -24,36 +27,66 @@ export const handleMicrosoftCallbackController: RequestHandler = async (
   try {
     const passportUser = request.user as { id?: string } | undefined;
 
+    logger.info(`${P}[USER_CHECK] passportUser`, {
+      hasUser: !!passportUser,
+      userId: passportUser?.id ?? "<none>",
+    });
+
     if (!passportUser?.id) {
       throw new AppError("Authentification Microsoft incomplète.", 401);
     }
+
+    logger.info(`${P}[DB_FIND] Finding user in DB...`, { userId: passportUser.id });
 
     const user = await prisma.user.findUnique({
       where: { id: passportUser.id },
     });
 
     if (!user) {
+      logger.error(`${P}[DB_FIND] User not found in DB`, { userId: passportUser.id });
       throw new AppError("Utilisateur Microsoft introuvable.", 404);
     }
+
+    logger.info(`${P}[SESSION] Building session...`, { userId: user.id, pseudo: user.pseudo });
 
     const { accessToken, refreshToken } = authService.buildSession(user);
     authService.applyRefreshCookie(response, refreshToken);
 
-    const payload = {
-      user: serializeUser(user),
-      access_token: accessToken,
-    };
+    logger.info(`${P}[SESSION] Session built, cookie applied`);
 
     const acceptsJson = request.accepts(["json", "html"]) === "json";
 
     if (acceptsJson) {
+      logger.info(`${P}[RESPONSE] Returning JSON response`);
+      const payload = {
+        user: serializeUser(user),
+        access_token: accessToken,
+      };
       response.json(payload);
       return;
     }
 
     const callbackUrl = new URL("/auth/callback", env.FRONTEND_URL);
+    logger.info(`${P}[RESPONSE] Redirecting to frontend`, { url: callbackUrl.toString() });
     response.redirect(callbackUrl.toString());
-  } catch (error) {
+  } catch (error: any) {
+    logger.error(`${P}[ERROR] Exception in callback controller`, {
+      message: error.message,
+      name: error.name,
+      statusCode: error.statusCode,
+      stack: error.stack,
+    });
+
+    if (!isProduction && !(error instanceof AppError)) {
+      response.status(500).json({
+        step: "CALLBACK_CONTROLLER",
+        message: error.message,
+        name: error.name,
+        stack: error.stack?.split("\n").slice(0, 8),
+      });
+      return;
+    }
+
     next(error);
   }
 };
