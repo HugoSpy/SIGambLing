@@ -83,6 +83,7 @@ model User {
   reviewedProposals EventProposal[] @relation("ProposalReviewer")
   jackpotContributions JackpotContribution[]
   wonJackpotSnapshots Jackpot[] @relation("JackpotLastWinner")
+  jackpotContributionTotal Int         @default(0)
   chatMessages    ChatMessage[]
   chatBan         ChatBan?
 
