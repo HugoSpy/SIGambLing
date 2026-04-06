@@ -141,27 +141,39 @@ function CardCenter({ card }: { card?: BlackjackCard }) {
   );
 }
 
+const cardVariants = {
+  hidden: { y: -120, opacity: 0, scale: 0.6, rotateY: 90 },
+  visible: {
+    y: 0,
+    opacity: 1,
+    scale: 1,
+    rotateY: 0,
+    transition: {
+      duration: 0.3,
+      ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number],
+    },
+  },
+};
+
 function PlayingCard({
   card,
   hidden = false,
-  index = 0,
 }: {
   card?: BlackjackCard;
   hidden?: boolean;
-  index?: number;
 }) {
   return (
     <motion.div
-      animate={{ opacity: 1, y: 0, rotateY: 0 }}
+      variants={cardVariants}
+      initial="hidden"
+      animate="visible"
       className={cn(
         "relative flex h-[120px] w-[80px] flex-shrink-0 select-none flex-col rounded-xl border shadow-lg",
         hidden
           ? "border-blue-400/30 bg-gradient-to-br from-blue-800 to-red-800"
           : "border-gray-200/20 bg-white",
       )}
-      initial={{ opacity: 0, y: -40, rotateY: -90 }}
       style={{ transformStyle: "preserve-3d" }}
-      transition={{ duration: 0.45, delay: index * 0.12, ease: "easeOut" }}
     >
       {hidden ? (
         <div className="flex h-full items-center justify-center">
@@ -521,7 +533,6 @@ function SplitHandsArea({
                     <PlayingCard
                       key={`split-${i}-${ci}-${card.rank}-${card.suit}`}
                       card={card}
-                      index={ci}
                     />
                   ))}
                 </AnimatePresence>
@@ -592,6 +603,11 @@ export function BlackjackGame() {
   const [splitHands, setSplitHands] = useState<SplitHandDisplay[] | null>(null);
   const [currentSplitHand, setCurrentSplitHand] = useState<0 | 1>(0);
   const [splitResults, setSplitResults] = useState<SplitHandResult[] | null>(null);
+  // Progressive deal animation state
+  const [isDealing, setIsDealing] = useState(false);
+  const [visiblePlayerCards, setVisiblePlayerCards] = useState<BlackjackCard[]>([]);
+  const [visibleDealerCards, setVisibleDealerCards] = useState<BlackjackCard[]>([]);
+  const [dealerHiddenDealt, setDealerHiddenDealt] = useState(false);
 
   const balance = user?.balance ?? 0;
   const isPlaying = gameState === "PLAYER_TURN";
@@ -682,6 +698,42 @@ export function BlackjackGame() {
     [updateBalance, queryClient],
   );
 
+  const dealCardsProgressively = useCallback(
+    (playerCards: BlackjackCard[], upcard: BlackjackCard) => {
+      const DEAL_INTERVAL_MS = 350;
+      const queue: Array<"player" | "dealer" | "dealer-hidden"> = [
+        "player",
+        "dealer",
+        "player",
+        "dealer-hidden",
+      ];
+
+      setIsDealing(true);
+      setVisiblePlayerCards([]);
+      setVisibleDealerCards([]);
+      setDealerHiddenDealt(false);
+
+      let playerIdx = 0;
+
+      queue.forEach((target, index) => {
+        setTimeout(() => {
+          if (target === "player") {
+            const card = playerCards[playerIdx++];
+            if (card) setVisiblePlayerCards((prev) => [...prev, card]);
+          } else if (target === "dealer") {
+            setVisibleDealerCards([upcard]);
+          } else {
+            setDealerHiddenDealt(true);
+          }
+          if (index === queue.length - 1) {
+            setIsDealing(false);
+          }
+        }, index * DEAL_INTERVAL_MS);
+      });
+    },
+    [],
+  );
+
   const handleBet = useCallback(async () => {
     if (bet < 1) {
       notify.error("La mise minimum est de 1 token.");
@@ -710,14 +762,19 @@ export function BlackjackGame() {
       setInsurancePayout(data.insurance_payout ?? 0);
 
       if (data.status === "resolved") {
-        setDealerUpcard(data.dealer_upcard ?? data.dealer_hand_final?.[0] ?? null);
+        const upcard = data.dealer_upcard ?? data.dealer_hand_final?.[0] ?? null;
+        setDealerUpcard(upcard);
         resolveGame(data);
       } else {
-        setDealerUpcard(data.dealer_upcard ?? null);
+        const upcard = data.dealer_upcard ?? null;
+        setDealerUpcard(upcard);
         setDealerTotal(data.dealer_visible_total ?? 0);
         setInsuranceAvailable(data.insurance_available ?? false);
         setGameState("PLAYER_TURN");
         soundManager.play("click");
+        if (upcard) {
+          dealCardsProgressively(data.player_hand, upcard);
+        }
       }
     } catch (error) {
       setGameState("BETTING");
@@ -937,6 +994,10 @@ export function BlackjackGame() {
     setSplitHands(null);
     setCurrentSplitHand(0);
     setSplitResults(null);
+    setIsDealing(false);
+    setVisiblePlayerCards([]);
+    setVisibleDealerCards([]);
+    setDealerHiddenDealt(false);
   }, []);
 
   useEffect(() => {
@@ -1100,15 +1161,14 @@ export function BlackjackGame() {
               </div>
               <div className="flex min-h-[100px] flex-wrap gap-3">
                 <AnimatePresence mode="popLayout">
-                  {dealerDisplayHand.map((card, index) => (
+                  {(isDealing ? visibleDealerCards : dealerDisplayHand).map((card, index) => (
                     <PlayingCard
                       key={`dealer-${index}-${card.rank}-${card.suit}`}
                       card={card}
-                      index={index}
                     />
                   ))}
-                  {showHiddenCard && dealerUpcard ? (
-                    <PlayingCard key="dealer-hidden" hidden index={dealerDisplayHand.length} />
+                  {(isDealing ? dealerHiddenDealt : showHiddenCard) && dealerUpcard ? (
+                    <PlayingCard key="dealer-hidden" hidden />
                   ) : null}
                 </AnimatePresence>
               </div>
@@ -1159,18 +1219,23 @@ export function BlackjackGame() {
                 </div>
                 <div className="flex min-h-[100px] flex-wrap gap-3">
                   <AnimatePresence mode="popLayout">
-                    {playerHand.map((card, index) => (
+                    {(isDealing ? visiblePlayerCards : playerHand).map((card, index) => (
                       <PlayingCard
                         key={`player-${index}-${card.rank}-${card.suit}`}
                         card={card}
-                        index={index}
                       />
                     ))}
                   </AnimatePresence>
                 </div>
 
                 {gameState === "PLAYER_TURN" ? (
-                  <div className="mt-4 flex flex-wrap justify-center gap-2">
+                  <div
+                    className="mt-4 flex flex-wrap justify-center gap-2 transition-opacity duration-200"
+                    style={{
+                      opacity: isDealing ? 0.4 : 1,
+                      pointerEvents: isDealing ? "none" : "auto",
+                    }}
+                  >
                     {canInsure && dealerUpcard?.rank === "A" ? (
                       <>
                         <p className="w-full text-center text-xs text-amber-300">
