@@ -662,6 +662,7 @@ function serializeProposal(proposal: ProposalRecord) {
     suggested_date: proposal.suggestedDate?.toISOString() ?? null,
     options: proposal.options,
     status: serializeProposalStatus(proposal.status),
+    saved_by_admin: proposal.savedByAdmin,
     created_at: proposal.createdAt.toISOString(),
     reviewed_at: proposal.reviewedAt?.toISOString() ?? null,
     rejection_reason: proposal.rejectionReason,
@@ -2576,6 +2577,48 @@ class EventService {
     });
 
     return serializeProposal(rejectedProposal);
+  }
+
+  async toggleSaveProposal(proposalId: string) {
+    const proposal = await prisma.eventProposal.findUnique({
+      where: { id: proposalId },
+    });
+
+    if (!proposal) {
+      throw new AppError("Proposition introuvable.", 404);
+    }
+
+    const updated = await prisma.eventProposal.update({
+      where: { id: proposalId },
+      data: { savedByAdmin: !proposal.savedByAdmin },
+      include: {
+        user: {
+          select: { id: true, pseudo: true, email: true, avatarUrl: true },
+        },
+        reviewer: {
+          select: { id: true, pseudo: true, email: true },
+        },
+      },
+    });
+
+    return serializeProposal(updated);
+  }
+
+  async listSavedProposals() {
+    const proposals = await prisma.eventProposal.findMany({
+      where: { savedByAdmin: true },
+      orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+      include: {
+        user: {
+          select: { id: true, pseudo: true, email: true, avatarUrl: true },
+        },
+        reviewer: {
+          select: { id: true, pseudo: true, email: true },
+        },
+      },
+    });
+
+    return proposals.map((proposal) => serializeProposal(proposal));
   }
 }
 

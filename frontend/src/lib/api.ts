@@ -334,6 +334,20 @@ export async function rejectAdminProposal(proposalId: string, reason: string) {
   return response.data;
 }
 
+export async function toggleSaveAdminProposal(proposalId: string) {
+  const response = await api.patch<EventProposalView>(
+    `/admin/events/proposals/${proposalId}/save`,
+  );
+  return response.data;
+}
+
+export async function fetchSavedAdminProposals() {
+  const response = await api.get<{ proposals: EventProposalView[] }>(
+    "/admin/events/proposals/saved",
+  );
+  return response.data.proposals;
+}
+
 export async function fetchAdminStatisticsOverview(): Promise<StatisticsOverview> {
   const response = await api.get<StatisticsOverview>("/admin/statistics/overview");
   return response.data;

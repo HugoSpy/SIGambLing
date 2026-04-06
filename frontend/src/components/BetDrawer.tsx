@@ -228,7 +228,7 @@ export function BetDrawer({ event, open, onClose, initialOption }: BetDrawerProp
 
               <div className="flex items-center justify-between text-sm">
                 <span className="text-zinc-500">
-                  Disponible : {formatTokens(currentBalance)} tokens
+                  Disponible : <span className="text-emerald-400">{formatTokens(currentBalance)} tokens</span>
                 </span>
                 {amount > currentBalance ? <span className="text-red-400">Solde insuffisant</span> : null}
               </div>

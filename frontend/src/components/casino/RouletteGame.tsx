@@ -216,10 +216,7 @@ export function RouletteGame() {
             <div className="flex flex-col gap-5">
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-brand-orange">Roue principale</p>
-                  <h2 className="mt-2 font-display text-3xl text-brand-text">
-                    Un tour fluide, un résultat net
-                  </h2>
+                  <h2 className="font-display text-2xl text-brand-orange">Roue principale</h2>
                 </div>
                 {lastResult ? (
                   <div className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-brand-text">

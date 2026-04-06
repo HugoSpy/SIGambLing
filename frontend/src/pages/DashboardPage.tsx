@@ -328,46 +328,6 @@ export function DashboardPage() {
             </Card>
 
             <Card>
-              <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Gamification</p>
-              <h2 className="mt-2 text-lg font-semibold text-zinc-100">État live</h2>
-              <div className="mt-4 space-y-3 text-sm text-zinc-400">
-                <div className="flex items-center justify-between gap-3">
-                  <span className="inline-flex items-center gap-2">
-                    <Gift className="h-4 w-4 text-emerald-400" />
-                    Récompense
-                  </span>
-                  <span className="text-right text-zinc-100">
-                    {gamification?.daily_reward.claimed_today
-                      ? "Récupérée"
-                      : `${formatTokens(gamification?.daily_reward.next_amount ?? 100)} tokens`}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span className="inline-flex items-center gap-2">
-                    <Award className="h-4 w-4 text-amber-400" />
-                    Badges
-                  </span>
-                  <span className="text-zinc-100">{unlockedBadges}</span>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span>Victoires aux paris</span>
-                  <span className="text-zinc-100">{gamification?.stats.event_wins ?? 0}</span>
-                </div>
-                <div className="flex items-center justify-between gap-3">
-                  <span>Victoires casino</span>
-                  <span className="text-zinc-100">{gamification?.stats.casino_wins ?? 0}</span>
-                </div>
-              </div>
-              <Link
-                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-emerald-400 transition hover:text-emerald-300"
-                to="/profile"
-              >
-                Ouvrir le centre de récompenses
-                <ArrowRight className="h-4 w-4" />
-              </Link>
-            </Card>
-
-            <Card>
               <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Jackpot</p>
               <h2 className="mt-2 text-lg font-semibold text-zinc-100">Jackpot</h2>
               <div className="mt-4 space-y-3 text-sm text-zinc-400">

@@ -1,6 +1,6 @@
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Award, Camera, Coins, Flame, Gift, Save, Ticket, Trophy, UserRound } from "lucide-react";
+import { Award, Camera, Coins, Flame, Save, Trophy, UserRound } from "lucide-react";
 import { DashboardShell } from "../components/layout/DashboardShell";
 import { LoadingScreen } from "../components/layout/LoadingScreen";
 import { Button } from "../components/ui/Button";
@@ -9,7 +9,6 @@ import { Input } from "../components/ui/Input";
 import { useGamificationState } from "../hooks/useGamificationState";
 import {
   ApiError,
-  claimDailyReward,
   fetchCurrentUser,
   logoutRequest,
   updateCurrentUserProfile,
@@ -51,8 +50,6 @@ export function ProfilePage() {
   const [alwaysAcceptOddsChanges, setAlwaysAcceptOddsChanges] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [claimingReward, setClaimingReward] = useState(false);
-
   const { data: user } = useQuery({
     queryKey: ["me"],
     queryFn: fetchCurrentUser,
@@ -172,28 +169,6 @@ export function ProfilePage() {
     }
   };
 
-  const handleClaimReward = async () => {
-    try {
-      setClaimingReward(true);
-      const result = await claimDailyReward();
-      commitUser(result.user);
-      queryClient.setQueryData(["gamification"], result.gamification);
-      queryClient.setQueryData(["jackpot"], result.gamification.jackpot);
-
-      if (result.claimed) {
-        notify.success(
-          `Récompense récupérée : +${formatTokens(result.amount)} tokens`,
-        );
-      } else {
-        notify.info("Récompense déjà récupérée aujourd'hui.");
-      }
-    } catch (error) {
-      notify.error(getErrorMessage(error));
-    } finally {
-      setClaimingReward(false);
-    }
-  };
-
   return (
     <DashboardShell onLogout={handleLogout} user={user}>
       <div className="space-y-6">
@@ -307,100 +282,6 @@ export function ProfilePage() {
 
         {gamification ? (
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.1fr)_420px]">
-            <Card className="min-w-[300px]">
-              <div className="flex items-start justify-between gap-4">
-                <div>
-                  <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">
-                    Récompense quotidienne
-                  </p>
-                  <h2 className="mt-3 font-display text-3xl text-brand-text">
-                    {gamification.daily_reward.claimed_today
-                      ? "Récompense récupérée"
-                      : `${formatTokens(gamification.daily_reward.next_amount)} tokens a prendre`}
-                  </h2>
-                  <p className="mt-3 text-sm leading-7 text-brand-muted">
-                    Jour calculé en UTC. Le prochain reset est prévu après{" "}
-                    {new Date(gamification.daily_reward.next_claim_at).toLocaleString("fr-FR", {
-                      dateStyle: "short",
-                      timeStyle: "short",
-                    })}
-                    .
-                  </p>
-                </div>
-                <Gift className="h-6 w-6 text-brand-cyan" />
-              </div>
-
-              <div className="mt-5 grid gap-4 md:grid-cols-3">
-                <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Base</p>
-                  <p className="mt-2 font-display text-2xl text-brand-text">
-                    {formatTokens(gamification.daily_reward.base_amount)}
-                  </p>
-                </div>
-                <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Bonus streak</p>
-                  <p className="mt-2 font-display text-2xl text-brand-orange">
-                    +{formatTokens(gamification.daily_reward.next_streak_bonus)}
-                  </p>
-                </div>
-                <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
-                  <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Badges</p>
-                  <p className="mt-2 font-display text-2xl text-brand-text">
-                    {unlockedBadges}/{gamification.badges.length}
-                  </p>
-                </div>
-              </div>
-
-              <div className="mt-5 flex flex-wrap items-center gap-3">
-                <Button
-                  disabled={claimingReward || gamification.daily_reward.claimed_today}
-                  onClick={() => void handleClaimReward()}
-                >
-                  <Gift className="mr-2 h-4 w-4" />
-                  {claimingReward
-                    ? "Validation..."
-                    : gamification.daily_reward.claimed_today
-                      ? "Déjà récupérée"
-                      : "Récupérer la récompense"}
-                </Button>
-                {gamification.daily_reward.next_tier ? (
-                  <p className="text-sm text-brand-muted">
-                    Prochain tier: {gamification.daily_reward.next_tier.label} a{" "}
-                    {gamification.daily_reward.next_tier.minDays} jours pour +
-                    {formatTokens(gamification.daily_reward.next_tier.bonus)}.
-                  </p>
-                ) : (
-                  <p className="text-sm text-brand-muted">Tous les tiers de streak sont debloques.</p>
-                )}
-              </div>
-
-              <div className="mt-5 rounded-[22px] border border-white/10 bg-white/5 p-4">
-                <div className="flex items-center justify-between gap-3">
-                  <div>
-                    <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">
-                      Tier actuel
-                    </p>
-                    <p className="mt-2 font-display text-2xl text-brand-text">
-                      {gamification.daily_reward.current_tier.label}
-                    </p>
-                  </div>
-                  <Flame className="h-5 w-5 text-brand-orange" />
-                </div>
-                <p className="mt-3 text-sm text-brand-muted">
-                  {gamification.daily_reward.streak_status === "broken"
-                    ? "La streak est tombee. Reprenez un claim pour relancer le compteur."
-                    : gamification.daily_reward.streak_deadline_at
-                      ? `Deadline de streak: ${new Date(
-                          gamification.daily_reward.streak_deadline_at,
-                        ).toLocaleString("fr-FR", {
-                          dateStyle: "short",
-                          timeStyle: "short",
-                        })}`
-                      : "Claim disponible des l'ouverture du prochain jour UTC."}
-                </p>
-              </div>
-            </Card>
-
             <Card className="min-w-[300px]">
               <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">Progression</p>
               <div className="mt-5 space-y-4">

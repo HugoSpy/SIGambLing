@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { ChevronDown, Pencil, Search, ShieldBan, ShieldCheck, X } from "lucide-react";
+import { Bookmark, BookmarkCheck, ChevronDown, Pencil, Search, ShieldBan, ShieldCheck, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { StatisticsTab } from "../../components/admin/StatisticsTab";
 import { DashboardShell } from "../../components/layout/DashboardShell";
@@ -18,10 +18,12 @@ import {
   createAdminEvent,
   fetchAdminEvents,
   fetchAdminProposals,
+  fetchSavedAdminProposals,
   logoutRequest,
   rejectAdminProposal,
   resolveAdminEvent,
   searchUsers,
+  toggleSaveAdminProposal,
   triggerAdminJackpotPayout,
   unlockAdminUserBadge,
   updateAdminEvent,
@@ -283,6 +285,79 @@ function AdminEventCard({ event, actionKey, onEdit, onClose, onResolve, onCancel
   );
 }
 
+interface ProposalCardProps {
+  proposal: EventProposalView;
+  onApplyToForm: (proposal: EventProposalView) => void;
+  onReject: (id: string, reason: string) => void;
+  onToggleSave: (id: string) => void;
+}
+
+function ProposalCard({ proposal, onApplyToForm, onReject, onToggleSave }: ProposalCardProps) {
+  const BookmarkIcon = proposal.saved_by_admin ? BookmarkCheck : Bookmark;
+  return (
+    <div className="relative rounded-[22px] border border-white/10 bg-white/5 p-4">
+      <button
+        className="absolute right-4 top-4 rounded-lg p-1 text-brand-muted hover:text-brand-text transition-colors"
+        onClick={() => onToggleSave(proposal.id)}
+        title={proposal.saved_by_admin ? "Retirer des sauvegardées" : "Sauvegarder"}
+        type="button"
+      >
+        <BookmarkIcon className={`h-4 w-4 ${proposal.saved_by_admin ? "text-brand-orange fill-current" : ""}`} />
+      </button>
+      <div className="flex flex-wrap items-center gap-2 pr-8">
+        <span className="rounded-full border border-white/10 bg-black/10 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-brand-muted">
+          {proposal.status}
+        </span>
+      </div>
+      <h3 className="mt-3 text-lg font-semibold text-brand-text">{proposal.title}</h3>
+      <p className="mt-2 text-sm leading-7 text-brand-muted">
+        {proposal.description || "Aucune description fournie."}
+      </p>
+      {proposal.options && proposal.options.length > 0 ? (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {proposal.options.map((opt, i) => (
+            <span
+              className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[11px] text-brand-muted"
+              key={i}
+            >
+              {opt}
+            </span>
+          ))}
+        </div>
+      ) : null}
+      <p className="mt-2 text-xs text-brand-muted">
+        Par {proposal.user.pseudo} · Suggestion {formatEventDate(proposal.suggested_date)}
+      </p>
+      {proposal.rejection_reason ? (
+        <p className="mt-2 text-xs text-red-200">Motif: {proposal.rejection_reason}</p>
+      ) : null}
+      <div className="mt-4 flex flex-wrap gap-3">
+        <Button onClick={() => onApplyToForm(proposal)} size="sm" variant="secondary">
+          Pre-remplir
+        </Button>
+        {proposal.status === "PENDING" ? (
+          <>
+            <Button onClick={() => onApplyToForm(proposal)} size="sm">
+              Créer le marché
+            </Button>
+            <Button
+              onClick={() => {
+                const reason = window.prompt("Motif du refus ?");
+                if (!reason) return;
+                onReject(proposal.id, reason);
+              }}
+              size="sm"
+              variant="danger"
+            >
+              Refuser
+            </Button>
+          </>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 export function AdminEventsPage() {
   const queryClient = useQueryClient();
   const { data: user } = useAuthenticatedUser();
@@ -308,9 +383,17 @@ export function AdminEventsPage() {
     queryFn: () => fetchAdminEvents(),
   });
 
+  const [proposalsTab, setProposalsTab] = useState<"all" | "saved">("all");
+
   const { data: proposals } = useQuery({
     queryKey: ["admin-proposals"],
     queryFn: () => fetchAdminProposals(),
+  });
+
+  const { data: savedProposals } = useQuery({
+    queryKey: ["admin-proposals-saved"],
+    queryFn: () => fetchSavedAdminProposals(),
+    enabled: view === "proposals" && proposalsTab === "saved",
   });
 
   const { data: foundUsers } = useQuery({
@@ -947,86 +1030,71 @@ export function AdminEventsPage() {
                   </h2>
                 </div>
                 <span className="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-brand-muted">
-                  {(proposals ?? []).length} element(s)
+                  {proposalsTab === "saved"
+                    ? `${(savedProposals ?? []).length} sauvegardée(s)`
+                    : `${(proposals ?? []).length} element(s)`}
                 </span>
               </div>
 
+              <div className="mt-4 flex gap-1 border-b border-white/10">
+                <button
+                  className={`px-3 py-2 text-sm font-medium transition relative ${
+                    proposalsTab === "all" ? "text-brand-orange" : "text-brand-muted hover:text-brand-text"
+                  }`}
+                  onClick={() => setProposalsTab("all")}
+                  type="button"
+                >
+                  Toutes
+                  {proposalsTab === "all" ? <span className="absolute inset-x-0 bottom-0 h-0.5 bg-brand-orange" /> : null}
+                </button>
+                <button
+                  className={`px-3 py-2 text-sm font-medium transition relative ${
+                    proposalsTab === "saved" ? "text-brand-orange" : "text-brand-muted hover:text-brand-text"
+                  }`}
+                  onClick={() => setProposalsTab("saved")}
+                  type="button"
+                >
+                  Sauvegardées
+                  {proposalsTab === "saved" ? <span className="absolute inset-x-0 bottom-0 h-0.5 bg-brand-orange" /> : null}
+                </button>
+              </div>
+
               <div className="mt-6 space-y-4">
-                {(proposals ?? []).slice(0, 6).map((proposal) => (
-                  <div className="rounded-[22px] border border-white/10 bg-white/5 p-4" key={proposal.id}>
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="rounded-full border border-white/10 bg-black/10 px-3 py-1 text-[11px] uppercase tracking-[0.24em] text-brand-muted">
-                        {proposal.status}
-                      </span>
-                    </div>
-                    <h3 className="mt-3 text-lg font-semibold text-brand-text">{proposal.title}</h3>
-                    <p className="mt-2 text-sm leading-7 text-brand-muted">
-                      {proposal.description || "Aucune description fournie."}
-                    </p>
-                    {proposal.options && proposal.options.length > 0 ? (
-                      <div className="mt-2 flex flex-wrap gap-1.5">
-                        {proposal.options.map((opt, i) => (
-                          <span
-                            className="rounded-full border border-white/10 bg-white/5 px-2.5 py-0.5 text-[11px] text-brand-muted"
-                            key={i}
-                          >
-                            {opt}
-                          </span>
-                        ))}
-                      </div>
-                    ) : null}
-                    <p className="mt-2 text-xs text-brand-muted">
-                      Par {proposal.user.pseudo} · Suggestion {formatEventDate(proposal.suggested_date)}
-                    </p>
-                    {proposal.rejection_reason ? (
-                      <p className="mt-2 text-xs text-red-200">
-                        Motif: {proposal.rejection_reason}
-                      </p>
-                    ) : null}
-                    <div className="mt-4 flex flex-wrap gap-3">
-                      <Button
-                        onClick={() => applyProposalToForm(proposal)}
-                        size="sm"
-                        variant="secondary"
-                      >
-                        Pre-remplir
-                      </Button>
-                      {proposal.status === "PENDING" ? (
-                        <>
-                          <Button
-                          onClick={() =>
-                              applyProposalToForm(proposal)
-                            }
-                            size="sm"
-                          >
-                            Créer le marché
-                          </Button>
-                          <Button
-                            onClick={() => {
-                              const reason = window.prompt("Motif du refus ?");
-
-                              if (!reason) {
-                                return;
-                              }
-
-                              void runAction(
-                                `reject-${proposal.id}`,
-                                () => rejectAdminProposal(proposal.id, reason),
-                                "Proposition refusee.",
-                              );
-                            }}
-                            size="sm"
-                            variant="danger"
-                          >
-                            Refuser
-                          </Button>
-                        </>
-                      ) : null}
-                    </div>
-                  </div>
+                {(proposalsTab === "saved" ? (savedProposals ?? []) : (proposals ?? [])).map((proposal) => (
+                  <ProposalCard
+                    key={proposal.id}
+                    proposal={proposal}
+                    onApplyToForm={applyProposalToForm}
+                    onReject={(id, reason) =>
+                      void runAction(
+                        `reject-${id}`,
+                        () => rejectAdminProposal(id, reason),
+                        "Proposition refusee.",
+                      )
+                    }
+                    onToggleSave={(id) => {
+                      const source = proposalsTab === "saved" ? "admin-proposals-saved" : "admin-proposals";
+                      queryClient.setQueryData<typeof proposals>(
+                        [source],
+                        (old) =>
+                          (old ?? []).map((p) =>
+                            p.id === id ? { ...p, saved_by_admin: !p.saved_by_admin } : p,
+                          ),
+                      );
+                      void toggleSaveAdminProposal(id).then(() => {
+                        void queryClient.invalidateQueries({ queryKey: ["admin-proposals"] });
+                        void queryClient.invalidateQueries({ queryKey: ["admin-proposals-saved"] });
+                      });
+                    }}
+                  />
                 ))}
 
-                {(proposals ?? []).length === 0 ? (
+                {proposalsTab === "saved" && (savedProposals ?? []).length === 0 ? (
+                  <p className="text-sm leading-7 text-brand-muted">
+                    Aucune proposition sauvegardée pour le moment.
+                  </p>
+                ) : null}
+                {proposalsTab === "all" && (proposals ?? []).length === 0 ? (
                   <p className="text-sm leading-7 text-brand-muted">
                     Aucune proposition en attente pour le moment.
                   </p>

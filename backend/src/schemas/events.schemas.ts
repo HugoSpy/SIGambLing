@@ -217,7 +217,7 @@ export const placeParlayBetSchema = z.object({
       (legs) => new Set(legs.map((leg) => leg.eventId)).size === legs.length,
       "Impossible de combiner deux issues du même événement.",
     ),
-  stake: z.coerce.number().int().min(5).max(500),
+  stake: z.coerce.number().int().min(5).max(100000),
   accept_any_odds_change: z.boolean().optional().default(false),
   persist_accept_odds_changes: z.boolean().optional().default(false),
 });

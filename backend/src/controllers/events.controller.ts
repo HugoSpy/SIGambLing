@@ -226,3 +226,22 @@ export const rejectProposalController: RequestHandler = async (request, response
     next(error);
   }
 };
+
+export const toggleSaveProposalController: RequestHandler = async (request, response, next) => {
+  try {
+    const proposalId = getRouteParam(request, "proposalId");
+    const proposal = await eventService.toggleSaveProposal(proposalId);
+    response.json(proposal);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const listSavedProposalsController: RequestHandler = async (request, response, next) => {
+  try {
+    const proposals = await eventService.listSavedProposals();
+    response.json({ proposals });
+  } catch (error) {
+    next(error);
+  }
+};

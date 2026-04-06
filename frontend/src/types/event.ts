@@ -170,6 +170,7 @@ export interface EventProposalView {
   suggested_date: string | null;
   options: string[];
   status: ProposalStatus;
+  saved_by_admin: boolean;
   created_at: string;
   reviewed_at: string | null;
   rejection_reason: string | null;

@@ -171,6 +171,7 @@ model EventProposal {
   suggestedDate   DateTime?
   options         String[]       @default([])
   status          ProposalStatus @default(PENDING)
+  savedByAdmin    Boolean        @default(false)
   reviewedById    String?        @db.Uuid
   reviewedAt      DateTime?
   rejectionReason String?        @db.Text

@@ -13,11 +13,13 @@ import {
   listAdminEventsController,
   listEventsController,
   listMyProposalsController,
+  listSavedProposalsController,
   placeEventBetController,
   placeParlayBetController,
   placeSimpleBetsController,
   rejectProposalController,
   resolveEventController,
+  toggleSaveProposalController,
   updateEventController,
 } from "../controllers/events.controller";
 import { requireAuth } from "../middleware/require-auth";
@@ -71,12 +73,14 @@ eventsRouter.post("/:id/bet", betLimiter, validateBody(placeEventBetSchema), pla
 adminEventsRouter.use(requireAuth, requireRole(["admin"]), adminLimiter);
 adminEventsRouter.get("/", listAdminEventsController);
 adminEventsRouter.get("/proposals", listAdminProposalsController);
+adminEventsRouter.get("/proposals/saved", listSavedProposalsController);
 adminEventsRouter.post("/proposals/:proposalId/approve", approveProposalController);
 adminEventsRouter.post(
   "/proposals/:proposalId/reject",
   validateBody(rejectProposalSchema),
   rejectProposalController,
 );
+adminEventsRouter.patch("/proposals/:proposalId/save", toggleSaveProposalController);
 adminEventsRouter.post("/", validateBody(createEventSchema), createEventController);
 adminEventsRouter.patch("/:id", validateBody(updateEventSchema), updateEventController);
 adminEventsRouter.post("/:id/close", closeEventController);
