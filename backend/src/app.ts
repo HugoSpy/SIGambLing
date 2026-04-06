@@ -14,7 +14,7 @@ import { casinoRouter } from "./routes/casino.routes";
 import { adminEventsRouter, eventsRouter } from "./routes/events.routes";
 import { gamificationRouter } from "./routes/gamification.routes";
 import { healthRouter } from "./routes/health.routes";
-import { adminStatisticsRouter } from "./routes/admin.routes";
+import { adminStatisticsRouter, publicStatsRouter } from "./routes/admin.routes";
 import { userRouter } from "./routes/user.routes";
 
 configurePassport();
@@ -40,6 +40,7 @@ export function createApp() {
   app.use(requestLogger);
 
   app.use("/health", healthRouter);
+  app.use("/stats", publicStatsRouter);
   app.use("/auth", authRouter);
   app.use("/casino", casinoRouter);
   app.use("/events", eventsRouter);

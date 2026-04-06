@@ -1,7 +1,10 @@
 import { Router } from "express";
-import { getEventsLeaderboard, getStatisticsOverview } from "../controllers/admin.controller";
+import { getEventsLeaderboard, getPublicStats, getStatisticsOverview } from "../controllers/admin.controller";
 import { requireAuth } from "../middleware/require-auth";
 import { requireRole } from "../middleware/require-role";
+
+export const publicStatsRouter = Router();
+publicStatsRouter.get("/", getPublicStats);
 
 export const adminStatisticsRouter = Router();
 

@@ -2,6 +2,7 @@ import { motion } from "framer-motion";
 import { BarChart3, Dice1, Shield, TrendingUp, Trophy, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { fetchPublicStats, type PublicStats } from "../lib/api";
 import { useAuthStore } from "../store/auth-store";
 
 function MicrosoftLogo() {
@@ -65,14 +66,15 @@ const colorMap = {
   },
 };
 
-const stats = [
-  { value: "60+", label: "Utilisateurs actifs" },
-  { value: "1.2M", label: "Tokens en circulation" },
-  { value: "500+", label: "Paris placés" },
-];
+function formatTokens(n: number): string {
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + "M";
+  if (n >= 1_000) return (n / 1_000).toFixed(0) + "K";
+  return n.toString();
+}
 
 export function LoginPage() {
   const [submitting, setSubmitting] = useState(false);
+  const [publicStats, setPublicStats] = useState<PublicStats | null>(null);
   const status = useAuthStore((state) => state.status);
   const setStatus = useAuthStore((state) => state.setStatus);
   const navigate = useNavigate();
@@ -82,6 +84,10 @@ export function LoginPage() {
       navigate("/", { replace: true });
     }
   }, [status, navigate]);
+
+  useEffect(() => {
+    fetchPublicStats().then(setPublicStats).catch(() => {});
+  }, []);
 
   const handleMicrosoftLogin = () => {
     setSubmitting(true);
@@ -189,7 +195,20 @@ export function LoginPage() {
             animate={{ opacity: 1 }}
             transition={{ duration: 0.5, delay: 0.25 }}
           >
-            {stats.map(({ value, label }) => (
+            {[
+              {
+                value: publicStats ? `${publicStats.totalUsers}+` : "—",
+                label: "Utilisateurs actifs",
+              },
+              {
+                value: publicStats ? formatTokens(publicStats.totalTokens) : "—",
+                label: "Tokens en circulation",
+              },
+              {
+                value: publicStats ? `${publicStats.totalBets.toLocaleString("fr-FR")}+` : "—",
+                label: "Paris placés",
+              },
+            ].map(({ value, label }) => (
               <div key={label} className="text-center">
                 <div className="text-3xl font-bold text-emerald-500 mb-1">{value}</div>
                 <div className="text-sm text-zinc-500">{label}</div>

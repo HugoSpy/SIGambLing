@@ -27,6 +27,12 @@ import type {
   RefreshSessionResponse,
 } from "../types/auth";
 
+export interface PublicStats {
+  totalUsers: number;
+  totalBets: number;
+  totalTokens: number;
+}
+
 export interface StatisticsOverview {
   totalBets: { value: number; percentageChange: number; trend: "up" | "down" };
   activeUsers: { total: number; online: number };
@@ -350,6 +356,12 @@ export async function fetchSavedAdminProposals() {
 
 export async function fetchAdminStatisticsOverview(): Promise<StatisticsOverview> {
   const response = await api.get<StatisticsOverview>("/admin/statistics/overview");
+  return response.data;
+}
+
+export async function fetchPublicStats(): Promise<PublicStats> {
+  const baseURL = import.meta.env.VITE_API_URL;
+  const response = await axios.get<PublicStats>(`${baseURL}/stats`);
   return response.data;
 }
 

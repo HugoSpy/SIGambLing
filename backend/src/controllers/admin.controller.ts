@@ -1,6 +1,26 @@
 import type { RequestHandler } from "express";
 import { prisma } from "../services/prisma.service";
 
+export const getPublicStats: RequestHandler = async (_request, response, next) => {
+  try {
+    const [totalUsers, totalBets, balanceResult] = await Promise.all([
+      prisma.user.count({ where: { isBanned: false } }),
+      prisma.bet.count(),
+      prisma.user.aggregate({ _sum: { balance: true } }),
+    ]);
+
+    const totalTokens = balanceResult._sum.balance ?? 0;
+
+    response.json({
+      totalUsers,
+      totalBets,
+      totalTokens,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 function formatVolume(volume: number): string {
   if (volume >= 1_000_000) {
     return (volume / 1_000_000).toFixed(1) + "M";
