@@ -78,9 +78,31 @@ model User {
   reviewedProposals EventProposal[] @relation("ProposalReviewer")
   jackpotContributions JackpotContribution[]
   wonJackpotSnapshots Jackpot[] @relation("JackpotLastWinner")
+  chatMessages    ChatMessage[]
+  chatBan         ChatBan?
 
   @@index([email])
   @@index([balance(sort: Desc)])
+}
+
+model ChatMessage {
+  id        String   @id @default(uuid()) @db.Uuid
+  userId    String   @db.Uuid
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  content   String   @db.VarChar(300)
+  createdAt DateTime @default(now())
+
+  @@index([createdAt(sort: Desc)])
+}
+
+model ChatBan {
+  id         String    @id @default(uuid()) @db.Uuid
+  userId     String    @unique @db.Uuid
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  banCount   Int       @default(0)
+  mutedUntil DateTime?
+  permanent  Boolean   @default(false)
+  updatedAt  DateTime  @updatedAt
 }
 
 model Event {

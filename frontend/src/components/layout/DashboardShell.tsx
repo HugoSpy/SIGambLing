@@ -1,4 +1,4 @@
-import { type ReactNode, useMemo } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
@@ -7,6 +7,7 @@ import {
   Gift,
   LayoutDashboard,
   Medal,
+  MessageSquare,
   ShieldCheck,
   Ticket,
   Trophy,
@@ -22,6 +23,7 @@ import { BetCartDrawer } from "../BetCartDrawer";
 import { Button } from "../ui/Button";
 import { useGamificationState } from "../../hooks/useGamificationState";
 import { fetchAdminProposals } from "../../lib/api";
+import { ChatPanel } from "../chat/ChatPanel";
 
 interface DashboardShellProps {
   user: AuthUser;
@@ -31,6 +33,7 @@ interface DashboardShellProps {
 
 export function DashboardShell({ user, onLogout, children }: DashboardShellProps) {
   const location = useLocation();
+  const [chatOpen, setChatOpen] = useState(false);
   const liveBalance = useAuthStore((state) => state.user?.balance ?? user.balance);
   const cartSelectionsCount = useBetCartStore((state) => state.selections.length);
   const setCartOpen = useBetCartStore((state) => state.setOpen);
@@ -131,6 +134,21 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
         </nav>
 
         <div className="space-y-3 border-t border-zinc-800 p-4">
+          <button
+            className={cn(
+              actionSurfaceClassName,
+              "w-full justify-between text-left enabled:hover:border-zinc-700 enabled:hover:bg-zinc-800",
+              chatOpen && "border-emerald-500/20 bg-emerald-500/10 text-emerald-400",
+            )}
+            onClick={() => setChatOpen((v) => !v)}
+            type="button"
+          >
+            <span className="inline-flex items-center gap-2">
+              <MessageSquare className="h-4 w-4 text-emerald-400" />
+              Chat
+            </span>
+          </button>
+
           <button
             className={cn(
               actionSurfaceClassName,
@@ -282,7 +300,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
       </div>
 
       <nav className="fixed bottom-0 inset-x-0 z-40 border-t border-zinc-800 bg-zinc-900/95 px-2 py-2 backdrop-blur lg:hidden">
-        <div className={`grid gap-1 ${user.role === "admin" ? "grid-cols-8" : "grid-cols-7"}`}>
+        <div className={`grid gap-1 ${user.role === "admin" ? "grid-cols-9" : "grid-cols-8"}`}>
           {navItems.map((item) => {
             const Icon = item.icon;
             const active =
@@ -315,10 +333,24 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
               </NavLink>
             );
           })}
+
+          {/* Chat button in mobile nav */}
+          <button
+            className={cn(
+              "flex flex-col items-center justify-center rounded-lg px-1 py-2 text-[10px] transition-colors",
+              chatOpen ? "bg-emerald-500/10 text-emerald-400" : "text-zinc-400",
+            )}
+            onClick={() => setChatOpen((v) => !v)}
+            type="button"
+          >
+            <MessageSquare className="h-4 w-4" />
+            <span className="mt-1">Chat</span>
+          </button>
         </div>
       </nav>
 
       <BetCartDrawer />
+      <ChatPanel open={chatOpen} onClose={() => setChatOpen(false)} />
     </div>
   );
 }
