@@ -147,6 +147,25 @@ export const updateChatPreferencesController: RequestHandler = async (request, r
   }
 };
 
+export const resetChatPreferencesController: RequestHandler = async (request, response, next) => {
+  try {
+    const userId = getAuthenticatedUserId(request);
+    await prisma.user.update({
+      where: { id: userId },
+      data: {
+        chatPanelWidth: null,
+        chatPanelHeight: null,
+        chatPanelX: null,
+        chatPanelY: null,
+        chatZoom: null,
+      },
+    });
+    response.status(204).end();
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const mentionSearchController: RequestHandler = async (request, response, next) => {
   try {
     const query = String(request.query.q ?? "").trim().slice(0, 50);

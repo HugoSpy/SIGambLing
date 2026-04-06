@@ -7,6 +7,7 @@ import {
   listAvailableBadgesController,
   listCurrentUserEventBetsController,
   mentionSearchController,
+  resetChatPreferencesController,
   searchUsersController,
   unlockUserBadgeController,
   updateChatPreferencesController,
@@ -86,6 +87,7 @@ userRouter.get("/me", requireAuth, getCurrentUserController);
 userRouter.get("/me/bets", requireAuth, listCurrentUserEventBetsController);
 userRouter.patch("/me", requireAuth, userLimiter, validateBody(updateUserProfileSchema), updateCurrentUserController);
 userRouter.patch("/me/chat-preferences", requireAuth, validateBody(updateChatPreferencesSchema), updateChatPreferencesController);
+userRouter.delete("/me/chat-preferences", requireAuth, resetChatPreferencesController);
 userRouter.get("/mention-search", requireAuth, mentionSearchController);
 userRouter.post("/me/avatar", requireAuth, userLimiter, uploadAvatarMiddleware, uploadCurrentUserAvatarController);
 userRouter.get("/", requireAuth, requireRole(["admin"]), searchUsersController);

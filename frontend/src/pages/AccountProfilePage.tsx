@@ -1,6 +1,6 @@
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Award, Camera, Coins, Flame, Save, Trophy, UserRound } from "lucide-react";
+import { Award, Camera, Coins, Flame, LayoutPanelLeft, Save, Trophy, UserRound } from "lucide-react";
 import { DashboardShell } from "../components/layout/DashboardShell";
 import { LoadingScreen } from "../components/layout/LoadingScreen";
 import { Button } from "../components/ui/Button";
@@ -11,12 +11,14 @@ import {
   ApiError,
   fetchCurrentUser,
   logoutRequest,
+  resetChatPreferences,
   updateCurrentUserProfile,
   uploadCurrentUserAvatar,
 } from "../lib/api";
 import { getErrorMessage, notify } from "../lib/notifications";
 import { formatTokens } from "../lib/utils";
 import { useAuthStore } from "../store/auth-store";
+import { useChatStore } from "../store/chat-store";
 import type { AuthUser } from "../types/auth";
 import type { GamificationBadge } from "../types/gamification";
 
@@ -46,10 +48,12 @@ export function ProfilePage() {
   const storedUser = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
   const setStatus = useAuthStore((state) => state.setStatus);
+  const triggerChatReset = useChatStore((state) => state.triggerReset);
   const [pseudo, setPseudo] = useState("");
   const [alwaysAcceptOddsChanges, setAlwaysAcceptOddsChanges] = useState(false);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [resettingChat, setResettingChat] = useState(false);
   const { data: user } = useQuery({
     queryKey: ["me"],
     queryFn: fetchCurrentUser,
@@ -84,6 +88,31 @@ export function ProfilePage() {
   const handleLogout = async () => {
     await logoutRequest();
     notify.success("Session fermée.");
+  };
+
+  const handleResetChat = async () => {
+    try {
+      setResettingChat(true);
+      await resetChatPreferences();
+      // Clear chat panel fields from stored user so DashboardShell passes null initialPrefs
+      if (user) {
+        const updated: AuthUser = {
+          ...user,
+          chat_panel_width: null,
+          chat_panel_height: null,
+          chat_panel_x: null,
+          chat_panel_y: null,
+          chat_zoom: null,
+        };
+        commitUser(updated);
+      }
+      triggerChatReset();
+      notify.success("Préférences du chat réinitialisées.");
+    } catch (error) {
+      notify.error(getErrorMessage(error));
+    } finally {
+      setResettingChat(false);
+    }
   };
 
   const handleUpload = async (event: ChangeEvent<HTMLInputElement>) => {
@@ -275,6 +304,14 @@ export function ProfilePage() {
               <Button disabled={saving} onClick={() => void handleSave()}>
                 <Save className="mr-2 h-4 w-4" />
                 {saving ? "Enregistrement..." : "Enregistrer"}
+              </Button>
+              <Button
+                disabled={resettingChat}
+                variant="secondary"
+                onClick={() => void handleResetChat()}
+              >
+                <LayoutPanelLeft className="mr-2 h-4 w-4" />
+                {resettingChat ? "Réinitialisation..." : "Réinitialiser le chat"}
               </Button>
             </div>
           </Card>

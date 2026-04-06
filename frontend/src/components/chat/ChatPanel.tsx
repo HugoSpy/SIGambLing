@@ -322,24 +322,23 @@ export function ChatPanel({ open, onClose, initialPrefs }: ChatPanelProps) {
       const dx = startX - ev.clientX; // left handle grows right→left
       const dy = startY - ev.clientY; // top handle grows bottom→top
 
+      // Compute new dimensions
+      let newX = startPos.x;
+      let newY = startPos.y;
+
       if (mode === "left" || mode === "top-left") {
         const newWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, startW + dx));
         setWidth(newWidth);
-        // Anchor right edge: adjust x so right stays fixed
-        setPos((p) => {
-          const base = p ?? { x: startPos.x, y: startPos.y };
-          return { x: base.x - (newWidth - startW), y: base.y };
-        });
+        // Anchor right edge: compute x directly from startPos to avoid cumulative drift
+        newX = startPos.x - (newWidth - startW);
       }
       if (mode === "top" || mode === "top-left") {
         const newHeight = Math.min(MAX_HEIGHT, Math.max(MIN_HEIGHT, startH + dy));
         setHeight(newHeight);
-        // Anchor bottom edge: adjust y so bottom stays fixed
-        setPos((p) => {
-          const base = p ?? { x: startPos.x, y: startPos.y };
-          return { x: base.x, y: base.y - (newHeight - startH) };
-        });
+        // Anchor bottom edge: compute y directly from startPos to avoid cumulative drift
+        newY = startPos.y - (newHeight - startH);
       }
+      setPos({ x: newX, y: newY });
     };
 
     const onMouseUp = (ev: MouseEvent) => {
@@ -380,7 +379,7 @@ export function ChatPanel({ open, onClose, initialPrefs }: ChatPanelProps) {
             ...positionStyle,
             width,
             height,
-            fontSize: `${zoom}%`,
+            zoom: zoom / 100,
           }}
         >
           {/* ── Resize handle: top edge ──────────────────────────────────── */}

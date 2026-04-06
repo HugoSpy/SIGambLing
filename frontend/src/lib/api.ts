@@ -169,6 +169,10 @@ export async function updateCurrentUserProfile(payload: {
   return response.data;
 }
 
+export async function resetChatPreferences() {
+  await api.delete("/users/me/chat-preferences");
+}
+
 export async function uploadCurrentUserAvatar(formData: FormData) {
   const response = await api.post<AuthUser>("/users/me/avatar", formData);
   return response.data;

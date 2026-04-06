@@ -35,7 +35,7 @@ interface DashboardShellProps {
 export function DashboardShell({ user, onLogout, children }: DashboardShellProps) {
   const location = useLocation();
   const [chatOpen, setChatOpen] = useState(false);
-  const { setOpen: setChatStoreOpen, unreadCount, unreadMentions, clearUnread } = useChatStore();
+  const { setOpen: setChatStoreOpen, unreadCount, unreadMentions, clearUnread, resetKey } = useChatStore();
 
   useEffect(() => {
     setChatStoreOpen(chatOpen);
@@ -393,6 +393,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
 
       <BetCartDrawer />
       <ChatPanel
+        key={resetKey}
         open={chatOpen}
         onClose={() => setChatOpen(false)}
         initialPrefs={{
