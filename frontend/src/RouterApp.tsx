@@ -45,6 +45,9 @@ const HistoryPage = lazy(() =>
 const RewardsPage = lazy(() =>
   import("./pages/RewardsPage").then((module) => ({ default: module.RewardsPage })),
 );
+const WinsPage = lazy(() =>
+  import("./pages/WinsPage").then((module) => ({ default: module.WinsPage })),
+);
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -106,6 +109,7 @@ export default function RouterApp() {
             <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/rewards" element={<RewardsPage />} />
+            <Route path="/wins" element={<WinsPage />} />
             <Route path="/history" element={<HistoryPage />} />
           </Route>
           <Route element={<ProtectedRoute allowedRoles={["admin", "validator"]} />}>

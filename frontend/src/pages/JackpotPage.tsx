@@ -105,10 +105,10 @@ export function JackpotPage() {
             <div className="rounded-[32px] border border-brand-cyan/25 bg-slate-950/35 px-6 py-8 text-center shadow-[0_30px_80px_rgba(7,15,24,0.35)]">
               <p className="text-xs uppercase tracking-[0.32em] text-brand-cyan">Montant actuel</p>
               <p className="mt-5 font-display text-5xl text-brand-text md:text-7xl">
-                {formatTokens(displayedPot)}
+                {formatTokens(Math.round(displayedPot))}
               </p>
               <p className="mt-4 text-sm text-brand-muted">
-                1% de chaque pari alimente le pot. Le prochain gagnant sera designe lors d'un
+                5% de chaque pari alimente le pot. Le prochain gagnant sera designe lors d'un
                 événement GOLD exceptionnel.
               </p>
             </div>
@@ -136,7 +136,7 @@ export function JackpotPage() {
                     Vos apports
                   </p>
                   <p className="mt-2 font-display text-2xl text-brand-text">
-                    {formatTokens(jackpot.user_contribution_total)}
+                    {formatTokens(Math.round(jackpot.user_contribution_total))}
                   </p>
                 </div>
                 <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
@@ -171,7 +171,7 @@ export function JackpotPage() {
                   <div className="rounded-[22px] border border-brand-orange/25 bg-brand-orange/10 p-5">
                     <Trophy className="h-6 w-6 text-brand-orangeSoft" />
                     <p className="mt-4 font-display text-3xl text-brand-text">
-                      {formatTokens(jackpot.last_result.payout_amount)}
+                      {formatTokens(Math.round(jackpot.last_result.payout_amount))}
                     </p>
                     <p className="mt-2 text-sm text-brand-muted">
                       Verse a{" "}
@@ -193,7 +193,7 @@ export function JackpotPage() {
               <div className="mt-6 rounded-[22px] border border-white/10 bg-white/5 p-4 text-sm text-brand-muted">
                 Total redistribue au jackpot depuis l'ouverture:{" "}
                 <span className="font-semibold text-brand-text">
-                  {formatTokens(jackpot.total_contributed)}
+                  {formatTokens(Math.round(jackpot.total_contributed))}
                 </span>
               </div>
             </Card>

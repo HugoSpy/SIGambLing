@@ -337,7 +337,7 @@ export function DashboardPage() {
                     Pot
                   </span>
                   <span className="text-zinc-100">
-                    {formatTokens(gamification?.jackpot.current_pot ?? 0)}
+                    {formatTokens(Math.round(gamification?.jackpot.current_pot ?? 0))}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
@@ -346,7 +346,7 @@ export function DashboardPage() {
                     Vos apports
                   </span>
                   <span className="text-zinc-100">
-                    {formatTokens(gamification?.jackpot.user_contribution_total ?? 0)}
+                    {formatTokens(Math.round(gamification?.jackpot.user_contribution_total ?? 0))}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-3">

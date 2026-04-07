@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
   Coins,
+  Crown,
   Dice3,
   Gift,
   LayoutDashboard,
@@ -72,6 +73,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
       { label: "Événements", icon: TrendingUp, href: "/events" },
       { label: "Classement", icon: Medal, href: "/leaderboard" },
       { label: "Casino", icon: Dice3, href: "/casino" },
+      { label: "Mes Wins", icon: Crown, href: "/wins" },
       { label: "Jackpot", icon: Trophy, href: "/jackpot" },
       { label: "Récompense", icon: Gift, href: "/rewards" },
       { label: "Profil", icon: UserRound, href: "/profile" },
@@ -324,7 +326,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
       </div>
 
       <nav className="fixed bottom-0 inset-x-0 z-40 border-t border-zinc-800 bg-zinc-900/95 px-2 py-2 backdrop-blur lg:hidden">
-        <div className={`grid gap-1 ${user.role === "admin" || user.role === "validator" ? "grid-cols-9" : "grid-cols-8"}`}>
+        <div className={`grid gap-1 ${user.role === "admin" || user.role === "validator" ? "grid-cols-10" : "grid-cols-9"}`}>
           {navItems.map((item) => {
             const Icon = item.icon;
             const active =

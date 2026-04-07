@@ -363,13 +363,13 @@ export function ProfilePage() {
                 <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
                   <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Pot live</p>
                   <p className="mt-2 font-display text-2xl text-brand-text">
-                    {formatTokens(gamification.jackpot.current_pot)}
+                    {formatTokens(Math.round(gamification.jackpot.current_pot))}
                   </p>
                 </div>
                 <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
                   <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Vos apports</p>
                   <p className="mt-2 font-display text-2xl text-brand-text">
-                    {formatTokens(gamification.jackpot.user_contribution_total)}
+                    {formatTokens(Math.round(gamification.jackpot.user_contribution_total))}
                   </p>
                 </div>
                 <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
@@ -383,7 +383,7 @@ export function ProfilePage() {
                 <div className="rounded-[22px] border border-white/10 bg-white/5 p-4">
                   <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Dernier gain</p>
                   <p className="mt-2 font-display text-2xl text-brand-text">
-                  {formatTokens(gamification.jackpot.last_result?.payout_amount ?? 0)}
+                  {formatTokens(Math.round(gamification.jackpot.last_result?.payout_amount ?? 0))}
                 </p>
               </div>
             </div>
