@@ -173,7 +173,13 @@ html.light .text-zinc-300 { color: #374151; }
 html.light .text-zinc-400 { color: #6b7280; }
 html.light .text-zinc-500 { color: #6b7280; }
 /* text-zinc-950 is intentionally NOT overridden (used for dark text on green/yellow buttons) */
-/* text-white is intentionally NOT overridden (used for text on red/green accent buttons) */
+
+/* text-white: override body text uses; button-danger-surface restores
+   white explicitly below so red buttons keep white text */
+html.light .text-white { color: #0f172a; }
+
+/* text-zinc-600 (#52525b) and text-zinc-900 (#18181b) are dark enough
+   in light mode — no override needed */
 
 /* gray-* used in a handful of non-game pages */
 html.light .text-gray-400 { color: #6b7280; }
@@ -205,6 +211,10 @@ html.light .button-secondary-surface {
   background-color: #f3f4f6;
   color: #111827;
 }
+
+/* Restore white text on colored-background buttons */
+html.light .button-danger-surface { color: #ffffff; }
+html.light .button-danger-surface:not(:disabled):hover { color: #ffffff; }
 
 html.light .button-secondary-surface:not(:disabled):hover {
   background-color: #e5e7eb;
