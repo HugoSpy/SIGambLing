@@ -25,18 +25,17 @@ import type { AuthUser } from "../types/auth";
 import type { BadgeCatalogRarity, GamificationBadge } from "../types/gamification";
 
 const BADGE_STYLES: Record<GamificationBadge["tone"], string> = {
-  cyan: "border-brand-cyan/30 bg-brand-cyan/10 text-brand-cyan",
-  orange: "border-brand-orange/30 bg-brand-orange/10 text-brand-orange",
   emerald: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
+  sky: "border-sky-400/30 bg-sky-400/10 text-sky-300",
   violet: "border-fuchsia-400/30 bg-fuchsia-400/10 text-fuchsia-300",
   amber: "border-amber-400/30 bg-amber-400/10 text-amber-300",
-  sky: "border-sky-400/30 bg-sky-400/10 text-sky-300",
 };
 
 const CLAIM_BUTTON_STYLES: Record<BadgeCatalogRarity, string> = {
   COMMON: "bg-zinc-600/80 hover:bg-zinc-500/80 text-zinc-100 border border-zinc-500/50",
-  RARE: "bg-fuchsia-600/80 hover:bg-fuchsia-500/80 text-white border border-fuchsia-400/50",
-  EPIC: "bg-amber-500/80 hover:bg-amber-400/80 text-black border border-amber-400/50",
+  RARE: "bg-sky-600/80 hover:bg-sky-500/80 text-white border border-sky-400/50",
+  EPIC: "bg-fuchsia-600/80 hover:bg-fuchsia-500/80 text-white border border-fuchsia-400/50",
+  LEGENDARY: "bg-amber-500/80 hover:bg-amber-400/80 text-black border border-amber-400/50",
 };
 
 const pseudoRules = [

@@ -1,4 +1,4 @@
-export type BadgeRarity = "COMMON" | "RARE" | "EPIC";
+export type BadgeRarity = "COMMON" | "RARE" | "EPIC" | "LEGENDARY";
 
 export interface BadgeCatalogEntry {
   badgeType: string;
@@ -11,6 +11,7 @@ export const BADGE_REWARDS: Record<BadgeRarity, number> = {
   COMMON: 50,
   RARE: 150,
   EPIC: 400,
+  LEGENDARY: 1000,
 };
 
 export const BADGE_CATALOG: BadgeCatalogEntry[] = [
@@ -37,7 +38,7 @@ export const BADGE_CATALOG: BadgeCatalogEntry[] = [
     badgeType: "daily_grinder",
     label: "Grinder Mythique",
     description: "30 jours de streak. À ce stade, t'es pratiquement intégré au serveur.",
-    rarity: "EPIC",
+    rarity: "LEGENDARY",
   },
   {
     badgeType: "sharp_bettor",
@@ -98,7 +99,7 @@ export const BADGE_CATALOG: BadgeCatalogEntry[] = [
     badgeType: "LEADERBOARD_TOP3",
     label: "Podium",
     description: "Apparaître dans le top 3 du leaderboard. L'élite te reconnaît.",
-    rarity: "EPIC",
+    rarity: "LEGENDARY",
   },
 ];
 

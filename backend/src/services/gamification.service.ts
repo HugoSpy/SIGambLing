@@ -19,8 +19,8 @@ const STREAK_TIERS = [
   { key: "legend", label: "Mythique", minDays: 30, bonus: 300, accent: "violet" },
 ] as const;
 
-type BadgeTone = "cyan" | "orange" | "emerald" | "violet" | "amber" | "sky";
-type BadgeRarity = "common" | "rare" | "epic";
+type BadgeTone = "emerald" | "sky" | "violet" | "amber";
+type BadgeRarity = "common" | "rare" | "epic" | "legendary";
 type DatabaseClient = PrismaClient | Prisma.TransactionClient;
 
 function getErrorDetails(error: unknown) {
@@ -66,22 +66,23 @@ interface BadgeDefinition {
   key: string;
   name: string;
   description: string;
-  lockedDescription: string;
-  tone: BadgeTone;
   rarity: BadgeRarity;
-  icon: string;
   getProgress: (context: BadgeContext) => BadgeProgress;
 }
+
+const RARITY_TONE: Record<BadgeRarity, BadgeTone> = {
+  common: "emerald",
+  rare: "sky",
+  epic: "violet",
+  legendary: "amber",
+};
 
 const BADGE_DEFINITIONS: BadgeDefinition[] = [
   {
     key: "first_reward",
     name: "Premier reflexe",
-    description: "Première récompense quotidienne confirmée.",
-    lockedDescription: "Récupérez votre première récompense du jour.",
-    tone: "cyan",
+    description: "Première récompense quotidienne récupérée.",
     rarity: "common",
-    icon: "gift",
     getProgress: ({ user }) => ({
       current: user.lastRewardAt ? 1 : 0,
       target: 1,
@@ -90,12 +91,9 @@ const BADGE_DEFINITIONS: BadgeDefinition[] = [
   },
   {
     key: "streak_3",
-    name: "Série en route",
-    description: "Série de 3 jours validée.",
-    lockedDescription: "Tenez 3 jours d'affilée pour déverrouiller ce badge.",
-    tone: "orange",
+    name: "Série en route !",
+    description: "Connectez-vous pendant 3 jours consécutifs.",
     rarity: "common",
-    icon: "flame",
     getProgress: ({ user }) => ({
       current: Math.min(user.streakDays, 3),
       target: 3,
@@ -106,10 +104,7 @@ const BADGE_DEFINITIONS: BadgeDefinition[] = [
     key: "streak_7",
     name: "Feu continu",
     description: "Série de 7 jours sans casser le rythme.",
-    lockedDescription: "Gardez la streak vivante jusqu'au palier 7 jours.",
-    tone: "orange",
     rarity: "rare",
-    icon: "zap",
     getProgress: ({ user }) => ({
       current: Math.min(user.streakDays, 7),
       target: 7,
@@ -119,11 +114,8 @@ const BADGE_DEFINITIONS: BadgeDefinition[] = [
   {
     key: "daily_grinder",
     name: "Grinder quotidien",
-    description: "30 jours de streak. Rien ne vous sort de la boucle.",
-    lockedDescription: "Atteignez 30 jours de streak pour passer mythique.",
-    tone: "violet",
-    rarity: "epic",
-    icon: "crown",
+    description: "30 jours de streak. Vous êtes addicte.",
+    rarity: "legendary",
     getProgress: ({ user }) => ({
       current: Math.min(user.streakDays, 30),
       target: 30,
@@ -133,39 +125,30 @@ const BADGE_DEFINITIONS: BadgeDefinition[] = [
   {
     key: "sharp_bettor",
     name: "Paris en série",
-    description: "5 paris d'événements gagnés.",
-    lockedDescription: "Accumulez 5 victoires sur les marchés.",
-    tone: "emerald",
+    description: "10 paris d'événements gagnés.",
     rarity: "rare",
-    icon: "target",
     getProgress: ({ stats }) => ({
-      current: Math.min(stats.eventWins, 5),
-      target: 5,
+      current: Math.min(stats.eventWins, 10),
+      target: 10,
       label: "victoires",
     }),
   },
   {
     key: "table_hot",
     name: "Table chaude",
-    description: "5 victoires en casino confirmées.",
-    lockedDescription: "Gagnez 5 manches au casino.",
-    tone: "violet",
+    description: "50 victoires en casino confirmées.",
     rarity: "rare",
-    icon: "dice-3",
     getProgress: ({ stats }) => ({
-      current: Math.min(stats.casinoWins, 5),
-      target: 5,
+      current: Math.min(stats.casinoWins, 50),
+      target: 50,
       label: "victoires",
     }),
   },
   {
     key: "banker_bronze",
     name: "Bankroll solide",
-    description: "Passez la barre des 5 000 tokens.",
-    lockedDescription: "Montez votre bankroll jusqu'à 5 000 tokens.",
-    tone: "amber",
-    rarity: "epic",
-    icon: "coins",
+    description: "Passez la barre des 5000 tokens.",
+    rarity: "rare",
     getProgress: ({ user }) => ({
       current: Math.min(user.balance, 5000),
       target: 5000,
@@ -173,13 +156,32 @@ const BADGE_DEFINITIONS: BadgeDefinition[] = [
     }),
   },
   {
+    key: "banker_silver",
+    name: "Bankroll solide",
+    description: "Passez la barre des 10000 tokens.",
+    rarity: "rare",
+    getProgress: ({ user }) => ({
+      current: Math.min(user.balance, 10000),
+      target: 10000,
+      label: "tokens",
+    }),
+  },
+  {
+    key: "banker_gold",
+    name: "Bankroll solide",
+    description: "Passez la barre des 20000 tokens.",
+    rarity: "rare",
+    getProgress: ({ user }) => ({
+      current: Math.min(user.balance, 20000),
+      target: 20000,
+      label: "tokens",
+    }),
+  },
+  {
     key: "market_maker",
     name: "Architecte du jeu",
-    description: "Premier marché ou première proposition publiée.",
-    lockedDescription: "Créez ou proposez un marché pour rejoindre la liste.",
-    tone: "sky",
+    description: "Premiere proposition de marché publiée / acceptée.",
     rarity: "common",
-    icon: "layout-grid",
     getProgress: ({ stats }) => ({
       current: Math.min(stats.createdMarkets, 1),
       target: 1,
@@ -188,12 +190,9 @@ const BADGE_DEFINITIONS: BadgeDefinition[] = [
   },
   {
     key: "jackpot_hunter",
-    name: "Chasseur de jackpot",
-    description: "250 tokens redirigés vers le jackpot permanent.",
-    lockedDescription: "Alimentez le jackpot avec 250 tokens de contributions cumulées.",
-    tone: "cyan",
+    name: "Jackpot Hunter",
+    description: "250 tokens redirigés vers le jackpot global.",
     rarity: "rare",
-    icon: "ticket",
     getProgress: ({ stats }) => ({
       current: Math.min(stats.jackpotContributionTotal, 250),
       target: 250,
@@ -202,12 +201,9 @@ const BADGE_DEFINITIONS: BadgeDefinition[] = [
   },
   {
     key: "PARLAY_KING",
-    name: "Parlay King",
-    description: "Un pari combiné remporté. Quand tout s'aligne en même temps.",
-    lockedDescription: "Remportez un pari combiné (parlay) pour débloquer.",
-    tone: "violet",
-    rarity: "rare",
-    icon: "layers",
+    name: "Roi des combinés",
+    description: "Un pari combiné remporté.",
+    rarity: "common",
     getProgress: ({ stats }) => ({
       current: Math.min(stats.parlayWins, 1),
       target: 1,
@@ -218,10 +214,7 @@ const BADGE_DEFINITIONS: BadgeDefinition[] = [
     key: "CHAT_ADDICT",
     name: "Chat Addict",
     description: "100 messages envoyés dans le chat. Tu alimentes la communauté.",
-    lockedDescription: "Envoyez 100 messages dans le chat pour débloquer.",
-    tone: "sky",
     rarity: "common",
-    icon: "message-circle",
     getProgress: ({ stats }) => ({
       current: Math.min(stats.chatMessageCount, 100),
       target: 100,
@@ -231,13 +224,10 @@ const BADGE_DEFINITIONS: BadgeDefinition[] = [
   {
     key: "COMEBACK_KID",
     name: "Comeback Kid",
-    description: "Remonter d'une balance < 100 tokens à > 500. La résurrection.",
-    lockedDescription: "Remontez d'une balance critique (< 100) à > 500 tokens.",
-    tone: "emerald",
+    description: "Remonter d'une balance < 100 tokens à > 1000. La résurrection.",
     rarity: "epic",
-    icon: "trending-up",
     getProgress: ({ user }) => ({
-      current: user.lowestBalance <= 100 && user.balance > 500 ? 1 : 0,
+      current: user.lowestBalance <= 100 && user.balance > 1000 ? 1 : 0,
       target: 1,
       label: "comeback",
     }),
@@ -245,13 +235,10 @@ const BADGE_DEFINITIONS: BadgeDefinition[] = [
   {
     key: "ALL_IN",
     name: "All In",
-    description: "Tout misé sur un seul pari. Le courage ou la folie — difficile à dire.",
-    lockedDescription: "Misez toute votre balance sur un seul pari.",
-    tone: "orange",
-    rarity: "rare",
-    icon: "zap",
-    getProgress: () => ({
-      current: 0,
+    description: "Tout miser sur un seul pari. Le courage ou la folie, la frontière est fine.",
+    rarity: "common",
+    getProgress: ({ user }) => ({
+      current: user.lowestBalance === 0 ? 1 : 0,
       target: 1,
       label: "all-in",
     }),
@@ -259,11 +246,8 @@ const BADGE_DEFINITIONS: BadgeDefinition[] = [
   {
     key: "LEADERBOARD_TOP3",
     name: "Podium",
-    description: "Apparaître dans le top 3 du leaderboard. L'élite vous reconnaît.",
-    lockedDescription: "Atteignez le top 3 du leaderboard pour débloquer.",
-    tone: "amber",
-    rarity: "epic",
-    icon: "medal",
+    description: "Apparaître dans le top 3 du leaderboard.",
+    rarity: "legendary",
     getProgress: () => ({
       current: 0,
       target: 1,
@@ -486,12 +470,11 @@ export class GamificationService {
       return {
         key: definition.key,
         name: definition.name,
-        description: unlockedBadge ? definition.description : definition.lockedDescription,
-        tone: definition.tone,
+        description: definition.description,
+        tone: RARITY_TONE[definition.rarity],
         rarity: definition.rarity,
         catalog_rarity: catalogRarity,
         reward,
-        icon: definition.icon,
         unlocked: isBadgeUnlocked(progress),
         unlocked_at: unlockedBadge?.unlocked_at ?? null,
         claimed_at: unlockedBadge?.claimed_at ?? null,

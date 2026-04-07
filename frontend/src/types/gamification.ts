@@ -1,16 +1,15 @@
 import type { AuthUser } from "./auth";
 
-export type BadgeCatalogRarity = "COMMON" | "RARE" | "EPIC";
+export type BadgeCatalogRarity = "COMMON" | "RARE" | "EPIC" | "LEGENDARY";
 
 export interface GamificationBadge {
   key: string;
   name: string;
   description: string;
-  tone: "cyan" | "orange" | "emerald" | "violet" | "amber" | "sky";
-  rarity: "common" | "rare" | "epic";
+  tone: "emerald" | "sky" | "violet" | "amber";
+  rarity: "common" | "rare" | "epic" | "legendary";
   catalog_rarity: BadgeCatalogRarity;
   reward: number;
-  icon: string;
   unlocked: boolean;
   unlocked_at: string | null;
   claimed_at: string | null;
