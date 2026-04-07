@@ -184,7 +184,7 @@ export function WinsPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.15, delay: index < 20 ? index * 0.03 : 0 }}
-                  className="flex items-center gap-6 rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3"
+                  className="flex items-center gap-12 rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3"
                 >
                   <span className="flex w-32 shrink-0 items-center gap-2 text-sm font-semibold text-zinc-100">
                     <span className="text-lg">{sourceIcon(win.source)}</span>
