@@ -184,22 +184,17 @@ export function WinsPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.15, delay: index < 20 ? index * 0.03 : 0 }}
-                  className="flex items-start justify-between gap-4 rounded-lg border border-zinc-800 bg-zinc-950 p-4"
+                  className="flex items-center gap-4 rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3"
                 >
-                  <div className="min-w-0 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-lg">{sourceIcon(win.source)}</span>
-                      <p className="text-sm font-semibold text-zinc-100">{win.source}</p>
-                    </div>
-                    <p className="mt-1 text-xs text-zinc-400">{win.detail}</p>
-                    <div className="mt-2 flex flex-wrap items-center gap-3 text-xs text-zinc-500">
-                      <span>Mise : {formatTokens(win.amount)}</span>
-                      <span className="font-medium text-emerald-400">+{formatTokens(win.profit)} tokens</span>
-                      <span>{formatRelativeDate(win.date)}</span>
-                    </div>
-                  </div>
+                  <span className="flex w-32 shrink-0 items-center gap-2 text-sm font-semibold text-zinc-100">
+                    <span className="text-lg">{sourceIcon(win.source)}</span>
+                    {win.source}
+                  </span>
+                  <span className="shrink-0 text-sm text-zinc-400">Mise : {formatTokens(win.amount)}</span>
+                  <span className="shrink-0 text-sm font-semibold text-emerald-400">+{formatTokens(win.profit)} tokens</span>
+                  <span className="shrink-0 text-sm text-zinc-500">{formatRelativeDate(win.date)}</span>
                   <button
-                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-900 text-zinc-400 transition hover:border-emerald-500/40 hover:text-emerald-400 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="ml-auto inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-900 text-zinc-400 transition hover:border-emerald-500/40 hover:text-emerald-400 disabled:cursor-not-allowed disabled:opacity-40"
                     disabled={isShareDisabled(win.id)}
                     title="Partager dans le chat"
                     type="button"
