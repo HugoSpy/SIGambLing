@@ -29,3 +29,5 @@ backend/prisma/*.db-journal
 .codex
 .omx/
 remotion-video/
+SIGAMBLING_COLOR_PALETTE.md
+SIGAMBLING_COLOR_PALETTE_LIGHT.md
