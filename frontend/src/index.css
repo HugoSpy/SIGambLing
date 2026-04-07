@@ -4,8 +4,16 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ─────────────────────────────────────────────────────
+   THEME: CSS custom properties
+   :root  = dark (default)
+   html.light = light overrides
+───────────────────────────────────────────────────── */
+
 :root {
   color-scheme: dark;
+
+  /* legacy vars (kept for any direct usage) */
   --background: #09090b;
   --panel: rgba(24, 24, 27, 0.94);
   --panel-strong: rgba(39, 39, 42, 0.96);
@@ -14,10 +22,24 @@
   --muted: #a1a1aa;
   --cyan: #10b981;
   --orange: #f59e0b;
+
+  /* semantic theme tokens */
+  --color-bg:            #09090b;   /* zinc-950 */
+  --color-surface-1:     #18181b;   /* zinc-900 */
+  --color-surface-2:     #27272a;   /* zinc-800 */
+  --color-surface-3:     #3f3f46;   /* zinc-700 */
+  --color-border:        rgba(63, 63, 70, 0.95);
+  --color-border-2:      rgba(39, 39, 42, 0.95);
+  --color-text-primary:  #f4f4f5;   /* zinc-100 */
+  --color-text-secondary:#a1a1aa;   /* zinc-400 */
+  --color-text-muted:    #71717a;   /* zinc-500 */
+  --color-text-subtle:   #d4d4d8;   /* zinc-300 */
 }
 
 html.light {
   color-scheme: light;
+
+  /* legacy vars */
   --background: #f9fafb;
   --panel: rgba(255, 255, 255, 0.96);
   --panel-strong: rgba(243, 244, 246, 0.98);
@@ -26,6 +48,18 @@ html.light {
   --muted: #6b7280;
   --cyan: #10b981;
   --orange: #f59e0b;
+
+  /* semantic theme tokens */
+  --color-bg:            #f9fafb;
+  --color-surface-1:     #ffffff;
+  --color-surface-2:     #f3f4f6;
+  --color-surface-3:     #e5e7eb;
+  --color-border:        rgba(209, 213, 219, 0.95);
+  --color-border-2:      rgba(229, 231, 235, 0.95);
+  --color-text-primary:  #111827;
+  --color-text-secondary:#4b5563;
+  --color-text-muted:    #6b7280;
+  --color-text-subtle:   #374151;
 }
 
 html,
@@ -104,4 +138,86 @@ a {
       radial-gradient(circle at top, rgba(16, 185, 129, 0.08), transparent 32%),
       linear-gradient(180deg, #09090b 0%, #111113 48%, #09090b 100%);
   }
+}
+
+/* ─────────────────────────────────────────────────────
+   LIGHT THEME OVERRIDES
+   These rules are outside @layer so they beat all
+   Tailwind utilities (unlayered > layered in cascade).
+   Only semantic layout colors are overridden here.
+   Accent colors (emerald/red/yellow) and game UI
+   (casino components with hardcoded hex gradients)
+   are intentionally left untouched.
+───────────────────────────────────────────────────── */
+
+/* --- Backgrounds: solid --- */
+html.light .bg-zinc-950 { background-color: #f9fafb; }
+html.light .bg-zinc-900 { background-color: #ffffff; }
+html.light .bg-zinc-800 { background-color: #f3f4f6; }
+html.light .bg-zinc-700 { background-color: #e5e7eb; }
+
+/* --- Backgrounds: opacity variants used in layout --- */
+html.light .bg-zinc-950\/90 { background-color: rgb(249 250 251 / 0.9); }
+html.light .bg-zinc-950\/80 { background-color: rgb(249 250 251 / 0.8); }
+html.light .bg-zinc-950\/70 { background-color: rgb(249 250 251 / 0.7); }
+html.light .bg-zinc-950\/50 { background-color: rgb(249 250 251 / 0.5); }
+html.light .bg-zinc-900\/95 { background-color: rgb(255 255 255 / 0.95); }
+html.light .bg-zinc-900\/80 { background-color: rgb(255 255 255 / 0.8); }
+html.light .bg-zinc-900\/60 { background-color: rgb(255 255 255 / 0.6); }
+html.light .bg-zinc-900\/50 { background-color: rgb(255 255 255 / 0.5); }
+
+/* --- Text colors --- */
+html.light .text-zinc-100 { color: #111827; }
+html.light .text-zinc-200 { color: #1f2937; }
+html.light .text-zinc-300 { color: #374151; }
+html.light .text-zinc-400 { color: #6b7280; }
+html.light .text-zinc-500 { color: #6b7280; }
+/* text-zinc-950 is intentionally NOT overridden (used for dark text on green/yellow buttons) */
+/* text-white is intentionally NOT overridden (used for text on red/green accent buttons) */
+
+/* gray-* used in a handful of non-game pages */
+html.light .text-gray-400 { color: #6b7280; }
+html.light .text-gray-500 { color: #6b7280; }
+
+/* --- Borders --- */
+html.light .border-zinc-800 { border-color: #e5e7eb; }
+html.light .border-zinc-700 { border-color: #d1d5db; }
+html.light .border-zinc-600 { border-color: #d1d5db; }
+
+/* --- Hover states (compiled into separate classes by Tailwind) --- */
+html.light .hover\:bg-zinc-900:hover  { background-color: #f9fafb; }
+html.light .hover\:bg-zinc-800:hover  { background-color: #e5e7eb; }
+html.light .hover\:bg-zinc-700:hover  { background-color: #d1d5db; }
+html.light .hover\:bg-zinc-500:hover  { background-color: #9ca3af; }
+html.light .hover\:border-zinc-700:hover { border-color: #d1d5db; }
+html.light .hover\:border-zinc-600:hover { border-color: #d1d5db; }
+html.light .hover\:text-zinc-100:hover { color: #111827; }
+html.light .hover\:text-zinc-200:hover { color: #1f2937; }
+
+/* --- Rings --- */
+html.light .ring-zinc-900 { --tw-ring-color: #f3f4f6; }
+
+/* --- Component classes: @apply bakes in colors at build time so
+       they need explicit light-mode rules here --- */
+
+html.light .button-secondary-surface {
+  border-color: #d1d5db;
+  background-color: #f3f4f6;
+  color: #111827;
+}
+
+html.light .button-secondary-surface:not(:disabled):hover {
+  background-color: #e5e7eb;
+  border-color: #9ca3af;
+}
+
+html.light .glass-panel {
+  background-color: rgb(255 255 255 / 0.9);
+  border-color: #e5e7eb;
+}
+
+html.light .surface-grid {
+  background:
+    radial-gradient(circle at top, rgba(16, 185, 129, 0.06), transparent 32%),
+    linear-gradient(180deg, #f9fafb 0%, #f3f4f6 48%, #f9fafb 100%);
 }
