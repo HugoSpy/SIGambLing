@@ -184,17 +184,18 @@ export function WinsPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.15, delay: index < 20 ? index * 0.03 : 0 }}
-                  className="flex items-center gap-12 rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3"
+                  className="grid grid-cols-[180px_1fr_1fr_1fr_48px] items-center rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3"
                 >
-                  <span className="flex w-32 shrink-0 items-center gap-2 text-sm font-semibold text-zinc-100">
+                  <span className="flex items-center gap-2 font-semibold text-zinc-100">
                     <span className="text-lg">{sourceIcon(win.source)}</span>
                     {win.source}
                   </span>
-                  <span className="shrink-0 text-sm text-zinc-400">Mise : {formatTokens(win.amount)}</span>
-                  <span className="shrink-0 text-sm font-semibold text-emerald-400">+{formatTokens(win.profit)} tokens</span>
-                  <span className="shrink-0 text-sm text-zinc-500">{formatRelativeDate(win.date)}</span>
+                  <span className="text-sm text-gray-400">Mise : {formatTokens(win.amount)} tokens</span>
+                  <span className="text-sm font-semibold text-emerald-400">+{formatTokens(win.profit)} tokens</span>
+                  <span className="text-sm text-gray-500">{formatRelativeDate(win.date)}</span>
+                  <div className="flex justify-end">
                   <button
-                    className="ml-auto inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-900 text-zinc-400 transition hover:border-emerald-500/40 hover:text-emerald-400 disabled:cursor-not-allowed disabled:opacity-40"
+                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-900 text-zinc-400 transition hover:border-emerald-500/40 hover:text-emerald-400 disabled:cursor-not-allowed disabled:opacity-40"
                     disabled={isShareDisabled(win.id)}
                     title="Partager dans le chat"
                     type="button"
@@ -202,6 +203,7 @@ export function WinsPage() {
                   >
                     <Share2 className="h-4 w-4" />
                   </button>
+                  </div>
                 </motion.div>
               ))}
             </div>
