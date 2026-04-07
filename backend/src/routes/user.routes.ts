@@ -15,6 +15,7 @@ import {
   updateUserRewardController,
   uploadCurrentUserAvatarController,
 } from "../controllers/user.controller";
+import { getMyWinsController } from "../controllers/wins.controller";
 import { requireAuth } from "../middleware/require-auth";
 import { requireRole } from "../middleware/require-role";
 import { validateBody } from "../middleware/validate";
@@ -85,6 +86,7 @@ const uploadAvatarMiddleware: RequestHandler = (request, response, next) => {
 
 userRouter.get("/me", requireAuth, getCurrentUserController);
 userRouter.get("/me/bets", requireAuth, listCurrentUserEventBetsController);
+userRouter.get("/me/wins", requireAuth, getMyWinsController);
 userRouter.patch("/me", requireAuth, userLimiter, validateBody(updateUserProfileSchema), updateCurrentUserController);
 userRouter.patch("/me/chat-preferences", requireAuth, validateBody(updateChatPreferencesSchema), updateChatPreferencesController);
 userRouter.delete("/me/chat-preferences", requireAuth, resetChatPreferencesController);

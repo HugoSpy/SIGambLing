@@ -1,7 +1,10 @@
 import { Router } from "express";
 import { z } from "zod";
+import rateLimit from "express-rate-limit";
 import { requireAuth } from "../middleware/require-auth";
 import { validateBody } from "../middleware/validate";
+import { shareWinSchema } from "../schemas/wins.schemas";
+import { shareWinController } from "../controllers/wins.controller";
 import {
   addChatClient,
   getBanStatus,
@@ -83,3 +86,21 @@ chatRouter.get("/stream", requireAuth, (req, res) => {
   req.on("close", cleanup);
   req.on("error", cleanup);
 });
+
+const shareWinLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 1,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) =>
+    (req as { auth?: { id?: string } }).auth?.id ?? req.ip ?? "anonymous",
+  message: { message: "Tu peux partager une victoire par minute." },
+});
+
+chatRouter.post(
+  "/share-win",
+  requireAuth,
+  shareWinLimiter,
+  validateBody(shareWinSchema),
+  shareWinController,
+);
