@@ -16,6 +16,7 @@ export interface AuthUser {
   chat_panel_x:      number | null;
   chat_panel_y:      number | null;
   chat_zoom:         number | null;
+  theme_preference:  "dark" | "light";
 }
 
 export interface RefreshSessionResponse {

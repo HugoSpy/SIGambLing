@@ -65,12 +65,13 @@ model User {
   streakDays      Int         @default(0)
   acceptOddsChanges Boolean   @default(false)
   lastSeenAt      DateTime?
-  chatPanelWidth  Int?
-  chatPanelHeight Int?
-  chatPanelX      Int?
-  chatPanelY      Int?
-  chatZoom        Int?
-  createdAt       DateTime    @default(now())
+  chatPanelWidth   Int?
+  chatPanelHeight  Int?
+  chatPanelX       Int?
+  chatPanelY       Int?
+  chatZoom         Int?
+  themePreference  String      @default("dark")
+  createdAt        DateTime    @default(now())
   updatedAt       DateTime    @updatedAt
   bets            Bet[]
   casinoGames     CasinoGame[]

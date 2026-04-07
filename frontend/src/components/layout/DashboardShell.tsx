@@ -22,6 +22,7 @@ import { useBetCartStore } from "../../store/bet-cart-store";
 import { useAuthStore } from "../../store/auth-store";
 import { BetCartDrawer } from "../BetCartDrawer";
 import { Button } from "../ui/Button";
+import { ThemeToggle } from "../ui/ThemeToggle";
 import { useGamificationState } from "../../hooks/useGamificationState";
 import { fetchAdminProposals } from "../../lib/api";
 import { ChatPanel } from "../chat/ChatPanel";
@@ -229,8 +230,12 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
               </div>
             </div>
 
+            <div className="mt-4">
+              <ThemeToggle />
+            </div>
+
             <Button
-              className="mt-4"
+              className="mt-2"
               fullWidth
               size="sm"
               variant="secondary"

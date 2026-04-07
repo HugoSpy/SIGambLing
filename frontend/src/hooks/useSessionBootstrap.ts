@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { fetchCurrentUser, refreshSession } from "../lib/api";
 import { useAuthStore } from "../store/auth-store";
+import { useThemeStore } from "../store/theme-store";
 
 export function useSessionBootstrap() {
   const status = useAuthStore((state) => state.status);
@@ -33,10 +34,12 @@ export function useSessionBootstrap() {
 
         setUser(user);
         setStatus("authenticated");
+        useThemeStore.getState().initTheme(user.theme_preference);
 
       } catch (err) {
         if (!cancelled) {
           clearSession();
+          useThemeStore.getState().initTheme();
         }
       }
     };

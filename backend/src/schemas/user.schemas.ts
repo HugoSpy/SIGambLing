@@ -9,8 +9,12 @@ export const updateUserProfileSchema = z.object({
     .regex(/^[A-Za-z0-9._-]+$/, "Le pseudo contient des caractères non autorisés.")
     .optional(),
   accept_odds_changes: z.boolean().optional(),
+  theme_preference: z.enum(["dark", "light"]).optional(),
 }).refine(
-  (value) => value.pseudo !== undefined || value.accept_odds_changes !== undefined,
+  (value) =>
+    value.pseudo !== undefined ||
+    value.accept_odds_changes !== undefined ||
+    value.theme_preference !== undefined,
   "Aucune modification transmise.",
 );
 

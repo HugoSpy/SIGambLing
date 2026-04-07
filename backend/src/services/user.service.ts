@@ -69,6 +69,7 @@ class UserService {
     const data: {
       pseudo?: string;
       acceptOddsChanges?: boolean;
+      themePreference?: string;
     } = {};
 
     if (input.pseudo !== undefined) {
@@ -91,6 +92,10 @@ class UserService {
 
     if (input.accept_odds_changes !== undefined) {
       data.acceptOddsChanges = input.accept_odds_changes;
+    }
+
+    if (input.theme_preference !== undefined) {
+      data.themePreference = input.theme_preference;
     }
 
     const updatedUser = await prisma.user.update({

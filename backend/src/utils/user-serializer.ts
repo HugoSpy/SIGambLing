@@ -17,5 +17,6 @@ export function serializeUser(user: User) {
     chat_panel_x:      user.chatPanelX      ?? null,
     chat_panel_y:      user.chatPanelY      ?? null,
     chat_zoom:         user.chatZoom        ?? null,
+    theme_preference:  user.themePreference as "dark" | "light",
   };
 }

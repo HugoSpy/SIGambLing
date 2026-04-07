@@ -164,6 +164,7 @@ export async function triggerAdminJackpotPayout(winnerUserId: string) {
 export async function updateCurrentUserProfile(payload: {
   pseudo?: string;
   accept_odds_changes?: boolean;
+  theme_preference?: "dark" | "light";
 }) {
   const response = await api.patch<AuthUser>("/users/me", payload);
   return response.data;
