@@ -167,6 +167,10 @@ html.light .bg-zinc-900\/60 { background-color: rgb(255 255 255 / 0.6); }
 html.light .bg-zinc-900\/50 { background-color: rgb(255 255 255 / 0.5); }
 
 /* --- Text colors --- */
+/* brand tokens: baked as hex by Tailwind, must be explicitly overridden */
+html.light .text-brand-text  { color: #111827; }
+html.light .text-brand-muted { color: #6b7280; }
+
 html.light .text-zinc-100 { color: #111827; }
 html.light .text-zinc-200 { color: #1f2937; }
 html.light .text-zinc-300 { color: #374151; }
