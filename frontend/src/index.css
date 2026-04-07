@@ -181,6 +181,7 @@ html.light .text-zinc-500 { color: #6b7280; }
 /* text-white: override body text uses; button-danger-surface restores
    white explicitly below so red buttons keep white text */
 html.light .text-white { color: #0f172a; }
+html.light .text-white\/80 { color: rgb(15 23 42 / 0.8); }
 
 /* text-zinc-600 (#52525b) and text-zinc-900 (#18181b) are dark enough
    in light mode — no override needed */
