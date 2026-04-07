@@ -6,6 +6,7 @@ export interface ChatMessageData {
   id: string;
   content: string;
   createdAt: string;
+  isSystem?: boolean;
   mentionedUserIds?: string[];
   user: {
     id: string;

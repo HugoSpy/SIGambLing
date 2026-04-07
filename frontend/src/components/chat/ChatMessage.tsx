@@ -13,6 +13,7 @@ interface ChatMessageProps {
     id: string;
     content: string;
     createdAt: string;
+    isSystem?: boolean;
     user: {
       id: string;
       pseudo: string;
@@ -45,6 +46,23 @@ function renderContent(text: string, currentUserPseudo: string | undefined) {
 }
 
 export function ChatMessage({ message, currentUserId, currentUserPseudo }: ChatMessageProps) {
+  if (message.isSystem) {
+    return (
+      <div className="flex justify-center px-2">
+        <div
+          className="rounded-lg border px-4 py-2 text-center text-sm leading-snug break-words"
+          style={{
+            color: "#3B82F6",
+            backgroundColor: "rgba(59, 130, 246, 0.08)",
+            borderColor: "rgba(59, 130, 246, 0.2)",
+          }}
+        >
+          {renderContent(message.content, currentUserPseudo)}
+        </div>
+      </div>
+    );
+  }
+
   const isOwn = message.user.id === currentUserId;
   const initials = message.user.pseudo
     .split(" ")

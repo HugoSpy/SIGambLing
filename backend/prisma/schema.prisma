@@ -96,6 +96,7 @@ model ChatMessage {
   userId    String   @db.Uuid
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   content   String   @db.VarChar(300)
+  isSystem  Boolean  @default(false)
   createdAt DateTime @default(now())
 
   @@index([createdAt(sort: Desc)])

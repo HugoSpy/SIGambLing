@@ -74,8 +74,9 @@ export async function getHistory() {
 
 // ─── Send message ─────────────────────────────────────────────────────────────
 
-export async function sendMessage(userId: string, content: string, role?: string) {
+export async function sendMessage(userId: string, content: string, role?: string, options?: { isSystem?: boolean }) {
   const isAdmin = role === "admin";
+  const isSystem = options?.isSystem ?? false;
 
   if (!isAdmin) {
     // Rate limit
@@ -112,7 +113,7 @@ export async function sendMessage(userId: string, content: string, role?: string
   }
 
   const message = await prisma.chatMessage.create({
-    data: { userId, content: content.trim() },
+    data: { userId, content: content.trim(), isSystem },
     include: {
       user: {
         select: { id: true, pseudo: true, avatarUrl: true },

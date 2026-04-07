@@ -1,6 +1,7 @@
 import type { RequestHandler } from "express";
 import { getUserWins, getWinForShare } from "../services/wins.service";
 import { sendMessage } from "../services/chat.service";
+import { prisma } from "../lib/prisma";
 import { AppError } from "../utils/app-error";
 
 function getAuthenticatedUserId(request: Parameters<RequestHandler>[0]) {
@@ -38,17 +39,23 @@ export const shareWinController: RequestHandler = async (request, response, next
 
     const win = await getWinForShare(userId, winId, winType);
 
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { pseudo: true },
+    });
+    const pseudo = user?.pseudo ?? "Quelqu'un";
+
     let content: string;
     if (win.source === "roulette") {
-      content = `🎰 J'ai gagné ${win.profit} tokens en misant ${win.amount} à la Roulette !`;
+      content = `@${pseudo} a gagné ${win.profit} tokens en pariant ${win.amount} à la Roulette 🎰`;
     } else if (win.source === "blackjack") {
-      content = `🃏 J'ai gagné ${win.profit} tokens en misant ${win.amount} au Blackjack !`;
+      content = `@${pseudo} a gagné ${win.profit} tokens en pariant ${win.amount} au Blackjack 🃏`;
     } else {
-      content = `🏆 J'ai gagné ${win.profit} tokens en pariant ${win.amount} sur ${win.eventTitle ?? "un événement"} !`;
+      content = `@${pseudo} a gagné ${win.profit} tokens en pariant ${win.amount} sur ${win.eventTitle ?? "un événement"} 🏆`;
     }
 
     const authUser = (request as { auth?: { role?: string } }).auth;
-    await sendMessage(userId, content, authUser?.role);
+    await sendMessage(userId, content, authUser?.role, { isSystem: true });
 
     response.json({ success: true, message: content });
   } catch (error) {
