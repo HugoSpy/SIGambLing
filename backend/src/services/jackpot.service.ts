@@ -3,7 +3,7 @@ import { AppError } from "../utils/app-error";
 import { logger } from "../utils/logger";
 import { prisma } from "./prisma.service";
 
-const JACKPOT_CONTRIBUTION_RATE_BPS = 100;
+const JACKPOT_CONTRIBUTION_RATE_BPS = 500;
 
 type DatabaseClient = PrismaClient | Prisma.TransactionClient;
 type JackpotContributionSource =
@@ -130,10 +130,7 @@ class JackpotService {
     try {
       const db = this.getClient(client);
       const jackpot = await this.ensureJackpot(db);
-      const contributionAmount = Math.max(
-        1,
-        Math.round((wagerAmount * jackpot.contributionRateBps) / 10000),
-      );
+      const contributionAmount = (wagerAmount * jackpot.contributionRateBps) / 10000;
 
       await Promise.all([
         db.jackpotContribution.create({
@@ -228,12 +225,13 @@ class JackpotService {
       }
 
       const payoutAmount = jackpot.currentAmount;
+      const roundedPayout = Math.round(payoutAmount);
       const wonAt = new Date();
 
       await db.user.update({
         where: { id: winner.id },
         data: {
-          balance: { increment: payoutAmount },
+          balance: { increment: roundedPayout },
         },
       });
 
