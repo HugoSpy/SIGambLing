@@ -77,13 +77,14 @@ function mapCasinoToWin(
   },
 ): WinEntry {
   const isRoulette = game.gameType === "roulette";
+  // DB payout is already net profit (totalPayout - totalBet at write time)
   return {
     id: game.id,
     type: "casino",
     source: isRoulette ? "Roulette" : "Blackjack",
     amount: game.betAmount,
-    payout: game.payout,
-    profit: game.payout - game.betAmount,
+    payout: game.payout + game.betAmount,
+    profit: game.payout,
     date: game.createdAt.toISOString(),
     detail: isRoulette ? formatRouletteDetail(game.gameData) : "Blackjack",
   };
@@ -207,9 +208,10 @@ export async function getWinForShare(
     throw new AppError("Cette partie n'est pas une victoire.", 400);
   }
 
+  // DB payout is already net profit (totalPayout - totalBet at write time)
   return {
     amount: game.betAmount,
-    profit: game.payout - game.betAmount,
+    profit: game.payout,
     source: game.gameType,
   };
 }
