@@ -2,6 +2,7 @@ import type { Response } from "express";
 import { prisma } from "../lib/prisma";
 import { AppError } from "../utils/app-error";
 import { containsBanword } from "../utils/banword-loader";
+import { gamificationService } from "./gamification.service";
 
 // ─── SSE clients ──────────────────────────────────────────────────────────────
 
@@ -133,6 +134,13 @@ export async function sendMessage(userId: string, content: string, role?: string
   }
 
   broadcastMessage({ ...message, mentionedUserIds });
+
+  if (!isSystem) {
+    gamificationService.synchronizeUserBadges(userId).catch(() => {
+      // Non-blocking: badge sync failure should not fail the chat message
+    });
+  }
+
   return message;
 }
 

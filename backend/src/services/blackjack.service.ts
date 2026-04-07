@@ -160,6 +160,7 @@ class BlackjackService {
     });
 
     await gamificationService.synchronizeUserBadges(userId);
+    await gamificationService.triggerLeaderboardTop3(userId);
   }
 
   private async settleDealerBlackjack(userId: string, gameId: string, game: ActiveGame) {
@@ -505,6 +506,11 @@ class BlackjackService {
       }
 
       await jackpotService.recordCasinoContribution(userId, bet, "blackjack", gameId, transaction);
+
+      if (bet === user.balance) {
+        await gamificationService.triggerAllIn(userId, transaction);
+      }
+      await gamificationService.trackDebit(userId, user.balance - bet, transaction);
     });
 
     const newBalance = user.balance - bet;
@@ -584,6 +590,7 @@ class BlackjackService {
       });
 
       await gamificationService.synchronizeUserBadges(userId);
+      await gamificationService.triggerLeaderboardTop3(userId);
 
       return {
         game_id: gameId,

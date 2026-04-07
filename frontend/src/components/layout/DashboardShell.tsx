@@ -47,6 +47,9 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
   const setCartOpen = useBetCartStore((state) => state.setOpen);
   const { data: gamificationData } = useGamificationState();
   const rewardAvailable = gamificationData != null && !gamificationData.daily_reward.claimed_today;
+  const unclaimedBadges = gamificationData?.badges.filter(
+    (b) => b.unlocked && b.claimed_at === null,
+  ).length ?? 0;
   const { data: adminProposals } = useQuery({
     queryKey: ["admin-proposals"],
     queryFn: () => fetchAdminProposals(),
@@ -112,6 +115,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
               location.pathname === item.href ||
               (item.href !== "/dashboard" && location.pathname.startsWith(`${item.href}/`));
             const isReward = item.href === "/rewards";
+            const isProfile = item.href === "/profile";
             const isAdmin = item.href === "/admin/events";
 
             return (
@@ -127,9 +131,9 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
               >
                 <span className="relative">
                   <Icon className="h-4 w-4" />
-                  {isReward && rewardAvailable && (
+                  {(isReward && rewardAvailable) || (isProfile && unclaimedBadges > 0) ? (
                     <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-zinc-900 animate-pulse" />
-                  )}
+                  ) : null}
                 </span>
                 <span>{item.label}</span>
                 {isAdmin && pendingProposalsCount > 0 && (
@@ -338,6 +342,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
               location.pathname === item.href ||
               (item.href !== "/dashboard" && location.pathname.startsWith(`${item.href}/`));
             const isReward = item.href === "/rewards";
+            const isProfile = item.href === "/profile";
             const isAdmin = item.href === "/admin/events";
 
             return (
@@ -351,9 +356,9 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
               >
                 <span className="relative">
                   <Icon className="h-4 w-4" />
-                  {isReward && rewardAvailable && (
+                  {(isReward && rewardAvailable) || (isProfile && unclaimedBadges > 0) ? (
                     <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-zinc-900 animate-pulse" />
-                  )}
+                  ) : null}
                   {isAdmin && pendingProposalsCount > 0 && (
                     <span className="absolute -right-1 -top-1 inline-flex min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
                       {pendingProposalsCount}

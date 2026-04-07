@@ -1,6 +1,7 @@
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Award, Camera, Coins, Flame, LayoutPanelLeft, Save, Trophy, UserRound } from "lucide-react";
+import { Award, Camera, Check, Coins, Flame, LayoutPanelLeft, Save, Trophy, UserRound } from "lucide-react";
+import toast from "react-hot-toast";
 import { DashboardShell } from "../components/layout/DashboardShell";
 import { LoadingScreen } from "../components/layout/LoadingScreen";
 import { Button } from "../components/ui/Button";
@@ -9,6 +10,7 @@ import { Input } from "../components/ui/Input";
 import { useGamificationState } from "../hooks/useGamificationState";
 import {
   ApiError,
+  claimBadgeReward,
   fetchCurrentUser,
   logoutRequest,
   resetChatPreferences,
@@ -20,7 +22,7 @@ import { formatTokens } from "../lib/utils";
 import { useAuthStore } from "../store/auth-store";
 import { useChatStore } from "../store/chat-store";
 import type { AuthUser } from "../types/auth";
-import type { GamificationBadge } from "../types/gamification";
+import type { BadgeCatalogRarity, GamificationBadge } from "../types/gamification";
 
 const BADGE_STYLES: Record<GamificationBadge["tone"], string> = {
   cyan: "border-brand-cyan/30 bg-brand-cyan/10 text-brand-cyan",
@@ -29,6 +31,12 @@ const BADGE_STYLES: Record<GamificationBadge["tone"], string> = {
   violet: "border-fuchsia-400/30 bg-fuchsia-400/10 text-fuchsia-300",
   amber: "border-amber-400/30 bg-amber-400/10 text-amber-300",
   sky: "border-sky-400/30 bg-sky-400/10 text-sky-300",
+};
+
+const CLAIM_BUTTON_STYLES: Record<BadgeCatalogRarity, string> = {
+  COMMON: "bg-zinc-600/80 hover:bg-zinc-500/80 text-zinc-100 border border-zinc-500/50",
+  RARE: "bg-fuchsia-600/80 hover:bg-fuchsia-500/80 text-white border border-fuchsia-400/50",
+  EPIC: "bg-amber-500/80 hover:bg-amber-400/80 text-black border border-amber-400/50",
 };
 
 const pseudoRules = [
@@ -54,6 +62,8 @@ export function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [resettingChat, setResettingChat] = useState(false);
+  const [claimingBadge, setClaimingBadge] = useState<string | null>(null);
+  const updateBalance = useAuthStore((state) => state.updateBalance);
   const { data: user } = useQuery({
     queryKey: ["me"],
     queryFn: fetchCurrentUser,
@@ -83,6 +93,30 @@ export function ProfilePage() {
   const commitUser = (nextUser: AuthUser) => {
     setUser(nextUser);
     queryClient.setQueryData(["me"], nextUser);
+  };
+
+  const handleClaimBadge = async (badge: GamificationBadge) => {
+    if (claimingBadge) return;
+    setClaimingBadge(badge.key);
+    try {
+      const result = await claimBadgeReward(badge.key);
+      updateBalance(result.newBalance);
+      queryClient.invalidateQueries({ queryKey: ["gamification"] });
+      toast.success(`+${formatTokens(result.reward)} tokens`, {
+        icon: "🪙",
+        style: {
+          background: "#052e16",
+          color: "#86efac",
+          border: "1px solid #166534",
+          fontWeight: "600",
+        },
+        duration: 4000,
+      });
+    } catch (error) {
+      notify.error(getErrorMessage(error));
+    } finally {
+      setClaimingBadge(null);
+    }
   };
 
   const handleLogout = async () => {
@@ -413,9 +447,14 @@ export function ProfilePage() {
                   >
                     <div className="flex items-center justify-between gap-3">
                       <p className="text-sm font-semibold">{badge.name}</p>
-                      <span className="text-[11px] uppercase tracking-[0.24em] text-white/60">
-                        {badge.rarity}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        {badge.unlocked && badge.claimed_at !== null && (
+                          <Check className="h-3.5 w-3.5 text-emerald-400" />
+                        )}
+                        <span className="text-[11px] uppercase tracking-[0.24em] text-white/60">
+                          {badge.rarity}
+                        </span>
+                      </div>
                     </div>
                     <p className="mt-2 text-xs leading-6 text-white/80">{badge.description}</p>
                     <div className="mt-4">
@@ -437,11 +476,24 @@ export function ProfilePage() {
                         />
                       </div>
                     </div>
-                    <p className="mt-3 text-[11px] uppercase tracking-[0.24em] text-white/60">
-                      {badge.unlocked && badge.unlocked_at
-                        ? new Date(badge.unlocked_at).toLocaleDateString("fr-FR")
-                        : "verrouille"}
-                    </p>
+                    <div className="mt-3 flex items-center justify-between gap-2">
+                      <p className="text-[11px] uppercase tracking-[0.24em] text-white/60">
+                        {badge.unlocked && badge.unlocked_at
+                          ? new Date(badge.unlocked_at).toLocaleDateString("fr-FR")
+                          : "verrouille"}
+                      </p>
+                      {badge.unlocked && badge.claimed_at === null && (
+                        <button
+                          className={`rounded-full px-3 py-1 text-[11px] font-semibold transition-colors ${CLAIM_BUTTON_STYLES[badge.catalog_rarity]}`}
+                          disabled={claimingBadge === badge.key}
+                          onClick={() => void handleClaimBadge(badge)}
+                        >
+                          {claimingBadge === badge.key
+                            ? "..."
+                            : `+${formatTokens(badge.reward)} tokens`}
+                        </button>
+                      )}
+                    </div>
                   </div>
                 ))}
               </div>

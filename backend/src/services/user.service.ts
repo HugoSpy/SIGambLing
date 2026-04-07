@@ -5,9 +5,11 @@ import { gamificationService } from "./gamification.service";
 import type {
   AdjustUserBalanceInput,
   UnlockUserBadgeInput,
+  UpdatePinnedBadgesInput,
   UpdateUserProfileInput,
   UpdateUserRewardInput,
 } from "../schemas/user.schemas";
+import { getBadgeConfig } from "../config/badges.config";
 import type { UploadedFile } from "../types/upload";
 import { prisma } from "./prisma.service";
 import { storageService } from "./storage.service";
@@ -386,6 +388,120 @@ class UserService {
 
   listAvailableBadges() {
     return gamificationService.listBadgeCatalog();
+  }
+
+  async getPublicProfile(targetUserId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: targetUserId, isBanned: false },
+      select: {
+        id: true,
+        pseudo: true,
+        avatarUrl: true,
+        email: true,
+        balance: true,
+        createdAt: true,
+        badges: {
+          where: { pinned: true },
+          orderBy: { pinnedOrder: "asc" },
+          take: 3,
+          select: {
+            badgeType: true,
+            unlockedAt: true,
+            pinnedOrder: true,
+          },
+        },
+      },
+    });
+
+    if (!user) {
+      throw new AppError("Utilisateur introuvable.", 404);
+    }
+
+    // Leaderboard rank by balance (all non-banned users)
+    const rankResult = await prisma.$queryRaw<Array<{ rank: bigint }>>`
+      SELECT rank FROM (
+        SELECT id, RANK() OVER (ORDER BY balance DESC) AS rank
+        FROM "User"
+        WHERE "isBanned" = false
+      ) ranked
+      WHERE id = ${targetUserId}::uuid
+    `;
+    const leaderboardRank = rankResult.length > 0 ? Number(rankResult[0].rank) : null;
+
+    // Bet stats
+    const [totalBets, wonBets, lostBets, volumeAgg] = await Promise.all([
+      prisma.bet.count({ where: { userId: targetUserId } }),
+      prisma.bet.count({ where: { userId: targetUserId, status: "won" } }),
+      prisma.bet.count({ where: { userId: targetUserId, status: "lost" } }),
+      prisma.bet.aggregate({
+        where: { userId: targetUserId },
+        _sum: { amount: true },
+      }),
+    ]);
+
+    const decidedBets = wonBets + lostBets;
+    const winRate = decidedBets > 0 ? Math.round((wonBets / decidedBets) * 100) / 100 : 0;
+
+    const pinnedBadges = user.badges.map((badge) => {
+      const config = getBadgeConfig(badge.badgeType);
+      return {
+        badgeType: badge.badgeType,
+        label: config?.label ?? badge.badgeType,
+        rarity: config?.rarity ?? "COMMON",
+        unlockedAt: badge.unlockedAt.toISOString(),
+        pinnedOrder: badge.pinnedOrder,
+      };
+    });
+
+    return {
+      id: user.id,
+      pseudo: user.pseudo,
+      avatarUrl: user.avatarUrl,
+      email: user.email,
+      balance: user.balance,
+      leaderboardRank,
+      createdAt: user.createdAt.toISOString(),
+      pinnedBadges,
+      stats: {
+        totalBets,
+        wonBets,
+        winRate,
+        totalVolume: volumeAgg._sum.amount ?? 0,
+      },
+    };
+  }
+
+  async updatePinnedBadges(userId: string, input: UpdatePinnedBadgesInput) {
+    const { pinnedBadges } = input;
+
+    if (pinnedBadges.length > 0) {
+      const badgeTypes = pinnedBadges.map((b) => b.badgeType);
+      const ownedBadges = await prisma.badge.findMany({
+        where: { userId, badgeType: { in: badgeTypes } },
+        select: { badgeType: true },
+      });
+      const ownedTypes = new Set(ownedBadges.map((b) => b.badgeType));
+      const missing = badgeTypes.find((t) => !ownedTypes.has(t));
+      if (missing) {
+        throw new AppError(`Badge non débloqué : ${missing}`, 400);
+      }
+    }
+
+    await prisma.$transaction(async (tx) => {
+      // Reset all pinned for this user
+      await tx.badge.updateMany({
+        where: { userId, pinned: true },
+        data: { pinned: false, pinnedOrder: null },
+      });
+
+      // Set new pinned badges
+      for (const entry of pinnedBadges) {
+        await tx.badge.update({
+          where: { userId_badgeType: { userId, badgeType: entry.badgeType } },
+          data: { pinned: true, pinnedOrder: entry.order },
+        });
+      }
+    });
   }
 }
 

@@ -210,7 +210,12 @@ class RouletteService {
         select: { balance: true },
       });
 
+      if (totalBet === existingUser.balance) {
+        await gamificationService.triggerAllIn(userId, transaction);
+      }
+      await gamificationService.trackDebit(userId, existingUser.balance - totalBet, transaction);
       await gamificationService.synchronizeUserBadges(userId, transaction);
+      await gamificationService.triggerLeaderboardTop3(userId, transaction);
 
       if (!updatedUser) {
         throw new AppError("Utilisateur introuvable après transaction.", 500);

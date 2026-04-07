@@ -77,3 +77,19 @@ export const triggerJackpotPayoutController: RequestHandler = async (request, re
     next(error);
   }
 };
+
+export const claimBadgeRewardController: RequestHandler = async (request, response, next) => {
+  try {
+    const userId = getAuthenticatedUserId(request);
+    const { badgeType } = request.params as { badgeType: string };
+
+    if (!badgeType || typeof badgeType !== "string" || badgeType.trim().length === 0) {
+      throw new AppError("Type de badge invalide.", 400);
+    }
+
+    const result = await gamificationService.claimBadgeReward(userId, badgeType);
+    response.json(result);
+  } catch (error) {
+    next(error);
+  }
+};

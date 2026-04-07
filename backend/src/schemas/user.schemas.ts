@@ -45,8 +45,20 @@ export const updateChatPreferencesSchema = z.object({
   chatZoom:        z.number().int().min(75).max(150).optional(),
 });
 
+export const updatePinnedBadgesSchema = z.object({
+  pinnedBadges: z
+    .array(
+      z.object({
+        badgeType: z.string().trim().min(1).max(50),
+        order: z.number().int().min(1).max(3),
+      }),
+    )
+    .max(3, "Maximum 3 badges épinglés."),
+});
+
 export type UpdateChatPreferencesInput = z.infer<typeof updateChatPreferencesSchema>;
 export type UpdateUserProfileInput = z.infer<typeof updateUserProfileSchema>;
 export type AdjustUserBalanceInput = z.infer<typeof adjustUserBalanceSchema>;
 export type UnlockUserBadgeInput = z.infer<typeof unlockUserBadgeSchema>;
 export type UpdateUserRewardInput = z.infer<typeof updateUserRewardSchema>;
+export type UpdatePinnedBadgesInput = z.infer<typeof updatePinnedBadgesSchema>;

@@ -147,6 +147,13 @@ export async function fetchJackpotState() {
   return response.data;
 }
 
+export async function claimBadgeReward(badgeType: string): Promise<{ reward: number; newBalance: number }> {
+  const response = await api.post<{ reward: number; newBalance: number }>(
+    `/rewards/badges/${encodeURIComponent(badgeType)}/claim`,
+  );
+  return response.data;
+}
+
 export async function fetchLeaderboard(scope: "global" | "casino", limit: number) {
   const response = await api.get<LeaderboardView>("/rewards/leaderboard", {
     params: { scope, limit },

@@ -1351,6 +1351,7 @@ class EventService {
           id: true,
           isBanned: true,
           acceptOddsChanges: true,
+          balance: true,
         },
       });
 
@@ -1560,6 +1561,10 @@ class EventService {
         throw new AppError("Utilisateur introuvable après transaction.", 500);
       }
 
+      if (input.amount === user.balance) {
+        await gamificationService.triggerAllIn(userId, transaction);
+      }
+      await gamificationService.trackDebit(userId, updatedUser.balance, transaction);
       await gamificationService.synchronizeUserBadges(userId, transaction);
 
       return {
@@ -1584,6 +1589,7 @@ class EventService {
           id: true,
           isBanned: true,
           acceptOddsChanges: true,
+          balance: true,
         },
       });
 
@@ -1840,6 +1846,10 @@ class EventService {
         throw new AppError("Utilisateur introuvable après transaction.", 500);
       }
 
+      if (totalStake === user.balance) {
+        await gamificationService.triggerAllIn(userId, transaction);
+      }
+      await gamificationService.trackDebit(userId, updatedUser.balance, transaction);
       await gamificationService.synchronizeUserBadges(userId, transaction);
 
       return {
@@ -1867,6 +1877,7 @@ class EventService {
           id: true,
           isBanned: true,
           acceptOddsChanges: true,
+          balance: true,
         },
       });
 
@@ -2080,6 +2091,10 @@ class EventService {
         throw new AppError("Utilisateur introuvable après transaction.", 500);
       }
 
+      if (input.stake === user.balance) {
+        await gamificationService.triggerAllIn(userId, transaction);
+      }
+      await gamificationService.trackDebit(userId, updatedUser.balance, transaction);
       await gamificationService.synchronizeUserBadges(userId, transaction);
 
       return {
@@ -2221,10 +2236,12 @@ class EventService {
       });
     }
 
-    await gamificationService.synchronizeManyUserBadges(
-      impactedBets.map((bet) => bet.userId),
-      transaction,
-    );
+    const impactedUserIds = [...new Set(impactedBets.map((bet) => bet.userId))];
+    await gamificationService.synchronizeManyUserBadges(impactedUserIds, transaction);
+
+    for (const impactedUserId of impactedUserIds) {
+      await gamificationService.triggerLeaderboardTop3(impactedUserId, transaction);
+    }
   }
 
   async resolveEvent(adminId: string, eventId: string, resolvedOption: string) {

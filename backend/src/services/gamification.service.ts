@@ -8,6 +8,7 @@ import {
   jackpotService,
 } from "./jackpot.service";
 import { prisma } from "./prisma.service";
+import { getBadgeReward, getBadgeRarity } from "../config/badges.config";
 
 const DAILY_REWARD_BASE = 100;
 const STREAK_TIERS = [
@@ -46,6 +47,8 @@ interface BadgeStats {
   createdMarkets: number;
   jackpotEntries: number;
   jackpotContributionTotal: number;
+  parlayWins: number;
+  chatMessageCount: number;
 }
 
 interface BadgeProgress {
@@ -197,6 +200,76 @@ const BADGE_DEFINITIONS: BadgeDefinition[] = [
       label: "tokens",
     }),
   },
+  {
+    key: "PARLAY_KING",
+    name: "Parlay King",
+    description: "Un pari combiné remporté. Quand tout s'aligne en même temps.",
+    lockedDescription: "Remportez un pari combiné (parlay) pour débloquer.",
+    tone: "violet",
+    rarity: "rare",
+    icon: "layers",
+    getProgress: ({ stats }) => ({
+      current: Math.min(stats.parlayWins, 1),
+      target: 1,
+      label: "parlay gagné",
+    }),
+  },
+  {
+    key: "CHAT_ADDICT",
+    name: "Chat Addict",
+    description: "100 messages envoyés dans le chat. Tu alimentes la communauté.",
+    lockedDescription: "Envoyez 100 messages dans le chat pour débloquer.",
+    tone: "sky",
+    rarity: "common",
+    icon: "message-circle",
+    getProgress: ({ stats }) => ({
+      current: Math.min(stats.chatMessageCount, 100),
+      target: 100,
+      label: "messages",
+    }),
+  },
+  {
+    key: "COMEBACK_KID",
+    name: "Comeback Kid",
+    description: "Remonter d'une balance < 100 tokens à > 500. La résurrection.",
+    lockedDescription: "Remontez d'une balance critique (< 100) à > 500 tokens.",
+    tone: "emerald",
+    rarity: "epic",
+    icon: "trending-up",
+    getProgress: ({ user }) => ({
+      current: user.lowestBalance <= 100 && user.balance > 500 ? 1 : 0,
+      target: 1,
+      label: "comeback",
+    }),
+  },
+  {
+    key: "ALL_IN",
+    name: "All In",
+    description: "Tout misé sur un seul pari. Le courage ou la folie — difficile à dire.",
+    lockedDescription: "Misez toute votre balance sur un seul pari.",
+    tone: "orange",
+    rarity: "rare",
+    icon: "zap",
+    getProgress: () => ({
+      current: 0,
+      target: 1,
+      label: "all-in",
+    }),
+  },
+  {
+    key: "LEADERBOARD_TOP3",
+    name: "Podium",
+    description: "Apparaître dans le top 3 du leaderboard. L'élite vous reconnaît.",
+    lockedDescription: "Atteignez le top 3 du leaderboard pour débloquer.",
+    tone: "amber",
+    rarity: "epic",
+    icon: "medal",
+    getProgress: () => ({
+      current: 0,
+      target: 1,
+      label: "top 3",
+    }),
+  },
 ];
 
 function startOfUtcDay(date: Date) {
@@ -242,6 +315,7 @@ function serializeBadge(badge: Badge) {
   return {
     key: badge.badgeType,
     unlocked_at: badge.unlockedAt.toISOString(),
+    claimed_at: badge.claimedAt?.toISOString() ?? null,
   };
 }
 
@@ -345,6 +419,8 @@ export class GamificationService {
       casinoWins,
       createdEvents,
       createdProposals,
+      parlayWins,
+      chatMessageCount,
     ] = await Promise.all([
       db.bet.count({ where: { userId } }),
       db.bet.count({ where: { userId, status: "won" } }),
@@ -352,6 +428,8 @@ export class GamificationService {
       db.casinoGame.count({ where: { userId, result: "win" } }),
       db.event.count({ where: { createdById: userId } }),
       db.eventProposal.count({ where: { userId } }),
+      db.bet.count({ where: { userId, status: "won", type: "PARLAY" } }),
+      db.chatMessage.count({ where: { userId, isSystem: false } }),
     ]);
 
     let jackpotEntryCount = 0;
@@ -385,6 +463,8 @@ export class GamificationService {
       createdMarkets: createdEvents + createdProposals,
       jackpotEntries: jackpotEntryCount,
       jackpotContributionTotal: jackpotContributionAggregate._sum.contributionAmount ?? 0,
+      parlayWins,
+      chatMessageCount,
     };
   }
 
@@ -400,6 +480,8 @@ export class GamificationService {
     return BADGE_DEFINITIONS.map((definition) => {
       const progress = definition.getProgress(context);
       const unlockedBadge = unlockedMap.get(definition.key);
+      const catalogRarity = getBadgeRarity(definition.key);
+      const reward = getBadgeReward(definition.key);
 
       return {
         key: definition.key,
@@ -407,9 +489,12 @@ export class GamificationService {
         description: unlockedBadge ? definition.description : definition.lockedDescription,
         tone: definition.tone,
         rarity: definition.rarity,
+        catalog_rarity: catalogRarity,
+        reward,
         icon: definition.icon,
         unlocked: isBadgeUnlocked(progress),
         unlocked_at: unlockedBadge?.unlocked_at ?? null,
+        claimed_at: unlockedBadge?.claimed_at ?? null,
         progress,
       };
     });
@@ -717,6 +802,109 @@ export class GamificationService {
       entries: ranked.slice(0, limit),
       current_user_entry: currentUserEntry,
     };
+  }
+
+  async updateLowestBalanceOnDebit(userId: string, newBalance: number, client?: DatabaseClient) {
+    const db = this.getClient(client);
+    await db.user.update({
+      where: { id: userId },
+      data: { lowestBalance: { set: newBalance } },
+    });
+  }
+
+  // Called after a debit to track lowest balance for COMEBACK_KID
+  async trackDebit(userId: string, newBalance: number, client?: DatabaseClient) {
+    const db = this.getClient(client);
+    const user = await db.user.findUnique({ where: { id: userId }, select: { lowestBalance: true } });
+    if (!user) return;
+    if (newBalance < user.lowestBalance) {
+      await db.user.update({
+        where: { id: userId },
+        data: { lowestBalance: newBalance },
+      });
+    }
+  }
+
+  async triggerAllIn(userId: string, client?: DatabaseClient) {
+    const db = this.getClient(client);
+    await db.badge.createMany({
+      data: [{ userId, badgeType: "ALL_IN" }],
+      skipDuplicates: true,
+    });
+  }
+
+  async triggerLeaderboardTop3(userId: string, client?: DatabaseClient) {
+    const db = this.getClient(client);
+    const since = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+
+    const [eventRows, casinoRows] = await Promise.all([
+      db.bet.groupBy({
+        by: ["userId"],
+        where: { createdAt: { gte: since }, user: { isBanned: false } },
+        _sum: { amount: true },
+      }),
+      db.casinoGame.groupBy({
+        by: ["userId"],
+        where: { createdAt: { gte: since }, user: { isBanned: false } },
+        _sum: { betAmount: true },
+      }),
+    ]);
+
+    const wageredByUser = new Map<string, number>();
+    for (const row of eventRows) {
+      wageredByUser.set(row.userId, (wageredByUser.get(row.userId) ?? 0) + (row._sum.amount ?? 0));
+    }
+    for (const row of casinoRows) {
+      wageredByUser.set(row.userId, (wageredByUser.get(row.userId) ?? 0) + (row._sum.betAmount ?? 0));
+    }
+
+    const userTotal = wageredByUser.get(userId) ?? 0;
+    if (userTotal === 0) return;
+
+    const higherCount = [...wageredByUser.values()].filter((v) => v > userTotal).length;
+    const rank = higherCount + 1;
+
+    if (rank <= 3) {
+      await db.badge.createMany({
+        data: [{ userId, badgeType: "LEADERBOARD_TOP3" }],
+        skipDuplicates: true,
+      });
+    }
+  }
+
+  async claimBadgeReward(userId: string, badgeType: string) {
+    return prisma.$transaction(async (transaction) => {
+      const badge = await transaction.badge.findUnique({
+        where: { userId_badgeType: { userId, badgeType } },
+      });
+
+      if (!badge) {
+        throw new AppError("Badge non débloqué.", 404);
+      }
+
+      if (badge.claimedAt !== null) {
+        throw new AppError("Récompense déjà réclamée.", 409);
+      }
+
+      const reward = getBadgeReward(badgeType);
+      const now = new Date();
+
+      const [, updatedUser] = await Promise.all([
+        transaction.badge.update({
+          where: { userId_badgeType: { userId, badgeType } },
+          data: { claimedAt: now },
+        }),
+        transaction.user.update({
+          where: { id: userId },
+          data: { balance: { increment: reward } },
+        }),
+      ]);
+
+      return {
+        reward,
+        newBalance: updatedUser.balance,
+      };
+    });
   }
 }
 
