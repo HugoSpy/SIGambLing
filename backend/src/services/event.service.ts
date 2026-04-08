@@ -2442,8 +2442,12 @@ class EventService {
         throw new AppError("Événement introuvable.", 404);
       }
 
-      if (event.status === EventStatus.RESOLVED || event.status === EventStatus.CANCELLED) {
-        throw new AppError("Cet événement ne peut plus être annulé.", 400);
+      if (event.status === EventStatus.RESOLVED) {
+        throw new AppError("Cet événement est résolu. Effectuez un rewind avant de l'annuler.", 400);
+      }
+
+      if (event.status === EventStatus.CANCELLED) {
+        throw new AppError("Cet événement est déjà annulé.", 400);
       }
 
       const options = normalizeStoredOptions(event.options, event.poolByOption).map((option) => ({
