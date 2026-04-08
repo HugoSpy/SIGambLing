@@ -103,7 +103,7 @@ const BADGE_DEFINITIONS: BadgeDefinition[] = [
   {
     key: "streak_7",
     name: "Feu continu",
-    description: "Série de 7 jours sans casser le rythme.",
+    description: "Récupérez la récompense quotidienne 7 jours d'affilé",
     rarity: "rare",
     getProgress: ({ user }) => ({
       current: Math.min(user.streakDays, 7),

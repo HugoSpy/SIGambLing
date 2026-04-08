@@ -113,16 +113,16 @@ export const BADGE_CATALOG: BadgeCatalogEntry[] = [
   {
     badgeType: "ALL_IN",
     label: "All In",
-    description: "Tout misé sur un seul pari. Le courage ou la folie — difficile à dire.",
+    description: "Tout miser sur un seul pari. Le courage ou la folie — difficile à dire.",
     rarity: "RARE",
-    visibility: "SECRET",
+    visibility: "PUBLIC",
   },
   {
     badgeType: "CHAT_ADDICT",
     label: "Chat Addict",
     description: "100 messages envoyés dans le chat. Tu alimentes la communauté.",
     rarity: "COMMON",
-    visibility: "PUBLIC",
+    visibility: "SECRET",
   },
   {
     badgeType: "LEADERBOARD_TOP3",

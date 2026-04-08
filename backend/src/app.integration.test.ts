@@ -687,7 +687,7 @@ test("GET /rewards/me returns the authenticated gamification state", async () =>
         {
           key: "streak_7",
           name: "Feu continu",
-          description: "Série de 7 jours sans casser le rythme.",
+          description: "Récupérez la récompense quotidienne 7 jours d'affilé",
           tone: "orange",
           rarity: "rare",
           icon: "zap",
