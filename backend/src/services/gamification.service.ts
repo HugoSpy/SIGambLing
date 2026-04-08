@@ -11,13 +11,21 @@ import { prisma } from "./prisma.service";
 import { getBadgeReward, getBadgeRarity, getBadgeVisibility } from "../config/badges.config";
 
 const DAILY_REWARD_BASE = 100;
+const MONDAY_REWARD_BASE = 500;
+
+function getDailyBase(date = new Date()) {
+  return date.getDay() === 1 ? MONDAY_REWARD_BASE : DAILY_REWARD_BASE;
+}
 const STREAK_TIERS = [
-  { key: "starter", label: "Bronze", minDays: 1, bonus: 0, accent: "cyan" },
-  { key: "regular", label: "Argent", minDays: 3, bonus: 25, accent: "sky" },
-  { key: "committed", label: "Or", minDays: 7, bonus: 75, accent: "amber" },
-  { key: "elite", label: "Lumineux", minDays: 14, bonus: 150, accent: "orange" },
-  { key: "legend", label: "Mythique", minDays: 30, bonus: 300, accent: "violet" },
+  { key: "starter", label: "Bronze", minScore: 0, bonus: 0, accent: "cyan" },
+  { key: "regular", label: "Argent", minScore: 4, bonus: 25, accent: "sky" },
+  { key: "committed", label: "Or", minScore: 12, bonus: 75, accent: "amber" },
+  { key: "elite", label: "Lumineux", minScore: 28, bonus: 150, accent: "orange" },
+  { key: "legend", label: "Mythique", minScore: 60, bonus: 300, accent: "violet" },
 ] as const;
+
+const WAGER_COEF_MAX = 2;
+const WAGER_COEF_CAP = 100_000;
 
 type BadgeTone = "emerald" | "sky" | "violet" | "amber";
 type BadgeRarity = "common" | "rare" | "epic" | "legendary";
@@ -273,22 +281,33 @@ function canContinueStreak(lastRewardAt: Date | null, now: Date) {
   return lastRewardAt ? getUtcDayDifference(lastRewardAt, now) === 1 : false;
 }
 
-function getStreakBonus(streakDays: number) {
+function getWagerCoef(wagered7d: number) {
+  return Math.min((wagered7d / WAGER_COEF_CAP) * WAGER_COEF_MAX, WAGER_COEF_MAX);
+}
+
+function getRankScore(streakDays: number, wagered7d: number) {
+  return streakDays * getWagerCoef(wagered7d);
+}
+
+function getStreakBonus(streakDays: number, wagered7d: number) {
+  const score = getRankScore(streakDays, wagered7d);
   return STREAK_TIERS.reduce(
-    (bonus, tier) => (streakDays >= tier.minDays ? tier.bonus : bonus),
+    (bonus, tier) => (score >= tier.minScore ? tier.bonus : bonus),
     0,
   );
 }
 
-function getCurrentTier(streakDays: number) {
+function getCurrentTier(streakDays: number, wagered7d: number) {
+  const score = getRankScore(streakDays, wagered7d);
   return STREAK_TIERS.reduce(
-    (tier, candidate) => (streakDays >= candidate.minDays ? candidate : tier),
+    (tier, candidate) => (score >= candidate.minScore ? candidate : tier),
     STREAK_TIERS[0],
   );
 }
 
-function getNextTier(streakDays: number) {
-  return STREAK_TIERS.find((tier) => tier.minDays > streakDays) ?? null;
+function getNextTier(streakDays: number, wagered7d: number) {
+  const score = getRankScore(streakDays, wagered7d);
+  return STREAK_TIERS.find((tier) => tier.minScore > score) ?? null;
 }
 
 function isBadgeUnlocked(progress: BadgeProgress) {
@@ -370,6 +389,24 @@ function mergeLeaderboardParticipants(
 export class GamificationService {
   private getClient(client?: DatabaseClient) {
     return client ?? prisma;
+  }
+
+  private async getWagered7d(userId: string, client?: DatabaseClient): Promise<number> {
+    const db = this.getClient(client);
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+    const [eventAgg, casinoAgg] = await Promise.all([
+      db.bet.aggregate({
+        where: { userId, createdAt: { gte: since } },
+        _sum: { amount: true },
+      }),
+      db.casinoGame.aggregate({
+        where: { userId, createdAt: { gte: since } },
+        _sum: { betAmount: true },
+      }),
+    ]);
+
+    return (eventAgg._sum.amount ?? 0) + (casinoAgg._sum.betAmount ?? 0);
   }
 
   private async loadFreshUser(userId: string, client?: DatabaseClient) {
@@ -485,7 +522,7 @@ export class GamificationService {
     });
   }
 
-  private buildRewardState(user: User) {
+  private buildRewardState(user: User, wagered7d: number) {
     const now = new Date();
     const claimedToday = hasClaimedToday(user.lastRewardAt, now);
     const streakAlive = !user.lastRewardAt
@@ -497,10 +534,11 @@ export class GamificationService {
     const streakDeadline = user.lastRewardAt
       ? new Date(startOfUtcDay(user.lastRewardAt).getTime() + 2 * 24 * 60 * 60 * 1000)
       : null;
-    const currentTier = getCurrentTier(Math.max(user.streakDays, 1));
-    const nextTier = getNextTier(user.streakDays);
-    const daysIntoTier = user.streakDays - currentTier.minDays;
-    const daysNeededInTier = nextTier ? nextTier.minDays - currentTier.minDays : 0;
+    const currentTier = getCurrentTier(Math.max(user.streakDays, 1), wagered7d);
+    const nextTier = getNextTier(user.streakDays, wagered7d);
+    const currentScore = getRankScore(user.streakDays, wagered7d);
+    const nextTierGap = nextTier ? nextTier.minScore - currentTier.minScore : 0;
+    const progressInTier = nextTier ? Math.max(0, currentScore - currentTier.minScore) : currentScore;
 
     return {
       day_boundary: "UTC" as const,
@@ -514,21 +552,25 @@ export class GamificationService {
       last_claimed_at: user.lastRewardAt?.toISOString() ?? null,
       next_claim_at: nextClaimAt.toISOString(),
       streak_deadline_at: streakDeadline?.toISOString() ?? null,
-      base_amount: DAILY_REWARD_BASE,
-      streak_bonus: getStreakBonus(user.streakDays),
-      next_amount: DAILY_REWARD_BASE + getStreakBonus(claimedToday ? user.streakDays + 1 : currentStreak || 1),
-      next_streak_bonus: getStreakBonus(claimedToday ? user.streakDays + 1 : currentStreak || 1),
+      base_amount: getDailyBase(),
+      streak_bonus: getStreakBonus(user.streakDays, wagered7d),
+      next_amount: getDailyBase() + getStreakBonus(claimedToday ? user.streakDays + 1 : currentStreak || 1, wagered7d),
+      next_streak_bonus: getStreakBonus(claimedToday ? user.streakDays + 1 : currentStreak || 1, wagered7d),
       current_tier: currentTier,
       next_tier: nextTier,
+      rank_score: Math.round(currentScore * 100) / 100,
+      wager_7d: wagered7d,
+      wager_coef: Math.round(getWagerCoef(wagered7d) * 100) / 100,
       tier_progress: {
-        current: nextTier ? Math.max(0, daysIntoTier) : user.streakDays,
-        target: nextTier ? daysNeededInTier : user.streakDays,
+        current: nextTier ? Math.round(Math.max(0, progressInTier) * 100) / 100 : Math.round(currentScore * 100) / 100,
+        target: nextTier ? Math.round(nextTierGap * 100) / 100 : Math.round(currentScore * 100) / 100,
       },
     };
   }
 
-  private buildProgress(user: User, stats: BadgeStats) {
-    const nextTier = getNextTier(user.streakDays);
+  private buildProgress(user: User, stats: BadgeStats, wagered7d: number) {
+    const score = getRankScore(user.streakDays, wagered7d);
+    const nextTier = getNextTier(user.streakDays, wagered7d);
     const claimedToday = hasClaimedToday(user.lastRewardAt, new Date());
 
     return [
@@ -537,14 +579,14 @@ export class GamificationService {
         label: "Récompense du jour",
         current: claimedToday ? 1 : 0,
         target: 1,
-        reward: `${DAILY_REWARD_BASE} tokens`,
+        reward: `${getDailyBase()} tokens`,
         completed: claimedToday,
       },
       {
         key: "streak_tier",
-        label: "Tier de streak",
-        current: nextTier ? user.streakDays : STREAK_TIERS.at(-1)?.minDays ?? user.streakDays,
-        target: nextTier?.minDays ?? STREAK_TIERS.at(-1)?.minDays ?? user.streakDays,
+        label: "Tier de rang",
+        current: nextTier ? Math.round(score * 100) / 100 : STREAK_TIERS.at(-1)?.minScore ?? Math.round(score * 100) / 100,
+        target: nextTier?.minScore ?? STREAK_TIERS.at(-1)?.minScore ?? Math.round(score * 100) / 100,
         reward: nextTier ? `${nextTier.label} +${nextTier.bonus}` : "Tier maximal atteint",
         completed: nextTier === null,
       },
@@ -608,9 +650,10 @@ export class GamificationService {
 
     await this.synchronizeUserBadges(userId, db);
 
-    const [user, stats] = await Promise.all([
+    const [user, stats, wagered7d] = await Promise.all([
       this.loadFreshUser(userId, db),
       this.collectStats(userId, db),
+      this.getWagered7d(userId, db),
     ]);
     const jackpot = await jackpotService.getState(userId, db).catch((error) => {
       if (!isJackpotStorageUnavailable(error)) {
@@ -626,9 +669,9 @@ export class GamificationService {
     const badges = await this.listBadges(userId, user, stats, db);
 
     return {
-      daily_reward: this.buildRewardState(user),
+      daily_reward: this.buildRewardState(user, wagered7d),
       badges,
-      progress: this.buildProgress(user, stats),
+      progress: this.buildProgress(user, stats, wagered7d),
       jackpot,
       stats: {
         event_bets: stats.totalEventBets,
@@ -647,12 +690,13 @@ export class GamificationService {
     return prisma.$transaction(async (transaction) => {
       const user = await this.loadFreshUser(userId, transaction);
       const now = new Date();
+      const wagered7d = await this.getWagered7d(userId, transaction);
 
       if (hasClaimedToday(user.lastRewardAt, now)) {
         return {
           claimed: false,
           amount: 0,
-          base_amount: DAILY_REWARD_BASE,
+          base_amount: getDailyBase(now),
           streak_bonus: 0,
           user: serializeUser(user),
           gamification: await this.getState(userId, transaction),
@@ -660,8 +704,9 @@ export class GamificationService {
       }
 
       const nextStreak = canContinueStreak(user.lastRewardAt, now) ? user.streakDays + 1 : 1;
-      const streakBonus = getStreakBonus(nextStreak);
-      const amount = DAILY_REWARD_BASE + streakBonus;
+      const streakBonus = getStreakBonus(nextStreak, wagered7d);
+      const dailyBase = getDailyBase(now);
+      const amount = dailyBase + streakBonus;
 
       const updatedUser = await transaction.user.update({
         where: { id: userId },
@@ -677,7 +722,7 @@ export class GamificationService {
       return {
         claimed: true,
         amount,
-        base_amount: DAILY_REWARD_BASE,
+        base_amount: dailyBase,
         streak_bonus: streakBonus,
         user: serializeUser(updatedUser),
         gamification: await this.getState(userId, transaction),

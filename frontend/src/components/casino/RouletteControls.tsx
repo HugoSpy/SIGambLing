@@ -74,11 +74,14 @@ export function RouletteControls({
         <Input
           label="Montant par jeton"
           min={10}
-          onChange={(event) => onBetAmountChange(Number(event.target.value) || 0)}
+          onChange={(event) => {
+            const raw = event.target.value.replace(/^0+(?=\d)/, "");
+            onBetAmountChange(Number(raw) || 0);
+          }}
           placeholder="10"
           step={5}
           type="number"
-          value={betAmount}
+          value={betAmount || ""}
         />
       </div>
 

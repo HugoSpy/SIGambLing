@@ -849,6 +849,9 @@ class EventService {
       },
       orderBy: [
         {
+          closingAt: "asc",
+        },
+        {
           totalPool: "desc",
         },
         {

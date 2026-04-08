@@ -1,6 +1,6 @@
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Award, Camera, Coins, Flame, LayoutPanelLeft, Save, Trophy, UserRound } from "lucide-react";
+import { Award, Camera, Coins, Flame, LayoutPanelLeft, Save, Shield, Trophy, UserRound } from "lucide-react";
 import toast from "react-hot-toast";
 import { DashboardShell } from "../components/layout/DashboardShell";
 import { LoadingScreen } from "../components/layout/LoadingScreen";
@@ -339,31 +339,70 @@ export function ProfilePage() {
 
         {gamification ? (
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.1fr)_420px]">
-            <Card className="min-w-[300px]">
-              <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">Progression</p>
-              <div className="mt-5 space-y-4">
-                {gamification.progress.map((item) => {
-                  const percentage =
-                    item.target > 0 ? Math.min(100, Math.round((item.current / item.target) * 100)) : 100;
 
-                  return (
-                    <div className="space-y-2" key={item.key}>
-                      <div className="flex items-center justify-between gap-4 text-sm">
-                        <span className="text-brand-text">{item.label}</span>
-                        <span className="text-brand-muted">
-                          {item.current}/{item.target}
-                        </span>
-                      </div>
-                      <div className="h-2 rounded-full bg-white/10">
-                        <div
-                          className="h-full rounded-full bg-brand-cyan transition-all"
-                          style={{ width: `${percentage}%` }}
-                        />
-                      </div>
-                      <p className="text-xs text-brand-muted">{item.reward}</p>
-                    </div>
-                  );
-                })}
+            <Card className="min-w-[300px]">
+              <div className="flex items-start justify-between gap-4">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">Rang</p>
+                  <h2 className="mt-3 font-display text-3xl text-brand-text">
+                    {gamification.daily_reward.current_tier.label}
+                  </h2>
+                </div>
+                <Shield className="h-6 w-6 text-brand-orange" />
+              </div>
+
+              <div className="mt-5 space-y-4">
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-[18px] border border-white/10 bg-white/5 p-3">
+                    <p className="text-[11px] uppercase tracking-[0.24em] text-brand-muted">Score</p>
+                    <p className="mt-1 font-display text-xl text-brand-text">
+                      {gamification.daily_reward.rank_score}
+                    </p>
+                  </div>
+                  <div className="rounded-[18px] border border-white/10 bg-white/5 p-3">
+                    <p className="text-[11px] uppercase tracking-[0.24em] text-brand-muted">Coef mise</p>
+                    <p className="mt-1 font-display text-xl text-brand-text">
+                      x{gamification.daily_reward.wager_coef}
+                    </p>
+                  </div>
+                  <div className="rounded-[18px] border border-white/10 bg-white/5 p-3">
+                    <p className="text-[11px] uppercase tracking-[0.24em] text-brand-muted">Streak</p>
+                    <p className="mt-1 font-display text-xl text-brand-text">
+                      {gamification.daily_reward.current_streak}j
+                    </p>
+                  </div>
+                  <div className="rounded-[18px] border border-white/10 bg-white/5 p-3">
+                    <p className="text-[11px] uppercase tracking-[0.24em] text-brand-muted">Misé (7j)</p>
+                    <p className="mt-1 font-display text-xl text-brand-text">
+                      {formatTokens(gamification.daily_reward.wager_7d)}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between gap-4 text-sm">
+                    <span className="text-brand-text">
+                      {gamification.daily_reward.next_tier
+                        ? `Prochain : ${gamification.daily_reward.next_tier.label}`
+                        : "Rang maximal atteint"}
+                    </span>
+                    <span className="text-brand-muted">
+                      {gamification.daily_reward.tier_progress.current}/
+                      {gamification.daily_reward.tier_progress.target}
+                    </span>
+                  </div>
+                  <div className="h-2 rounded-full bg-white/10">
+                    <div
+                      className="h-full rounded-full bg-brand-orange transition-all"
+                      style={{
+                        width: `${gamification.daily_reward.tier_progress.target > 0 ? Math.min(100, Math.round((gamification.daily_reward.tier_progress.current / gamification.daily_reward.tier_progress.target) * 100)) : 100}%`,
+                      }}
+                    />
+                  </div>
+                  <p className="text-xs text-brand-muted">
+                    Bonus actuel : +{gamification.daily_reward.current_tier.bonus} tokens/jour
+                  </p>
+                </div>
               </div>
             </Card>
           </div>

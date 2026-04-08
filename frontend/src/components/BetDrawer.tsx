@@ -201,11 +201,12 @@ export function BetDrawer({ event, open, onClose, initialOption }: BetDrawerProp
                     max={event.max_bet ?? undefined}
                     min={event.min_bet}
                     onChange={(inputEvent) => {
-                      const nextAmount = Number(inputEvent.target.value);
+                      const raw = inputEvent.target.value.replace(/^0+(?=\d)/, "");
+                      const nextAmount = Number(raw);
                       setAmount(Number.isFinite(nextAmount) ? nextAmount : 0);
                     }}
                     type="number"
-                    value={amount}
+                    value={amount || ""}
                   />
                   <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-zinc-500">
                     tokens

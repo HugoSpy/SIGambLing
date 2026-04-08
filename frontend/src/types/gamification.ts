@@ -46,17 +46,20 @@ export interface GamificationDailyRewardState {
   current_tier: {
     key: string;
     label: string;
-    minDays: number;
+    minScore: number;
     bonus: number;
     accent: GamificationBadge["tone"];
   };
   next_tier: {
     key: string;
     label: string;
-    minDays: number;
+    minScore: number;
     bonus: number;
     accent: GamificationBadge["tone"];
   } | null;
+  rank_score: number;
+  wager_7d: number;
+  wager_coef: number;
   next_milestone?: {
     days: number;
     bonus: number;

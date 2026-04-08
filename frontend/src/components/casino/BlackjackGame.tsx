@@ -1354,13 +1354,14 @@ export function BlackjackGame() {
                       max={balance}
                       min={1}
                       onChange={(event) => {
-                        const value = parseInt(event.target.value, 10);
+                        const raw = event.target.value.replace(/^0+(?=\d)/, "");
+                        const value = parseInt(raw, 10);
                         if (!Number.isNaN(value)) {
                           setBet(Math.min(Math.max(1, value), balance));
                         }
                       }}
                       type="number"
-                      value={bet}
+                      value={bet || ""}
                     />
                     <button
                       aria-label="Doubler la mise"
