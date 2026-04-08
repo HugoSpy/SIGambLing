@@ -897,13 +897,11 @@ class EventService {
     }
   }
 
-  async listOpenEvents(userId: string) {
+  async listOpenEvents(userId: string, status?: EventStatus) {
     await this.closeExpiredEvents();
 
     const events = await prisma.event.findMany({
-      where: {
-        status: EventStatus.OPEN,
-      },
+      where: status ? { status } : { status: { in: [EventStatus.OPEN, EventStatus.CLOSED, EventStatus.RESOLVED] } },
       orderBy: [
         {
           closingAt: "asc",
