@@ -91,20 +91,22 @@ export function EventsPage() {
     queryFn: fetchMyProposals,
   });
 
+  const statusOrder: Record<string, number> = { OPEN: 0, CLOSED: 1, RESOLVED: 2, CANCELLED: 3 };
+
   const filteredEvents = useMemo(() => {
     const normalizedSearch = search.trim().toLocaleLowerCase("fr-FR");
-    const pendingEventIds = new Set(
+    const myBetEventIds = new Set(
       (myBets ?? [])
-        .filter((bet) => bet.status === "PENDING" && bet.event_id)
+        .filter((bet) => bet.event_id)
         .map((bet) => bet.event_id as string),
     );
 
-    return (events ?? []).filter((event) => {
-      if (viewTab === "my-bets" && !pendingEventIds.has(event.id)) {
+    const filtered = (events ?? []).filter((event) => {
+      if (viewTab === "my-bets" && !myBetEventIds.has(event.id)) {
         return false;
       }
 
-      if (status !== "all" && event.status !== status) {
+      if (viewTab !== "my-bets" && status !== "all" && event.status !== status) {
         return false;
       }
 
@@ -115,6 +117,12 @@ export function EventsPage() {
       const haystack = `${event.title} ${event.description ?? ""}`;
       return haystack.toLocaleLowerCase("fr-FR").includes(normalizedSearch);
     });
+
+    if (status === "all" && viewTab !== "my-bets") {
+      filtered.sort((a, b) => (statusOrder[a.status] ?? 4) - (statusOrder[b.status] ?? 4));
+    }
+
+    return filtered;
   }, [events, myBets, search, status, viewTab]);
 
   if (!user || eventsLoading) {

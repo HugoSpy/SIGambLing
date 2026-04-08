@@ -26,6 +26,7 @@ function formatTooltipDate(timestamp: string) {
 interface TooltipData {
   mouseX: number;
   mouseY: number;
+  svgX: number;
   timestamp: string;
   entries: Array<{ option: string; odds: number; color: string }>;
 }
@@ -78,9 +79,16 @@ export function OddsHistoryChart({ series }: { series: EventOddsHistorySeries[] 
     });
 
     if (entries.length > 0) {
-      setTooltip({ mouseX: event.clientX, mouseY: relY, timestamp: bestTimestamp, entries });
+      setTooltip({ mouseX: event.clientX, mouseY: relY, svgX: clampedX, timestamp: bestTimestamp, entries });
     }
   };
+
+  const seriesPoints = nonEmptySeries.map((entry) =>
+    entry.points.map((point, pointIndex) => ({
+      x: padding + ((width - padding * 2) / Math.max(entry.points.length - 1, 1)) * pointIndex,
+      y: height - padding - ((point.odds - minOdds) / denominator) * (height - padding * 2),
+    })),
+  );
 
   return (
     <div className="relative rounded-xl border border-zinc-800 bg-zinc-950 p-4" ref={containerRef}>
@@ -109,19 +117,7 @@ export function OddsHistoryChart({ series }: { series: EventOddsHistorySeries[] 
 
         {nonEmptySeries.map((entry, index) => {
           const color = palette[index % palette.length];
-          const points = entry.points.map((point, pointIndex) => {
-            const x =
-              padding +
-              ((width - padding * 2) /
-                Math.max(entry.points.length - 1, 1)) *
-                pointIndex;
-            const y =
-              height -
-              padding -
-              ((point.odds - minOdds) / denominator) * (height - padding * 2);
-
-            return { x, y };
-          });
+          const points = seriesPoints[index];
 
           return (
             <g key={entry.option}>
@@ -145,6 +141,42 @@ export function OddsHistoryChart({ series }: { series: EventOddsHistorySeries[] 
             </g>
           );
         })}
+
+        {tooltip && (
+          <g>
+            <line
+              stroke="rgba(255,255,255,0.25)"
+              strokeWidth="1"
+              x1={tooltip.svgX}
+              x2={tooltip.svgX}
+              y1={padding}
+              y2={height - padding}
+            />
+            {nonEmptySeries.map((entry, index) => {
+              const color = palette[index % palette.length];
+              const points = seriesPoints[index];
+              const len = points.length;
+              if (len === 0) return null;
+              const ratio = (tooltip.svgX - padding) / (width - padding * 2);
+              const frac = ratio * Math.max(len - 1, 0);
+              const floorIdx = Math.floor(frac);
+              const ceilIdx = Math.min(floorIdx + 1, len - 1);
+              const t = frac - floorIdx;
+              const cy = points[floorIdx].y * (1 - t) + points[ceilIdx].y * t;
+              return (
+                <circle
+                  cx={tooltip.svgX}
+                  cy={cy}
+                  fill={color}
+                  key={`hover-${entry.option}`}
+                  r="4"
+                  stroke="white"
+                  strokeWidth="2"
+                />
+              );
+            })}
+          </g>
+        )}
       </svg>
 
       {tooltip && (
