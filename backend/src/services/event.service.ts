@@ -877,7 +877,9 @@ class EventService {
       },
     });
 
-    return events.map((event) => serializeEvent(event));
+    return events
+      .filter((event) => event.excludedUsers.length === 0)
+      .map((event) => serializeEvent(event));
   }
 
   async getEventById(userId: string, eventId: string) {
@@ -910,6 +912,10 @@ class EventService {
     });
 
     if (!event) {
+      throw new AppError("Événement introuvable.", 404);
+    }
+
+    if (event.excludedUsers.length > 0) {
       throw new AppError("Événement introuvable.", 404);
     }
 

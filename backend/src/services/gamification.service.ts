@@ -146,7 +146,7 @@ const BADGE_DEFINITIONS: BadgeDefinition[] = [
   },
   {
     key: "banker_bronze",
-    name: "Bankroll solide",
+    name: "Bankroll bronze",
     description: "Passez la barre des 5000 tokens.",
     rarity: "rare",
     getProgress: ({ user }) => ({
@@ -157,7 +157,7 @@ const BADGE_DEFINITIONS: BadgeDefinition[] = [
   },
   {
     key: "banker_silver",
-    name: "Bankroll solide",
+    name: "Bankroll argent",
     description: "Passez la barre des 10000 tokens.",
     rarity: "rare",
     getProgress: ({ user }) => ({
@@ -168,7 +168,7 @@ const BADGE_DEFINITIONS: BadgeDefinition[] = [
   },
   {
     key: "banker_gold",
-    name: "Bankroll solide",
+    name: "Bankroll or",
     description: "Passez la barre des 20000 tokens.",
     rarity: "rare",
     getProgress: ({ user }) => ({
