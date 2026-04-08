@@ -19,6 +19,7 @@ import {
   uploadCurrentUserAvatar,
 } from "../lib/api";
 import { getErrorMessage, notify } from "../lib/notifications";
+import { formatTokens } from "../lib/utils";
 import { useAuthStore } from "../store/auth-store";
 import { useChatStore } from "../store/chat-store";
 import type { AuthUser } from "../types/auth";
