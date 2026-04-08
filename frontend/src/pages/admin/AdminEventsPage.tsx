@@ -23,6 +23,7 @@ import {
   logoutRequest,
   rejectAdminProposal,
   resolveAdminEvent,
+  reopenAdminEvent,
   rewindAdminEvent,
   searchUsers,
   setMaintenanceMode,
@@ -193,12 +194,13 @@ interface AdminEventCardProps {
   actionKey: string | null;
   onEdit: () => void;
   onClose: () => void;
+  onReopen: () => void;
   onResolve: () => void;
   onCancel: () => void;
   onRewind: () => void;
 }
 
-function AdminEventCard({ event, actionKey, onEdit, onClose, onResolve, onCancel, onRewind }: AdminEventCardProps) {
+function AdminEventCard({ event, actionKey, onEdit, onClose, onReopen, onResolve, onCancel, onRewind }: AdminEventCardProps) {
   return (
     <Card className="min-w-[300px]">
       <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
@@ -246,6 +248,13 @@ function AdminEventCard({ event, actionKey, onEdit, onClose, onResolve, onCancel
             variant="secondary"
           >
             Clore
+          </Button>
+          <Button
+            disabled={actionKey === `reopen-${event.id}` || event.status !== "CLOSED"}
+            onClick={onReopen}
+            variant="secondary"
+          >
+            🔓 Réouvrir
           </Button>
           <Button
             disabled={
@@ -1579,6 +1588,13 @@ export function AdminEventsPage() {
                           )
                         }
                         onEdit={() => applyEventToForm(event)}
+                        onReopen={() =>
+                          void runAction(
+                            `reopen-${event.id}`,
+                            () => reopenAdminEvent(event.id),
+                            "Événement réouvert.",
+                          )
+                        }
                         onResolve={() => setResolveTarget(event)}
                         onRewind={() => setRewindTarget(event)}
                       />
@@ -1631,6 +1647,13 @@ export function AdminEventsPage() {
                                 )
                               }
                               onEdit={() => applyEventToForm(event)}
+                              onReopen={() =>
+                                void runAction(
+                                  `reopen-${event.id}`,
+                                  () => reopenAdminEvent(event.id),
+                                  "Événement réouvert.",
+                                )
+                              }
                               onResolve={() => setResolveTarget(event)}
                               onRewind={() => setRewindTarget(event)}
                             />

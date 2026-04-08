@@ -2209,6 +2209,34 @@ class EventService {
     return serializeAdminEvent(closedEvent);
   }
 
+  async reopenEvent(eventId: string, adminId: string) {
+    const event = await prisma.event.findUnique({ where: { id: eventId } });
+
+    if (!event) {
+      throw new AppError("Événement introuvable.", 404);
+    }
+
+    if (event.status !== EventStatus.CLOSED) {
+      throw new AppError("Event is not closed", 400);
+    }
+
+    return this.withSerializableTransaction(async (transaction) => {
+      const updatedEvent = await transaction.event.update({
+        where: { id: eventId },
+        data: { status: EventStatus.OPEN, closingAt: null },
+        include: {
+          createdBy: { select: creatorSelect },
+          excludedUsers: { select: excludedUserSelect },
+          _count: { select: { bets: true } },
+        },
+      });
+
+      await this.logAdminAction(transaction, adminId, "EVENT_REOPENED", eventId);
+
+      return serializeAdminEvent(updatedEvent);
+    });
+  }
+
   private async settleBetsForEvent(
     transaction: Prisma.TransactionClient,
     eventId: string,

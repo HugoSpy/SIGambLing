@@ -5,6 +5,7 @@ import {
   approveProposalController,
   cancelEventController,
   closeEventController,
+  reopenEventController,
   createEventController,
   createProposalController,
   getEventController,
@@ -114,6 +115,7 @@ const uploadEventImageMiddleware: import("express").RequestHandler = (request, r
 
 adminEventsRouter.post("/:id/image", uploadEventImageMiddleware, uploadEventImageController);
 adminEventsRouter.post("/:id/close", closeEventController);
+adminEventsRouter.post("/:id/reopen", reopenEventController);
 adminEventsRouter.post("/:id/resolve", validateBody(resolveEventSchema), resolveEventController);
 adminEventsRouter.post("/:id/cancel", cancelEventController);
 adminEventsRouter.post("/:id/rewind", rewindEventController);
