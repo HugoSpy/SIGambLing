@@ -68,7 +68,7 @@ export function EventCard({ event, onBet }: EventCardProps) {
           <Link className="shrink-0" to={`/events/${event.id}`}>
             <img
               alt=""
-              className="h-16 w-16 rounded-lg border border-white/10 object-cover sm:h-20 sm:w-20"
+              className="h-16 w-16 rounded-lg border border-white/10 object-contain bg-zinc-800 sm:h-20 sm:w-20"
               src={event.image_url}
             />
           </Link>

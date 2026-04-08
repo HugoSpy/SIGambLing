@@ -500,7 +500,6 @@ function buildStoredOptions(
     };
   });
 
-  assertMargin(nextOptions.map((option) => option.initial_odds));
   return recalculateLiveOptions(nextOptions);
 }
 
