@@ -1,4 +1,5 @@
 import rateLimit from "express-rate-limit";
+import multer from "multer";
 import { Router } from "express";
 import {
   approveProposalController,
@@ -21,10 +22,12 @@ import {
   resolveEventController,
   toggleSaveProposalController,
   updateEventController,
+  uploadEventImageController,
 } from "../controllers/events.controller";
 import { requireAuth } from "../middleware/require-auth";
 import { requireRole } from "../middleware/require-role";
 import { validateBody } from "../middleware/validate";
+import { AppError } from "../utils/app-error";
 import {
   createEventSchema,
   createProposalSchema,
@@ -83,6 +86,32 @@ adminEventsRouter.post(
 adminEventsRouter.patch("/proposals/:proposalId/save", toggleSaveProposalController);
 adminEventsRouter.post("/", validateBody(createEventSchema), createEventController);
 adminEventsRouter.patch("/:id", validateBody(updateEventSchema), updateEventController);
+
+const eventImageUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 2 * 1024 * 1024 },
+});
+
+const uploadEventImageMiddleware: import("express").RequestHandler = (request, response, next) => {
+  eventImageUpload.single("image")(request, response, (error?: unknown) => {
+    if (
+      typeof error === "object" &&
+      error !== null &&
+      "code" in error &&
+      (error as { code?: string }).code === "LIMIT_FILE_SIZE"
+    ) {
+      next(new AppError("Fichier trop volumineux (max 2MB).", 400));
+      return;
+    }
+    if (error) {
+      next(error);
+      return;
+    }
+    next();
+  });
+};
+
+adminEventsRouter.post("/:id/image", uploadEventImageMiddleware, uploadEventImageController);
 adminEventsRouter.post("/:id/close", closeEventController);
 adminEventsRouter.post("/:id/resolve", validateBody(resolveEventSchema), resolveEventController);
 adminEventsRouter.post("/:id/cancel", cancelEventController);

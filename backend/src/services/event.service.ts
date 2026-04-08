@@ -18,6 +18,8 @@ import { AppError } from "../utils/app-error";
 import { gamificationService } from "./gamification.service";
 import { jackpotService } from "./jackpot.service";
 import { prisma } from "./prisma.service";
+import { storageService } from "./storage.service";
+import sharp from "sharp";
 
 interface StoredEventOption {
   label: string;
@@ -1346,6 +1348,54 @@ class EventService {
 
       throw error;
     }
+  }
+
+  async uploadEventImage(adminId: string, eventId: string, file?: { buffer: Buffer; mimetype: string; size: number }) {
+    if (!file) {
+      throw new AppError("Aucun fichier reçu.", 400);
+    }
+
+    const allowedTypes = new Set(["image/jpeg", "image/png", "image/webp"]);
+    if (!allowedTypes.has(file.mimetype)) {
+      throw new AppError("Format non supporté (JPG, PNG ou WEBP).", 400);
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      throw new AppError("Fichier trop volumineux (max 2MB).", 400);
+    }
+
+    const event = await prisma.event.findUnique({
+      where: { id: eventId },
+      include: {
+        createdBy: { select: creatorSelect },
+        excludedUsers: { select: excludedUserSelect },
+        _count: { select: { bets: true } },
+      },
+    });
+
+    if (!event) {
+      throw new AppError("Événement introuvable.", 404);
+    }
+
+    const normalizedImage = await sharp(file.buffer)
+      .rotate()
+      .resize(800, 450, { fit: "cover", position: "attention" })
+      .webp({ quality: 85 })
+      .toBuffer();
+
+    const imageUrl = await storageService.uploadEventImage(eventId, normalizedImage);
+
+    const updatedEvent = await prisma.event.update({
+      where: { id: eventId },
+      data: { imageUrl },
+      include: {
+        createdBy: { select: creatorSelect },
+        excludedUsers: { select: excludedUserSelect },
+        _count: { select: { bets: true } },
+      },
+    });
+
+    return serializeAdminEvent(updatedEvent);
   }
 
   async placeBet(userId: string, eventId: string, input: PlaceEventBetInput) {

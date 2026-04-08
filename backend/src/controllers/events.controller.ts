@@ -6,6 +6,8 @@ import {
 import { eventService } from "../services/event.service";
 import { AppError } from "../utils/app-error";
 
+type UploadedFile = { buffer: Buffer; mimetype: string; size: number };
+
 function getAuthenticatedUserId(request: Parameters<RequestHandler>[0]) {
   const authUser = (request as { auth?: { id?: string } }).auth;
 
@@ -130,6 +132,18 @@ export const updateEventController: RequestHandler = async (request, response, n
     const userId = getAuthenticatedUserId(request);
     const eventId = getRouteParam(request, "id");
     const event = await eventService.updateEvent(userId, eventId, request.body);
+    response.json(event);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const uploadEventImageController: RequestHandler = async (request, response, next) => {
+  try {
+    const userId = getAuthenticatedUserId(request);
+    const eventId = getRouteParam(request, "id");
+    const requestWithFile = request as typeof request & { file?: UploadedFile };
+    const event = await eventService.uploadEventImage(userId, eventId, requestWithFile.file);
     response.json(event);
   } catch (error) {
     next(error);

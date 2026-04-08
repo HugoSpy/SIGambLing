@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
-import { Bookmark, BookmarkCheck, ChevronDown, Pencil, Search, ShieldBan, ShieldCheck, X } from "lucide-react";
+import { Bookmark, BookmarkCheck, ChevronDown, Pencil, Search, ShieldBan, ShieldCheck, Upload, X } from "lucide-react";
 import toast from "react-hot-toast";
 import { StatisticsTab } from "../../components/admin/StatisticsTab";
 import { DashboardShell } from "../../components/layout/DashboardShell";
@@ -28,6 +28,7 @@ import {
   unlockAdminUserBadge,
   updateAdminEvent,
   updateAdminUserReward,
+  uploadAdminEventImage,
 } from "../../lib/api";
 import {
   formatEventDate,
@@ -373,6 +374,8 @@ export function AdminEventsPage() {
   const [balanceReason, setBalanceReason] = useState("");
   const [selectedBadgeKey, setSelectedBadgeKey] = useState("");
   const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const eventImageInputRef = useRef<HTMLInputElement>(null);
   const [actionKey, setActionKey] = useState<string | null>(null);
   const [resolveTarget, setResolveTarget] = useState<AdminEventView | null>(null);
   const [resolvedOption, setResolvedOption] = useState("");
@@ -457,6 +460,35 @@ export function AdminEventsPage() {
       max_bet: event.max_bet == null ? "" : String(event.max_bet),
     });
     setSelectedExcludedUsers(event.excluded_users);
+  };
+
+  const handleEventImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file || !editingEvent) return;
+
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      toast.error("Format non supporté (JPG, PNG ou WEBP).");
+      return;
+    }
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Fichier trop volumineux (max 2MB).");
+      return;
+    }
+
+    try {
+      setUploadingImage(true);
+      const formData = new FormData();
+      formData.append("image", file);
+      const updated = await uploadAdminEventImage(editingEvent.id, formData);
+      setForm((current) => ({ ...current, image_url: updated.image_url ?? "" }));
+      toast.success("Image uploadée.");
+      await queryClient.invalidateQueries({ queryKey: ["admin-events"] });
+    } catch {
+      toast.error("Erreur lors de l'upload de l'image.");
+    } finally {
+      setUploadingImage(false);
+    }
   };
 
   const submitForm = async () => {
@@ -796,17 +828,48 @@ export function AdminEventsPage() {
                 />
               </label>
 
-              <label className="block space-y-2">
-                <span className="text-sm font-medium text-brand-text">Image URL</span>
-                <input
-                  className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
-                  onChange={(event) =>
-                    setForm((current) => ({ ...current, image_url: event.target.value }))
-                  }
-                  placeholder="https://..."
-                  value={form.image_url}
-                />
-              </label>
+              <div className="block space-y-2">
+                <span className="text-sm font-medium text-brand-text">Image</span>
+                {form.image_url && (
+                  <img
+                    alt="Aperçu"
+                    className="h-28 w-full rounded-xl border border-white/10 object-cover"
+                    src={form.image_url}
+                  />
+                )}
+                <div className="flex items-center gap-3">
+                  <input
+                    className="flex-1 rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
+                    onChange={(event) =>
+                      setForm((current) => ({ ...current, image_url: event.target.value }))
+                    }
+                    placeholder="https://..."
+                    value={form.image_url}
+                  />
+                  {editingEvent && (
+                    <>
+                      <input
+                        accept="image/jpeg,image/png,image/webp"
+                        className="hidden"
+                        onChange={handleEventImageUpload}
+                        ref={eventImageInputRef}
+                        type="file"
+                      />
+                      <Button
+                        disabled={uploadingImage}
+                        onClick={() => eventImageInputRef.current?.click()}
+                        size="sm"
+                        type="button"
+                        variant="secondary"
+                      >
+                        <Upload className="mr-1 h-4 w-4" />
+                        {uploadingImage ? "Envoi..." : "Upload"}
+                      </Button>
+                    </>
+                  )}
+                </div>
+                <p className="text-xs text-brand-muted">URL ou upload (JPG, PNG, WEBP • Max 2MB)</p>
+              </div>
 
               <div className="space-y-3">
                 <div className="flex items-center justify-between gap-3">

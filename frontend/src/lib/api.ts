@@ -305,6 +305,11 @@ export async function updateAdminEvent(eventId: string, payload: UpdateEventPayl
   return response.data;
 }
 
+export async function uploadAdminEventImage(eventId: string, formData: FormData) {
+  const response = await api.post<AdminEventView>(`/admin/events/${eventId}/image`, formData);
+  return response.data;
+}
+
 export async function closeAdminEvent(eventId: string) {
   const response = await api.post<AdminEventView>(`/admin/events/${eventId}/close`);
   return response.data;
