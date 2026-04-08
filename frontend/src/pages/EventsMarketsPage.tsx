@@ -71,6 +71,7 @@ export function EventsPage() {
     suggested_date: "",
   });
   const [proposalOptions, setProposalOptions] = useState<string[]>(["", ""]);
+  const [visibleActiveCount, setVisibleActiveCount] = useState(5);
 
   const {
     data: events,
@@ -106,7 +107,7 @@ export function EventsPage() {
         return false;
       }
 
-      if (viewTab !== "my-bets" && status !== "all" && event.status !== status) {
+      if (status !== "all" && event.status !== status) {
         return false;
       }
 
@@ -118,7 +119,7 @@ export function EventsPage() {
       return haystack.toLocaleLowerCase("fr-FR").includes(normalizedSearch);
     });
 
-    if (status === "all" && viewTab !== "my-bets") {
+    if (status === "all") {
       filtered.sort((a, b) => (statusOrder[a.status] ?? 4) - (statusOrder[b.status] ?? 4));
     }
 
@@ -173,7 +174,8 @@ export function EventsPage() {
   };
 
   const activePositions = myBets?.filter((bet) => bet.status === "PENDING").length ?? 0;
-  const activeBetList = myBets?.filter((bet) => bet.status === "PENDING").slice(0, 5) ?? [];
+  const allActiveBets = myBets?.filter((bet) => bet.status === "PENDING") ?? [];
+  const activeBetList = allActiveBets.slice(0, visibleActiveCount);
   const totalExposure =
     myBets?.filter((bet) => bet.status === "PENDING").reduce((sum, bet) => sum + bet.stake, 0) ??
     0;
@@ -277,6 +279,17 @@ export function EventsPage() {
                     events={events}
                     fallbackLinkTarget="/events"
                   />
+                  {visibleActiveCount < allActiveBets.length && (
+                    <div className="mt-4 flex justify-center">
+                      <button
+                        className="rounded-lg border border-zinc-800 bg-zinc-900 px-5 py-2 text-sm text-zinc-400 transition hover:border-zinc-700 hover:text-zinc-100"
+                        onClick={() => setVisibleActiveCount((c) => c + 10)}
+                        type="button"
+                      >
+                        Charger plus
+                      </button>
+                    </div>
+                  )}
                 </div>
               </Card>
             ) : null}
