@@ -105,22 +105,34 @@ export function ActiveEventBetsList({
                 <div className="overflow-hidden">
                   <div className="border-t border-zinc-800 px-4 pb-4 pt-3">
                     <ul className="space-y-2">
-                      {bet.legs.map((leg, index) => (
-                        <li
-                          className="flex items-center justify-between gap-4 rounded-lg border border-zinc-800 bg-zinc-900/60 px-3 py-2 text-xs"
-                          key={leg.id}
-                        >
-                          <div className="min-w-0 flex-1">
-                            <p className="truncate font-medium text-zinc-200">
-                              {index + 1}. {leg.event.title}
-                            </p>
-                            <p className="mt-0.5 text-zinc-500">{leg.chosen_option}</p>
-                          </div>
-                          <span className="shrink-0 rounded bg-zinc-800 px-2 py-0.5 font-semibold text-emerald-400">
-                            {formatEventOdds(leg.odds_at_bet)}
-                          </span>
-                        </li>
-                      ))}
+                      {bet.legs.map((leg, index) => {
+                        const legBorderClass =
+                          leg.status === "WON" ? "border-emerald-500/50 bg-emerald-500/5" :
+                          leg.status === "LOST" ? "border-red-500/50 bg-red-500/5" :
+                          leg.status === "CANCELLED" ? "border-yellow-500/50 bg-yellow-500/5" :
+                          "border-zinc-800 bg-zinc-900/60";
+                        const legOddsClass =
+                          leg.status === "WON" ? "text-emerald-400" :
+                          leg.status === "LOST" ? "text-red-400" :
+                          leg.status === "CANCELLED" ? "text-yellow-400" :
+                          "text-zinc-400";
+                        return (
+                          <li
+                            className={cn("flex items-center justify-between gap-4 rounded-lg border px-3 py-2 text-xs", legBorderClass)}
+                            key={leg.id}
+                          >
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate font-medium text-zinc-200">
+                                {index + 1}. {leg.event.title}
+                              </p>
+                              <p className="mt-0.5 text-zinc-500">{leg.chosen_option}</p>
+                            </div>
+                            <span className={cn("shrink-0 rounded bg-zinc-800 px-2 py-0.5 font-semibold", legOddsClass)}>
+                              {leg.status === "CANCELLED" ? "Annulé (x1)" : formatEventOdds(leg.odds_at_bet)}
+                            </span>
+                          </li>
+                        );
+                      })}
                     </ul>
 
                     <div className="mt-3 grid gap-2 rounded-lg border border-emerald-500/20 bg-emerald-500/5 p-3 text-xs text-zinc-300 sm:grid-cols-3">
