@@ -60,7 +60,7 @@ export function JackpotPage() {
       return;
     }
 
-    const target = jackpot.current_pot;
+    const target = Math.round(jackpot.current_pot);
     const interval = window.setInterval(() => {
       setDisplayedPot((current) => {
         if (current === target) {
@@ -68,6 +68,9 @@ export function JackpotPage() {
         }
 
         const delta = target - current;
+        if (Math.abs(delta) < 1) {
+          return target;
+        }
         const step = Math.max(1, Math.ceil(Math.abs(delta) / 12));
         return current + Math.sign(delta) * step;
       });
