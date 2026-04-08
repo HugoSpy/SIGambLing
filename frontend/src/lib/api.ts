@@ -348,6 +348,11 @@ export async function rewindAdminEvent(eventId: string) {
   return response.data;
 }
 
+export async function reopenAdminEvent(eventId: string) {
+  const response = await api.post<AdminEventView>(`/admin/events/${eventId}/reopen`);
+  return response.data;
+}
+
 export async function createProposal(payload: CreateProposalPayload) {
   const response = await api.post<EventProposalView>("/events/proposals", payload);
   return response.data;

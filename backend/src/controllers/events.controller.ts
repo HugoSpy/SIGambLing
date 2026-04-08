@@ -194,6 +194,17 @@ export const rewindEventController: RequestHandler = async (request, response, n
   }
 };
 
+export const reopenEventController: RequestHandler = async (request, response, next) => {
+  try {
+    const userId = getAuthenticatedUserId(request);
+    const eventId = getRouteParam(request, "id");
+    const event = await eventService.reopenEvent(eventId, userId);
+    response.json(event);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const createProposalController: RequestHandler = async (request, response, next) => {
   try {
     const userId = getAuthenticatedUserId(request);
