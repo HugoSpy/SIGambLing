@@ -8,7 +8,7 @@ import {
   jackpotService,
 } from "./jackpot.service";
 import { prisma } from "./prisma.service";
-import { getBadgeReward, getBadgeRarity } from "../config/badges.config";
+import { getBadgeReward, getBadgeRarity, getBadgeVisibility } from "../config/badges.config";
 
 const DAILY_REWARD_BASE = 100;
 const STREAK_TIERS = [
@@ -466,6 +466,7 @@ export class GamificationService {
       const unlockedBadge = unlockedMap.get(definition.key);
       const catalogRarity = getBadgeRarity(definition.key);
       const reward = getBadgeReward(definition.key);
+      const visibility = getBadgeVisibility(definition.key);
 
       return {
         key: definition.key,
@@ -474,6 +475,7 @@ export class GamificationService {
         tone: RARITY_TONE[definition.rarity],
         rarity: definition.rarity,
         catalog_rarity: catalogRarity,
+        visibility,
         reward,
         unlocked: isBadgeUnlocked(progress),
         unlocked_at: unlockedBadge?.unlocked_at ?? null,
