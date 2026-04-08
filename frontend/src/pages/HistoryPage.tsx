@@ -48,7 +48,7 @@ export function HistoryPage() {
   });
 
   const [filter, setFilter] = useState<EventBetStatus | "ALL">("ALL");
-  const [page, setPage] = useState(0);
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const resolvedBets = useMemo(
     () =>
@@ -64,8 +64,8 @@ export function HistoryPage() {
     [resolvedBets, filter],
   );
 
-  const totalPages = Math.ceil(filteredBets.length / PAGE_SIZE);
-  const pageBets = filteredBets.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const pageBets = filteredBets.slice(0, visibleCount);
+  const hasMore = visibleCount < filteredBets.length;
 
   if (!user) return <LoadingScreen label="Chargement de l'historique..." />;
 
@@ -97,7 +97,7 @@ export function HistoryPage() {
                 type="button"
                 onClick={() => {
                   setFilter(opt.value);
-                  setPage(0);
+                  setVisibleCount(PAGE_SIZE);
                 }}
               >
                 {opt.label}
@@ -170,26 +170,14 @@ export function HistoryPage() {
             </div>
           )}
 
-          {totalPages > 1 && (
-            <div className="mt-4 flex items-center justify-center gap-2">
+          {hasMore && (
+            <div className="mt-4 flex justify-center">
               <button
-                className="rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-400 transition hover:border-zinc-700 hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-40"
-                disabled={page === 0}
+                className="rounded-lg border border-zinc-800 bg-zinc-900 px-5 py-2 text-sm text-zinc-400 transition hover:border-zinc-700 hover:text-zinc-100"
                 type="button"
-                onClick={() => setPage((p) => p - 1)}
+                onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
               >
-                Précédent
-              </button>
-              <span className="text-xs text-zinc-500">
-                {page + 1} / {totalPages}
-              </span>
-              <button
-                className="rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-sm text-zinc-400 transition hover:border-zinc-700 hover:text-zinc-100 disabled:cursor-not-allowed disabled:opacity-40"
-                disabled={page >= totalPages - 1}
-                type="button"
-                onClick={() => setPage((p) => p + 1)}
-              >
-                Suivant
+                Charger plus
               </button>
             </div>
           )}
