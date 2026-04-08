@@ -368,7 +368,7 @@ export function ProfilePage() {
                   <div className="rounded-[18px] border border-white/10 bg-white/5 p-3">
                     <p className="text-[11px] uppercase tracking-[0.24em] text-brand-muted">Streak</p>
                     <p className="mt-1 font-display text-xl text-brand-text">
-                      {gamification.daily_reward.current_streak}j
+                      {gamification.daily_reward.current_streak} jours
                     </p>
                   </div>
                   <div className="rounded-[18px] border border-white/10 bg-white/5 p-3">
