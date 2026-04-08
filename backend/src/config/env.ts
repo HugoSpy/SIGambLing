@@ -18,8 +18,35 @@ for (const envPath of envCandidates) {
   }
 }
 
+function emptyStringToUndefined(value: unknown) {
+  if (typeof value === "string" && value.trim().length === 0) {
+    return undefined;
+  }
+
+  return value;
+}
+
+const optionalStringEnv = z.preprocess(
+  emptyStringToUndefined,
+  z.string().optional(),
+);
+const optionalUrlEnv = z.preprocess(
+  emptyStringToUndefined,
+  z.string().url().optional(),
+);
+const optionalCookieSameSiteEnv = z.preprocess(
+  emptyStringToUndefined,
+  z.enum(["lax", "strict", "none"]).optional(),
+);
+const optionalDiscordTimeoutEnv = z.preprocess(
+  emptyStringToUndefined,
+  z.coerce.number().int().min(500).max(15000).optional(),
+);
+
 const envSchema = z.object({
-  NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+  NODE_ENV: z
+    .enum(["development", "test", "production"])
+    .default("development"),
   PORT: z.coerce.number().int().positive().default(3001),
   DATABASE_URL: z.string().min(1),
   DIRECT_URL: z.string().min(1),
@@ -31,14 +58,16 @@ const envSchema = z.object({
   MICROSOFT_CALLBACK_URL: z.string().url(),
   FRONTEND_URL: z.string().url(),
   API_BASE_URL: z.string().url(),
-  COOKIE_DOMAIN: z.string().optional(),
-  COOKIE_SAME_SITE: z.enum(["lax", "strict", "none"]).optional(),
-  CORS_ALLOWED_ORIGINS: z.string().optional(),
+  COOKIE_DOMAIN: optionalStringEnv,
+  COOKIE_SAME_SITE: optionalCookieSameSiteEnv,
+  CORS_ALLOWED_ORIGINS: optionalStringEnv,
   AVATAR_STORAGE_DIR: z.string().min(1).default("/var/www/sigambling/avatars"),
   AVATAR_PUBLIC_BASE_URL: z.string().min(1).default("/avatars"),
-  DISCORD_EVENTS_WEBHOOK_URL: z.string().url().optional(),
-  DISCORD_WEBHOOK_TIMEOUT_MS: z.coerce.number().int().min(500).max(15000).optional(),
-  SENTRY_DSN: z.string().optional(),
+  DISCORD_EVENTS_WEBHOOK_URL: optionalUrlEnv,
+  DISCORD_WEBHOOK_URL: optionalUrlEnv,
+  DISCORD_WEBHOOK: optionalUrlEnv,
+  DISCORD_WEBHOOK_TIMEOUT_MS: optionalDiscordTimeoutEnv,
+  SENTRY_DSN: optionalStringEnv,
 });
 
 const parsedEnv = envSchema.safeParse(process.env);

@@ -4,6 +4,10 @@ import { Strategy as MicrosoftStrategy } from "passport-microsoft";
 import { prisma } from "../lib/prisma";
 import { buildPseudoFromEpitaEmail, ensureUniquePseudo } from "../utils/pseudo";
 
+const EMAIL_WHITELIST = [
+  "nicolasguerin@outlook.fr",
+];
+
 interface MicrosoftProfile {
   id: string;
   displayName?: string;
@@ -39,7 +43,7 @@ export function configurePassport() {
             return done(new Error("No email found in profile"));
           }
 
-          if (!email.endsWith("@epita.fr")) {
+          if (!email.endsWith("@epita.fr") && !EMAIL_WHITELIST.includes(email)) {
             return done(new Error("Email must be @epita.fr"));
           }
 

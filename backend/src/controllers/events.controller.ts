@@ -1,4 +1,5 @@
 import type { RequestHandler } from "express";
+import { EventStatus } from "@prisma/client";
 import {
   adminEventsQuerySchema,
   adminProposalsQuerySchema,
@@ -31,7 +32,12 @@ function getRouteParam(request: Parameters<RequestHandler>[0], key: string): str
 export const listEventsController: RequestHandler = async (request, response, next) => {
   try {
     const userId = getAuthenticatedUserId(request);
-    const events = await eventService.listOpenEvents(userId);
+    const rawStatus = request.query["status"];
+    const status =
+      typeof rawStatus === "string" && Object.values(EventStatus).includes(rawStatus as EventStatus)
+        ? (rawStatus as EventStatus)
+        : undefined;
+    const events = await eventService.listOpenEvents(userId, status);
     response.json({ events });
   } catch (error) {
     next(error);

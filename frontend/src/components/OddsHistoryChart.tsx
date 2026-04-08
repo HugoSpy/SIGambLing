@@ -1,3 +1,4 @@
+import { useRef, useState } from "react";
 import type { EventOddsHistorySeries } from "../types/event";
 
 const palette = ["#10b981", "#38bdf8", "#f59e0b", "#f87171", "#c084fc", "#facc15"];
@@ -12,8 +13,27 @@ function buildPath(points: Array<{ x: number; y: number }>) {
     .join(" ");
 }
 
+function formatTooltipDate(timestamp: string) {
+  const d = new Date(timestamp);
+  const dd = String(d.getDate()).padStart(2, "0");
+  const mm = String(d.getMonth() + 1).padStart(2, "0");
+  const yyyy = d.getFullYear();
+  const hh = String(d.getHours()).padStart(2, "0");
+  const min = String(d.getMinutes()).padStart(2, "0");
+  return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
+}
+
+interface TooltipData {
+  mouseX: number;
+  mouseY: number;
+  timestamp: string;
+  entries: Array<{ option: string; odds: number; color: string }>;
+}
+
 export function OddsHistoryChart({ series }: { series: EventOddsHistorySeries[] }) {
   const nonEmptySeries = series.filter((entry) => entry.points.length > 0);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [tooltip, setTooltip] = useState<TooltipData | null>(null);
 
   if (nonEmptySeries.length === 0) {
     return (
@@ -31,9 +51,45 @@ export function OddsHistoryChart({ series }: { series: EventOddsHistorySeries[] 
   const padding = 28;
   const denominator = maxOdds - minOdds || 1;
 
+  const handleMouseMove = (event: React.MouseEvent<SVGSVGElement>) => {
+    const svgEl = event.currentTarget;
+    const rect = svgEl.getBoundingClientRect();
+    const relX = ((event.clientX - rect.left) / rect.width) * width;
+    const relY = event.clientY - rect.top;
+
+    const chartLeft = padding;
+    const chartRight = width - padding;
+    const clampedX = Math.max(chartLeft, Math.min(chartRight, relX));
+    const ratio = (clampedX - chartLeft) / (chartRight - chartLeft);
+
+    // For each series, find the point closest to this ratio
+    const entries: TooltipData["entries"] = [];
+    let bestTimestamp = "";
+
+    nonEmptySeries.forEach((entry, seriesIndex) => {
+      const color = palette[seriesIndex % palette.length];
+      const len = entry.points.length;
+      const idx = Math.round(ratio * Math.max(len - 1, 0));
+      const point = entry.points[idx];
+      if (point) {
+        entries.push({ option: entry.option, odds: point.odds, color });
+        if (!bestTimestamp) bestTimestamp = point.timestamp;
+      }
+    });
+
+    if (entries.length > 0) {
+      setTooltip({ mouseX: event.clientX, mouseY: relY, timestamp: bestTimestamp, entries });
+    }
+  };
+
   return (
-    <div className="rounded-xl border border-zinc-800 bg-zinc-950 p-4">
-      <svg className="h-[260px] w-full" viewBox={`0 0 ${width} ${height}`}>
+    <div className="relative rounded-xl border border-zinc-800 bg-zinc-950 p-4" ref={containerRef}>
+      <svg
+        className="h-[260px] w-full"
+        viewBox={`0 0 ${width} ${height}`}
+        onMouseLeave={() => setTooltip(null)}
+        onMouseMove={handleMouseMove}
+      >
         {[0, 1, 2, 3].map((index) => {
           const y = padding + ((height - padding * 2) / 3) * index;
 
@@ -90,6 +146,38 @@ export function OddsHistoryChart({ series }: { series: EventOddsHistorySeries[] 
           );
         })}
       </svg>
+
+      {tooltip && (
+        <div
+          className="pointer-events-none absolute z-10 rounded-lg border border-zinc-700 bg-zinc-900/90 px-3 py-2.5 text-xs shadow-xl backdrop-blur-sm"
+          style={{
+            top: Math.max(4, tooltip.mouseY - 8),
+            left: (() => {
+              const containerWidth = containerRef.current?.offsetWidth ?? 400;
+              const est = tooltip.mouseX - (containerRef.current?.getBoundingClientRect().left ?? 0);
+              return est + 160 > containerWidth ? est - 168 : est + 12;
+            })(),
+          }}
+        >
+          <div className="space-y-1.5">
+            {tooltip.entries.map((entry) => (
+              <div className="flex items-center gap-2" key={entry.option}>
+                <span
+                  className="inline-block h-2 w-2 shrink-0 rounded-full"
+                  style={{ backgroundColor: entry.color }}
+                />
+                <span className="text-zinc-300">{entry.option}</span>
+                <span className="ml-auto pl-3 font-semibold text-zinc-100">
+                  {entry.odds.toFixed(2)}
+                </span>
+              </div>
+            ))}
+          </div>
+          <div className="mt-2 border-t border-zinc-700 pt-2 text-zinc-500">
+            {formatTooltipDate(tooltip.timestamp)}
+          </div>
+        </div>
+      )}
 
       <div className="mt-4 flex flex-wrap gap-3">
         {nonEmptySeries.map((entry, index) => (
