@@ -6,7 +6,6 @@ import {
   buildUnavailableJackpotState,
   isJackpotStorageUnavailable,
   jackpotService,
-  JACKPOT_CONTRIBUTION_RATE_BPS,
 } from "./jackpot.service";
 import { prisma } from "./prisma.service";
 import { getBadgeReward, getBadgeRarity, getBadgeVisibility } from "../config/badges.config";
@@ -484,8 +483,7 @@ export class GamificationService {
       casinoWins,
       createdMarkets: createdEvents + createdProposals,
       jackpotEntries: jackpotEntryCount,
-      jackpotContributionTotal:
-        ((jackpotContributionAggregate._sum.contributionAmount ?? 0) * JACKPOT_CONTRIBUTION_RATE_BPS) / 10000,
+      jackpotContributionTotal: jackpotContributionAggregate._sum.contributionAmount ?? 0,
       parlayWins,
       chatMessageCount,
     };

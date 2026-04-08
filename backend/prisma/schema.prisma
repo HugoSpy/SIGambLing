@@ -258,7 +258,7 @@ model Badge {
 model Jackpot {
   id                  String                @id @default(cuid())
   currentAmount       Float                 @default(0)
-  contributionRateBps Int                   @default(200)
+  contributionRateBps Int                   @default(100)
   totalContributed    Float                 @default(0)
   lastWinnerId        String?               @db.Uuid
   lastWinAmount       Float?

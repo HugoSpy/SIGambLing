@@ -63,6 +63,16 @@ export function EventCard({ event, onBet }: EventCardProps) {
             {event.description || "Aucune description fournie pour cet événement."}
           </p>
         </div>
+
+        {event.image_url && (
+          <Link className="shrink-0" to={`/events/${event.id}`}>
+            <img
+              alt=""
+              className="h-16 w-16 rounded-lg border border-white/10 object-cover sm:h-20 sm:w-20"
+              src={event.image_url}
+            />
+          </Link>
+        )}
       </div>
 
       <div className="mt-4 grid gap-2 md:grid-cols-2">

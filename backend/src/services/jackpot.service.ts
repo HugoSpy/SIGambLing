@@ -3,7 +3,7 @@ import { AppError } from "../utils/app-error";
 import { logger } from "../utils/logger";
 import { prisma } from "./prisma.service";
 
-export const JACKPOT_CONTRIBUTION_RATE_BPS = 200;
+export const JACKPOT_CONTRIBUTION_RATE_BPS = 100;
 
 type DatabaseClient = PrismaClient | Prisma.TransactionClient;
 type JackpotContributionSource =
@@ -130,8 +130,8 @@ class JackpotService {
     try {
       const db = this.getClient(client);
       const jackpot = await this.ensureJackpot(db);
+      const contributionAmount = (wagerAmount * jackpot.contributionRateBps) / 10000;
 
-      // Store raw wager amount; the BPS rate is applied only when reading totals
       await Promise.all([
         db.jackpotContribution.create({
           data: {
@@ -140,19 +140,18 @@ class JackpotService {
             sourceType,
             sourceReference: sourceReference ?? null,
             wagerAmount,
-            contributionAmount: wagerAmount,
+            contributionAmount,
           },
         }),
         db.jackpot.update({
           where: { id: jackpot.id },
           data: {
-            currentAmount: { increment: wagerAmount },
-            totalContributed: { increment: wagerAmount },
+            currentAmount: { increment: contributionAmount },
+            totalContributed: { increment: contributionAmount },
           },
         }),
       ]);
 
-      const contributionAmount = (wagerAmount * jackpot.contributionRateBps) / 10000;
       return {
         jackpotId: jackpot.id,
         contributionAmount,
@@ -225,7 +224,7 @@ class JackpotService {
         throw new AppError("Gagnant jackpot introuvable.", 404);
       }
 
-      const payoutAmount = (jackpot.currentAmount * jackpot.contributionRateBps) / 10000;
+      const payoutAmount = jackpot.currentAmount;
       const roundedPayout = Math.round(payoutAmount);
       const wonAt = new Date();
 
@@ -293,11 +292,10 @@ class JackpotService {
       }
 
       return {
-        current_pot: (currentJackpot.currentAmount * currentJackpot.contributionRateBps) / 10000,
+        current_pot: currentJackpot.currentAmount,
         contribution_rate_bps: currentJackpot.contributionRateBps,
-        total_contributed: (currentJackpot.totalContributed * currentJackpot.contributionRateBps) / 10000,
-        user_contribution_total:
-          ((userContributionAggregate._sum.contributionAmount ?? 0) * currentJackpot.contributionRateBps) / 10000,
+        total_contributed: currentJackpot.totalContributed,
+        user_contribution_total: userContributionAggregate._sum.contributionAmount ?? 0,
         user_contribution_count: userContributionCount,
         updated_at: currentJackpot.updatedAt.toISOString(),
         last_result: currentJackpot.lastWinAt
