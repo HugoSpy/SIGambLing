@@ -2456,6 +2456,157 @@ class EventService {
     });
   }
 
+  async rewindEvent(eventId: string, adminId: string) {
+    return this.withSerializableTransaction(async (transaction) => {
+      const event = await transaction.event.findUnique({
+        where: { id: eventId },
+        include: {
+          createdBy: { select: creatorSelect },
+          excludedUsers: { select: excludedUserSelect },
+          _count: { select: { bets: true } },
+        },
+      });
+
+      if (!event) {
+        throw new AppError("Événement introuvable.", 404);
+      }
+
+      if (event.status !== EventStatus.RESOLVED) {
+        throw new AppError("Event is not resolved", 400);
+      }
+
+      const resolvedAt = event.resolvedAt as Date;
+
+      // Collect users with at least one WON bet on this event
+      const wonBets = await transaction.bet.findMany({
+        where: { eventId, status: BetStatus.won },
+        select: { userId: true, payout: true },
+      });
+
+      const gainsByUser = new Map<string, number>();
+      for (const bet of wonBets) {
+        gainsByUser.set(bet.userId, (gainsByUser.get(bet.userId) ?? 0) + bet.payout);
+      }
+
+      const affectedUsers: {
+        userId: string;
+        gainsRecuperes: number;
+        soldeAvant: number;
+        soldeApres: number;
+        casinoGamesSupprimes: number;
+        betsAutresSupprimes: number;
+      }[] = [];
+
+      for (const [userId, gainsEvent] of gainsByUser) {
+        const user = await transaction.user.findUnique({
+          where: { id: userId },
+          select: { balance: true },
+        });
+
+        if (!user) continue;
+
+        const soldeAvant = user.balance;
+
+        // Delete casino games created after resolvedAt
+        const deletedCasino = await transaction.casinoGame.deleteMany({
+          where: { userId, createdAt: { gt: resolvedAt } },
+        });
+
+        // Find won bets on OTHER events created after resolvedAt
+        const otherWonBets = await transaction.bet.findMany({
+          where: {
+            userId,
+            status: BetStatus.won,
+            eventId: { not: eventId },
+            createdAt: { gt: resolvedAt },
+          },
+          select: { id: true, amount: true },
+        });
+
+        const otherBetIds = otherWonBets.map((b) => b.id);
+        const refundTotal = otherWonBets.reduce((sum, b) => sum + b.amount, 0);
+
+        // Delete BetLegs then Bets for those other won bets
+        if (otherBetIds.length > 0) {
+          await transaction.betLeg.deleteMany({ where: { betId: { in: otherBetIds } } });
+          await transaction.bet.deleteMany({ where: { id: { in: otherBetIds } } });
+        }
+
+        // nouveauSolde = balance + refund - gainsEvent, clamped to 0
+        const nouveauSolde = Math.max(0, soldeAvant + refundTotal - gainsEvent);
+
+        await transaction.user.update({
+          where: { id: userId },
+          data: { balance: nouveauSolde },
+        });
+
+        affectedUsers.push({
+          userId,
+          gainsRecuperes: gainsEvent,
+          soldeAvant,
+          soldeApres: nouveauSolde,
+          casinoGamesSupprimes: deletedCasino.count,
+          betsAutresSupprimes: otherWonBets.length,
+        });
+      }
+
+      // Reset all bets on the rewinded event
+      await transaction.bet.updateMany({
+        where: { eventId },
+        data: { status: BetStatus.pending, payout: 0, resolvedAt: null },
+      });
+
+      // Also reset BetLegs for these bets
+      const eventBetIds = (
+        await transaction.bet.findMany({ where: { eventId }, select: { id: true } })
+      ).map((b) => b.id);
+
+      if (eventBetIds.length > 0) {
+        await transaction.betLeg.updateMany({
+          where: { betId: { in: eventBetIds } },
+          data: { status: BetStatus.pending },
+        });
+      }
+
+      // Reset the event options is_winning flags
+      const options = normalizeStoredOptions(event.options, event.poolByOption).map((opt) => ({
+        ...opt,
+        is_winning: null,
+      }));
+
+      // Update event: CLOSED, resolvedOption null, resolvedAt null
+      const updatedEvent = await transaction.event.update({
+        where: { id: eventId },
+        data: {
+          status: EventStatus.CLOSED,
+          resolvedOption: null,
+          resolvedAt: null,
+          options: toJsonOptions(options),
+        },
+        include: {
+          createdBy: { select: creatorSelect },
+          excludedUsers: { select: excludedUserSelect },
+          _count: { select: { bets: true } },
+        },
+      });
+
+      // Create RewindLog
+      await transaction.rewindLog.create({
+        data: {
+          eventId,
+          adminId,
+          affectedUsers,
+        },
+      });
+
+      await this.logAdminAction(transaction, adminId, "event_rewinded", eventId, {
+        affected_users_count: affectedUsers.length,
+      });
+
+      return serializeAdminEvent(updatedEvent);
+    });
+  }
+
   async createProposal(userId: string, input: CreateProposalInput) {
     const proposal = await prisma.eventProposal.create({
       data: {

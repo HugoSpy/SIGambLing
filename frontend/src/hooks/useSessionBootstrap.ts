@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { fetchCurrentUser, refreshSession } from "../lib/api";
+import { fetchCurrentUser, getMaintenanceStatus, refreshSession } from "../lib/api";
 import { useAuthStore } from "../store/auth-store";
 import { useThemeStore } from "../store/theme-store";
 
@@ -8,6 +8,7 @@ export function useSessionBootstrap() {
   const setStatus = useAuthStore((state) => state.setStatus);
   const setUser = useAuthStore((state) => state.setUser);
   const clearSession = useAuthStore((state) => state.clearSession);
+  const setMaintenanceMode = useAuthStore((state) => state.setMaintenanceMode);
 
   useEffect(() => {
     let cancelled = false;
@@ -20,6 +21,10 @@ export function useSessionBootstrap() {
       setStatus("loading");
 
       try {
+        // Fetch maintenance status first (public, no auth required)
+        const { maintenanceMode } = await getMaintenanceStatus();
+        setMaintenanceMode(maintenanceMode);
+
         const accessToken = useAuthStore.getState().accessToken;
 
         if (!accessToken) {
@@ -49,5 +54,5 @@ export function useSessionBootstrap() {
     return () => {
       cancelled = true;
     };
-  }, [clearSession, setStatus, setUser, status]);
+  }, [clearSession, setMaintenanceMode, setStatus, setUser, status]);
 }

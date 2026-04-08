@@ -19,10 +19,13 @@ import {
   fetchAdminEvents,
   fetchAdminProposals,
   fetchSavedAdminProposals,
+  getMaintenanceStatus,
   logoutRequest,
   rejectAdminProposal,
   resolveAdminEvent,
+  rewindAdminEvent,
   searchUsers,
+  setMaintenanceMode,
   toggleSaveAdminProposal,
   triggerAdminJackpotPayout,
   unlockAdminUserBadge,
@@ -30,6 +33,7 @@ import {
   updateAdminUserReward,
   uploadAdminEventImage,
 } from "../../lib/api";
+import { useAuthStore } from "../../store/auth-store";
 import {
   formatEventDate,
   formatEventOdds,
@@ -191,9 +195,10 @@ interface AdminEventCardProps {
   onClose: () => void;
   onResolve: () => void;
   onCancel: () => void;
+  onRewind: () => void;
 }
 
-function AdminEventCard({ event, actionKey, onEdit, onClose, onResolve, onCancel }: AdminEventCardProps) {
+function AdminEventCard({ event, actionKey, onEdit, onClose, onResolve, onCancel, onRewind }: AdminEventCardProps) {
   return (
     <Card className="min-w-[300px]">
       <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
@@ -262,6 +267,13 @@ function AdminEventCard({ event, actionKey, onEdit, onClose, onResolve, onCancel
             variant="danger"
           >
             Annuler
+          </Button>
+          <Button
+            disabled={actionKey === `rewind-${event.id}` || event.status !== "RESOLVED"}
+            onClick={onRewind}
+            variant="danger"
+          >
+            ⏪ Rewind
           </Button>
         </div>
       </div>
@@ -379,7 +391,11 @@ export function AdminEventsPage() {
   const [actionKey, setActionKey] = useState<string | null>(null);
   const [resolveTarget, setResolveTarget] = useState<AdminEventView | null>(null);
   const [resolvedOption, setResolvedOption] = useState("");
+  const [rewindTarget, setRewindTarget] = useState<AdminEventView | null>(null);
   const [terminatedOpen, setTerminatedOpen] = useState(false);
+  const [maintenanceMode, setLocalMaintenanceMode] = useState(false);
+  const [maintenanceConfirmTarget, setMaintenanceConfirmTarget] = useState<boolean | null>(null);
+  const setStoreMaintenance = useAuthStore((state) => state.setMaintenanceMode);
 
   const { data: events, isLoading } = useQuery({
     queryKey: ["admin-events"],
@@ -434,6 +450,12 @@ export function AdminEventsPage() {
       setSelectedAdminUser(refreshedUser);
     }
   }, [adminUsers, selectedAdminUser]);
+
+  useEffect(() => {
+    getMaintenanceStatus()
+      .then(({ maintenanceMode: enabled }) => setLocalMaintenanceMode(enabled))
+      .catch(() => {});
+  }, []);
 
   const resetForm = () => {
     setEditingEvent(null);
@@ -726,11 +748,33 @@ export function AdminEventsPage() {
   return (
     <DashboardShell onLogout={handleLogout} user={user}>
       <div className="space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-zinc-100">Panneau admin</h1>
-          <p className="mt-1 text-sm text-zinc-400">
-            Créez les marchés, gérez les exclusions et traitez les propositions de la promo.
-          </p>
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-zinc-100">Panneau admin</h1>
+            <p className="mt-1 text-sm text-zinc-400">
+              Créez les marchés, gérez les exclusions et traitez les propositions de la promo.
+            </p>
+          </div>
+          {user?.role === "admin" && (
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-zinc-400">Mode maintenance</span>
+              <button
+                aria-checked={maintenanceMode}
+                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none ${
+                  maintenanceMode ? "bg-amber-500" : "bg-zinc-700"
+                }`}
+                onClick={() => setMaintenanceConfirmTarget(!maintenanceMode)}
+                role="switch"
+                type="button"
+              >
+                <span
+                  className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                    maintenanceMode ? "translate-x-6" : "translate-x-1"
+                  }`}
+                />
+              </button>
+            </div>
+          )}
         </div>
 
         <div className="flex gap-2 border-b border-zinc-800">
@@ -1536,6 +1580,7 @@ export function AdminEventsPage() {
                         }
                         onEdit={() => applyEventToForm(event)}
                         onResolve={() => setResolveTarget(event)}
+                        onRewind={() => setRewindTarget(event)}
                       />
                     ))}
                   </div>
@@ -1587,6 +1632,7 @@ export function AdminEventsPage() {
                               }
                               onEdit={() => applyEventToForm(event)}
                               onResolve={() => setResolveTarget(event)}
+                              onRewind={() => setRewindTarget(event)}
                             />
                           ))}
                         </motion.div>
@@ -1648,6 +1694,94 @@ export function AdminEventsPage() {
             >
               Confirmer la resolution
             </Button>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        description="Annuler la résolution de cet événement ? Cette action supprimera les gains distribués depuis la résolution."
+        onClose={() => setRewindTarget(null)}
+        open={Boolean(rewindTarget)}
+        title={rewindTarget ? `Rewind — ${rewindTarget.title}` : "Rewind"}
+      >
+        {!rewindTarget ? null : (
+          <div className="space-y-5">
+            <p className="text-sm leading-7 text-brand-muted">
+              Les gains des parieurs gagnants seront déduits de leur solde actuel. Les jeux de casino
+              et paris gagnants sur d'autres marchés effectués après la résolution seront également supprimés.
+            </p>
+            <div className="flex gap-3">
+              <Button
+                fullWidth
+                onClick={() => setRewindTarget(null)}
+                variant="secondary"
+              >
+                Annuler
+              </Button>
+              <Button
+                disabled={actionKey === `rewind-${rewindTarget.id}`}
+                fullWidth
+                onClick={() =>
+                  void runAction(
+                    `rewind-${rewindTarget.id}`,
+                    async () => {
+                      await rewindAdminEvent(rewindTarget.id);
+                      setRewindTarget(null);
+                    },
+                    "Résolution annulée (rewind effectué).",
+                  )
+                }
+                variant="danger"
+              >
+                Confirmer le rewind
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        description={
+          maintenanceConfirmTarget
+            ? "Activer le mode maintenance ? Seuls les admins pourront accéder au site."
+            : "Désactiver le mode maintenance ? Le site sera accessible à tous."
+        }
+        onClose={() => setMaintenanceConfirmTarget(null)}
+        open={maintenanceConfirmTarget !== null}
+        title={maintenanceConfirmTarget ? "Activer la maintenance" : "Désactiver la maintenance"}
+      >
+        {maintenanceConfirmTarget !== null && (
+          <div className="space-y-5">
+            <div className="flex gap-3">
+              <Button
+                fullWidth
+                onClick={() => setMaintenanceConfirmTarget(null)}
+                variant="secondary"
+              >
+                Annuler
+              </Button>
+              <Button
+                disabled={actionKey === "maintenance"}
+                fullWidth
+                onClick={() =>
+                  void runAction(
+                    "maintenance",
+                    async () => {
+                      const { maintenanceMode: updated } = await setMaintenanceMode(maintenanceConfirmTarget);
+                      setLocalMaintenanceMode(updated);
+                      setStoreMaintenance(updated);
+                      setMaintenanceConfirmTarget(null);
+                    },
+                    maintenanceConfirmTarget
+                      ? "Mode maintenance activé."
+                      : "Mode maintenance désactivé.",
+                  )
+                }
+                variant={maintenanceConfirmTarget ? "danger" : "primary"}
+              >
+                Confirmer
+              </Button>
+            </div>
           </div>
         )}
       </Modal>

@@ -20,6 +20,7 @@ import {
   placeSimpleBetsController,
   rejectProposalController,
   resolveEventController,
+  rewindEventController,
   toggleSaveProposalController,
   updateEventController,
   uploadEventImageController,
@@ -115,3 +116,4 @@ adminEventsRouter.post("/:id/image", uploadEventImageMiddleware, uploadEventImag
 adminEventsRouter.post("/:id/close", closeEventController);
 adminEventsRouter.post("/:id/resolve", validateBody(resolveEventSchema), resolveEventController);
 adminEventsRouter.post("/:id/cancel", cancelEventController);
+adminEventsRouter.post("/:id/rewind", rewindEventController);

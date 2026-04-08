@@ -299,3 +299,20 @@ model AdminLog {
   @@index([adminId])
   @@index([createdAt(sort: Desc)])
 }
+
+model RewindLog {
+  id            String   @id @default(uuid()) @db.Uuid
+  eventId       String   @db.Uuid
+  adminId       String   @db.Uuid
+  rewindedAt    DateTime @default(now())
+  affectedUsers Json
+
+  @@index([eventId])
+  @@index([adminId])
+}
+
+model SiteConfig {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}

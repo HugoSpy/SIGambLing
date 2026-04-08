@@ -531,6 +531,333 @@ test("placeSimpleBets keeps admin odds fixed while the pool stays below the liqu
   }
 });
 
+// ─── rewindEvent ─────────────────────────────────────────────────────────────
+
+test("rewindEvent throws 404 when the event does not exist", async () => {
+  const prismaAny = prisma as any;
+  const originalTransaction = prismaAny.$transaction;
+
+  prismaAny.$transaction = async (callback: (tx: any) => Promise<unknown>) =>
+    callback({
+      event: {
+        findUnique: async () => null,
+      },
+    });
+
+  try {
+    await assert.rejects(
+      () => eventService.rewindEvent("non-existent-event", "admin-1"),
+      /Événement introuvable/,
+    );
+  } finally {
+    prismaAny.$transaction = originalTransaction;
+  }
+});
+
+test("rewindEvent throws 400 when the event is not RESOLVED", async () => {
+  const prismaAny = prisma as any;
+  const originalTransaction = prismaAny.$transaction;
+
+  prismaAny.$transaction = async (callback: (tx: any) => Promise<unknown>) =>
+    callback({
+      event: {
+        findUnique: async () =>
+          buildEventRecord({
+            status: EventStatus.OPEN,
+            resolvedAt: null,
+          }),
+      },
+    });
+
+  try {
+    await assert.rejects(
+      () => eventService.rewindEvent("event-1", "admin-1"),
+      /Event is not resolved/,
+    );
+  } finally {
+    prismaAny.$transaction = originalTransaction;
+  }
+});
+
+test("rewindEvent deducts event gains, deletes casino games and other won bets, creates RewindLog", async () => {
+  const prismaAny = prisma as any;
+  const originalTransaction = prismaAny.$transaction;
+  const originalSynchronizeUserBadges = gamificationService.synchronizeUserBadges;
+
+  (gamificationService as any).synchronizeUserBadges = async () => undefined;
+
+  const resolvedAt = new Date("2026-04-05T12:00:00.000Z");
+
+  const captured = {
+    userUpdates: [] as Array<Record<string, any>>,
+    betUpdateMany: null as null | Record<string, any>,
+    betLegUpdateMany: null as null | Record<string, any>,
+    casinoDeleteMany: null as null | Record<string, any>,
+    betDeleteManyOther: null as null | Record<string, any>,
+    betLegDeleteManyOther: null as null | Record<string, any>,
+    rewindLogCreate: null as null | Record<string, any>,
+    adminLogCreate: null as null | Record<string, any>,
+    eventUpdate: null as null | Record<string, any>,
+  };
+
+  prismaAny.$transaction = async (callback: (tx: any) => Promise<unknown>) =>
+    callback({
+      event: {
+        findUnique: async () =>
+          buildEventRecord({
+            status: EventStatus.RESOLVED,
+            resolvedAt,
+            resolvedOption: "Oui",
+          }),
+        update: async ({ data }: { data: Record<string, any> }) => {
+          captured.eventUpdate = data;
+          return buildEventRecord({ status: EventStatus.CLOSED });
+        },
+      },
+      bet: {
+        // won bets on the rewinded event
+        findMany: async ({ where }: { where: Record<string, any> }) => {
+          if (where.eventId === "event-1" && where.status === "won") {
+            return [{ userId: "user-1", payout: 190 }];
+          }
+          // event bets for BetLeg reset
+          if (where.eventId === "event-1") {
+            return [{ id: "bet-1" }, { id: "bet-2" }];
+          }
+          // other won bets created after resolvedAt
+          if (where.status === "won" && where.eventId?.not === "event-1") {
+            return [{ id: "other-bet-1", amount: 50 }];
+          }
+          return [];
+        },
+        updateMany: async ({ data }: { data: Record<string, any> }) => {
+          captured.betUpdateMany = data;
+          return { count: 2 };
+        },
+        deleteMany: async ({ where }: { where: Record<string, any> }) => {
+          captured.betDeleteManyOther = where;
+          return { count: 1 };
+        },
+      },
+      betLeg: {
+        updateMany: async ({ data }: { data: Record<string, any> }) => {
+          captured.betLegUpdateMany = data;
+          return { count: 2 };
+        },
+        deleteMany: async ({ where }: { where: Record<string, any> }) => {
+          captured.betLegDeleteManyOther = where;
+          return { count: 1 };
+        },
+      },
+      casinoGame: {
+        deleteMany: async ({ where }: { where: Record<string, any> }) => {
+          captured.casinoDeleteMany = where;
+          return { count: 3 };
+        },
+      },
+      user: {
+        findUnique: async () => ({ balance: 500 }),
+        update: async ({ data }: { data: Record<string, any> }) => {
+          captured.userUpdates.push(data);
+          return null;
+        },
+      },
+      rewindLog: {
+        create: async ({ data }: { data: Record<string, any> }) => {
+          captured.rewindLogCreate = data;
+          return null;
+        },
+      },
+      adminLog: {
+        create: async ({ data }: { data: Record<string, any> }) => {
+          captured.adminLogCreate = data;
+          return null;
+        },
+      },
+    });
+
+  try {
+    const result = await eventService.rewindEvent("event-1", "admin-1");
+
+    // Event should come back as serialized admin event
+    assert.equal(result.id, "event-1");
+
+    // Casino games deleted for user-1 after resolvedAt
+    assert.equal(captured.casinoDeleteMany?.userId, "user-1");
+    assert.ok(captured.casinoDeleteMany?.createdAt?.gt instanceof Date);
+
+    // Other won bets deleted
+    assert.deepEqual(captured.betDeleteManyOther?.id?.in, ["other-bet-1"]);
+
+    // BetLegs of deleted other bets deleted
+    assert.deepEqual(captured.betLegDeleteManyOther?.betId?.in, ["other-bet-1"]);
+
+    // User balance: 500 (balance) + 50 (refund stake) - 190 (event gains) = 360
+    assert.equal(captured.userUpdates[0]?.balance, 360);
+
+    // All bets on event reset
+    assert.equal(captured.betUpdateMany?.status, "pending");
+    assert.equal(captured.betUpdateMany?.payout, 0);
+    assert.equal(captured.betUpdateMany?.resolvedAt, null);
+
+    // BetLegs reset
+    assert.equal(captured.betLegUpdateMany?.status, "pending");
+
+    // Event updated to CLOSED with no resolvedOption / resolvedAt
+    assert.equal(captured.eventUpdate?.status, EventStatus.CLOSED);
+    assert.equal(captured.eventUpdate?.resolvedOption, null);
+    assert.equal(captured.eventUpdate?.resolvedAt, null);
+
+    // RewindLog created
+    assert.equal(captured.rewindLogCreate?.eventId, "event-1");
+    assert.equal(captured.rewindLogCreate?.adminId, "admin-1");
+    assert.equal(captured.rewindLogCreate?.affectedUsers.length, 1);
+    const affectedUser = captured.rewindLogCreate?.affectedUsers[0];
+    assert.equal(affectedUser?.userId, "user-1");
+    assert.equal(affectedUser?.gainsRecuperes, 190);
+    assert.equal(affectedUser?.soldeAvant, 500);
+    assert.equal(affectedUser?.soldeApres, 360);
+    assert.equal(affectedUser?.casinoGamesSupprimes, 3);
+    assert.equal(affectedUser?.betsAutresSupprimes, 1);
+
+    // AdminLog created
+    assert.equal(captured.adminLogCreate?.actionType, "event_rewinded");
+    assert.equal(captured.adminLogCreate?.targetId, "event-1");
+  } finally {
+    prismaAny.$transaction = originalTransaction;
+    (gamificationService as any).synchronizeUserBadges = originalSynchronizeUserBadges;
+  }
+});
+
+test("rewindEvent clamps user balance to 0 when gains exceed current balance", async () => {
+  const prismaAny = prisma as any;
+  const originalTransaction = prismaAny.$transaction;
+  const originalSynchronizeUserBadges = gamificationService.synchronizeUserBadges;
+
+  (gamificationService as any).synchronizeUserBadges = async () => undefined;
+
+  const resolvedAt = new Date("2026-04-05T12:00:00.000Z");
+  let capturedBalance: number | null = null;
+
+  prismaAny.$transaction = async (callback: (tx: any) => Promise<unknown>) =>
+    callback({
+      event: {
+        findUnique: async () =>
+          buildEventRecord({
+            status: EventStatus.RESOLVED,
+            resolvedAt,
+            resolvedOption: "Oui",
+          }),
+        update: async () => buildEventRecord({ status: EventStatus.CLOSED }),
+      },
+      bet: {
+        findMany: async ({ where }: { where: Record<string, any> }) => {
+          if (where.eventId === "event-1" && where.status === "won") {
+            return [{ userId: "user-1", payout: 9999 }]; // gains >> balance
+          }
+          if (where.eventId === "event-1") {
+            return [{ id: "bet-1" }];
+          }
+          return [];
+        },
+        updateMany: async () => ({ count: 1 }),
+        deleteMany: async () => ({ count: 0 }),
+      },
+      betLeg: {
+        updateMany: async () => ({ count: 0 }),
+        deleteMany: async () => ({ count: 0 }),
+      },
+      casinoGame: {
+        deleteMany: async () => ({ count: 0 }),
+      },
+      user: {
+        findUnique: async () => ({ balance: 100 }),
+        update: async ({ data }: { data: Record<string, any> }) => {
+          capturedBalance = data.balance;
+          return null;
+        },
+      },
+      rewindLog: {
+        create: async () => null,
+      },
+      adminLog: {
+        create: async () => null,
+      },
+    });
+
+  try {
+    await eventService.rewindEvent("event-1", "admin-1");
+    assert.equal(capturedBalance, 0);
+  } finally {
+    prismaAny.$transaction = originalTransaction;
+    (gamificationService as any).synchronizeUserBadges = originalSynchronizeUserBadges;
+  }
+});
+
+test("rewindEvent skips users with no won bets and produces an empty affectedUsers list", async () => {
+  const prismaAny = prisma as any;
+  const originalTransaction = prismaAny.$transaction;
+  const originalSynchronizeUserBadges = gamificationService.synchronizeUserBadges;
+
+  (gamificationService as any).synchronizeUserBadges = async () => undefined;
+
+  let capturedRewindLog: Record<string, any> | null = null;
+
+  prismaAny.$transaction = async (callback: (tx: any) => Promise<unknown>) =>
+    callback({
+      event: {
+        findUnique: async () =>
+          buildEventRecord({
+            status: EventStatus.RESOLVED,
+            resolvedAt: new Date("2026-04-05T12:00:00.000Z"),
+            resolvedOption: "Oui",
+          }),
+        update: async () => buildEventRecord({ status: EventStatus.CLOSED }),
+      },
+      bet: {
+        // No won bets on this event
+        findMany: async ({ where }: { where: Record<string, any> }) => {
+          if (where.eventId === "event-1") {
+            return [{ id: "bet-1" }];
+          }
+          return [];
+        },
+        updateMany: async () => ({ count: 0 }),
+        deleteMany: async () => ({ count: 0 }),
+      },
+      betLeg: {
+        updateMany: async () => ({ count: 0 }),
+        deleteMany: async () => ({ count: 0 }),
+      },
+      casinoGame: {
+        deleteMany: async () => ({ count: 0 }),
+      },
+      user: {
+        findUnique: async () => ({ balance: 1000 }),
+        update: async () => null,
+      },
+      rewindLog: {
+        create: async ({ data }: { data: Record<string, any> }) => {
+          capturedRewindLog = data;
+          return null;
+        },
+      },
+      adminLog: {
+        create: async () => null,
+      },
+    });
+
+  try {
+    await eventService.rewindEvent("event-1", "admin-1");
+    assert.deepEqual(capturedRewindLog?.affectedUsers, []);
+  } finally {
+    prismaAny.$transaction = originalTransaction;
+    (gamificationService as any).synchronizeUserBadges = originalSynchronizeUserBadges;
+  }
+});
+
+// ─── (existing tests below) ──────────────────────────────────────────────────
+
 test("placeSimpleBets caps each odds move to 12% even in high-liquidity markets", async () => {
   const prismaAny = prisma as any;
   const originalTransaction = prismaAny.$transaction;

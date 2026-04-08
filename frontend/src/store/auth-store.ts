@@ -7,12 +7,14 @@ interface AuthState {
   user: AuthUser | null;
   accessToken: string | null;
   status: AuthStatus;
+  maintenanceMode: boolean;
   setStatus: (status: AuthStatus) => void;
   setAccessToken: (token: string | null) => void;
   setUser: (user: AuthUser | null) => void;
   setSession: (payload: { user: AuthUser; accessToken: string }) => void;
   updateBalance: (balance: number) => void;
   updateOddsPreference: (acceptOddsChanges: boolean) => void;
+  setMaintenanceMode: (enabled: boolean) => void;
   clearSession: () => void;
 }
 
@@ -32,6 +34,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
   user: null,
   accessToken: null,
   status: "idle",
+  maintenanceMode: false,
   setStatus: (status) => set({ status }),
   setAccessToken: (token) => set({ accessToken: token }),
   setUser: (user) => set({ user }),
@@ -49,5 +52,6 @@ export const useAuthStore = create<AuthState>()((set) => ({
     set((state) => ({
       user: state.user ? { ...state.user, accept_odds_changes: acceptOddsChanges } : null,
     })),
+  setMaintenanceMode: (enabled) => set({ maintenanceMode: enabled }),
   clearSession: () => set({ user: null, accessToken: null, status: "anonymous" }),
 }));

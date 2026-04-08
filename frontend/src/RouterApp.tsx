@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect, type ReactNode } from "react";
 import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AppErrorBoundary } from "./components/layout/AppErrorBoundary";
 import { LoadingScreen } from "./components/layout/LoadingScreen";
+import MaintenancePage from "./pages/MaintenancePage";
 import { useSessionBootstrap } from "./hooks/useSessionBootstrap";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
 import { useAuthStore } from "./store/auth-store";
@@ -83,6 +84,14 @@ function PublicOnly({ children }: { children: ReactNode }) {
 
 export default function RouterApp() {
   useSessionBootstrap();
+
+  const maintenanceMode = useAuthStore((state) => state.maintenanceMode);
+  const user = useAuthStore((state) => state.user);
+  const status = useAuthStore((state) => state.status);
+
+  if (maintenanceMode && (status === "anonymous" || (status === "authenticated" && user?.role !== "admin"))) {
+    return <MaintenancePage />;
+  }
 
   return (
     <AppErrorBoundary>

@@ -132,6 +132,22 @@ export async function fetchCurrentUser() {
   return response.data;
 }
 
+export async function getMaintenanceStatus(): Promise<{ maintenanceMode: boolean }> {
+  const response = await axios.get<{ maintenanceMode: boolean }>(
+    `${baseURL}/config/maintenance`,
+    { withCredentials: false },
+  );
+  return response.data;
+}
+
+export async function setMaintenanceMode(enabled: boolean): Promise<{ maintenanceMode: boolean }> {
+  const response = await api.post<{ maintenanceMode: boolean }>(
+    "/admin/config/maintenance",
+    { enabled },
+  );
+  return response.data;
+}
+
 export async function fetchGamificationState() {
   const response = await api.get<GamificationState>("/rewards/me");
   return response.data;
@@ -324,6 +340,11 @@ export async function resolveAdminEvent(eventId: string, resolvedOption: string)
 
 export async function cancelAdminEvent(eventId: string) {
   const response = await api.post<AdminEventView>(`/admin/events/${eventId}/cancel`);
+  return response.data;
+}
+
+export async function rewindAdminEvent(eventId: string) {
+  const response = await api.post<AdminEventView>(`/admin/events/${eventId}/rewind`);
   return response.data;
 }
 

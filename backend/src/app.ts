@@ -7,6 +7,7 @@ import { env } from "./config/env";
 import { configurePassport } from "./config/passport";
 import { getCorsAllowedOrigins, isCorsOriginAllowed } from "./config/security";
 import { errorHandler } from "./middleware/error-handler";
+import { maintenanceMiddleware } from "./middleware/maintenance";
 import { notFoundHandler } from "./middleware/not-found";
 import { requestLogger } from "./middleware/request-logger";
 import { authRouter } from "./routes/auth.routes";
@@ -15,6 +16,8 @@ import { adminEventsRouter, eventsRouter } from "./routes/events.routes";
 import { gamificationRouter } from "./routes/gamification.routes";
 import { healthRouter } from "./routes/health.routes";
 import { adminStatisticsRouter, publicStatsRouter } from "./routes/admin.routes";
+import { adminConfigRouter } from "./routes/admin.config.routes";
+import { publicConfigRouter } from "./routes/public.config.routes";
 import { chatRouter } from "./routes/chat.routes";
 import { userRouter } from "./routes/user.routes";
 
@@ -39,6 +42,7 @@ export function createApp() {
   app.use(express.json());
   app.use(passport.initialize());
   app.use(requestLogger);
+  app.use(maintenanceMiddleware);
 
   // Serve avatar files from local storage
   app.use("/avatars", (_req, res, next) => {
@@ -50,6 +54,7 @@ export function createApp() {
   }));
 
   app.use("/health", healthRouter);
+  app.use("/config", publicConfigRouter);
   app.use("/stats", publicStatsRouter);
   app.use("/auth", authRouter);
   app.use("/chat", chatRouter);
@@ -57,6 +62,7 @@ export function createApp() {
   app.use("/events", eventsRouter);
   app.use("/admin/events", adminEventsRouter);
   app.use("/admin/statistics", adminStatisticsRouter);
+  app.use("/admin/config", adminConfigRouter);
   app.use("/rewards", gamificationRouter);
   app.use("/users", userRouter);
 
