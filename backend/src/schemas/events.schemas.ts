@@ -138,7 +138,7 @@ export const createEventSchema = z
     description: optionalTextSchema,
     proposal_id: z.string().uuid().optional(),
     image_url: optionalImageSchema,
-    options: z.array(optionSchema).min(2).max(6),
+    options: z.array(optionSchema).min(2).max(10),
     option_initial_odds: optionInitialOddsSchema,
     closing_at: optionalDateSchema,
     min_bet: z.coerce.number().int().min(1).max(1_000_000).default(10),
@@ -155,7 +155,7 @@ export const updateEventSchema = z
     title: titleSchema.optional(),
     description: updatableOptionalTextSchema,
     image_url: updatableOptionalImageSchema,
-    options: z.array(optionSchema).min(2).max(6).optional(),
+    options: z.array(optionSchema).min(2).max(10).optional(),
     option_initial_odds: optionInitialOddsSchema,
     closing_at: updatableOptionalDateSchema,
     min_bet: z.coerce.number().int().min(1).max(1_000_000).optional(),
@@ -245,7 +245,7 @@ export const createProposalSchema = z.object({
   options: z
     .array(z.string().trim().min(1).max(200))
     .min(2, "Au moins 2 options requises.")
-    .max(6, "Maximum 6 options.")
+    .max(10, "Maximum 10 options.")
     .optional(),
 });
 

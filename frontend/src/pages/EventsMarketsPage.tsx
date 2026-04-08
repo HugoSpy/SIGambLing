@@ -429,7 +429,7 @@ export function EventsPage() {
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium text-zinc-200">Issues possibles</span>
-              <span className="text-xs text-zinc-500">{proposalOptions.length}/6</span>
+              <span className="text-xs text-zinc-500">{proposalOptions.length}/10</span>
             </div>
             {proposalOptions.map((option, index) => (
               <div className="flex items-center gap-2" key={index}>
@@ -454,7 +454,7 @@ export function EventsPage() {
                 ) : null}
               </div>
             ))}
-            {proposalOptions.length < 6 ? (
+            {proposalOptions.length < 10 ? (
               <button
                 className="w-full rounded-lg border border-dashed border-zinc-700 bg-transparent py-2 text-sm text-zinc-500 transition hover:border-emerald-500/50 hover:text-emerald-400"
                 onClick={() => setProposalOptions([...proposalOptions, ""])}

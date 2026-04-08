@@ -454,7 +454,7 @@ export function ProfilePage() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">Badges</p>
-                <h2 className="mt-3 font-display text-3xl text-brand-text">Vitrine live</h2>
+                <h2 className="mt-3 font-display text-3xl text-brand-text">Mes Badges</h2>
               </div>
               <Award className="h-6 w-6 text-brand-orange" />
             </div>

@@ -168,7 +168,7 @@ function PlayingCard({
       initial="hidden"
       animate="visible"
       className={cn(
-        "relative flex h-[120px] w-[80px] flex-shrink-0 select-none flex-col rounded-xl border shadow-lg",
+        "relative flex h-[90px] w-[60px] flex-shrink-0 select-none flex-col rounded-xl border shadow-lg sm:h-[120px] sm:w-[80px]",
         hidden
           ? "border-blue-400/30 bg-gradient-to-br from-blue-800 to-red-800"
           : "border-gray-200/20 bg-white",
@@ -527,7 +527,7 @@ function SplitHandsArea({
                   <HandTotal label="Total" total={hand.total} />
                 </div>
               </div>
-              <div className="flex min-h-[100px] flex-wrap gap-2">
+              <div className="flex min-h-[70px] flex-wrap gap-2 sm:min-h-[100px]">
                 <AnimatePresence mode="popLayout">
                   {hand.hand.map((card, ci) => (
                     <PlayingCard
@@ -1115,10 +1115,10 @@ export function BlackjackGame() {
         </div>
       </Card>
 
-      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px] xl:h-[calc(100vh-18rem)] min-h-0">
+      <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px] min-h-0">
         <div
           className={cn(
-            "relative overflow-hidden rounded-[36px] border border-amber-200/20 p-4 shadow-[0_30px_80px_rgba(0,0,0,0.32)] sm:p-5 xl:flex xl:flex-col xl:h-full ring-2 ring-transparent transition-all duration-500",
+            "relative overflow-y-auto rounded-[36px] border border-amber-200/20 p-4 shadow-[0_30px_80px_rgba(0,0,0,0.32)] sm:p-5 xl:flex xl:flex-col ring-2 ring-transparent transition-all duration-500",
             gameState === "GAME_OVER" && !splitResults && resultConfig?.ringClass,
             gameState === "GAME_OVER" && splitResults
               ? splitResults.some((r) => r.result === "win")
@@ -1136,7 +1136,7 @@ export function BlackjackGame() {
             Table principale
           </div>
 
-          <div className="grid gap-3 pt-10 xl:flex-1 xl:min-h-0 xl:content-start">
+          <div className="grid gap-3 pt-10">
             <div className="rounded-[28px] border border-white/10 bg-black/10 p-3 backdrop-blur-sm">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <div>
@@ -1159,7 +1159,7 @@ export function BlackjackGame() {
                   />
                 ) : null}
               </div>
-              <div className="flex min-h-[100px] flex-wrap gap-3">
+              <div className="flex min-h-[70px] flex-wrap gap-2 sm:min-h-[100px] sm:gap-3">
                 <AnimatePresence mode="popLayout">
                   {(isDealing ? visibleDealerCards : dealerDisplayHand).map((card, index) => (
                     <PlayingCard
@@ -1217,7 +1217,7 @@ export function BlackjackGame() {
                     ) : null}
                   </div>
                 </div>
-                <div className="flex min-h-[100px] flex-wrap gap-3">
+                <div className="flex min-h-[70px] flex-wrap gap-2 sm:min-h-[100px] sm:gap-3">
                   <AnimatePresence mode="popLayout">
                     {(isDealing ? visiblePlayerCards : playerHand).map((card, index) => (
                       <PlayingCard
@@ -1230,7 +1230,7 @@ export function BlackjackGame() {
 
                 {gameState === "PLAYER_TURN" ? (
                   <div
-                    className="mt-4 flex flex-wrap justify-center gap-2 transition-opacity duration-200"
+                    className="mt-3 flex flex-wrap justify-center gap-1.5 pb-1 sm:mt-4 sm:gap-2 transition-opacity duration-200"
                     style={{
                       opacity: isDealing ? 0.4 : 1,
                       pointerEvents: isDealing ? "none" : "auto",
@@ -1304,7 +1304,7 @@ export function BlackjackGame() {
 
         </div>
 
-        <div className="flex flex-col gap-3 xl:h-full xl:overflow-y-auto">
+        <div className="flex flex-col gap-3">
           <Card className="min-w-[300px] p-4">
             <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
               <div className="rounded-[24px] border border-white/10 bg-white/5 px-3 py-2">
