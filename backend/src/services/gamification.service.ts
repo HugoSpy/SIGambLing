@@ -477,7 +477,7 @@ export class GamificationService {
         catalog_rarity: catalogRarity,
         visibility,
         reward,
-        unlocked: isBadgeUnlocked(progress),
+        unlocked: !!unlockedBadge || isBadgeUnlocked(progress),
         unlocked_at: unlockedBadge?.unlocked_at ?? null,
         claimed_at: unlockedBadge?.claimed_at ?? null,
         progress,
