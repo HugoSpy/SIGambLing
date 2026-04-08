@@ -632,9 +632,13 @@ export class GamificationService {
   }
 
   async synchronizeManyUserBadges(userIds: string[], client?: DatabaseClient) {
+    const db = this.getClient(client);
     const uniqueUserIds = [...new Set(userIds)];
 
     for (const userId of uniqueUserIds) {
+      const user = await db.user.findUnique({ where: { id: userId }, select: { isBanned: true } });
+      if (!user || user.isBanned) continue;
+
       await this.synchronizeUserBadges(userId, client);
     }
   }

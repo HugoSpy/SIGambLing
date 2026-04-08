@@ -469,22 +469,26 @@ export function AdminEventsPage() {
       return;
     }
 
-    if (parsedOptions.some((entry) => entry.probability == null || entry.probability <= 0)) {
-      toast.error("Chaque option doit avoir une probabilite strictement positive.");
-      return;
+    if (!editingEvent) {
+      if (parsedOptions.some((entry) => entry.probability == null || entry.probability <= 0)) {
+        toast.error("Chaque option doit avoir une probabilite strictement positive.");
+        return;
+      }
+
+      if (probabilityTotal !== 100) {
+        toast.error("La somme des probabilites doit etre exactement de 100%.");
+        return;
+      }
     }
 
-    if (probabilityTotal !== 100) {
-      toast.error("La somme des probabilites doit etre exactement de 100%.");
-      return;
-    }
-
-    const optionInitialOdds = Object.fromEntries(
-      parsedOptions.map((entry) => [
-        entry.label,
-        probabilityToInitialOdds(entry.probability as number),
-      ]),
-    );
+    const optionInitialOdds = editingEvent
+      ? undefined
+      : Object.fromEntries(
+          parsedOptions.map((entry) => [
+            entry.label,
+            probabilityToInitialOdds(entry.probability as number),
+          ]),
+        );
 
     try {
       setSaving(true);
@@ -813,19 +817,21 @@ export function AdminEventsPage() {
                       marge fixe de {currentMargin ?? Number((DEFAULT_HOUSE_MARGIN * 100).toFixed(2))}%.
                     </p>
                   </div>
-                  <Button
-                    onClick={() =>
-                      setForm((current) => ({
-                        ...current,
-                        options: [...current.options, createProbabilityRow()],
-                      }))
-                    }
-                    size="sm"
-                    type="button"
-                    variant="secondary"
-                  >
-                    Ajouter
-                  </Button>
+                  {!editingEvent && (
+                    <Button
+                      onClick={() =>
+                        setForm((current) => ({
+                          ...current,
+                          options: [...current.options, createProbabilityRow()],
+                        }))
+                      }
+                      size="sm"
+                      type="button"
+                      variant="secondary"
+                    >
+                      Ajouter
+                    </Button>
+                  )}
                 </div>
 
                 <div className="space-y-3">
@@ -852,7 +858,8 @@ export function AdminEventsPage() {
                             value={row.label}
                           />
                           <input
-                            className="w-full rounded-2xl border border-brand-line bg-black/10 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
+                            className="w-full rounded-2xl border border-brand-line bg-black/10 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
+                            disabled={!!editingEvent}
                             max={100}
                             min={0}
                             onChange={(event) =>
@@ -870,24 +877,27 @@ export function AdminEventsPage() {
                             value={row.probability}
                           />
                         </div>
-                        <Button
-                          disabled={form.options.length <= 2}
-                          onClick={() =>
-                            setForm((current) => ({
-                              ...current,
-                              options: current.options.filter((entry) => entry.id !== row.id),
-                            }))
-                          }
-                          size="sm"
-                          type="button"
-                          variant="danger"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
+                        {!editingEvent && (
+                          <Button
+                            disabled={form.options.length <= 2}
+                            onClick={() =>
+                              setForm((current) => ({
+                                ...current,
+                                options: current.options.filter((entry) => entry.id !== row.id),
+                              }))
+                            }
+                            size="sm"
+                            type="button"
+                            variant="danger"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
                       </div>
 
                       <input
-                        className="mt-3 w-full accent-brand-cyan"
+                        className="mt-3 w-full accent-brand-cyan disabled:opacity-50 disabled:cursor-not-allowed"
+                        disabled={!!editingEvent}
                         max={100}
                         min={0}
                         onChange={(event) =>

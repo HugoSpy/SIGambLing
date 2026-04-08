@@ -2246,10 +2246,17 @@ class EventService {
     }
 
     const impactedUserIds = [...new Set(impactedBets.map((bet) => bet.userId))];
-    await gamificationService.synchronizeManyUserBadges(impactedUserIds, transaction);
 
-    for (const impactedUserId of impactedUserIds) {
-      await gamificationService.triggerLeaderboardTop3(impactedUserId, transaction);
+    const nonBannedUserIds: string[] = [];
+    for (const uid of impactedUserIds) {
+      const u = await transaction.user.findUnique({ where: { id: uid }, select: { isBanned: true } });
+      if (u && !u.isBanned) nonBannedUserIds.push(uid);
+    }
+
+    await gamificationService.synchronizeManyUserBadges(nonBannedUserIds, transaction);
+
+    for (const uid of nonBannedUserIds) {
+      await gamificationService.triggerLeaderboardTop3(uid, transaction);
     }
   }
 
