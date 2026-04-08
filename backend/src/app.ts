@@ -8,6 +8,7 @@ import { configurePassport } from "./config/passport";
 import { getCorsAllowedOrigins, isCorsOriginAllowed } from "./config/security";
 import { errorHandler } from "./middleware/error-handler";
 import { maintenanceMiddleware } from "./middleware/maintenance";
+import { featureFlagsMiddleware } from "./middleware/featureFlags";
 import { notFoundHandler } from "./middleware/not-found";
 import { requestLogger } from "./middleware/request-logger";
 import { authRouter } from "./routes/auth.routes";
@@ -43,6 +44,7 @@ export function createApp() {
   app.use(passport.initialize());
   app.use(requestLogger);
   app.use(maintenanceMiddleware);
+  app.use(featureFlagsMiddleware);
 
   // Serve avatar files from local storage
   app.use("/avatars", (_req, res, next) => {

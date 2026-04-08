@@ -19,6 +19,7 @@ import {
   fetchAdminEvents,
   fetchAdminProposals,
   fetchSavedAdminProposals,
+  getFeatureFlags,
   getMaintenanceStatus,
   logoutRequest,
   rejectAdminProposal,
@@ -26,6 +27,7 @@ import {
   reopenAdminEvent,
   rewindAdminEvent,
   searchUsers,
+  setFeatureFlag,
   setMaintenanceMode,
   toggleSaveAdminProposal,
   triggerAdminJackpotPayout,
@@ -405,6 +407,13 @@ export function AdminEventsPage() {
   const [maintenanceMode, setLocalMaintenanceMode] = useState(false);
   const [maintenanceConfirmTarget, setMaintenanceConfirmTarget] = useState<boolean | null>(null);
   const setStoreMaintenance = useAuthStore((state) => state.setMaintenanceMode);
+  const [rouletteDisabled, setLocalRouletteDisabled] = useState(false);
+  const [blackjackDisabled, setLocalBlackjackDisabled] = useState(false);
+  const [eventsDisabled, setLocalEventsDisabled] = useState(false);
+  const [rouletteConfirmTarget, setRouletteConfirmTarget] = useState<boolean | null>(null);
+  const [blackjackConfirmTarget, setBlackjackConfirmTarget] = useState<boolean | null>(null);
+  const [eventsConfirmTarget, setEventsConfirmTarget] = useState<boolean | null>(null);
+  const setStoreFeatureFlags = useAuthStore((state) => state.setFeatureFlags);
 
   const { data: events, isLoading } = useQuery({
     queryKey: ["admin-events"],
@@ -463,6 +472,13 @@ export function AdminEventsPage() {
   useEffect(() => {
     getMaintenanceStatus()
       .then(({ maintenanceMode: enabled }) => setLocalMaintenanceMode(enabled))
+      .catch(() => {});
+    getFeatureFlags()
+      .then(({ rouletteDisabled: r, blackjackDisabled: b, eventsDisabled: e }) => {
+        setLocalRouletteDisabled(r);
+        setLocalBlackjackDisabled(b);
+        setLocalEventsDisabled(e);
+      })
       .catch(() => {});
   }, []);
 
@@ -765,23 +781,79 @@ export function AdminEventsPage() {
             </p>
           </div>
           {user?.role === "admin" && (
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-zinc-400">Mode maintenance</span>
-              <button
-                aria-checked={maintenanceMode}
-                className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none ${
-                  maintenanceMode ? "bg-amber-500" : "bg-zinc-700"
-                }`}
-                onClick={() => setMaintenanceConfirmTarget(!maintenanceMode)}
-                role="switch"
-                type="button"
-              >
-                <span
-                  className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
-                    maintenanceMode ? "translate-x-6" : "translate-x-1"
+            <div className="flex flex-wrap items-center gap-4">
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-zinc-400">Mode maintenance</span>
+                <button
+                  aria-checked={maintenanceMode}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none ${
+                    maintenanceMode ? "bg-amber-500" : "bg-zinc-700"
                   }`}
-                />
-              </button>
+                  onClick={() => setMaintenanceConfirmTarget(!maintenanceMode)}
+                  role="switch"
+                  type="button"
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                      maintenanceMode ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-zinc-400">🎰 Roulette</span>
+                <button
+                  aria-checked={rouletteDisabled}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none ${
+                    rouletteDisabled ? "bg-amber-500" : "bg-zinc-700"
+                  }`}
+                  onClick={() => setRouletteConfirmTarget(!rouletteDisabled)}
+                  role="switch"
+                  type="button"
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                      rouletteDisabled ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-zinc-400">🃏 Blackjack</span>
+                <button
+                  aria-checked={blackjackDisabled}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none ${
+                    blackjackDisabled ? "bg-amber-500" : "bg-zinc-700"
+                  }`}
+                  onClick={() => setBlackjackConfirmTarget(!blackjackDisabled)}
+                  role="switch"
+                  type="button"
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                      blackjackDisabled ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-zinc-400">📅 Événements</span>
+                <button
+                  aria-checked={eventsDisabled}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none ${
+                    eventsDisabled ? "bg-amber-500" : "bg-zinc-700"
+                  }`}
+                  onClick={() => setEventsConfirmTarget(!eventsDisabled)}
+                  role="switch"
+                  type="button"
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                      eventsDisabled ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -1801,6 +1873,126 @@ export function AdminEventsPage() {
                   )
                 }
                 variant={maintenanceConfirmTarget ? "danger" : "primary"}
+              >
+                Confirmer
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        description={
+          rouletteConfirmTarget
+            ? "Désactiver la Roulette ? Les joueurs ne pourront plus y accéder."
+            : "Réactiver la Roulette ? Les joueurs pourront à nouveau y accéder."
+        }
+        onClose={() => setRouletteConfirmTarget(null)}
+        open={rouletteConfirmTarget !== null}
+        title={rouletteConfirmTarget ? "Désactiver la Roulette" : "Réactiver la Roulette"}
+      >
+        {rouletteConfirmTarget !== null && (
+          <div className="space-y-5">
+            <div className="flex gap-3">
+              <Button fullWidth onClick={() => setRouletteConfirmTarget(null)} variant="secondary">
+                Annuler
+              </Button>
+              <Button
+                disabled={actionKey === "roulette-flag"}
+                fullWidth
+                onClick={() =>
+                  void runAction(
+                    "roulette-flag",
+                    async () => {
+                      const updated = await setFeatureFlag("rouletteDisabled", rouletteConfirmTarget);
+                      setLocalRouletteDisabled(updated.rouletteDisabled);
+                      setStoreFeatureFlags({ rouletteDisabled: updated.rouletteDisabled, blackjackDisabled, eventsDisabled });
+                      setRouletteConfirmTarget(null);
+                    },
+                    rouletteConfirmTarget ? "Roulette désactivée." : "Roulette réactivée.",
+                  )
+                }
+                variant={rouletteConfirmTarget ? "danger" : "primary"}
+              >
+                Confirmer
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        description={
+          blackjackConfirmTarget
+            ? "Désactiver le Blackjack ? Les joueurs ne pourront plus y accéder."
+            : "Réactiver le Blackjack ? Les joueurs pourront à nouveau y accéder."
+        }
+        onClose={() => setBlackjackConfirmTarget(null)}
+        open={blackjackConfirmTarget !== null}
+        title={blackjackConfirmTarget ? "Désactiver le Blackjack" : "Réactiver le Blackjack"}
+      >
+        {blackjackConfirmTarget !== null && (
+          <div className="space-y-5">
+            <div className="flex gap-3">
+              <Button fullWidth onClick={() => setBlackjackConfirmTarget(null)} variant="secondary">
+                Annuler
+              </Button>
+              <Button
+                disabled={actionKey === "blackjack-flag"}
+                fullWidth
+                onClick={() =>
+                  void runAction(
+                    "blackjack-flag",
+                    async () => {
+                      const updated = await setFeatureFlag("blackjackDisabled", blackjackConfirmTarget);
+                      setLocalBlackjackDisabled(updated.blackjackDisabled);
+                      setStoreFeatureFlags({ rouletteDisabled, blackjackDisabled: updated.blackjackDisabled, eventsDisabled });
+                      setBlackjackConfirmTarget(null);
+                    },
+                    blackjackConfirmTarget ? "Blackjack désactivé." : "Blackjack réactivé.",
+                  )
+                }
+                variant={blackjackConfirmTarget ? "danger" : "primary"}
+              >
+                Confirmer
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        description={
+          eventsConfirmTarget
+            ? "Désactiver les Événements ? Les joueurs ne pourront plus y accéder."
+            : "Réactiver les Événements ? Les joueurs pourront à nouveau y accéder."
+        }
+        onClose={() => setEventsConfirmTarget(null)}
+        open={eventsConfirmTarget !== null}
+        title={eventsConfirmTarget ? "Désactiver les Événements" : "Réactiver les Événements"}
+      >
+        {eventsConfirmTarget !== null && (
+          <div className="space-y-5">
+            <div className="flex gap-3">
+              <Button fullWidth onClick={() => setEventsConfirmTarget(null)} variant="secondary">
+                Annuler
+              </Button>
+              <Button
+                disabled={actionKey === "events-flag"}
+                fullWidth
+                onClick={() =>
+                  void runAction(
+                    "events-flag",
+                    async () => {
+                      const updated = await setFeatureFlag("eventsDisabled", eventsConfirmTarget);
+                      setLocalEventsDisabled(updated.eventsDisabled);
+                      setStoreFeatureFlags({ rouletteDisabled, blackjackDisabled, eventsDisabled: updated.eventsDisabled });
+                      setEventsConfirmTarget(null);
+                    },
+                    eventsConfirmTarget ? "Événements désactivés." : "Événements réactivés.",
+                  )
+                }
+                variant={eventsConfirmTarget ? "danger" : "primary"}
               >
                 Confirmer
               </Button>

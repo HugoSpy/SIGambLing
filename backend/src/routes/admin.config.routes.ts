@@ -1,5 +1,10 @@
 import { Router } from "express";
-import { getMaintenanceConfig, setMaintenanceConfig } from "../controllers/admin.config.controller";
+import {
+  getMaintenanceConfig,
+  setMaintenanceConfig,
+  getFeatureFlagsConfig,
+  setFeatureFlagsConfig,
+} from "../controllers/admin.config.controller";
 import { requireAuth } from "../middleware/require-auth";
 import { requireRole } from "../middleware/require-role";
 
@@ -9,3 +14,6 @@ adminConfigRouter.use(requireAuth, requireRole(["admin"]));
 
 adminConfigRouter.get("/maintenance", getMaintenanceConfig);
 adminConfigRouter.post("/maintenance", setMaintenanceConfig);
+
+adminConfigRouter.get("/features", getFeatureFlagsConfig);
+adminConfigRouter.post("/features", setFeatureFlagsConfig);

@@ -52,6 +52,8 @@ export function CasinoPage() {
   const storedUser = useAuthStore((state) => state.user);
   const setUser = useAuthStore((state) => state.setUser);
   const setStatus = useAuthStore((state) => state.setStatus);
+  const rouletteDisabled = useAuthStore((state) => state.rouletteDisabled);
+  const blackjackDisabled = useAuthStore((state) => state.blackjackDisabled);
   const { game } = useParams<{ game?: string }>();
   const activeGame = isGameTab(game) ? game : null;
 
@@ -76,6 +78,25 @@ export function CasinoPage() {
     return <Navigate replace to="/casino" />;
   }
 
+  const isAdmin = user.role === "admin";
+
+  // If a disabled game is accessed directly via URL, redirect to /casino
+  if (activeGame === "roulette" && rouletteDisabled && !isAdmin) {
+    return <Navigate replace to="/casino" />;
+  }
+  if (activeGame === "blackjack" && blackjackDisabled && !isAdmin) {
+    return <Navigate replace to="/casino" />;
+  }
+
+  const isGameDisabled = (id: GameTab) =>
+    (id === "roulette" && rouletteDisabled && !isAdmin) ||
+    (id === "blackjack" && blackjackDisabled && !isAdmin);
+
+  const disabledLabel: Record<GameTab, string> = {
+    roulette: "Roulette temporairement indisponible",
+    blackjack: "Blackjack temporairement indisponible",
+  };
+
   const handleLogout = async () => {
     await logoutRequest();
     toast.success("Session fermée.");
@@ -90,11 +111,15 @@ export function CasinoPage() {
           <div className="grid gap-6 xl:grid-cols-2">
             {TABS.map((tab) => {
               const Icon = tab.icon;
+              const disabled = isGameDisabled(tab.id);
 
               return (
                 <Card
                   key={tab.id}
-                  className="group relative overflow-hidden border-white/10 bg-zinc-900/95 p-0"
+                  className={cn(
+                    "group relative overflow-hidden border-white/10 bg-zinc-900/95 p-0",
+                    disabled && "opacity-60",
+                  )}
                 >
                   <div
                     className={cn("absolute inset-0 bg-gradient-to-br opacity-100", tab.accentClassName)}
@@ -115,12 +140,18 @@ export function CasinoPage() {
                     <p className="max-w-xl text-sm leading-7 text-brand-muted">{tab.description}</p>
 
                     <div className="mt-auto">
-                      <Link to={tab.href}>
-                        <Button className="gap-2" size="lg">
-                          Ouvrir la table
-                          <ArrowRight className="h-4 w-4" />
-                        </Button>
-                      </Link>
+                      {disabled ? (
+                        <div className="inline-flex items-center gap-2 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-400">
+                          {disabledLabel[tab.id]}
+                        </div>
+                      ) : (
+                        <Link to={tab.href}>
+                          <Button className="gap-2" size="lg">
+                            Ouvrir la table
+                            <ArrowRight className="h-4 w-4" />
+                          </Button>
+                        </Link>
+                      )}
                     </div>
                   </div>
                 </Card>

@@ -9,6 +9,7 @@ export function useSessionBootstrap() {
   const setUser = useAuthStore((state) => state.setUser);
   const clearSession = useAuthStore((state) => state.clearSession);
   const setMaintenanceMode = useAuthStore((state) => state.setMaintenanceMode);
+  const setFeatureFlags = useAuthStore((state) => state.setFeatureFlags);
 
   useEffect(() => {
     let cancelled = false;
@@ -21,9 +22,10 @@ export function useSessionBootstrap() {
       setStatus("loading");
 
       try {
-        // Fetch maintenance status first (public, no auth required)
-        const { maintenanceMode } = await getMaintenanceStatus();
+        // Fetch maintenance status + feature flags (public, no auth required, single request)
+        const { maintenanceMode, rouletteDisabled, blackjackDisabled, eventsDisabled } = await getMaintenanceStatus();
         setMaintenanceMode(maintenanceMode);
+        setFeatureFlags({ rouletteDisabled, blackjackDisabled, eventsDisabled });
 
         const accessToken = useAuthStore.getState().accessToken;
 
@@ -54,5 +56,5 @@ export function useSessionBootstrap() {
     return () => {
       cancelled = true;
     };
-  }, [clearSession, setMaintenanceMode, setStatus, setUser, status]);
+  }, [clearSession, setFeatureFlags, setMaintenanceMode, setStatus, setUser, status]);
 }

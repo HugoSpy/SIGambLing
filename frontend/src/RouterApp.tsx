@@ -3,6 +3,7 @@ import { Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { AppErrorBoundary } from "./components/layout/AppErrorBoundary";
 import { LoadingScreen } from "./components/layout/LoadingScreen";
 import MaintenancePage from "./pages/MaintenancePage";
+import EventsDisabledPage from "./pages/EventsDisabledPage";
 import { useSessionBootstrap } from "./hooks/useSessionBootstrap";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
 import { useAuthStore } from "./store/auth-store";
@@ -82,6 +83,17 @@ function PublicOnly({ children }: { children: ReactNode }) {
   return <>{children}</>;
 }
 
+function EventsGuard({ children }: { children: ReactNode }) {
+  const eventsDisabled = useAuthStore((state) => state.eventsDisabled);
+  const user = useAuthStore((state) => state.user);
+
+  if (eventsDisabled && user?.role !== "admin") {
+    return <EventsDisabledPage />;
+  }
+
+  return <>{children}</>;
+}
+
 export default function RouterApp() {
   useSessionBootstrap();
 
@@ -110,8 +122,8 @@ export default function RouterApp() {
           <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/dashboard" element={<DashboardPage />} />
-            <Route path="/events" element={<EventsPage />} />
-            <Route path="/events/:id" element={<EventDetailPage />} />
+            <Route path="/events" element={<EventsGuard><EventsPage /></EventsGuard>} />
+            <Route path="/events/:id" element={<EventsGuard><EventDetailPage /></EventsGuard>} />
             <Route path="/casino" element={<CasinoPage />} />
             <Route path="/casino/:game" element={<CasinoPage />} />
             <Route path="/jackpot" element={<JackpotPage />} />

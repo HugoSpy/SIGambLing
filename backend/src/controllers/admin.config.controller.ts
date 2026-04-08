@@ -2,6 +2,7 @@ import type { RequestHandler } from "express";
 import { prisma } from "../services/prisma.service";
 import { AppError } from "../utils/app-error";
 import { invalidateMaintenanceCache } from "../middleware/maintenance";
+import { invalidateFeatureFlagsCache } from "../middleware/featureFlags";
 
 function getAuthenticatedUserId(request: Parameters<RequestHandler>[0]) {
   const authUser = (request as { auth?: { id?: string } }).auth;
@@ -59,13 +60,100 @@ export const setMaintenanceConfig: RequestHandler = async (request, response, ne
   }
 };
 
+const ALL_CONFIG_KEYS = ["maintenanceMode", "rouletteDisabled", "blackjackDisabled", "eventsDisabled"] as const;
+
 export const getPublicMaintenanceConfig: RequestHandler = async (_request, response, next) => {
   try {
-    const config = await prisma.siteConfig.findUnique({
-      where: { key: "maintenanceMode" },
+    const configs = await prisma.siteConfig.findMany({
+      where: { key: { in: [...ALL_CONFIG_KEYS] } },
     });
 
-    response.json({ maintenanceMode: config?.value === "true" });
+    const map = Object.fromEntries(configs.map((c) => [c.key, c.value === "true"]));
+
+    response.json({
+      maintenanceMode: map["maintenanceMode"] ?? false,
+      rouletteDisabled: map["rouletteDisabled"] ?? false,
+      blackjackDisabled: map["blackjackDisabled"] ?? false,
+      eventsDisabled: map["eventsDisabled"] ?? false,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const FEATURE_FLAG_KEYS = ["rouletteDisabled", "blackjackDisabled", "eventsDisabled"] as const;
+type FeatureFlagKey = (typeof FEATURE_FLAG_KEYS)[number];
+
+export const getFeatureFlagsConfig: RequestHandler = async (_request, response, next) => {
+  try {
+    const configs = await prisma.siteConfig.findMany({
+      where: { key: { in: [...FEATURE_FLAG_KEYS] } },
+    });
+
+    const map = Object.fromEntries(configs.map((c) => [c.key, c.value === "true"]));
+
+    response.json({
+      rouletteDisabled: map["rouletteDisabled"] ?? false,
+      blackjackDisabled: map["blackjackDisabled"] ?? false,
+      eventsDisabled: map["eventsDisabled"] ?? false,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const setFeatureFlagsConfig: RequestHandler = async (request, response, next) => {
+  try {
+    const adminId = getAuthenticatedUserId(request);
+    const body = request.body as Partial<Record<FeatureFlagKey, unknown>>;
+
+    const updates: { key: FeatureFlagKey; value: boolean }[] = [];
+
+    for (const key of FEATURE_FLAG_KEYS) {
+      if (key in body) {
+        const val = body[key];
+        if (typeof val !== "boolean") {
+          throw new AppError(`Le champ '${key}' doit être un booléen.`, 400);
+        }
+        updates.push({ key, value: val });
+      }
+    }
+
+    if (updates.length === 0) {
+      throw new AppError("Aucune clé valide fournie.", 400);
+    }
+
+    await prisma.$transaction(async (tx) => {
+      for (const { key, value } of updates) {
+        await tx.siteConfig.upsert({
+          where: { key },
+          create: { key, value: String(value) },
+          update: { value: String(value) },
+        });
+
+        await tx.adminLog.create({
+          data: {
+            adminId,
+            actionType: value ? `${key}_enabled` : `${key}_disabled`,
+            targetId: null,
+            details: { [key]: value },
+          },
+        });
+      }
+    });
+
+    invalidateFeatureFlagsCache();
+
+    const configs = await prisma.siteConfig.findMany({
+      where: { key: { in: [...FEATURE_FLAG_KEYS] } },
+    });
+    const map = Object.fromEntries(configs.map((c) => [c.key, c.value === "true"]));
+
+    response.json({
+      rouletteDisabled: map["rouletteDisabled"] ?? false,
+      blackjackDisabled: map["blackjackDisabled"] ?? false,
+      eventsDisabled: map["eventsDisabled"] ?? false,
+    });
   } catch (error) {
     next(error);
   }

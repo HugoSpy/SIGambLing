@@ -481,6 +481,24 @@ async function main() {
     create: { key: "maintenanceMode", value: "false" },
   });
 
+  await prisma.siteConfig.upsert({
+    where: { key: "rouletteDisabled" },
+    update: {},
+    create: { key: "rouletteDisabled", value: "false" },
+  });
+
+  await prisma.siteConfig.upsert({
+    where: { key: "blackjackDisabled" },
+    update: {},
+    create: { key: "blackjackDisabled", value: "false" },
+  });
+
+  await prisma.siteConfig.upsert({
+    where: { key: "eventsDisabled" },
+    update: {},
+    create: { key: "eventsDisabled", value: "false" },
+  });
+
   await prisma.eventProposal.upsert({
     where: { id: "7d6b8a60-f3d2-4e1b-93e2-0d2f4a5d1003" },
     update: {

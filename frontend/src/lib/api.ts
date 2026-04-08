@@ -132,8 +132,15 @@ export async function fetchCurrentUser() {
   return response.data;
 }
 
-export async function getMaintenanceStatus(): Promise<{ maintenanceMode: boolean }> {
-  const response = await axios.get<{ maintenanceMode: boolean }>(
+export interface PublicConfig {
+  maintenanceMode: boolean;
+  rouletteDisabled: boolean;
+  blackjackDisabled: boolean;
+  eventsDisabled: boolean;
+}
+
+export async function getMaintenanceStatus(): Promise<PublicConfig> {
+  const response = await axios.get<PublicConfig>(
     `${baseURL}/config/maintenance`,
     { withCredentials: false },
   );
@@ -145,6 +152,25 @@ export async function setMaintenanceMode(enabled: boolean): Promise<{ maintenanc
     "/admin/config/maintenance",
     { enabled },
   );
+  return response.data;
+}
+
+export interface FeatureFlagsResponse {
+  rouletteDisabled: boolean;
+  blackjackDisabled: boolean;
+  eventsDisabled: boolean;
+}
+
+export async function getFeatureFlags(): Promise<FeatureFlagsResponse> {
+  const response = await api.get<FeatureFlagsResponse>("/admin/config/features");
+  return response.data;
+}
+
+export async function setFeatureFlag(
+  key: "rouletteDisabled" | "blackjackDisabled" | "eventsDisabled",
+  value: boolean,
+): Promise<FeatureFlagsResponse> {
+  const response = await api.post<FeatureFlagsResponse>("/admin/config/features", { [key]: value });
   return response.data;
 }
 
