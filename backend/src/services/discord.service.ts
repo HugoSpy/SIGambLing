@@ -1,3 +1,5 @@
+import http from "http";
+import https from "https";
 import { env } from "../config/env";
 import { logger } from "../utils/logger";
 
@@ -15,6 +17,12 @@ type NotifyEventCreatedInput = {
 const MAX_DISCORD_CONTENT_LENGTH = 1900;
 const DEFAULT_TIMEOUT_MS = 3000;
 
+type DiscordWebhookResponse = {
+  body: string;
+  statusCode: number;
+  statusText: string;
+};
+
 function buildEventUrl(eventId: string) {
   return `${env.FRONTEND_URL.replace(/\/$/, "")}/events/${eventId}`;
 }
@@ -27,13 +35,80 @@ function truncate(value: string, maxLength: number) {
   return `${value.slice(0, Math.max(0, maxLength - 3))}...`;
 }
 
+function postJson(
+  urlValue: string,
+  payload: Record<string, unknown>,
+  timeoutMs: number,
+) {
+  return new Promise<DiscordWebhookResponse>((resolve, reject) => {
+    let webhookUrl: URL;
+
+    try {
+      webhookUrl = new URL(urlValue);
+    } catch (error) {
+      reject(error);
+      return;
+    }
+
+    const client =
+      webhookUrl.protocol === "https:"
+        ? https
+        : webhookUrl.protocol === "http:"
+          ? http
+          : null;
+
+    if (!client) {
+      reject(new Error(`Unsupported Discord webhook protocol: ${webhookUrl.protocol}`));
+      return;
+    }
+
+    const body = JSON.stringify(payload);
+    const request = client.request(
+      webhookUrl,
+      {
+        method: "POST",
+        headers: {
+          "Content-Length": Buffer.byteLength(body),
+          "Content-Type": "application/json",
+        },
+      },
+      (response) => {
+        const chunks: string[] = [];
+
+        response.setEncoding("utf8");
+        response.on("data", (chunk) => {
+          chunks.push(chunk);
+        });
+        response.on("end", () => {
+          resolve({
+            body: chunks.join(""),
+            statusCode: response.statusCode ?? 0,
+            statusText: response.statusMessage ?? "",
+          });
+        });
+      },
+    );
+
+    request.setTimeout(timeoutMs, () => {
+      request.destroy(new Error(`Request timed out after ${timeoutMs}ms`));
+    });
+    request.on("error", reject);
+    request.write(body);
+    request.end();
+  });
+}
+
 function buildDiscordContent(input: NotifyEventCreatedInput) {
-  const optionsPreview = input.options.map((option, index) => `${index + 1}. ${option}`).join("\n");
+  const optionsPreview = input.options
+    .map((option, index) => `${index + 1}. ${option}`)
+    .join("\n");
 
   const lines = [
     "New market created",
     `Title: ${input.title}`,
-    input.description ? `Description: ${truncate(input.description, 240)}` : null,
+    input.description
+      ? `Description: ${truncate(input.description, 240)}`
+      : null,
     `Closing at: ${input.closingAt ?? "not set"}`,
     `Min bet: ${input.minBet}`,
     `Max bet: ${input.maxBet ?? "not set"}`,
@@ -47,8 +122,13 @@ function buildDiscordContent(input: NotifyEventCreatedInput) {
 }
 
 class DiscordService {
+  private warnedMissingWebhook = false;
+
   private getWebhookUrl() {
-    const value = env.DISCORD_EVENTS_WEBHOOK_URL;
+    const value =
+      env.DISCORD_EVENTS_WEBHOOK_URL ??
+      env.DISCORD_WEBHOOK_URL ??
+      env.DISCORD_WEBHOOK;
 
     if (!value || value.trim().length === 0) {
       return null;
@@ -61,32 +141,33 @@ class DiscordService {
     const webhookUrl = this.getWebhookUrl();
 
     if (!webhookUrl) {
+      if (!this.warnedMissingWebhook) {
+        this.warnedMissingWebhook = true;
+        logger.warn(
+          "Discord webhook notifications are disabled because no webhook URL is configured",
+        );
+      }
+
       return;
     }
 
     const timeoutMs = env.DISCORD_WEBHOOK_TIMEOUT_MS ?? DEFAULT_TIMEOUT_MS;
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
 
     try {
-      const response = await fetch(webhookUrl, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
+      const response = await postJson(
+        webhookUrl,
+        {
           content: buildDiscordContent(input),
           allowed_mentions: { parse: [] },
-        }),
-        signal: controller.signal,
-      });
+        },
+        timeoutMs,
+      );
 
-      if (!response.ok) {
-        const body = await response.text().catch(() => "");
+      if (response.statusCode < 200 || response.statusCode >= 300) {
         logger.warn("Discord webhook returned non-success status", {
-          status: response.status,
+          status: response.statusCode,
           statusText: response.statusText,
-          responseBody: truncate(body, 400),
+          responseBody: truncate(response.body, 400),
           eventId: input.eventId,
         });
       }
@@ -95,8 +176,6 @@ class DiscordService {
         eventId: input.eventId,
         error: error instanceof Error ? error.message : String(error),
       });
-    } finally {
-      clearTimeout(timer);
     }
   }
 }

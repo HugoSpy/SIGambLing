@@ -88,7 +88,9 @@ const excludedUserSelect = {
 } satisfies Prisma.EventExclusionSelect;
 
 type BetRecord = Prisma.BetGetPayload<{ select: typeof betSelect }>;
-type EventSummaryRecord = Prisma.EventGetPayload<{ select: typeof eventSummarySelect }>;
+type EventSummaryRecord = Prisma.EventGetPayload<{
+  select: typeof eventSummarySelect;
+}>;
 
 type EventForViewer = Prisma.EventGetPayload<{
   include: {
@@ -174,7 +176,10 @@ function calculatePotentialPayout(stake: number, odds: number) {
   return Math.floor(stake * odds);
 }
 
-function hasSignificantOddsDrift(expectedOdds: number | undefined, currentOdds: number) {
+function hasSignificantOddsDrift(
+  expectedOdds: number | undefined,
+  currentOdds: number,
+) {
   return (
     expectedOdds !== undefined &&
     Number.isFinite(expectedOdds) &&
@@ -197,8 +202,14 @@ function createOddsChangeEntry(input: {
     previous_odds: roundOdds(input.expectedOdds),
     current_odds: roundOdds(input.currentOdds),
     stake: input.stake,
-    potential_payout_before: calculatePotentialPayout(input.stake, input.expectedOdds),
-    potential_payout_after: calculatePotentialPayout(input.stake, input.currentOdds),
+    potential_payout_before: calculatePotentialPayout(
+      input.stake,
+      input.expectedOdds,
+    ),
+    potential_payout_after: calculatePotentialPayout(
+      input.stake,
+      input.currentOdds,
+    ),
   } satisfies OddsChangeEntry;
 }
 
@@ -260,17 +271,18 @@ function getOptionLabel(entry: Prisma.JsonValue) {
 
 function extractLegacyPoolByOption(value: Prisma.JsonValue) {
   if (value && typeof value === "object" && !Array.isArray(value)) {
-    return Object.entries(value as Record<string, unknown>).reduce<Record<string, number>>(
-      (accumulator, [key, rawValue]) => {
-        accumulator[key] =
-          typeof rawValue === "number" && Number.isFinite(rawValue) && rawValue > 0
-            ? Math.round(rawValue)
-            : 0;
+    return Object.entries(value as Record<string, unknown>).reduce<
+      Record<string, number>
+    >((accumulator, [key, rawValue]) => {
+      accumulator[key] =
+        typeof rawValue === "number" &&
+        Number.isFinite(rawValue) &&
+        rawValue > 0
+          ? Math.round(rawValue)
+          : 0;
 
-        return accumulator;
-      },
-      {},
-    );
+      return accumulator;
+    }, {});
   }
 
   if (!Array.isArray(value)) {
@@ -326,7 +338,9 @@ function normalizeInitialOddsMap(
   inputOdds: Record<string, number>,
   currentOptions?: StoredEventOption[],
 ) {
-  const currentByLabel = new Map((currentOptions ?? []).map((option) => [option.label, option]));
+  const currentByLabel = new Map(
+    (currentOptions ?? []).map((option) => [option.label, option]),
+  );
   const fallbackOdd = getDefaultInitialOdds(optionLabels.length);
 
   return optionLabels.reduce<Record<string, number>>((accumulator, label) => {
@@ -335,7 +349,7 @@ function normalizeInitialOddsMap(
     const nextOdd =
       typeof requested === "number" && Number.isFinite(requested)
         ? requested
-        : current?.initial_odds ?? fallbackOdd;
+        : (current?.initial_odds ?? fallbackOdd);
 
     accumulator[label] = roundOdds(clamp(nextOdd, 1.01, 100));
     return accumulator;
@@ -416,12 +430,14 @@ function normalizeStoredOptions(
       const totalStaked =
         typeof totalStakedRaw === "number" && Number.isFinite(totalStakedRaw)
           ? totalStakedRaw
-          : legacyPoolByOption[label] ?? 0;
+          : (legacyPoolByOption[label] ?? 0);
 
       return {
         label,
         initial_odds: roundOdds(clamp(initialOdds, 1.01, 100)),
-        current_odds: roundOdds(clamp(currentOdds, LIVE_PARIMUTUEL_HOUSE_EDGE, MAX_LIVE_ODDS)),
+        current_odds: roundOdds(
+          clamp(currentOdds, LIVE_PARIMUTUEL_HOUSE_EDGE, MAX_LIVE_ODDS),
+        ),
         total_staked: totalStaked > 0 ? Math.round(totalStaked) : 0,
         is_winning: typeof isWinningRaw === "boolean" ? isWinningRaw : null,
       };
@@ -439,7 +455,10 @@ function normalizeStoredOptions(
 
 function recalculateLiveOptions(inputOptions: StoredEventOption[]) {
   const options = inputOptions.map((option) => ({ ...option }));
-  const totalVolume = options.reduce((sum, option) => sum + option.total_staked, 0);
+  const totalVolume = options.reduce(
+    (sum, option) => sum + option.total_staked,
+    0,
+  );
 
   if (totalVolume <= 0) {
     return options.map((option) => ({
@@ -461,13 +480,16 @@ function recalculateLiveOptions(inputOptions: StoredEventOption[]) {
       option.total_staked <= 0
         ? MAX_LIVE_ODDS
         : clamp(
-            (totalVolume / option.total_staked) * (1 - LIVE_PARIMUTUEL_HOUSE_EDGE),
+            (totalVolume / option.total_staked) *
+              (1 - LIVE_PARIMUTUEL_HOUSE_EDGE),
             LIVE_PARIMUTUEL_HOUSE_EDGE,
             MAX_LIVE_ODDS,
           );
     const blendedOdds =
       option.initial_odds + (targetOdds - option.initial_odds) * blendFactor;
-    const previousOdds = roundOdds(clamp(option.current_odds, LIVE_PARIMUTUEL_HOUSE_EDGE, MAX_LIVE_ODDS));
+    const previousOdds = roundOdds(
+      clamp(option.current_odds, LIVE_PARIMUTUEL_HOUSE_EDGE, MAX_LIVE_ODDS),
+    );
     const lowerBound = previousOdds * (1 - MAX_ODDS_MOVEMENT_PER_BET);
     const upperBound = previousOdds * (1 + MAX_ODDS_MOVEMENT_PER_BET);
     const cappedOdds =
@@ -477,7 +499,9 @@ function recalculateLiveOptions(inputOptions: StoredEventOption[]) {
 
     return {
       ...option,
-      current_odds: roundOdds(clamp(cappedOdds, LIVE_PARIMUTUEL_HOUSE_EDGE, MAX_LIVE_ODDS)),
+      current_odds: roundOdds(
+        clamp(cappedOdds, LIVE_PARIMUTUEL_HOUSE_EDGE, MAX_LIVE_ODDS),
+      ),
     };
   });
 }
@@ -488,7 +512,11 @@ function buildStoredOptions(
   currentOptions?: StoredEventOption[],
 ) {
   dedupeOptions(optionLabels);
-  const normalizedOdds = normalizeInitialOddsMap(optionLabels, optionInitialOdds, currentOptions);
+  const normalizedOdds = normalizeInitialOddsMap(
+    optionLabels,
+    optionInitialOdds,
+    currentOptions,
+  );
   const nextOptions = optionLabels.map((label) => {
     const current = currentOptions?.find((entry) => entry.label === label);
 
@@ -526,7 +554,8 @@ function getEventType(options: StoredEventOption[]) {
 }
 
 function serializeEventOption(option: StoredEventOption, totalPool: number) {
-  const percentage = totalPool > 0 ? (option.total_staked / totalPool) * 100 : 0;
+  const percentage =
+    totalPool > 0 ? (option.total_staked / totalPool) * 100 : 0;
 
   return {
     label: option.label,
@@ -584,7 +613,10 @@ function serializeBet(bet: BetRecord) {
 
 function serializeEvent(event: EventForViewer) {
   const options = normalizeStoredOptions(event.options, event.poolByOption);
-  const totalPool = options.reduce((sum, option) => sum + option.total_staked, 0);
+  const totalPool = options.reduce(
+    (sum, option) => sum + option.total_staked,
+    0,
+  );
   const myBets = event.bets.map((bet) => serializeBet(bet));
   const excluded = event.excludedUsers.length > 0;
 
@@ -605,7 +637,8 @@ function serializeEvent(event: EventForViewer) {
     min_bet: event.minBet,
     max_bet: event.maxBet,
     is_excluded: excluded,
-    can_bet: event.status === EventStatus.OPEN && !excluded && myBets.length < 25,
+    can_bet:
+      event.status === EventStatus.OPEN && !excluded && myBets.length < 25,
     my_bets: myBets,
     my_bet_count: myBets.length,
     created_by: event.createdBy
@@ -619,8 +652,13 @@ function serializeEvent(event: EventForViewer) {
 
 function serializeAdminEvent(event: EventForAdmin) {
   const options = normalizeStoredOptions(event.options, event.poolByOption);
-  const totalPool = options.reduce((sum, option) => sum + option.total_staked, 0);
-  const margin = getMarginFromOdds(options.map((option) => option.initial_odds));
+  const totalPool = options.reduce(
+    (sum, option) => sum + option.total_staked,
+    0,
+  );
+  const margin = getMarginFromOdds(
+    options.map((option) => option.initial_odds),
+  );
 
   return {
     id: event.id,
@@ -683,7 +721,10 @@ function serializeProposal(proposal: ProposalRecord) {
   };
 }
 
-function buildOddsHistoryEntries(eventId: string, options: StoredEventOption[]) {
+function buildOddsHistoryEntries(
+  eventId: string,
+  options: StoredEventOption[],
+) {
   return options.map((option) => ({
     eventId,
     option: option.label,
@@ -693,7 +734,10 @@ function buildOddsHistoryEntries(eventId: string, options: StoredEventOption[]) 
 }
 
 function getFriendlyConstraintMessage(error: unknown, fallback: string) {
-  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+  if (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2002"
+  ) {
     return "Cette valeur existe déjà.";
   }
 
@@ -735,7 +779,10 @@ function computeBetSettlement(bet: SettledBetRecord) {
     };
   }
 
-  const combinedOdds = winningLegs.reduce((product, leg) => product * Number(leg.oddsAtBet), 1);
+  const combinedOdds = winningLegs.reduce(
+    (product, leg) => product * Number(leg.oddsAtBet),
+    1,
+  );
 
   return {
     status: BetStatus.won,
@@ -823,12 +870,18 @@ class EventService {
     });
 
     if (users.length !== new Set(userIds).size) {
-      throw new AppError("Impossible d'exclure un ou plusieurs utilisateurs.", 400);
+      throw new AppError(
+        "Impossible d'exclure un ou plusieurs utilisateurs.",
+        400,
+      );
     }
   }
 
   private validateEventInput(
-    input: Pick<CreateEventInput, "options" | "closing_at" | "min_bet" | "max_bet">,
+    input: Pick<
+      CreateEventInput,
+      "options" | "closing_at" | "min_bet" | "max_bet"
+    >,
   ) {
     dedupeOptions(input.options);
 
@@ -837,7 +890,10 @@ class EventService {
     }
 
     if (input.max_bet != null && input.max_bet < input.min_bet) {
-      throw new AppError("La mise max doit être supérieure ou égale à la mise min.", 400);
+      throw new AppError(
+        "La mise max doit être supérieure ou égale à la mise min.",
+        400,
+      );
     }
   }
 
@@ -951,18 +1007,20 @@ class EventService {
       },
     });
 
-    const grouped = history.reduce<Record<string, Array<{ odds: number; total_staked: number; timestamp: string }>>>(
-      (accumulator, entry) => {
-        accumulator[entry.option] = accumulator[entry.option] ?? [];
-        accumulator[entry.option].push({
-          odds: Number(entry.odds),
-          total_staked: entry.totalStaked,
-          timestamp: entry.timestamp.toISOString(),
-        });
-        return accumulator;
-      },
-      {},
-    );
+    const grouped = history.reduce<
+      Record<
+        string,
+        Array<{ odds: number; total_staked: number; timestamp: string }>
+      >
+    >((accumulator, entry) => {
+      accumulator[entry.option] = accumulator[entry.option] ?? [];
+      accumulator[entry.option].push({
+        odds: Number(entry.odds),
+        total_staked: entry.totalStaked,
+        timestamp: entry.timestamp.toISOString(),
+      });
+      return accumulator;
+    }, {});
 
     const options = normalizeStoredOptions(event.options, event.poolByOption);
 
@@ -1113,108 +1171,128 @@ class EventService {
     const excludedUserIds = [...new Set(input.excluded_user_ids)];
     await this.ensureExcludedUsersExist(excludedUserIds);
 
-    const options = buildStoredOptions(input.options, input.option_initial_odds);
+    const options = buildStoredOptions(
+      input.options,
+      input.option_initial_odds,
+    );
     const poolByOption = buildPoolByOption(options);
-    const totalPool = options.reduce((sum, option) => sum + option.total_staked, 0);
+    const totalPool = options.reduce(
+      (sum, option) => sum + option.total_staked,
+      0,
+    );
 
     try {
-      const createdEvent = await this.withSerializableTransaction(async (transaction) => {
-        let approvedProposalId: string | null = null;
+      const createdEvent = await this.withSerializableTransaction(
+        async (transaction) => {
+          let approvedProposalId: string | null = null;
 
-        if (input.proposal_id) {
-          const proposal = await transaction.eventProposal.findUnique({
-            where: {
-              id: input.proposal_id,
+          if (input.proposal_id) {
+            const proposal = await transaction.eventProposal.findUnique({
+              where: {
+                id: input.proposal_id,
+              },
+            });
+
+            if (!proposal) {
+              throw new AppError("Proposition introuvable.", 404);
+            }
+
+            if (proposal.status !== ProposalStatus.PENDING) {
+              throw new AppError(
+                "Seules les propositions en attente peuvent être converties en événement.",
+                400,
+              );
+            }
+
+            approvedProposalId = proposal.id;
+          }
+
+          const eventData: EventCreateData = {
+            title: input.title,
+            description: input.description,
+            imageUrl: input.image_url,
+            options: toJsonOptions(options),
+            poolByOption,
+            totalPool,
+            status: EventStatus.OPEN,
+            closingAt: input.closing_at,
+            minBet: input.min_bet,
+            maxBet: input.max_bet,
+            createdById: adminId,
+            excludedUsers: excludedUserIds.length
+              ? {
+                  createMany: {
+                    data: excludedUserIds.map((userId) => ({
+                      userId,
+                    })),
+                  },
+                }
+              : undefined,
+          };
+
+          const event = await transaction.event.create({
+            data: eventData,
+            include: {
+              createdBy: {
+                select: creatorSelect,
+              },
+              excludedUsers: {
+                select: excludedUserSelect,
+              },
+              _count: {
+                select: {
+                  bets: true,
+                },
+              },
             },
           });
 
-          if (!proposal) {
-            throw new AppError("Proposition introuvable.", 404);
+          if (approvedProposalId) {
+            await transaction.eventProposal.update({
+              where: {
+                id: approvedProposalId,
+              },
+              data: {
+                status: ProposalStatus.APPROVED,
+                reviewedById: adminId,
+                reviewedAt: new Date(),
+                rejectionReason: null,
+              },
+            });
           }
 
-          if (proposal.status !== ProposalStatus.PENDING) {
-            throw new AppError(
-              "Seules les propositions en attente peuvent être converties en événement.",
-              400,
+          await transaction.oddsHistory.createMany({
+            data: buildOddsHistoryEntries(event.id, options),
+          });
+
+          await this.logAdminAction(
+            transaction,
+            adminId,
+            "event_created",
+            event.id,
+            {
+              title: event.title,
+              proposal_id: approvedProposalId,
+            },
+          );
+
+          if (approvedProposalId) {
+            await this.logAdminAction(
+              transaction,
+              adminId,
+              "proposal_approved",
+              approvedProposalId,
+              {
+                event_id: event.id,
+              },
             );
           }
 
-          approvedProposalId = proposal.id;
-        }
+          await gamificationService.synchronizeUserBadges(adminId, transaction);
 
-        const eventData: EventCreateData = {
-          title: input.title,
-          description: input.description,
-          imageUrl: input.image_url,
-          options: toJsonOptions(options),
-          poolByOption,
-          totalPool,
-          status: EventStatus.OPEN,
-          closingAt: input.closing_at,
-          minBet: input.min_bet,
-          maxBet: input.max_bet,
-          createdById: adminId,
-          excludedUsers: excludedUserIds.length
-            ? {
-                createMany: {
-                  data: excludedUserIds.map((userId) => ({
-                    userId,
-                  })),
-                },
-              }
-            : undefined,
-        };
-
-        const event = await transaction.event.create({
-          data: eventData,
-          include: {
-            createdBy: {
-              select: creatorSelect,
-            },
-            excludedUsers: {
-              select: excludedUserSelect,
-            },
-            _count: {
-              select: {
-                bets: true,
-              },
-            },
-          },
-        });
-
-        if (approvedProposalId) {
-          await transaction.eventProposal.update({
-            where: {
-              id: approvedProposalId,
-            },
-            data: {
-              status: ProposalStatus.APPROVED,
-              reviewedById: adminId,
-              reviewedAt: new Date(),
-              rejectionReason: null,
-            },
-          });
-        }
-
-        await transaction.oddsHistory.createMany({
-          data: buildOddsHistoryEntries(event.id, options),
-        });
-
-        await this.logAdminAction(transaction, adminId, "event_created", event.id, {
-          title: event.title,
-          proposal_id: approvedProposalId,
-        });
-
-        if (approvedProposalId) {
-          await this.logAdminAction(transaction, adminId, "proposal_approved", approvedProposalId, {
-            event_id: event.id,
-          });
-        }
-
-        await gamificationService.synchronizeUserBadges(adminId, transaction);
-
-        return event;
-      });
+          return event;
+        },
+      );
 
       const serializedEvent = serializeAdminEvent(createdEvent);
 
@@ -1231,9 +1309,15 @@ class EventService {
 
       return serializedEvent;
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
         throw new AppError(
-          getFriendlyConstraintMessage(error, "Création d'événement impossible."),
+          getFriendlyConstraintMessage(
+            error,
+            "Création d'événement impossible.",
+          ),
           409,
         );
       }
@@ -1259,36 +1343,60 @@ class EventService {
     }
 
     if (existingEvent.status !== EventStatus.OPEN) {
-      throw new AppError("Seuls les événements ouverts peuvent être modifiés.", 400);
+      throw new AppError(
+        "Seuls les événements ouverts peuvent être modifiés.",
+        400,
+      );
     }
 
-    const currentOptions = normalizeStoredOptions(existingEvent.options, existingEvent.poolByOption);
-    const nextLabels = input.options ?? currentOptions.map((option) => option.label);
+    const currentOptions = normalizeStoredOptions(
+      existingEvent.options,
+      existingEvent.poolByOption,
+    );
+    const nextLabels =
+      input.options ?? currentOptions.map((option) => option.label);
     dedupeOptions(nextLabels);
 
     if (
       existingEvent.totalPool > 0 &&
       input.options &&
-      JSON.stringify(currentOptions.map((option) => option.label)) !== JSON.stringify(nextLabels)
+      JSON.stringify(currentOptions.map((option) => option.label)) !==
+        JSON.stringify(nextLabels)
     ) {
-      throw new AppError("Impossible de modifier les options apres les premiers paris.", 400);
+      throw new AppError(
+        "Impossible de modifier les options apres les premiers paris.",
+        400,
+      );
     }
 
-    if (existingEvent.totalPool > 0 && input.option_initial_odds && Object.keys(input.option_initial_odds).length > 0) {
-      throw new AppError("Impossible de modifier les cotes initiales apres les premiers paris.", 400);
+    if (
+      existingEvent.totalPool > 0 &&
+      input.option_initial_odds &&
+      Object.keys(input.option_initial_odds).length > 0
+    ) {
+      throw new AppError(
+        "Impossible de modifier les cotes initiales apres les premiers paris.",
+        400,
+      );
     }
 
     const nextMinBet = input.min_bet ?? existingEvent.minBet;
-    const nextMaxBet = input.max_bet === undefined ? existingEvent.maxBet : input.max_bet;
+    const nextMaxBet =
+      input.max_bet === undefined ? existingEvent.maxBet : input.max_bet;
     const nextClosingAt =
-      input.closing_at === undefined ? existingEvent.closingAt : input.closing_at;
+      input.closing_at === undefined
+        ? existingEvent.closingAt
+        : input.closing_at;
 
     if (nextClosingAt && nextClosingAt <= new Date()) {
       throw new AppError("La date de clôture doit être dans le futur.", 400);
     }
 
     if (nextMaxBet != null && nextMaxBet < nextMinBet) {
-      throw new AppError("La mise max doit être supérieure ou égale à la mise min.", 400);
+      throw new AppError(
+        "La mise max doit être supérieure ou égale à la mise min.",
+        400,
+      );
     }
 
     const excludedUserIds = input.excluded_user_ids
@@ -1299,70 +1407,96 @@ class EventService {
       await this.ensureExcludedUsersExist(excludedUserIds);
     }
 
-    const nextOptions = buildStoredOptions(nextLabels, input.option_initial_odds, currentOptions);
+    const nextOptions = buildStoredOptions(
+      nextLabels,
+      input.option_initial_odds,
+      currentOptions,
+    );
 
     try {
-      const updatedEvent = await this.withSerializableTransaction(async (transaction) => {
-        const event = await transaction.event.update({
-          where: {
-            id: eventId,
-          },
-          data: {
-            title: input.title,
-            description: input.description,
-            imageUrl: input.image_url,
-            options: toJsonOptions(nextOptions),
-            poolByOption: buildPoolByOption(nextOptions),
-            totalPool: nextOptions.reduce((sum, option) => sum + option.total_staked, 0),
-            closingAt: input.closing_at === undefined ? undefined : input.closing_at,
-            minBet: input.min_bet,
-            maxBet: input.max_bet === undefined ? undefined : input.max_bet,
-            excludedUsers: excludedUserIds
-              ? {
-                  deleteMany: {},
-                  createMany: excludedUserIds.length
-                    ? {
-                        data: excludedUserIds.map((userId) => ({
-                          userId,
-                        })),
-                      }
-                    : undefined,
-                }
-              : undefined,
-          },
-          include: {
-            createdBy: {
-              select: creatorSelect,
+      const updatedEvent = await this.withSerializableTransaction(
+        async (transaction) => {
+          const event = await transaction.event.update({
+            where: {
+              id: eventId,
             },
-            excludedUsers: {
-              select: excludedUserSelect,
+            data: {
+              title: input.title,
+              description: input.description,
+              imageUrl: input.image_url,
+              options: toJsonOptions(nextOptions),
+              poolByOption: buildPoolByOption(nextOptions),
+              totalPool: nextOptions.reduce(
+                (sum, option) => sum + option.total_staked,
+                0,
+              ),
+              closingAt:
+                input.closing_at === undefined ? undefined : input.closing_at,
+              minBet: input.min_bet,
+              maxBet: input.max_bet === undefined ? undefined : input.max_bet,
+              excludedUsers: excludedUserIds
+                ? {
+                    deleteMany: {},
+                    createMany: excludedUserIds.length
+                      ? {
+                          data: excludedUserIds.map((userId) => ({
+                            userId,
+                          })),
+                        }
+                      : undefined,
+                  }
+                : undefined,
             },
-            _count: {
-              select: {
-                bets: true,
+            include: {
+              createdBy: {
+                select: creatorSelect,
+              },
+              excludedUsers: {
+                select: excludedUserSelect,
+              },
+              _count: {
+                select: {
+                  bets: true,
+                },
               },
             },
-          },
-        });
+          });
 
-        await this.logAdminAction(transaction, adminId, "event_updated", event.id, {
-          title: event.title,
-        });
+          await this.logAdminAction(
+            transaction,
+            adminId,
+            "event_updated",
+            event.id,
+            {
+              title: event.title,
+            },
+          );
 
-        return event;
-      });
+          return event;
+        },
+      );
 
       return serializeAdminEvent(updatedEvent);
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
-        throw new AppError(getFriendlyConstraintMessage(error, "Modification impossible."), 409);
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        throw new AppError(
+          getFriendlyConstraintMessage(error, "Modification impossible."),
+          409,
+        );
       }
 
       throw error;
     }
   }
 
-  async uploadEventImage(adminId: string, eventId: string, file?: { buffer: Buffer; mimetype: string; size: number }) {
+  async uploadEventImage(
+    adminId: string,
+    eventId: string,
+    file?: { buffer: Buffer; mimetype: string; size: number },
+  ) {
     if (!file) {
       throw new AppError("Aucun fichier reçu.", 400);
     }
@@ -1395,7 +1529,10 @@ class EventService {
       .webp({ quality: 85 })
       .toBuffer();
 
-    const imageUrl = await storageService.uploadEventImage(eventId, normalizedImage);
+    const imageUrl = await storageService.uploadEventImage(
+      eventId,
+      normalizedImage,
+    );
 
     const updatedEvent = await prisma.event.update({
       where: { id: eventId },
@@ -1492,19 +1629,30 @@ class EventService {
       }
 
       if (event.bets.length >= 25) {
-        throw new AppError("Limite de 25 paris atteinte sur cet événement.", 400);
+        throw new AppError(
+          "Limite de 25 paris atteinte sur cet événement.",
+          400,
+        );
       }
 
       if (input.amount < event.minBet) {
-        throw new AppError(`La mise minimum est de ${event.minBet} tokens.`, 400);
+        throw new AppError(
+          `La mise minimum est de ${event.minBet} tokens.`,
+          400,
+        );
       }
 
       if (event.maxBet != null && input.amount > event.maxBet) {
-        throw new AppError(`La mise maximum est de ${event.maxBet} tokens.`, 400);
+        throw new AppError(
+          `La mise maximum est de ${event.maxBet} tokens.`,
+          400,
+        );
       }
 
       const options = normalizeStoredOptions(event.options, event.poolByOption);
-      const chosenOption = options.find((option) => option.label === input.chosen_option);
+      const chosenOption = options.find(
+        (option) => option.label === input.chosen_option,
+      );
 
       if (!chosenOption) {
         throw new AppError("Option de pari invalide.", 400);
@@ -1514,7 +1662,10 @@ class EventService {
         user.acceptOddsChanges || input.accept_any_odds_change === true;
 
       if (
-        hasSignificantOddsDrift(input.expected_odds, chosenOption.current_odds) &&
+        hasSignificantOddsDrift(
+          input.expected_odds,
+          chosenOption.current_odds,
+        ) &&
         !autoAcceptOddsChanges
       ) {
         throwOddsConflict({
@@ -1534,7 +1685,10 @@ class EventService {
             input.amount,
             input.expected_odds ?? chosenOption.current_odds,
           ),
-          total_potential_payout_after: calculatePotentialPayout(input.amount, chosenOption.current_odds),
+          total_potential_payout_after: calculatePotentialPayout(
+            input.amount,
+            chosenOption.current_odds,
+          ),
         });
       }
 
@@ -1602,7 +1756,13 @@ class EventService {
         select: betSelect,
       });
 
-      await jackpotService.recordEventContribution(userId, input.amount, "simple", bet.id, transaction);
+      await jackpotService.recordEventContribution(
+        userId,
+        input.amount,
+        "simple",
+        bet.id,
+        transaction,
+      );
 
       await transaction.event.update({
         where: {
@@ -1611,7 +1771,10 @@ class EventService {
         data: {
           options: toJsonOptions(nextOptions),
           poolByOption: buildPoolByOption(nextOptions),
-          totalPool: nextOptions.reduce((sum, option) => sum + option.total_staked, 0),
+          totalPool: nextOptions.reduce(
+            (sum, option) => sum + option.total_staked,
+            0,
+          ),
         },
       });
 
@@ -1635,7 +1798,11 @@ class EventService {
       if (input.amount === user.balance) {
         await gamificationService.triggerAllIn(userId, transaction);
       }
-      await gamificationService.trackDebit(userId, updatedUser.balance, transaction);
+      await gamificationService.trackDebit(
+        userId,
+        updatedUser.balance,
+        transaction,
+      );
       await gamificationService.synchronizeUserBadges(userId, transaction);
 
       return {
@@ -1708,7 +1875,10 @@ class EventService {
       });
 
       if (events.length !== eventIds.length) {
-        throw new AppError("Un ou plusieurs événements sont introuvables.", 404);
+        throw new AppError(
+          "Un ou plusieurs événements sont introuvables.",
+          404,
+        );
       }
 
       const eventById = new Map(events.map((event) => [event.id, event]));
@@ -1728,11 +1898,17 @@ class EventService {
         const event = eventById.get(betInput.eventId);
 
         if (!event) {
-          throw new AppError("Un ou plusieurs événements sont introuvables.", 404);
+          throw new AppError(
+            "Un ou plusieurs événements sont introuvables.",
+            404,
+          );
         }
 
         if (event.status !== EventStatus.OPEN) {
-          throw new AppError("Tous les événements du panier doivent être ouverts.", 400);
+          throw new AppError(
+            "Tous les événements du panier doivent être ouverts.",
+            400,
+          );
         }
 
         if (isClosingDateExpired(event.closingAt)) {
@@ -1744,27 +1920,47 @@ class EventService {
               status: EventStatus.CLOSED,
             },
           });
-          throw new AppError("Un des événements du panier est déjà fermé.", 400);
+          throw new AppError(
+            "Un des événements du panier est déjà fermé.",
+            400,
+          );
         }
 
         if (event.excludedUsers.length > 0) {
-          throw new AppError("Vous êtes exclu d'un des événements sélectionnés.", 403);
+          throw new AppError(
+            "Vous êtes exclu d'un des événements sélectionnés.",
+            403,
+          );
         }
 
         if (event.bets.length >= 25) {
-          throw new AppError(`Limite de 25 paris atteinte sur ${event.title}.`, 400);
+          throw new AppError(
+            `Limite de 25 paris atteinte sur ${event.title}.`,
+            400,
+          );
         }
 
         if (betInput.amount < event.minBet) {
-          throw new AppError(`La mise minimum pour ${event.title} est de ${event.minBet} tokens.`, 400);
+          throw new AppError(
+            `La mise minimum pour ${event.title} est de ${event.minBet} tokens.`,
+            400,
+          );
         }
 
         if (event.maxBet != null && betInput.amount > event.maxBet) {
-          throw new AppError(`La mise maximum pour ${event.title} est de ${event.maxBet} tokens.`, 400);
+          throw new AppError(
+            `La mise maximum pour ${event.title} est de ${event.maxBet} tokens.`,
+            400,
+          );
         }
 
-        const options = normalizeStoredOptions(event.options, event.poolByOption);
-        const chosenOption = options.find((option) => option.label === betInput.chosenOption);
+        const options = normalizeStoredOptions(
+          event.options,
+          event.poolByOption,
+        );
+        const chosenOption = options.find(
+          (option) => option.label === betInput.chosenOption,
+        );
 
         if (!chosenOption) {
           throw new AppError(`Option invalide pour ${event.title}.`, 400);
@@ -1777,7 +1973,10 @@ class EventService {
           betInput.amount,
           expectedOdds ?? currentOdds,
         );
-        totalPotentialAfter += calculatePotentialPayout(betInput.amount, currentOdds);
+        totalPotentialAfter += calculatePotentialPayout(
+          betInput.amount,
+          currentOdds,
+        );
 
         if (hasSignificantOddsDrift(expectedOdds, currentOdds)) {
           oddsChanges.push(
@@ -1895,12 +2094,18 @@ class EventService {
           data: {
             options: toJsonOptions(prepared.nextOptions),
             poolByOption: buildPoolByOption(prepared.nextOptions),
-            totalPool: prepared.nextOptions.reduce((sum, option) => sum + option.total_staked, 0),
+            totalPool: prepared.nextOptions.reduce(
+              (sum, option) => sum + option.total_staked,
+              0,
+            ),
           },
         });
 
         await transaction.oddsHistory.createMany({
-          data: buildOddsHistoryEntries(prepared.event.id, prepared.nextOptions),
+          data: buildOddsHistoryEntries(
+            prepared.event.id,
+            prepared.nextOptions,
+          ),
         });
       }
 
@@ -1920,7 +2125,11 @@ class EventService {
       if (totalStake === user.balance) {
         await gamificationService.triggerAllIn(userId, transaction);
       }
-      await gamificationService.trackDebit(userId, updatedUser.balance, transaction);
+      await gamificationService.trackDebit(
+        userId,
+        updatedUser.balance,
+        transaction,
+      );
       await gamificationService.synchronizeUserBadges(userId, transaction);
 
       return {
@@ -1936,7 +2145,10 @@ class EventService {
     const uniqueEventIds = new Set(input.legs.map((leg) => leg.eventId));
 
     if (uniqueEventIds.size !== input.legs.length) {
-      throw new AppError("Impossible de combiner deux issues du même événement.", 400);
+      throw new AppError(
+        "Impossible de combiner deux issues du même événement.",
+        400,
+      );
     }
 
     return this.withSerializableTransaction(async (transaction) => {
@@ -1987,11 +2199,17 @@ class EventService {
       });
 
       if (events.length !== input.legs.length) {
-        throw new AppError("Un ou plusieurs événements sont introuvables.", 404);
+        throw new AppError(
+          "Un ou plusieurs événements sont introuvables.",
+          404,
+        );
       }
 
       const eventById = new Map(events.map((event) => [event.id, event]));
-      const eventStates = new Map<string, { options: StoredEventOption[]; totalPool: number }>();
+      const eventStates = new Map<
+        string,
+        { options: StoredEventOption[]; totalPool: number }
+      >();
       const legOdds = new Map<string, number>();
       const oddsChanges: OddsChangeEntry[] = [];
       let totalOdds = 1;
@@ -2003,11 +2221,17 @@ class EventService {
         const event = eventById.get(leg.eventId);
 
         if (!event) {
-          throw new AppError("Un ou plusieurs événements sont introuvables.", 404);
+          throw new AppError(
+            "Un ou plusieurs événements sont introuvables.",
+            404,
+          );
         }
 
         if (event.status !== EventStatus.OPEN) {
-          throw new AppError("Tous les événements du combiné doivent être ouverts.", 400);
+          throw new AppError(
+            "Tous les événements du combiné doivent être ouverts.",
+            400,
+          );
         }
 
         if (isClosingDateExpired(event.closingAt)) {
@@ -2019,15 +2243,26 @@ class EventService {
               status: EventStatus.CLOSED,
             },
           });
-          throw new AppError("Un des événements du combiné est déjà fermé.", 400);
+          throw new AppError(
+            "Un des événements du combiné est déjà fermé.",
+            400,
+          );
         }
 
         if (event.excludedUsers.length > 0) {
-          throw new AppError("Vous êtes exclu d'un des événements sélectionnés.", 403);
+          throw new AppError(
+            "Vous êtes exclu d'un des événements sélectionnés.",
+            403,
+          );
         }
 
-        const options = normalizeStoredOptions(event.options, event.poolByOption);
-        const chosenOption = options.find((option) => option.label === leg.chosenOption);
+        const options = normalizeStoredOptions(
+          event.options,
+          event.poolByOption,
+        );
+        const chosenOption = options.find(
+          (option) => option.label === leg.chosenOption,
+        );
 
         if (!chosenOption) {
           throw new AppError("Une option du combine est invalide.", 400);
@@ -2037,7 +2272,10 @@ class EventService {
         const currentOdds = chosenOption.current_odds;
 
         totalExpectedOdds *= expectedOdds ?? currentOdds;
-        legOdds.set(`${leg.eventId}:${leg.chosenOption}`, chosenOption.current_odds);
+        legOdds.set(
+          `${leg.eventId}:${leg.chosenOption}`,
+          chosenOption.current_odds,
+        );
         totalOdds *= chosenOption.current_odds;
 
         if (hasSignificantOddsDrift(expectedOdds, currentOdds)) {
@@ -2066,7 +2304,10 @@ class EventService {
 
         eventStates.set(event.id, {
           options: nextOptions,
-          totalPool: nextOptions.reduce((sum, option) => sum + option.total_staked, 0),
+          totalPool: nextOptions.reduce(
+            (sum, option) => sum + option.total_staked,
+            0,
+          ),
         });
       }
 
@@ -2075,8 +2316,14 @@ class EventService {
           code: "ODDS_CHANGED",
           bet_type: "PARLAY",
           changes: oddsChanges,
-          total_potential_payout_before: calculatePotentialPayout(input.stake, totalExpectedOdds),
-          total_potential_payout_after: calculatePotentialPayout(input.stake, totalOdds),
+          total_potential_payout_before: calculatePotentialPayout(
+            input.stake,
+            totalExpectedOdds,
+          ),
+          total_potential_payout_after: calculatePotentialPayout(
+            input.stake,
+            totalOdds,
+          ),
         });
       }
 
@@ -2130,7 +2377,13 @@ class EventService {
         select: betSelect,
       });
 
-      await jackpotService.recordEventContribution(userId, input.stake, "parlay", bet.id, transaction);
+      await jackpotService.recordEventContribution(
+        userId,
+        input.stake,
+        "parlay",
+        bet.id,
+        transaction,
+      );
 
       for (const [currentEventId, state] of eventStates.entries()) {
         await transaction.event.update({
@@ -2165,7 +2418,11 @@ class EventService {
       if (input.stake === user.balance) {
         await gamificationService.triggerAllIn(userId, transaction);
       }
-      await gamificationService.trackDebit(userId, updatedUser.balance, transaction);
+      await gamificationService.trackDebit(
+        userId,
+        updatedUser.balance,
+        transaction,
+      );
       await gamificationService.synchronizeUserBadges(userId, transaction);
 
       return {
@@ -2189,35 +2446,45 @@ class EventService {
     }
 
     if (event.status !== EventStatus.OPEN) {
-      throw new AppError("Seuls les événements ouverts peuvent être clos.", 400);
+      throw new AppError(
+        "Seuls les événements ouverts peuvent être clos.",
+        400,
+      );
     }
 
-    const closedEvent = await this.withSerializableTransaction(async (transaction) => {
-      const updatedEvent = await transaction.event.update({
-        where: {
-          id: eventId,
-        },
-        data: {
-          status: EventStatus.CLOSED,
-        },
-        include: {
-          createdBy: {
-            select: creatorSelect,
+    const closedEvent = await this.withSerializableTransaction(
+      async (transaction) => {
+        const updatedEvent = await transaction.event.update({
+          where: {
+            id: eventId,
           },
-          excludedUsers: {
-            select: excludedUserSelect,
+          data: {
+            status: EventStatus.CLOSED,
           },
-          _count: {
-            select: {
-              bets: true,
+          include: {
+            createdBy: {
+              select: creatorSelect,
+            },
+            excludedUsers: {
+              select: excludedUserSelect,
+            },
+            _count: {
+              select: {
+                bets: true,
+              },
             },
           },
-        },
-      });
+        });
 
-      await this.logAdminAction(transaction, adminId, "event_closed", eventId);
-      return updatedEvent;
-    });
+        await this.logAdminAction(
+          transaction,
+          adminId,
+          "event_closed",
+          eventId,
+        );
+        return updatedEvent;
+      },
+    );
 
     return serializeAdminEvent(closedEvent);
   }
@@ -2244,7 +2511,12 @@ class EventService {
         },
       });
 
-      await this.logAdminAction(transaction, adminId, "EVENT_REOPENED", eventId);
+      await this.logAdminAction(
+        transaction,
+        adminId,
+        "EVENT_REOPENED",
+        eventId,
+      );
 
       return serializeAdminEvent(updatedEvent);
     });
@@ -2339,11 +2611,17 @@ class EventService {
 
     const nonBannedUserIds: string[] = [];
     for (const uid of impactedUserIds) {
-      const u = await transaction.user.findUnique({ where: { id: uid }, select: { isBanned: true } });
+      const u = await transaction.user.findUnique({
+        where: { id: uid },
+        select: { isBanned: true },
+      });
       if (u && !u.isBanned) nonBannedUserIds.push(uid);
     }
 
-    await gamificationService.synchronizeManyUserBadges(nonBannedUserIds, transaction);
+    await gamificationService.synchronizeManyUserBadges(
+      nonBannedUserIds,
+      transaction,
+    );
 
     for (const uid of nonBannedUserIds) {
       await gamificationService.triggerLeaderboardTop3(uid, transaction);
@@ -2377,7 +2655,10 @@ class EventService {
         throw new AppError("Événement introuvable.", 404);
       }
 
-      if (event.status !== EventStatus.OPEN && event.status !== EventStatus.CLOSED) {
+      if (
+        event.status !== EventStatus.OPEN &&
+        event.status !== EventStatus.CLOSED
+      ) {
         throw new AppError("Cet événement ne peut pas être résolu.", 400);
       }
 
@@ -2420,10 +2701,21 @@ class EventService {
         },
       });
 
-      await this.settleBetsForEvent(transaction, eventId, BetStatus.won, resolvedOption);
-      await this.logAdminAction(transaction, adminId, "event_resolved", eventId, {
-        resolved_option: resolvedOption,
-      });
+      await this.settleBetsForEvent(
+        transaction,
+        eventId,
+        BetStatus.won,
+        resolvedOption,
+      );
+      await this.logAdminAction(
+        transaction,
+        adminId,
+        "event_resolved",
+        eventId,
+        {
+          resolved_option: resolvedOption,
+        },
+      );
       await gamificationService.synchronizeUserBadges(adminId, transaction);
 
       return serializeAdminEvent(updatedEvent);
@@ -2456,14 +2748,20 @@ class EventService {
       }
 
       if (event.status === EventStatus.RESOLVED) {
-        throw new AppError("Cet événement est résolu. Effectuez un rewind avant de l'annuler.", 400);
+        throw new AppError(
+          "Cet événement est résolu. Effectuez un rewind avant de l'annuler.",
+          400,
+        );
       }
 
       if (event.status === EventStatus.CANCELLED) {
         throw new AppError("Cet événement est déjà annulé.", 400);
       }
 
-      const options = normalizeStoredOptions(event.options, event.poolByOption).map((option) => ({
+      const options = normalizeStoredOptions(
+        event.options,
+        event.poolByOption,
+      ).map((option) => ({
         ...option,
         is_winning: null,
       }));
@@ -2493,7 +2791,12 @@ class EventService {
       });
 
       await this.settleBetsForEvent(transaction, eventId, BetStatus.cancelled);
-      await this.logAdminAction(transaction, adminId, "event_cancelled", eventId);
+      await this.logAdminAction(
+        transaction,
+        adminId,
+        "event_cancelled",
+        eventId,
+      );
       await gamificationService.synchronizeUserBadges(adminId, transaction);
 
       return serializeAdminEvent(updatedEvent);
@@ -2529,7 +2832,10 @@ class EventService {
 
       const gainsByUser = new Map<string, number>();
       for (const bet of wonBets) {
-        gainsByUser.set(bet.userId, (gainsByUser.get(bet.userId) ?? 0) + bet.payout);
+        gainsByUser.set(
+          bet.userId,
+          (gainsByUser.get(bet.userId) ?? 0) + bet.payout,
+        );
       }
 
       const affectedUsers: {
@@ -2572,8 +2878,12 @@ class EventService {
 
         // Delete BetLegs then Bets for those other won bets
         if (otherBetIds.length > 0) {
-          await transaction.betLeg.deleteMany({ where: { betId: { in: otherBetIds } } });
-          await transaction.bet.deleteMany({ where: { id: { in: otherBetIds } } });
+          await transaction.betLeg.deleteMany({
+            where: { betId: { in: otherBetIds } },
+          });
+          await transaction.bet.deleteMany({
+            where: { id: { in: otherBetIds } },
+          });
         }
 
         // nouveauSolde = balance + refund - gainsEvent, clamped to 0
@@ -2602,7 +2912,10 @@ class EventService {
 
       // Also reset BetLegs for these bets
       const eventBetIds = (
-        await transaction.bet.findMany({ where: { eventId }, select: { id: true } })
+        await transaction.bet.findMany({
+          where: { eventId },
+          select: { id: true },
+        })
       ).map((b) => b.id);
 
       if (eventBetIds.length > 0) {
@@ -2613,7 +2926,10 @@ class EventService {
       }
 
       // Reset the event options is_winning flags
-      const options = normalizeStoredOptions(event.options, event.poolByOption).map((opt) => ({
+      const options = normalizeStoredOptions(
+        event.options,
+        event.poolByOption,
+      ).map((opt) => ({
         ...opt,
         is_winning: null,
       }));
@@ -2643,9 +2959,15 @@ class EventService {
         },
       });
 
-      await this.logAdminAction(transaction, adminId, "event_rewinded", eventId, {
-        affected_users_count: affectedUsers.length,
-      });
+      await this.logAdminAction(
+        transaction,
+        adminId,
+        "event_rewinded",
+        eventId,
+        {
+          affected_users_count: affectedUsers.length,
+        },
+      );
 
       return serializeAdminEvent(updatedEvent);
     });
@@ -2752,107 +3074,132 @@ class EventService {
   }
 
   async approveProposal(adminId: string, proposalId: string) {
-    const approvedProposal = await this.withSerializableTransaction(async (transaction) => {
-      const proposal = await transaction.eventProposal.findUnique({
-        where: {
-          id: proposalId,
-        },
-      });
+    const approvedProposal = await this.withSerializableTransaction(
+      async (transaction) => {
+        const proposal = await transaction.eventProposal.findUnique({
+          where: {
+            id: proposalId,
+          },
+        });
 
-      if (!proposal) {
-        throw new AppError("Proposition introuvable.", 404);
-      }
+        if (!proposal) {
+          throw new AppError("Proposition introuvable.", 404);
+        }
 
-      if (proposal.status !== ProposalStatus.PENDING) {
-        throw new AppError("Seules les propositions en attente peuvent etre approuvees.", 400);
-      }
+        if (proposal.status !== ProposalStatus.PENDING) {
+          throw new AppError(
+            "Seules les propositions en attente peuvent etre approuvees.",
+            400,
+          );
+        }
 
-      const updatedProposal = await transaction.eventProposal.update({
-        where: {
-          id: proposalId,
-        },
-        data: {
-          status: ProposalStatus.APPROVED,
-          reviewedById: adminId,
-          reviewedAt: new Date(),
-          rejectionReason: null,
-        },
-        include: {
-          user: {
-            select: {
-              id: true,
-              pseudo: true,
-              email: true,
-              avatarUrl: true,
+        const updatedProposal = await transaction.eventProposal.update({
+          where: {
+            id: proposalId,
+          },
+          data: {
+            status: ProposalStatus.APPROVED,
+            reviewedById: adminId,
+            reviewedAt: new Date(),
+            rejectionReason: null,
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                pseudo: true,
+                email: true,
+                avatarUrl: true,
+              },
+            },
+            reviewer: {
+              select: {
+                id: true,
+                pseudo: true,
+                email: true,
+              },
             },
           },
-          reviewer: {
-            select: {
-              id: true,
-              pseudo: true,
-              email: true,
-            },
-          },
-        },
-      });
+        });
 
-      await this.logAdminAction(transaction, adminId, "proposal_approved", proposalId);
-      return updatedProposal;
-    });
+        await this.logAdminAction(
+          transaction,
+          adminId,
+          "proposal_approved",
+          proposalId,
+        );
+        return updatedProposal;
+      },
+    );
 
     return serializeProposal(approvedProposal);
   }
 
-  async rejectProposal(adminId: string, proposalId: string, input: RejectProposalInput) {
-    const rejectedProposal = await this.withSerializableTransaction(async (transaction) => {
-      const proposal = await transaction.eventProposal.findUnique({
-        where: {
-          id: proposalId,
-        },
-      });
+  async rejectProposal(
+    adminId: string,
+    proposalId: string,
+    input: RejectProposalInput,
+  ) {
+    const rejectedProposal = await this.withSerializableTransaction(
+      async (transaction) => {
+        const proposal = await transaction.eventProposal.findUnique({
+          where: {
+            id: proposalId,
+          },
+        });
 
-      if (!proposal) {
-        throw new AppError("Proposition introuvable.", 404);
-      }
+        if (!proposal) {
+          throw new AppError("Proposition introuvable.", 404);
+        }
 
-      if (proposal.status !== ProposalStatus.PENDING) {
-        throw new AppError("Seules les propositions en attente peuvent etre refusees.", 400);
-      }
+        if (proposal.status !== ProposalStatus.PENDING) {
+          throw new AppError(
+            "Seules les propositions en attente peuvent etre refusees.",
+            400,
+          );
+        }
 
-      const updatedProposal = await transaction.eventProposal.update({
-        where: {
-          id: proposalId,
-        },
-        data: {
-          status: ProposalStatus.REJECTED,
-          reviewedById: adminId,
-          reviewedAt: new Date(),
-          rejectionReason: input.reason,
-        },
-        include: {
-          user: {
-            select: {
-              id: true,
-              pseudo: true,
-              email: true,
-              avatarUrl: true,
+        const updatedProposal = await transaction.eventProposal.update({
+          where: {
+            id: proposalId,
+          },
+          data: {
+            status: ProposalStatus.REJECTED,
+            reviewedById: adminId,
+            reviewedAt: new Date(),
+            rejectionReason: input.reason,
+          },
+          include: {
+            user: {
+              select: {
+                id: true,
+                pseudo: true,
+                email: true,
+                avatarUrl: true,
+              },
+            },
+            reviewer: {
+              select: {
+                id: true,
+                pseudo: true,
+                email: true,
+              },
             },
           },
-          reviewer: {
-            select: {
-              id: true,
-              pseudo: true,
-              email: true,
-            },
-          },
-        },
-      });
+        });
 
-      await this.logAdminAction(transaction, adminId, "proposal_rejected", proposalId, {
-        reason: input.reason,
-      });
-      return updatedProposal;
-    });
+        await this.logAdminAction(
+          transaction,
+          adminId,
+          "proposal_rejected",
+          proposalId,
+          {
+            reason: input.reason,
+          },
+        );
+        return updatedProposal;
+      },
+    );
 
     return serializeProposal(rejectedProposal);
   }
