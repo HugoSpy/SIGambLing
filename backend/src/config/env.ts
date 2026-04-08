@@ -36,6 +36,8 @@ const envSchema = z.object({
   CORS_ALLOWED_ORIGINS: z.string().optional(),
   AVATAR_STORAGE_DIR: z.string().min(1).default("/var/www/sigambling/avatars"),
   AVATAR_PUBLIC_BASE_URL: z.string().min(1).default("/avatars"),
+  DISCORD_EVENTS_WEBHOOK_URL: z.string().url().optional(),
+  DISCORD_WEBHOOK_TIMEOUT_MS: z.coerce.number().int().min(500).max(15000).optional(),
   SENTRY_DSN: z.string().optional(),
 });
 

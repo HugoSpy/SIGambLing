@@ -15,6 +15,7 @@ import type {
   UpdateEventInput,
 } from "../schemas/events.schemas";
 import { AppError } from "../utils/app-error";
+import { discordService } from "./discord.service";
 import { gamificationService } from "./gamification.service";
 import { jackpotService } from "./jackpot.service";
 import { prisma } from "./prisma.service";
@@ -1215,7 +1216,20 @@ class EventService {
         return event;
       });
 
-      return serializeAdminEvent(createdEvent);
+      const serializedEvent = serializeAdminEvent(createdEvent);
+
+      await discordService.notifyEventCreated({
+        eventId: serializedEvent.id,
+        title: serializedEvent.title,
+        description: serializedEvent.description,
+        closingAt: serializedEvent.closing_at,
+        minBet: serializedEvent.min_bet,
+        maxBet: serializedEvent.max_bet,
+        createdByPseudo: serializedEvent.created_by?.pseudo ?? null,
+        options: serializedEvent.options.map((option) => option.label),
+      });
+
+      return serializedEvent;
     } catch (error) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
         throw new AppError(
