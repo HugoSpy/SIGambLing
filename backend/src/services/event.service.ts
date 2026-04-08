@@ -432,7 +432,6 @@ function normalizeStoredOptions(
   }
 
   dedupeOptions(parsedOptions.map((option) => option.label));
-  assertMargin(parsedOptions.map((option) => option.initial_odds));
 
   return parsedOptions;
 }
