@@ -57,7 +57,7 @@ function mapBetToWin(
   return {
     id: bet.id,
     type: "bet",
-    source: "Paris sportifs",
+    source: "Paris Event Live",
     amount: bet.amount,
     payout: bet.payout,
     profit: bet.payout - bet.amount,
