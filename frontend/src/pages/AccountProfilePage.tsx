@@ -1,9 +1,10 @@
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Award, Camera, Check, Coins, Flame, LayoutPanelLeft, Save, Trophy, UserRound } from "lucide-react";
+import { Award, Camera, Coins, Flame, LayoutPanelLeft, Save, Trophy, UserRound } from "lucide-react";
 import toast from "react-hot-toast";
 import { DashboardShell } from "../components/layout/DashboardShell";
 import { LoadingScreen } from "../components/layout/LoadingScreen";
+import { BadgeCard } from "../components/ui/BadgeCard";
 import { Button } from "../components/ui/Button";
 import { Card } from "../components/ui/Card";
 import { Input } from "../components/ui/Input";
@@ -18,25 +19,10 @@ import {
   uploadCurrentUserAvatar,
 } from "../lib/api";
 import { getErrorMessage, notify } from "../lib/notifications";
-import { formatTokens } from "../lib/utils";
 import { useAuthStore } from "../store/auth-store";
 import { useChatStore } from "../store/chat-store";
 import type { AuthUser } from "../types/auth";
-import type { BadgeCatalogRarity, GamificationBadge } from "../types/gamification";
-
-const BADGE_STYLES: Record<GamificationBadge["tone"], string> = {
-  emerald: "border-emerald-400/30 bg-emerald-400/10 text-emerald-300",
-  sky: "border-sky-400/30 bg-sky-400/10 text-sky-300",
-  violet: "border-fuchsia-400/30 bg-fuchsia-400/10 text-fuchsia-300",
-  amber: "border-amber-400/30 bg-amber-400/10 text-amber-300",
-};
-
-const CLAIM_BUTTON_STYLES: Record<BadgeCatalogRarity, string> = {
-  COMMON: "bg-zinc-600/80 hover:bg-zinc-500/80 text-zinc-100 border border-zinc-500/50",
-  RARE: "bg-sky-600/80 hover:bg-sky-500/80 text-white border border-sky-400/50",
-  EPIC: "bg-fuchsia-600/80 hover:bg-fuchsia-500/80 text-white border border-fuchsia-400/50",
-  LEGENDARY: "bg-amber-500/80 hover:bg-amber-400/80 text-black border border-amber-400/50",
-};
+import type { GamificationBadge } from "../types/gamification";
 
 const pseudoRules = [
   {
@@ -436,64 +422,12 @@ export function ProfilePage() {
             {gamification.badges.length > 0 ? (
               <div className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
                 {gamification.badges.map((badge) => (
-                  <div
-                    className={`rounded-[22px] border p-4 ${
-                      badge.unlocked
-                        ? BADGE_STYLES[badge.tone]
-                        : "border-white/10 bg-white/5 text-brand-text"
-                    }`}
+                  <BadgeCard
                     key={badge.key}
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <p className="text-sm font-semibold">{badge.name}</p>
-                      <div className="flex items-center gap-2">
-                        {badge.unlocked && badge.claimed_at !== null && (
-                          <Check className="h-3.5 w-3.5 text-emerald-400" />
-                        )}
-                        <span className="text-[11px] uppercase tracking-[0.24em] text-white/60">
-                          {badge.rarity}
-                        </span>
-                      </div>
-                    </div>
-                    <p className="mt-2 text-xs leading-6 text-white/80">{badge.description}</p>
-                    <div className="mt-4">
-                      <div className="flex items-center justify-between gap-3 text-[11px] uppercase tracking-[0.2em] text-white/60">
-                        <span>Progression</span>
-                        <span>
-                          {badge.progress.current}/{badge.progress.target} {badge.progress.label}
-                        </span>
-                      </div>
-                      <div className="mt-2 h-2 rounded-full bg-white/10">
-                        <div
-                          className={`h-full rounded-full ${badge.unlocked ? "bg-current" : "bg-white/30"}`}
-                          style={{
-                            width: `${Math.min(
-                              100,
-                              Math.round((badge.progress.current / badge.progress.target) * 100),
-                            )}%`,
-                          }}
-                        />
-                      </div>
-                    </div>
-                    <div className="mt-3 flex items-center justify-between gap-2">
-                      <p className="text-[11px] uppercase tracking-[0.24em] text-white/60">
-                        {badge.unlocked && badge.unlocked_at
-                          ? new Date(badge.unlocked_at).toLocaleDateString("fr-FR")
-                          : "verrouille"}
-                      </p>
-                      {badge.unlocked && badge.claimed_at === null && (
-                        <button
-                          className={`rounded-full px-3 py-1 text-[11px] font-semibold transition-colors ${CLAIM_BUTTON_STYLES[badge.catalog_rarity]}`}
-                          disabled={claimingBadge === badge.key}
-                          onClick={() => void handleClaimBadge(badge)}
-                        >
-                          {claimingBadge === badge.key
-                            ? "..."
-                            : `+${formatTokens(badge.reward)} tokens`}
-                        </button>
-                      )}
-                    </div>
-                  </div>
+                    badge={badge}
+                    onClaim={handleClaimBadge}
+                    claiming={claimingBadge === badge.key}
+                  />
                 ))}
               </div>
             ) : (
