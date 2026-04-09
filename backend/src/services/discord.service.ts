@@ -37,7 +37,7 @@ function truncate(value: string, maxLength: number) {
 }
 
 function buildRoleMention(roleId: string) {
-  return `<@&${roleId}>`;
+  return `||<@&${roleId}>||`;
 }
 
 function postJson(
@@ -105,10 +105,10 @@ function postJson(
 
 function buildDiscordContent(input: NotifyEventCreatedInput, roleId: string) {
   const optionsPreview = input.options
-    .map((option, index) => `💸 **${index + 1}.** ${option}`)
+    .map((option, index) => `**${index + 1}.** ${option}`)
     .join("\n");
 
-  const lines = [
+  const lines = [buildRoleMention(roleId),
     "## :boom::money_with_wings: NOUVEL ÉVÉNEMENT DISPONIBLE SUR SIGAMBLING :money_with_wings::boom:",
     "",
     `# 🏆 **${input.title.toUpperCase()}** 🏆`,
@@ -121,7 +121,6 @@ function buildDiscordContent(input: NotifyEventCreatedInput, roleId: string) {
     "",
     `## 🚀💰 [Rejoindre l'événement maintenant](${buildEventUrl(input.eventId)}) 💰🚀`,
     "",
-    buildRoleMention(roleId),
   ].filter((line): line is string => Boolean(line));
 
   return truncate(lines.join("\n"), MAX_DISCORD_CONTENT_LENGTH);
