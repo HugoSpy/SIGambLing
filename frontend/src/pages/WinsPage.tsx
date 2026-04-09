@@ -39,6 +39,7 @@ const sortOptions: { label: string; value: WinSort }[] = [
 function sourceIcon(source: string) {
   if (source === "Roulette") return "🎰";
   if (source === "Blackjack") return "🃏";
+  if (source === "HiLo") return "⬆️⬇️";
   return "🏆";
 }
 
@@ -155,11 +156,10 @@ export function WinsPage() {
             {sortOptions.map((opt) => (
               <button
                 key={opt.value}
-                className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition ${
-                  sort === opt.value
-                    ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
-                    : "border-zinc-800 bg-zinc-900 text-zinc-400 hover:border-zinc-700 hover:text-zinc-100"
-                }`}
+                className={`rounded-lg border px-3 py-1.5 text-sm font-medium transition ${sort === opt.value
+                  ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-300"
+                  : "border-zinc-800 bg-zinc-900 text-zinc-400 hover:border-zinc-700 hover:text-zinc-100"
+                  }`}
                 type="button"
                 onClick={() => setSort(opt.value)}
               >
@@ -194,15 +194,15 @@ export function WinsPage() {
                   <span className="text-sm font-semibold text-emerald-400">+{formatTokens(win.profit)}</span>
                   <span className="text-sm text-gray-500">{formatRelativeDate(win.date)}</span>
                   <div className="flex justify-end">
-                  <button
-                    className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-900 text-zinc-400 transition hover:border-emerald-500/40 hover:text-emerald-400 disabled:cursor-not-allowed disabled:opacity-40"
-                    disabled={isShareDisabled(win.id)}
-                    title="Partager dans le chat"
-                    type="button"
-                    onClick={() => shareWin(win)}
-                  >
-                    <Share2 className="h-4 w-4" />
-                  </button>
+                    <button
+                      className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-zinc-700 bg-zinc-900 text-zinc-400 transition hover:border-emerald-500/40 hover:text-emerald-400 disabled:cursor-not-allowed disabled:opacity-40"
+                      disabled={isShareDisabled(win.id)}
+                      title="Partager dans le chat"
+                      type="button"
+                      onClick={() => shareWin(win)}
+                    >
+                      <Share2 className="h-4 w-4" />
+                    </button>
                   </div>
                 </motion.div>
               ))}
