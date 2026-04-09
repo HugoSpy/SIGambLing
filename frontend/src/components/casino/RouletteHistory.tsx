@@ -18,7 +18,7 @@ export function RouletteHistory({ history }: RouletteHistoryProps) {
           : null;
 
   return (
-    <div className="min-w-[300px] rounded-[26px] border border-white/10 bg-white/5 p-5">
+    <div className="min-w-0 rounded-[26px] border border-white/10 bg-white/5 p-5">
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs uppercase tracking-[0.3em] text-brand-cyan">Historique</p>

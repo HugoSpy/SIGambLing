@@ -40,7 +40,7 @@ export function EventCard({ event, onBet }: EventCardProps) {
   const disabledReason = getDisabledReason(event);
 
   return (
-    <Card className="min-w-[300px] p-4">
+    <Card className="min-w-0 p-4">
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">

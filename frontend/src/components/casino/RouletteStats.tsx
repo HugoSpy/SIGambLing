@@ -42,7 +42,7 @@ export function RouletteStats({ history }: RouletteStatsProps) {
   const { hot, cold } = getHotColdNumbers(history);
 
   return (
-    <div className="min-w-[300px] rounded-[26px] border border-white/10 bg-white/5 p-5">
+    <div className="min-w-0 rounded-[26px] border border-white/10 bg-white/5 p-5">
       <p className="text-xs uppercase tracking-[0.3em] text-brand-orange">Tendances</p>
       <h3 className="mt-2 font-display text-2xl text-brand-text">Numéros du moment</h3>
 

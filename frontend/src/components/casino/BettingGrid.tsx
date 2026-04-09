@@ -234,7 +234,7 @@ export function BettingGrid({ bets, disabled, onPlaceBet }: BettingGridProps) {
   );
 
   return (
-    <Card className="min-w-[300px] overflow-hidden p-0">
+    <Card className="min-w-0 overflow-hidden p-0">
       <div className="border-b border-white/10 px-5 py-4 sm:px-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -247,7 +247,9 @@ export function BettingGrid({ bets, disabled, onPlaceBet }: BettingGridProps) {
       </div>
 
       <div className="px-3 py-4 sm:px-5">
-        <div>
+        {/* overflow-x-auto so the betting grid scrolls horizontally on mobile */}
+        <div className="overflow-x-auto -mx-3 sm:-mx-5 px-3 sm:px-5">
+          <div style={{ minWidth: BOARD_WIDTH }}>
           <div className="relative overflow-hidden rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(11,95,58,0.52),rgba(8,35,28,0.96))] p-4 shadow-[0_24px_48px_rgba(0,0,0,0.26)]">
             <svg
               aria-label="Table de roulette"
@@ -653,6 +655,7 @@ export function BettingGrid({ bets, disabled, onPlaceBet }: BettingGridProps) {
                 </div>
               ) : null}
             </div>
+          </div>
           </div>
         </div>
       </div>

@@ -41,7 +41,7 @@ export function RouletteControls({
   onHalveBets,
 }: RouletteControlsProps) {
   return (
-    <Card accent="cyan" className="min-w-[300px]">
+    <Card accent="cyan">
       <div className="flex items-start justify-between gap-4">
         <div>
           <p className="text-xs uppercase tracking-[0.3em] text-brand-cyan">Panneau de jeu</p>

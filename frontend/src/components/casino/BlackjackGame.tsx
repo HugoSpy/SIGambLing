@@ -1080,7 +1080,7 @@ export function BlackjackGame() {
           Retour au casino
         </Button>
       </Link>
-      <Card accent="cyan" className="min-w-[300px] p-4">
+      <Card accent="cyan" className="min-w-0 p-4">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.3em] text-brand-cyan">Salon casino</p>
@@ -1305,7 +1305,7 @@ export function BlackjackGame() {
         </div>
 
         <div className="flex flex-col gap-3">
-          <Card className="min-w-[300px] p-4">
+          <Card className="min-w-0 p-4">
             <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
               <div className="rounded-[24px] border border-white/10 bg-white/5 px-3 py-2">
                 <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">Mise courante</p>
@@ -1332,7 +1332,7 @@ export function BlackjackGame() {
             </div>
           </Card>
 
-          <Card className="min-w-[300px] p-4">
+          <Card className="min-w-0 p-4">
             {(gameState === "BETTING" || gameState === "GAME_OVER") ? (
               <div className="space-y-3">
                 <div>
@@ -1349,7 +1349,7 @@ export function BlackjackGame() {
                     </button>
                     <input
                       aria-label="Montant de la mise"
-                      className="h-11 w-full rounded-2xl border border-brand-line bg-white/5 px-4 text-center text-sm font-semibold text-brand-text focus:border-brand-cyan/40 focus:outline-none"
+                      className="h-11 w-full rounded-2xl border border-brand-line bg-white/5 px-4 text-center text-base font-semibold text-brand-text focus:border-brand-cyan/40 focus:outline-none"
                       disabled={!canAdjustBet}
                       max={balance}
                       min={1}

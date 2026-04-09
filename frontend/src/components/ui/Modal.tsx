@@ -28,7 +28,7 @@ export function Modal({ title, description, open, onClose, children }: ModalProp
         >
           <motion.div
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            className="w-full max-w-xl rounded-xl border border-zinc-800 bg-zinc-900 p-5 shadow-[0_20px_80px_rgba(0,0,0,0.45)]"
+            className="w-full max-w-xl max-h-[90dvh] overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-900 p-5 shadow-[0_20px_80px_rgba(0,0,0,0.45)]"
             exit={{ opacity: 0, y: 16, scale: 0.98 }}
             initial={{ opacity: 0, y: 24, scale: 0.98 }}
             onClick={(event) => event.stopPropagation()}

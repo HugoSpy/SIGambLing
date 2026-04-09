@@ -230,7 +230,7 @@ export function EventsPage() {
                   <div className="flex items-center gap-3 rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3">
                     <Search className="h-4 w-4 text-zinc-500" />
                     <input
-                      className="w-full bg-transparent text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
+                      className="w-full bg-transparent text-base sm:text-sm text-zinc-100 outline-none placeholder:text-zinc-500"
                       onChange={(event) => setSearch(event.target.value)}
                       placeholder="Titre ou description"
                       value={search}
@@ -411,7 +411,7 @@ export function EventsPage() {
           <label className="block space-y-2">
             <span className="text-sm font-medium text-zinc-200">Titre</span>
             <input
-              className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none transition focus:border-emerald-500"
+              className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-base sm:text-sm text-zinc-100 outline-none transition focus:border-emerald-500"
               onChange={(event) =>
                 setProposalForm((current) => ({ ...current, title: event.target.value }))
               }
@@ -422,7 +422,7 @@ export function EventsPage() {
           <label className="block space-y-2">
             <span className="text-sm font-medium text-zinc-200">Description</span>
             <textarea
-              className="min-h-[120px] w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none transition focus:border-emerald-500"
+              className="min-h-[120px] w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-base sm:text-sm text-zinc-100 outline-none transition focus:border-emerald-500"
               onChange={(event) =>
                 setProposalForm((current) => ({ ...current, description: event.target.value }))
               }
@@ -434,7 +434,7 @@ export function EventsPage() {
             <label className="block space-y-2">
               <span className="text-sm font-medium text-zinc-200">Date suggérée</span>
               <input
-                className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none transition focus:border-emerald-500"
+                className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-base sm:text-sm text-zinc-100 outline-none transition focus:border-emerald-500"
                 onChange={(event) =>
                   setProposalForm((current) => ({
                     ...current,
@@ -455,7 +455,7 @@ export function EventsPage() {
             {proposalOptions.map((option, index) => (
               <div className="flex items-center gap-2" key={index}>
                 <input
-                  className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 outline-none transition focus:border-emerald-500"
+                  className="w-full rounded-lg border border-zinc-700 bg-zinc-950 px-4 py-3 text-base sm:text-sm text-zinc-100 outline-none transition focus:border-emerald-500"
                   onChange={(event) => {
                     const updated = [...proposalOptions];
                     updated[index] = event.target.value;

@@ -184,14 +184,14 @@ export function WinsPage() {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.15, delay: index < 20 ? index * 0.03 : 0 }}
-                  className="grid grid-cols-[180px_1fr_1fr_1fr_48px] items-center rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3"
+                  className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 sm:grid sm:grid-cols-[180px_1fr_1fr_1fr_48px] sm:flex-none sm:gap-0"
                 >
-                  <span className="flex items-center gap-2 font-semibold text-zinc-100">
+                  <span className="flex flex-1 items-center gap-2 font-semibold text-zinc-100 sm:flex-none">
                     <span className="text-lg">{sourceIcon(win.source)}</span>
                     {win.source}
                   </span>
-                  <span className="text-sm text-gray-400">Mise : {formatTokens(win.amount)} tokens</span>
-                  <span className="text-sm font-semibold text-emerald-400">+{formatTokens(win.profit)} tokens</span>
+                  <span className="text-sm text-gray-400">Mise : {formatTokens(win.amount)}</span>
+                  <span className="text-sm font-semibold text-emerald-400">+{formatTokens(win.profit)}</span>
                   <span className="text-sm text-gray-500">{formatRelativeDate(win.date)}</span>
                   <div className="flex justify-end">
                   <button

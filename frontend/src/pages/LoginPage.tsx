@@ -135,14 +135,14 @@ export function LoginPage() {
                 Plateforme exclusive pour étudiants
               </div>
 
-              <h1 className="text-5xl lg:text-6xl font-bold text-zinc-100 mb-4">
+              <h1 className="text-3xl sm:text-4xl lg:text-6xl font-bold text-zinc-100 mb-4">
                 Pariez sur
                 <span className="block text-transparent bg-clip-text bg-gradient-to-r from-emerald-500 to-emerald-400">
                   l'avenir
                 </span>
               </h1>
 
-              <p className="text-xl text-zinc-400 mb-8 leading-relaxed">
+              <p className="text-base sm:text-xl text-zinc-400 mb-6 sm:mb-8 leading-relaxed">
                 Rejoignez une communauté de 60 étudiants qui parient sur des événements réels et
                 tentent leur chance au casino virtuel.
               </p>
@@ -174,7 +174,7 @@ export function LoginPage() {
               {features.map(({ icon: Icon, title, description, color }) => {
                 const c = colorMap[color];
                 return (
-                  <div key={title} className={`${c.card} border rounded-xl p-6`}>
+                  <div key={title} className={`${c.card} border rounded-xl p-4 sm:p-6`}>
                     <div
                       className={`w-12 h-12 ${c.icon} rounded-lg flex items-center justify-center mb-4`}
                     >

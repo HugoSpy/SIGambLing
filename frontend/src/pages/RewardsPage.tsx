@@ -111,7 +111,7 @@ export function RewardsPage() {
       <div className="space-y-6">
         <div>
           <p className="text-xs uppercase tracking-[0.28em] text-emerald-500">Récompenses</p>
-          <h1 className="mt-3 font-display text-4xl text-brand-text">Récompense journalière</h1>
+          <h1 className="mt-3 font-display text-2xl sm:text-4xl text-brand-text">Récompense journalière</h1>
           <p className="mt-3 text-base leading-8 text-brand-muted">
             Connectez-vous chaque jour pour accumuler votre série et augmenter vos bonus.
           </p>
@@ -125,7 +125,7 @@ export function RewardsPage() {
             <p className="mt-4 text-sm uppercase tracking-widest text-zinc-500">
               Prochaine récompense dans
             </p>
-            <p className="mt-2 font-display text-5xl tabular-nums text-emerald-400">{countdown}</p>
+            <p className="mt-2 font-display text-3xl sm:text-5xl tabular-nums text-emerald-400">{countdown}</p>
             {gamification && (
               <p className="mt-4 text-sm text-zinc-400">
                 Série actuelle :{" "}
@@ -144,7 +144,7 @@ export function RewardsPage() {
             <p className="mt-4 text-sm uppercase tracking-widest text-emerald-500/70">
               Récompense disponible
             </p>
-            <p className="mt-2 font-display text-5xl text-emerald-400">
+            <p className="mt-2 font-display text-3xl sm:text-5xl text-emerald-400">
               {formatTokens(rewardAmount)}
             </p>
             <Button

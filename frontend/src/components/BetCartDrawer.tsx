@@ -218,7 +218,7 @@ export function BetCartDrawer() {
               type="button"
             />
             <motion.aside
-              className="fixed inset-x-4 top-4 z-50 mx-auto w-full max-w-3xl rounded-xl border border-zinc-800 bg-zinc-900/95 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
+              className="fixed inset-x-4 top-4 z-50 mx-auto w-full max-w-3xl max-h-[90dvh] overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-900/95 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.45)] backdrop-blur-xl"
               initial={{ y: -80, opacity: 0, scale: 0.98 }}
               animate={{ y: 0, opacity: 1, scale: 1 }}
               exit={{ y: -80, opacity: 0, scale: 0.98 }}
@@ -309,7 +309,7 @@ export function BetCartDrawer() {
                               Mise
                             </span>
                             <input
-                              className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
+                              className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-base text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
                               max={selection.maxBet ?? undefined}
                               min={selection.minBet}
                               onChange={(event) =>
@@ -386,7 +386,7 @@ export function BetCartDrawer() {
                             Mise combinee
                           </span>
                           <input
-                            className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
+                            className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-base text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
                             max={500}
                             min={5}
                             onChange={(event) =>

@@ -95,7 +95,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
   );
 
   return (
-    <div className="surface-grid min-h-screen bg-zinc-950 text-zinc-100">
+    <div className="surface-grid min-h-dvh bg-zinc-950 text-zinc-100">
       <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-zinc-800 bg-zinc-900/95 lg:flex lg:flex-col">
         <div className="flex h-16 items-center gap-3 border-b border-zinc-800 px-6">
           <Dice3 className="h-8 w-8 text-emerald-500" />
@@ -312,7 +312,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
           </div>
         </header>
 
-        <main className="mx-auto max-w-7xl px-4 py-6 pb-24 lg:px-8 lg:pb-8">
+        <main className="mx-auto max-w-7xl px-4 py-6 pb-28 lg:px-8 lg:pb-8">
           <motion.div
             animate={{ opacity: 1, y: 0 }}
             className="min-w-0"
@@ -324,8 +324,11 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
         </main>
       </div>
 
-      <nav className="fixed bottom-0 inset-x-0 z-40 border-t border-zinc-800 bg-zinc-900/95 px-2 py-2 backdrop-blur lg:hidden">
-        <div className={`grid gap-1 ${user.role === "admin" || user.role === "validator" ? "grid-cols-11" : "grid-cols-10"}`}>
+      <nav
+        className="fixed bottom-0 inset-x-0 z-40 border-t border-zinc-800 bg-zinc-900/95 backdrop-blur lg:hidden"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
+      >
+        <div className="flex overflow-x-auto gap-1 px-2 pt-2 pb-2 scrollbar-none">
           {navItems.map((item) => {
             const Icon = item.icon;
             const active =
@@ -339,7 +342,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
               <NavLink
                 key={item.label}
                 className={cn(
-                  "flex flex-col items-center justify-center rounded-lg px-1 py-2 text-[10px] transition-colors",
+                  "flex-none flex flex-col items-center justify-center rounded-lg px-2 py-2 text-[10px] min-w-[56px] transition-colors",
                   active ? "bg-emerald-500/10 text-emerald-400" : "text-zinc-400",
                 )}
                 to={item.href}
@@ -355,7 +358,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
                     </span>
                   )}
                 </span>
-                <span className="mt-1 truncate">{item.label}</span>
+                <span className="mt-1 max-w-[52px] truncate text-center leading-tight">{item.label}</span>
               </NavLink>
             );
           })}
@@ -363,25 +366,27 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
           {/* Chat button in mobile nav */}
           <button
             className={cn(
-              "relative flex flex-col items-center justify-center rounded-lg px-1 py-2 text-[10px] transition-colors",
+              "relative flex-none flex flex-col items-center justify-center rounded-lg px-2 py-2 text-[10px] min-w-[56px] transition-colors",
               chatOpen ? "bg-emerald-500/10 text-emerald-400" : "text-zinc-400",
             )}
             onClick={() => setChatOpen(!chatOpen)}
             type="button"
           >
-            <MessageSquare className="h-4 w-4" />
+            <span className="relative">
+              <MessageSquare className="h-4 w-4" />
+              {unreadCount > 0 && (
+                <span
+                  className={`absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-medium ${
+                    unreadMentions > 0
+                      ? "bg-yellow-400 text-black"
+                      : "bg-red-500 text-white"
+                  }`}
+                >
+                  {unreadCount > 9 ? "9+" : unreadCount}
+                </span>
+              )}
+            </span>
             <span className="mt-1">Chat</span>
-            {unreadCount > 0 && (
-              <span
-                className={`absolute right-0 top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-medium ${
-                  unreadMentions > 0
-                    ? "bg-yellow-400 text-black"
-                    : "bg-red-500 text-black"
-                }`}
-              >
-                {unreadCount > 9 ? "9+" : unreadCount}
-              </span>
-            )}
           </button>
         </div>
       </nav>

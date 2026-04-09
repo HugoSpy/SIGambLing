@@ -221,9 +221,9 @@ export function ProfilePage() {
   return (
     <DashboardShell onLogout={handleLogout} user={user}>
       <div className="space-y-6">
-        <Card accent="cyan" className="min-w-[300px]">
+        <Card accent="cyan">
           <p className="text-xs uppercase tracking-[0.3em] text-brand-cyan">Profil</p>
-          <h1 className="mt-3 font-display text-4xl text-brand-text">Votre espace personnel</h1>
+          <h1 className="mt-3 font-display text-2xl sm:text-4xl text-brand-text">Votre espace personnel</h1>
           <p className="mt-4 text-base leading-8 text-brand-muted">
             Mettez à jour votre photo, gardez un pseudo propre et retrouvez vos informations en un
             coup d&apos;œil.
@@ -231,7 +231,7 @@ export function ProfilePage() {
         </Card>
 
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3">
-          <Card className="min-w-[300px]">
+          <Card className="min-w-0">
             <Coins className="h-5 w-5 text-brand-cyan" />
             <p className="mt-5 text-xs uppercase tracking-[0.28em] text-brand-muted">Solde</p>
             <p className="mt-2 font-display text-3xl text-brand-text">
@@ -239,7 +239,7 @@ export function ProfilePage() {
             </p>
           </Card>
 
-          <Card className="min-w-[300px]">
+          <Card className="min-w-0">
             <Flame className="h-5 w-5 text-brand-orange" />
             <p className="mt-5 text-xs uppercase tracking-[0.28em] text-brand-muted">
               Streak quotidien
@@ -250,7 +250,7 @@ export function ProfilePage() {
             </p>
           </Card>
 
-          <Card className="min-w-[300px]">
+          <Card className="min-w-0">
             <UserRound className="h-5 w-5 text-brand-cyan" />
             <p className="mt-5 text-xs uppercase tracking-[0.28em] text-brand-muted">Pseudo</p>
             <p className="mt-2 font-display text-3xl text-brand-text">{user.pseudo}</p>
@@ -258,7 +258,7 @@ export function ProfilePage() {
         </div>
 
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
-          <Card className="min-w-[300px]">
+          <Card className="min-w-0">
             <div className="flex flex-col items-start gap-6">
               <img
                 alt={`Photo de profil de ${user.pseudo}`}
@@ -290,7 +290,7 @@ export function ProfilePage() {
             </div>
           </Card>
 
-          <Card className="min-w-[300px]">
+          <Card className="min-w-0">
             <div className="space-y-5">
               <Input label="Pseudo" onChange={(event) => setPseudo(event.target.value)} value={pseudo} />
               <div className="rounded-[20px] border border-white/10 bg-white/5 px-4 py-3">
@@ -340,7 +340,7 @@ export function ProfilePage() {
         {gamification ? (
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.1fr)_420px]">
 
-            <Card className="min-w-[300px]">
+            <Card className="min-w-0">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">Rang</p>
@@ -409,7 +409,7 @@ export function ProfilePage() {
         ) : null}
 
         {gamification ? (
-          <Card className="min-w-[300px]">
+          <Card className="min-w-0">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">Jackpot</p>
@@ -450,7 +450,7 @@ export function ProfilePage() {
         ) : null}
 
         {gamification ? (
-          <Card className="min-w-[300px]">
+          <Card className="min-w-0">
             <div className="flex items-start justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">Badges</p>

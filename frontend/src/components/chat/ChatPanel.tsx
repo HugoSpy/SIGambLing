@@ -93,6 +93,14 @@ export function ChatPanel({ open, onClose, initialPrefs }: ChatPanelProps) {
   const isResizingRef = useRef(false);
   const isDraggingRef = useRef(false);
 
+  // ─── Mobile detection ────────────────────────────────────────────────────────
+  const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.innerWidth < 640);
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
+
   // ─── Mention state ───────────────────────────────────────────────────────────
   const [mentionQuery, setMentionQuery]           = useState<string | null>(null);
   const [mentionAnchorPos, setMentionAnchorPos]   = useState(0);
@@ -361,9 +369,12 @@ export function ChatPanel({ open, onClose, initialPrefs }: ChatPanelProps) {
   const inputDisabled = sending || isMuted || !!banStatus?.permanent;
 
   // ─── Positioning style ────────────────────────────────────────────────────────
-  const positionStyle: React.CSSProperties = pos
+  const desktopPositionStyle: React.CSSProperties = pos
     ? { position: "fixed", left: pos.x, top: pos.y, bottom: "auto", right: "auto" }
     : { position: "fixed", bottom: 0, right: 0 };
+  const positionStyle: React.CSSProperties = isMobile
+    ? { position: "fixed", inset: 0, width: "100%", height: "100%", borderRadius: 0 }
+    : { ...desktopPositionStyle, width, height, zoom: zoom / 100 };
 
   return (
     <AnimatePresence>
@@ -371,42 +382,37 @@ export function ChatPanel({ open, onClose, initialPrefs }: ChatPanelProps) {
         <motion.div
           ref={panelRef}
           animate={{ scale: 1, opacity: 1 }}
-          className="z-50 flex flex-col rounded-tl-2xl rounded-tr-2xl border border-zinc-700 bg-zinc-900 shadow-2xl"
+          className="z-50 flex flex-col border border-zinc-700 bg-zinc-900 shadow-2xl rounded-tl-2xl rounded-tr-2xl sm:rounded-tl-2xl sm:rounded-tr-2xl"
           exit={{ scale: 0.95, opacity: 0 }}
           initial={{ scale: 0.95, opacity: 0 }}
           transition={{ duration: 0.15 }}
-          style={{
-            ...positionStyle,
-            width,
-            height,
-            zoom: zoom / 100,
-          }}
+          style={positionStyle}
         >
-          {/* ── Resize handle: top edge ──────────────────────────────────── */}
-          <div
-            className="absolute left-2 right-2 top-0 h-1.5 cursor-row-resize rounded-full transition-colors hover:bg-blue-500/40"
-            onMouseDown={(e) => startResizeGeneric(e, "top")}
-            title="Redimensionner (hauteur)"
-          />
+          {/* ── Resize handles (desktop only) ────────────────────────────── */}
+          {!isMobile && (
+            <>
+              <div
+                className="absolute left-2 right-2 top-0 h-1.5 cursor-row-resize rounded-full transition-colors hover:bg-blue-500/40"
+                onMouseDown={(e) => startResizeGeneric(e, "top")}
+                title="Redimensionner (hauteur)"
+              />
+              <div
+                className="absolute bottom-2 left-0 top-6 w-1.5 cursor-col-resize transition-colors hover:bg-blue-500/40"
+                onMouseDown={(e) => startResizeGeneric(e, "left")}
+                title="Redimensionner (largeur)"
+              />
+              <div
+                className="absolute left-0 top-0 h-4 w-4 cursor-nwse-resize transition-colors hover:bg-blue-500/40 rounded-tl-2xl"
+                onMouseDown={(e) => startResizeGeneric(e, "top-left")}
+                title="Redimensionner"
+              />
+            </>
+          )}
 
-          {/* ── Resize handle: left edge ─────────────────────────────────── */}
+          {/* ── Header ───────────────────────────────────────────────────── */}
           <div
-            className="absolute bottom-2 left-0 top-6 w-1.5 cursor-col-resize transition-colors hover:bg-blue-500/40"
-            onMouseDown={(e) => startResizeGeneric(e, "left")}
-            title="Redimensionner (largeur)"
-          />
-
-          {/* ── Resize handle: top-left corner ───────────────────────────── */}
-          <div
-            className="absolute left-0 top-0 h-4 w-4 cursor-nwse-resize transition-colors hover:bg-blue-500/40 rounded-tl-2xl"
-            onMouseDown={(e) => startResizeGeneric(e, "top-left")}
-            title="Redimensionner"
-          />
-
-          {/* ── Header (drag zone) ───────────────────────────────────────── */}
-          <div
-            className="flex cursor-grab items-center justify-between border-b border-zinc-700 px-4 py-3 active:cursor-grabbing select-none"
-            onMouseDown={startDrag}
+            className={`flex items-center justify-between border-b border-zinc-700 px-4 py-3 select-none ${!isMobile ? "cursor-grab active:cursor-grabbing" : ""}`}
+            onMouseDown={!isMobile ? startDrag : undefined}
           >
             <div className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4 text-emerald-400" />
@@ -538,7 +544,7 @@ export function ChatPanel({ open, onClose, initialPrefs }: ChatPanelProps) {
                 )}
                 <input
                   ref={inputRef}
-                  className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 disabled:opacity-50"
+                  className="flex-1 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-base sm:text-sm text-zinc-100 placeholder-zinc-500 outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/30 disabled:opacity-50"
                   disabled={inputDisabled}
                   maxLength={300}
                   placeholder="Écris un message…"

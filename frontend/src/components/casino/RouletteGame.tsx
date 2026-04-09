@@ -236,7 +236,7 @@ export function RouletteGame() {
 
   return (
     <div className="space-y-6">
-      <Card accent="cyan" className="min-w-[300px]">
+      <Card accent="cyan">
         <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
           <div>
             <Link to="/casino">
@@ -246,7 +246,7 @@ export function RouletteGame() {
               </Button>
             </Link>
             <p className="mt-4 text-xs uppercase tracking-[0.3em] text-brand-cyan">Salon casino</p>
-            <h1 className="mt-3 font-display text-4xl text-brand-text">Roulette Européenne</h1>
+            <h1 className="mt-3 font-display text-2xl md:text-4xl text-brand-text">Roulette Européenne</h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-brand-muted">
               Mise minimum : 10 tokens • Gain maximum : 35:1
             </p>
@@ -275,7 +275,7 @@ export function RouletteGame() {
 
       <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
         <div className="space-y-6 xl:order-1">
-          <Card className="min-w-[300px] overflow-hidden">
+          <Card className="overflow-hidden">
             <div className="flex flex-col gap-5">
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>

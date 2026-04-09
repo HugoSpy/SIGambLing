@@ -96,7 +96,7 @@ export function JackpotPage() {
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.36em] text-brand-cyan">Jackpot live</p>
-                <h1 className="mt-4 font-display text-4xl text-brand-text md:text-6xl">
+                <h1 className="mt-4 font-display text-2xl sm:text-4xl text-brand-text md:text-6xl">
                   La cagnotte permanente
                 </h1>
               </div>
@@ -107,7 +107,7 @@ export function JackpotPage() {
 
             <div className="rounded-[32px] border border-brand-cyan/25 bg-slate-950/35 px-6 py-8 text-center shadow-[0_30px_80px_rgba(7,15,24,0.35)]">
               <p className="text-xs uppercase tracking-[0.32em] text-brand-cyan">Montant actuel</p>
-              <p className="mt-5 font-display text-5xl text-brand-text md:text-7xl">
+              <p className="mt-5 font-display text-3xl sm:text-5xl text-brand-text md:text-7xl">
                 {formatTokens(Math.round(displayedPot))}
               </p>
               <p className="mt-4 text-sm text-brand-muted">

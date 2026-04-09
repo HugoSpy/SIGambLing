@@ -13,7 +13,7 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
       <input
         ref={ref}
         className={cn(
-          "w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 placeholder:text-brand-muted focus:border-brand-cyan/50 focus:bg-white/10",
+          "w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-base text-brand-text outline-none transition-all duration-300 placeholder:text-brand-muted focus:border-brand-cyan/50 focus:bg-white/10",
           error ? "border-red-400/70" : "",
           className,
         )}

@@ -204,7 +204,7 @@ interface AdminEventCardProps {
 
 function AdminEventCard({ event, actionKey, onEdit, onClose, onReopen, onResolve, onCancel, onRewind }: AdminEventCardProps) {
   return (
-    <Card className="min-w-[300px]">
+    <Card className="min-w-0">
       <div className="flex flex-col gap-5 xl:flex-row xl:items-start xl:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
@@ -909,7 +909,7 @@ export function AdminEventsPage() {
 
         {view !== "statistics" ? (
         <div className="grid grid-cols-1 gap-6 xl:grid-cols-[420px_minmax(0,1fr)]">
-          <Card className="min-w-[300px]">
+          <Card className="min-w-0">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.28em] text-brand-cyan">
@@ -936,7 +936,7 @@ export function AdminEventsPage() {
               <label className="block space-y-2">
                 <span className="text-sm font-medium text-brand-text">Titre</span>
                 <input
-                  className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
+                  className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-base text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
                   onChange={(event) => setForm((current) => ({ ...current, title: event.target.value }))}
                   value={form.title}
                 />
@@ -945,7 +945,7 @@ export function AdminEventsPage() {
               <label className="block space-y-2">
                 <span className="text-sm font-medium text-brand-text">Description</span>
                 <textarea
-                  className="min-h-[110px] w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
+                  className="min-h-[110px] w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-base text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
                   onChange={(event) =>
                     setForm((current) => ({ ...current, description: event.target.value }))
                   }
@@ -964,7 +964,7 @@ export function AdminEventsPage() {
                 )}
                 <div className="flex items-center gap-3">
                   <input
-                    className="flex-1 rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
+                    className="flex-1 rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-base text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
                     onChange={(event) =>
                       setForm((current) => ({ ...current, image_url: event.target.value }))
                     }
@@ -1031,7 +1031,7 @@ export function AdminEventsPage() {
                       <div className="flex items-start justify-between gap-3">
                         <div className="grid flex-1 gap-3 sm:grid-cols-[minmax(0,1fr)_120px]">
                           <input
-                            className="w-full rounded-2xl border border-brand-line bg-black/10 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
+                            className="w-full rounded-2xl border border-brand-line bg-black/10 px-4 py-3 text-base text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
                             onChange={(event) =>
                               setForm((current) => ({
                                 ...current,
@@ -1119,7 +1119,7 @@ export function AdminEventsPage() {
                 <label className="block space-y-2">
                   <span className="text-sm font-medium text-brand-text">Clôture</span>
                   <input
-                    className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
+                    className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-base text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
                     onChange={(event) =>
                       setForm((current) => ({ ...current, closing_at: event.target.value }))
                     }
@@ -1131,7 +1131,7 @@ export function AdminEventsPage() {
                 <label className="block space-y-2">
                   <span className="text-sm font-medium text-brand-text">Mise min</span>
                   <input
-                    className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
+                    className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-base text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
                     min={1}
                     onChange={(event) =>
                       setForm((current) => ({ ...current, min_bet: event.target.value }))
@@ -1144,7 +1144,7 @@ export function AdminEventsPage() {
                 <label className="block space-y-2">
                   <span className="text-sm font-medium text-brand-text">Mise max</span>
                   <input
-                    className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
+                    className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-base text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
                     min={1}
                     onChange={(event) =>
                       setForm((current) => ({ ...current, max_bet: event.target.value }))
@@ -1162,7 +1162,7 @@ export function AdminEventsPage() {
                   <div className="flex items-center gap-3 rounded-2xl border border-brand-line bg-white/5 px-4 py-3">
                     <Search className="h-4 w-4 text-brand-muted" />
                     <input
-                      className="w-full bg-transparent text-sm text-brand-text outline-none placeholder:text-brand-muted"
+                      className="w-full bg-transparent text-base text-brand-text outline-none placeholder:text-brand-muted"
                       onChange={(event) => setExcludedUserSearch(event.target.value)}
                       placeholder="Pseudo ou email"
                       value={excludedUserSearch}
@@ -1221,7 +1221,7 @@ export function AdminEventsPage() {
 
           <div className="space-y-6">
             {view === "proposals" ? (
-              <Card className="min-w-[300px]">
+              <Card className="min-w-0">
               <div className="flex items-center justify-between gap-4">
                 <div>
                   <p className="text-xs uppercase tracking-[0.28em] text-brand-orange">
@@ -1307,7 +1307,7 @@ export function AdminEventsPage() {
 
             {view === "users" ? (
               <div className="grid gap-6 xl:grid-cols-[minmax(0,0.95fr)_minmax(320px,0.8fr)]">
-                <Card className="min-w-[300px]">
+                <Card className="min-w-0">
                   <div className="flex items-center justify-between gap-4">
                     <div>
                       <p className="text-xs uppercase tracking-[0.28em] text-brand-cyan">
@@ -1328,7 +1328,7 @@ export function AdminEventsPage() {
                       <div className="flex items-center gap-3 rounded-2xl border border-brand-line bg-white/5 px-4 py-3">
                         <Search className="h-4 w-4 text-brand-muted" />
                         <input
-                          className="w-full bg-transparent text-sm text-brand-text outline-none placeholder:text-brand-muted"
+                          className="w-full bg-transparent text-base text-brand-text outline-none placeholder:text-brand-muted"
                           onChange={(event) => setAdminUserSearch(event.target.value)}
                           placeholder="Rechercher un joueur"
                           value={adminUserSearch}
@@ -1378,7 +1378,7 @@ export function AdminEventsPage() {
                   </div>
                 </Card>
 
-                <Card className="min-w-[300px]">
+                <Card className="min-w-0">
                   {selectedAdminUser ? (
                     <div className="space-y-6">
                       <div>
@@ -1429,7 +1429,7 @@ export function AdminEventsPage() {
                           <label className="block space-y-2">
                             <span className="text-sm font-medium text-brand-text">Montant</span>
                             <input
-                              className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
+                              className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-base text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
                               onChange={(event) => setBalanceAdjustment(event.target.value)}
                               placeholder="+250 ou -100"
                               type="number"
@@ -1440,7 +1440,7 @@ export function AdminEventsPage() {
                           <label className="block space-y-2">
                             <span className="text-sm font-medium text-brand-text">Motif</span>
                             <input
-                              className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
+                              className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-base text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
                               onChange={(event) => setBalanceReason(event.target.value)}
                               placeholder="Correction jackpot, geste commercial..."
                               value={balanceReason}
@@ -1559,7 +1559,7 @@ export function AdminEventsPage() {
                             Deblocage manuel
                           </span>
                           <select
-                            className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
+                            className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-base text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
                             onChange={(event) => setSelectedBadgeKey(event.target.value)}
                             value={selectedBadgeKey}
                           >
@@ -1737,7 +1737,7 @@ export function AdminEventsPage() {
                 ) : null}
 
                 {openEvents.length === 0 && terminatedEvents.length === 0 ? (
-                  <Card className="min-w-[300px]">
+                  <Card className="min-w-0">
                     <p className="text-sm leading-7 text-brand-muted">
                       Aucun événement admin à afficher pour le moment.
                     </p>
@@ -1761,7 +1761,7 @@ export function AdminEventsPage() {
             <label className="block space-y-2">
               <span className="text-sm font-medium text-brand-text">Option gagnante</span>
               <select
-                className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-sm text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
+                className="w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-base text-brand-text outline-none transition-all duration-300 focus:border-brand-cyan/50 focus:bg-white/10"
                 onChange={(event) => setResolvedOption(event.target.value)}
                 value={resolvedOption}
               >

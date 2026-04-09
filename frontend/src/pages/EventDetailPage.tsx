@@ -79,7 +79,7 @@ export function EventDetailPage() {
               </span>
             </div>
 
-            <h1 className="mt-4 text-3xl font-bold text-zinc-100">{event.title}</h1>
+            <h1 className="mt-4 text-2xl md:text-3xl font-bold text-zinc-100">{event.title}</h1>
             <p className="mt-3 max-w-3xl text-sm leading-7 text-zinc-400">
               {event.description || "Aucune description fournie pour cet événement."}
             </p>
