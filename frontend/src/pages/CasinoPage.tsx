@@ -24,25 +24,25 @@ const TABS: {
   accentClassName: string;
   icon: typeof CircleDot;
 }[] = [
-  {
-    id: "roulette",
-    label: "Roulette",
-    eyebrow: "Rythme direct",
-    description: "Un tour, une lecture nette, un acces immediat aux mises et au resultat.",
-    href: "/casino/roulette",
-    accentClassName: "from-emerald-500/20 via-emerald-500/5 to-transparent",
-    icon: CircleDot,
-  },
-  {
-    id: "blackjack",
-    label: "Blackjack",
-    eyebrow: "Decision rapide",
-    description: "Une table claire pour suivre la manche, centrer le payout et enchainer sans friction.",
-    href: "/casino/blackjack",
-    accentClassName: "from-amber-500/20 via-amber-500/5 to-transparent",
-    icon: Waves,
-  },
-];
+    {
+      id: "roulette",
+      label: "Roulette",
+      eyebrow: "Rythme direct",
+      description: "Un tour, une lecture nette, un acces immediat aux mises et au resultat.",
+      href: "/casino/roulette",
+      accentClassName: "from-emerald-500/20 via-emerald-500/5 to-transparent",
+      icon: CircleDot,
+    },
+    {
+      id: "blackjack",
+      label: "Blackjack",
+      eyebrow: "Decision rapide",
+      description: "Une table claire pour suivre la manche, centrer le payout et enchainer sans friction.",
+      href: "/casino/blackjack",
+      accentClassName: "from-amber-500/20 via-amber-500/5 to-transparent",
+      icon: Waves,
+    },
+  ];
 
 function isGameTab(value: string | undefined): value is GameTab {
   return value === "roulette" || value === "blackjack";
@@ -105,7 +105,7 @@ export function CasinoPage() {
   return (
     <DashboardShell onLogout={handleLogout} user={user}>
       <div className="space-y-6">
-        
+
 
         {!activeGame ? (
           <div className="grid gap-6 xl:grid-cols-2">
@@ -161,12 +161,12 @@ export function CasinoPage() {
             {[
               {
                 icon: "🎰",
-                label: "Slot Machine",
+                label: "Nouveau jeu de cartes",
                 description: "🔨🔧 Un nouveau jeu débarquera très prochainement",
               },
               {
                 icon: "🃏",
-                label: "Poker",
+                label: "Nouveau jeu de cartes",
                 description: "🔨🔧 Un nouveau jeu débarquera très prochainement",
               },
             ].map((wip) => (
