@@ -16,7 +16,6 @@ type NotifyEventCreatedInput = {
 
 const MAX_DISCORD_CONTENT_LENGTH = 1900;
 const DEFAULT_TIMEOUT_MS = 3000;
-const DEFAULT_DISCORD_EVENTS_ROLE_ID = "1363082435868364820";
 
 type DiscordWebhookResponse = {
   body: string;
@@ -142,10 +141,6 @@ class DiscordService {
     return value;
   }
 
-  private getEventsRoleId() {
-    return env.DISCORD_EVENTS_ROLE_ID ?? DEFAULT_DISCORD_EVENTS_ROLE_ID;
-  }
-
   async notifyEventCreated(input: NotifyEventCreatedInput) {
     const webhookUrl = this.getWebhookUrl();
 
@@ -161,7 +156,7 @@ class DiscordService {
     }
 
     const timeoutMs = env.DISCORD_WEBHOOK_TIMEOUT_MS ?? DEFAULT_TIMEOUT_MS;
-    const roleId = this.getEventsRoleId();
+    const roleId = env.DISCORD_EVENTS_ROLE_ID;
 
     try {
       const response = await postJson(

@@ -42,9 +42,9 @@ const optionalDiscordTimeoutEnv = z.preprocess(
   emptyStringToUndefined,
   z.coerce.number().int().min(500).max(15000).optional(),
 );
-const optionalDiscordRoleIdEnv = z.preprocess(
+const discordRoleIdEnv = z.preprocess(
   emptyStringToUndefined,
-  z.string().regex(/^\d+$/).optional(),
+  z.string().regex(/^\d+$/),
 );
 
 const envSchema = z.object({
@@ -68,7 +68,7 @@ const envSchema = z.object({
   AVATAR_STORAGE_DIR: z.string().min(1).default("/var/www/sigambling/avatars"),
   AVATAR_PUBLIC_BASE_URL: z.string().min(1).default("/avatars"),
   DISCORD_EVENTS_WEBHOOK_URL: optionalUrlEnv,
-  DISCORD_EVENTS_ROLE_ID: optionalDiscordRoleIdEnv,
+  DISCORD_EVENTS_ROLE_ID: discordRoleIdEnv,
   DISCORD_WEBHOOK_URL: optionalUrlEnv,
   DISCORD_WEBHOOK: optionalUrlEnv,
   DISCORD_WEBHOOK_TIMEOUT_MS: optionalDiscordTimeoutEnv,

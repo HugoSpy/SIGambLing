@@ -98,7 +98,6 @@ userRouter.patch(
   "/:id/balance",
   requireAuth,
   requireRole(["admin"]),
-  userLimiter,
   validateBody(adjustUserBalanceSchema),
   adjustUserBalanceController,
 );
@@ -106,7 +105,6 @@ userRouter.post(
   "/:id/badges",
   requireAuth,
   requireRole(["admin"]),
-  userLimiter,
   validateBody(unlockUserBadgeSchema),
   unlockUserBadgeController,
 );
@@ -114,7 +112,6 @@ userRouter.patch(
   "/:id/reward",
   requireAuth,
   requireRole(["admin"]),
-  userLimiter,
   validateBody(updateUserRewardSchema),
   updateUserRewardController,
 );
