@@ -157,6 +157,49 @@ export function CasinoPage() {
                 </Card>
               );
             })}
+            {/* Cards jeux en maintenance */}
+            {[
+              {
+                icon: "🎰",
+                label: "Slot Machine",
+                description: "🔨🔧 Un nouveau jeu débarquera très prochainement",
+              },
+              {
+                icon: "🃏",
+                label: "Poker",
+                description: "🔨🔧 Un nouveau jeu débarquera très prochainement",
+              },
+            ].map((wip) => (
+              <div
+                key={wip.label}
+                className="group relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/95 p-0 opacity-60 cursor-not-allowed select-none hover:border-amber-500/40 transition-colors"
+                aria-disabled="true"
+                tabIndex={-1}
+              >
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-500/10 via-gray-500/5 to-transparent" />
+                <div className="relative flex h-full flex-col gap-6 p-6">
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">
+                        Bientôt disponible
+                      </p>
+                      <h2 className="mt-3 font-display text-3xl text-brand-text">{wip.label}</h2>
+                    </div>
+                    <div className="rounded-2xl border border-white/10 bg-black/20 p-3 text-2xl leading-none">
+                      {wip.icon}
+                    </div>
+                  </div>
+
+                  <p className="max-w-xl text-sm leading-7 text-gray-400 italic">{wip.description}</p>
+
+                  <div className="mt-auto">
+                    <div className="inline-flex items-center gap-2 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-400">
+                      🚧 En maintenance
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         ) : null}
 
