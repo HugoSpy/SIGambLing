@@ -110,14 +110,15 @@ export function HiloGame() {
                 <div className="h-px bg-white/5" />
 
                 {/* Skip */}
-                <button
+                <Button
                   disabled={isLoading}
                   onClick={() => skip()}
-                  className="flex items-center gap-2 text-sm text-zinc-400 hover:text-zinc-200 transition-colors disabled:opacity-40"
+                  variant="secondary"
+                  className="w-full gap-2"
                 >
                   <SkipForward className="h-4 w-4" />
                   Passer la carte
-                </button>
+                </Button>
 
                 <div className="h-px bg-white/5" />
 
@@ -253,18 +254,22 @@ export function HiloGame() {
           </div>
 
           {/* Profit preview */}
-          {isPlaying && multipliers && (
+          {isPlaying && (
             <div className="grid grid-cols-2 gap-3 mb-6">
               <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
-                <p className="text-xs text-zinc-500 mb-0.5">Profit Higher (x{multipliers.higher.toFixed(2)})</p>
-                <p className="text-sm font-mono text-emerald-400">
-                  {formatTokens(Math.floor(initialBet * accumulatedMultiplier * multipliers.higher))} T
+                <p className="text-sm font-semibold text-zinc-400 mb-1">
+                  Profit Higher {multipliers ? `(x${multipliers.higher.toFixed(2)})` : ""}
+                </p>
+                <p className="text-lg font-mono font-bold text-emerald-400">
+                  {multipliers ? `${formatTokens(Math.floor(initialBet * accumulatedMultiplier * multipliers.higher))} T` : "—"}
                 </p>
               </div>
               <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 px-4 py-3">
-                <p className="text-xs text-zinc-500 mb-0.5">Profit Lower (x{multipliers.lower.toFixed(2)})</p>
-                <p className="text-sm font-mono text-blue-400">
-                  {formatTokens(Math.floor(initialBet * accumulatedMultiplier * multipliers.lower))} T
+                <p className="text-sm font-semibold text-zinc-400 mb-1">
+                  Profit Lower {multipliers ? `(x${multipliers.lower.toFixed(2)})` : ""}
+                </p>
+                <p className="text-lg font-mono font-bold text-blue-400">
+                  {multipliers ? `${formatTokens(Math.floor(initialBet * accumulatedMultiplier * multipliers.lower))} T` : "—"}
                 </p>
               </div>
             </div>

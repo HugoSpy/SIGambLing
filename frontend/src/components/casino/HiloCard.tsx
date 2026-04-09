@@ -35,7 +35,7 @@ export function HiloCard({ card, animateKey, size = "md", className }: HiloCardP
   const valueLabel = getValueLabel(card.value);
 
   const sizeClasses = {
-    sm: "w-14 h-20 text-base",
+    sm: "w-16 h-24 text-lg",
     md: "w-24 h-36 text-2xl",
     lg: "w-32 h-48 text-3xl",
   };
@@ -100,7 +100,7 @@ interface HiloCardGhostProps {
 
 export function HiloCardGhost({ label, sublabel, highlight, size = "md" }: HiloCardGhostProps) {
   const sizeClasses = {
-    sm: "w-14 h-20",
+    sm: "w-16 h-24",
     md: "w-24 h-36",
     lg: "w-32 h-48",
   };

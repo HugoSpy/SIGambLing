@@ -16,7 +16,7 @@ export function HiloHistory({ entries }: HiloHistoryProps) {
           <HiloCard card={entry.card} size="sm" />
           <span
             className={cn(
-              "text-xs font-mono font-semibold",
+              "text-sm font-mono font-bold",
               entry.multiplier > 1 ? "text-emerald-400" : "text-zinc-400",
             )}
           >
