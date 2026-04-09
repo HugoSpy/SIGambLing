@@ -16,6 +16,7 @@ type NotifyEventCreatedInput = {
 
 const MAX_DISCORD_CONTENT_LENGTH = 1900;
 const DEFAULT_TIMEOUT_MS = 3000;
+const DEFAULT_DISCORD_EVENTS_ROLE_ID = "1363082435868364820";
 
 type DiscordWebhookResponse = {
   body: string;
@@ -33,6 +34,10 @@ function truncate(value: string, maxLength: number) {
   }
 
   return `${value.slice(0, Math.max(0, maxLength - 3))}...`;
+}
+
+function buildRoleMention(roleId: string) {
+  return `<@&${roleId}>`;
 }
 
 function postJson(
@@ -98,7 +103,7 @@ function postJson(
   });
 }
 
-function buildDiscordContent(input: NotifyEventCreatedInput) {
+function buildDiscordContent(input: NotifyEventCreatedInput, roleId: string) {
   const optionsPreview = input.options
     .map((option, index) => `💸 **${index + 1}.** ${option}`)
     .join("\n");
@@ -116,12 +121,11 @@ function buildDiscordContent(input: NotifyEventCreatedInput) {
     "",
     `## 🚀💰 [Rejoindre l'événement maintenant](${buildEventUrl(input.eventId)}) 💰🚀`,
     "",
-    "<@1363082435868364820>",
+    buildRoleMention(roleId),
   ].filter((line): line is string => Boolean(line));
 
   return truncate(lines.join("\n"), MAX_DISCORD_CONTENT_LENGTH);
 }
-
 
 class DiscordService {
   private warnedMissingWebhook = false;
@@ -139,6 +143,10 @@ class DiscordService {
     return value;
   }
 
+  private getEventsRoleId() {
+    return env.DISCORD_EVENTS_ROLE_ID ?? DEFAULT_DISCORD_EVENTS_ROLE_ID;
+  }
+
   async notifyEventCreated(input: NotifyEventCreatedInput) {
     const webhookUrl = this.getWebhookUrl();
 
@@ -154,13 +162,16 @@ class DiscordService {
     }
 
     const timeoutMs = env.DISCORD_WEBHOOK_TIMEOUT_MS ?? DEFAULT_TIMEOUT_MS;
+    const roleId = this.getEventsRoleId();
 
     try {
       const response = await postJson(
         webhookUrl,
         {
-          content: buildDiscordContent(input),
-          allowed_mentions: { parse: [] },
+          content: buildDiscordContent(input, roleId),
+          allowed_mentions: {
+            roles: [roleId],
+          },
         },
         timeoutMs,
       );
