@@ -176,11 +176,6 @@ export function CasinoPage() {
                 label: "Nouveau jeu de cartes",
                 description: "🔨🔧 Un nouveau jeu débarquera très prochainement",
               },
-              {
-                icon: "🃏",
-                label: "Nouveau jeu de cartes",
-                description: "🔨🔧 Un nouveau jeu débarquera très prochainement",
-              },
             ].map((wip) => (
               <div
                 key={wip.label}
