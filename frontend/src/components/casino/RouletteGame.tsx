@@ -1,5 +1,5 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ArrowLeft, Coins, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { api } from "../../lib/api";
@@ -37,6 +37,7 @@ export function RouletteGame() {
   const [spinRequest, setSpinRequest] = useState<RouletteSpinAnimationRequest | null>(null);
   const [pendingResponse, setPendingResponse] = useState<RouletteSpinResponse | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(soundManager.isEnabled());
+  const pendingTimeoutsRef = useRef<number[]>([]);
 
   const baseBalance = user?.balance ?? 0;
   const totalBet = useMemo(() => bets.reduce((sum, bet) => sum + bet.amount, 0), [bets]);
@@ -56,6 +57,13 @@ export function RouletteGame() {
 
   useEffect(() => {
     soundManager.preload();
+  }, []);
+
+  useEffect(() => {
+    const timeouts = pendingTimeoutsRef.current;
+    return () => {
+      timeouts.forEach((id) => window.clearTimeout(id));
+    };
   }, []);
 
   const handlePlaceBet = useCallback(
@@ -92,6 +100,10 @@ export function RouletteGame() {
   }, [phase]);
 
   const handleSpin = useCallback(async () => {
+    if (phase !== "betting") {
+      return;
+    }
+
     if (bets.length === 0) {
       notify.error("Place au moins un pari avant de lancer la roue.");
       return;
@@ -120,7 +132,7 @@ export function RouletteGame() {
       setPhase(bets.length > 0 ? "betting" : "idle");
       notify.error(getErrorMessage(error, "Erreur lors du lancer de la roue. Vérifiez votre solde et réessayez."));
     }
-  }, [bets]);
+  }, [bets, phase]);
 
   const handleSpinComplete = useCallback(
     (spinId: string) => {
@@ -154,14 +166,23 @@ export function RouletteGame() {
         notify.info("Aucun gain sur ce tour.");
       }
 
-      setPhase("payout");
       setSpinRequest(null);
       setPendingResponse(null);
 
-      window.setTimeout(() => {
+      // Clear any leftover timeouts from a previous round
+      pendingTimeoutsRef.current.forEach((id) => window.clearTimeout(id));
+      pendingTimeoutsRef.current = [];
+
+      // Stage 1 (~1s): clear bets from the table
+      const t1 = window.setTimeout(() => {
         setBets([]);
-        setPhase("idle");
-      }, 1800);
+        // Stage 2 (+300ms): re-enable the table and controls
+        const t2 = window.setTimeout(() => {
+          setPhase("idle");
+        }, 300);
+        pendingTimeoutsRef.current.push(t2);
+      }, 1000);
+      pendingTimeoutsRef.current.push(t1);
     },
     [bets, pendingResponse, queryClient, spinRequest, updateBalance],
   );
