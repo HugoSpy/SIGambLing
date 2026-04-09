@@ -160,7 +160,7 @@ export function CasinoPage() {
             {/* Cards jeux en maintenance */}
             {[
               {
-                icon: "🎰",
+                icon: "🃏",
                 label: "Nouveau jeu de cartes",
                 description: "🔨🔧 Un nouveau jeu débarquera très prochainement",
               },
