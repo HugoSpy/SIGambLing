@@ -78,6 +78,17 @@ export const rouletteSpinSchema = z.object({
 
 export type RouletteSpinInput = z.infer<typeof rouletteSpinSchema>;
 
+export const hiloStartSchema = z.object({
+  betAmount: z.coerce.number().int().min(10),
+});
+
+export const hiloPredictSchema = z.object({
+  prediction: z.enum(["higher", "lower"]),
+});
+
+export type HiloStartInput = z.infer<typeof hiloStartSchema>;
+export type HiloPredictInput = z.infer<typeof hiloPredictSchema>;
+
 export const blackjackDealSchema = z.object({
   bet: z.coerce.number().int().min(1),
 });

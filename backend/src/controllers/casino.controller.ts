@@ -1,5 +1,6 @@
 import type { RequestHandler } from "express";
 import { blackjackService } from "../services/blackjack.service";
+import { hiloService } from "../services/hilo.service";
 import { rouletteService } from "../services/roulette.service";
 
 function getAuthUserId(request: unknown): string {
@@ -92,6 +93,56 @@ export const blackjackSplitController: RequestHandler = async (request, response
   try {
     const userId = getAuthUserId(request);
     const result = await blackjackService.splitHand(userId, request.body.game_id);
+    response.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const hiloStartController: RequestHandler = async (request, response, next) => {
+  try {
+    const userId = getAuthUserId(request);
+    const result = await hiloService.startSession(userId, request.body.betAmount);
+    response.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const hiloPredictController: RequestHandler = async (request, response, next) => {
+  try {
+    const userId = getAuthUserId(request);
+    const result = await hiloService.predict(userId, request.body.prediction);
+    response.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const hiloSkipController: RequestHandler = async (request, response, next) => {
+  try {
+    const userId = getAuthUserId(request);
+    const result = hiloService.skip(userId);
+    response.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const hiloCashOutController: RequestHandler = async (request, response, next) => {
+  try {
+    const userId = getAuthUserId(request);
+    const result = await hiloService.cashOut(userId);
+    response.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const hiloCurrentController: RequestHandler = (request, response, next) => {
+  try {
+    const userId = getAuthUserId(request);
+    const result = hiloService.getCurrent(userId);
     response.json(result);
   } catch (error) {
     next(error);

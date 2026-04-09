@@ -10,7 +10,8 @@ type JackpotContributionSource =
   | "event_simple"
   | "event_parlay"
   | "casino_roulette"
-  | "casino_blackjack";
+  | "casino_blackjack"
+  | "casino_hilo";
 
 type JackpotState = {
   current_pot: number;
@@ -173,14 +174,14 @@ class JackpotService {
   async recordCasinoContribution(
     userId: string,
     wagerAmount: number,
-    sourceGameType: "roulette" | "blackjack",
+    sourceGameType: "roulette" | "blackjack" | "hilo",
     sourceReference?: string,
     client?: DatabaseClient,
   ) {
     return this.addContribution(
       userId,
       wagerAmount,
-      sourceGameType === "roulette" ? "casino_roulette" : "casino_blackjack",
+      sourceGameType === "roulette" ? "casino_roulette" : sourceGameType === "blackjack" ? "casino_blackjack" : "casino_hilo",
       sourceReference,
       client,
     );

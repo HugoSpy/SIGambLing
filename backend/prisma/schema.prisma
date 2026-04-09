@@ -43,6 +43,7 @@ enum ProposalStatus {
 enum CasinoGameType {
   roulette
   blackjack
+  hilo
 }
 
 enum CasinoGameResult {

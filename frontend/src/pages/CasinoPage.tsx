@@ -4,6 +4,7 @@ import { ArrowRight, CircleDot, Coins, Sparkles, Waves } from "lucide-react";
 import toast from "react-hot-toast";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { BlackjackGame } from "../components/casino/BlackjackGame";
+import { HiloGame } from "../components/casino/HiloGame";
 import { RouletteGame } from "../components/casino/RouletteGame";
 import { DashboardShell } from "../components/layout/DashboardShell";
 import { LoadingScreen } from "../components/layout/LoadingScreen";
@@ -13,7 +14,7 @@ import { fetchCurrentUser, logoutRequest } from "../lib/api";
 import { cn } from "../lib/utils";
 import { useAuthStore } from "../store/auth-store";
 
-type GameTab = "roulette" | "blackjack";
+type GameTab = "roulette" | "blackjack" | "hilo";
 
 const TABS: {
   id: GameTab;
@@ -42,10 +43,19 @@ const TABS: {
     accentClassName: "from-amber-500/20 via-amber-500/5 to-transparent",
     icon: Waves,
   },
+  {
+    id: "hilo",
+    label: "HiLo",
+    eyebrow: "Tension croissante",
+    description: "Carte par carte, multipliez votre mise en prédisant la suivante. Encaissez avant de perdre.",
+    href: "/casino/hilo",
+    accentClassName: "from-violet-500/20 via-violet-500/5 to-transparent",
+    icon: Sparkles,
+  },
 ];
 
 function isGameTab(value: string | undefined): value is GameTab {
-  return value === "roulette" || value === "blackjack";
+  return value === "roulette" || value === "blackjack" || value === "hilo";
 }
 
 export function CasinoPage() {
@@ -87,6 +97,7 @@ export function CasinoPage() {
   if (activeGame === "blackjack" && blackjackDisabled && !isAdmin) {
     return <Navigate replace to="/casino" />;
   }
+  // hilo has no feature flag yet — no redirect needed
 
   const isGameDisabled = (id: GameTab) =>
     (id === "roulette" && rouletteDisabled && !isAdmin) ||
@@ -95,6 +106,7 @@ export function CasinoPage() {
   const disabledLabel: Record<GameTab, string> = {
     roulette: "Roulette temporairement indisponible",
     blackjack: "Blackjack temporairement indisponible",
+    hilo: "HiLo temporairement indisponible",
   };
 
   const handleLogout = async () => {
@@ -160,11 +172,6 @@ export function CasinoPage() {
             {/* Cards jeux en maintenance */}
             {[
               {
-                icon: "🎰",
-                label: "Slot Machine",
-                description: "🔨🔧 Un nouveau jeu débarquera très prochainement",
-              },
-              {
                 icon: "🃏",
                 label: "Poker",
                 description: "🔨🔧 Un nouveau jeu débarquera très prochainement",
@@ -205,6 +212,7 @@ export function CasinoPage() {
 
         {activeGame === "roulette" ? <RouletteGame /> : null}
         {activeGame === "blackjack" ? <BlackjackGame /> : null}
+        {activeGame === "hilo" ? <HiloGame /> : null}
 
         {!activeGame ? (
           <Card className="border-white/10 bg-zinc-900/95">
