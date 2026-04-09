@@ -100,26 +100,28 @@ function postJson(
 
 function buildDiscordContent(input: NotifyEventCreatedInput) {
   const optionsPreview = input.options
-    .map((option, index) => `${index + 1}. ${option}`)
+    .map((option, index) => `💸 **${index + 1}.** ${option}`)
     .join("\n");
 
   const lines = [
-    "New market created",
-    `Title: ${input.title}`,
-    input.description
-      ? `Description: ${truncate(input.description, 240)}`
-      : null,
-    `Closing at: ${input.closingAt ?? "not set"}`,
-    `Min bet: ${input.minBet}`,
-    `Max bet: ${input.maxBet ?? "not set"}`,
-    `Created by: ${input.createdByPseudo ?? "unknown"}`,
-    "Options:",
+    "## :boom::money_with_wings: NOUVEL ÉVÉNEMENT DISPONIBLE SUR SIGAMBLING :money_with_wings::boom:",
+    "",
+    `# 🏆 **${input.title.toUpperCase()}** 🏆`,
+    input.description ? `> 🔥 ${truncate(input.description, 180)} 🔥` : null,
+    "",
+    "## :game_die: Choix proposés :",
     optionsPreview,
-    `Open: ${buildEventUrl(input.eventId)}`,
+    "",
+    input.closingAt ? `**⏰ Clôture :** ${input.closingAt}` : null,
+    "",
+    `## 🚀💰 [Rejoindre l'événement maintenant](${buildEventUrl(input.eventId)}) 💰🚀`,
+    "",
+    "<@&1363082435868364820>",
   ].filter((line): line is string => Boolean(line));
 
   return truncate(lines.join("\n"), MAX_DISCORD_CONTENT_LENGTH);
 }
+
 
 class DiscordService {
   private warnedMissingWebhook = false;

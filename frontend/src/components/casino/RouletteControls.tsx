@@ -1,4 +1,4 @@
-import { Volume2, VolumeX } from "lucide-react";
+import { History, Volume2, VolumeX } from "lucide-react";
 import { QUICK_BET_AMOUNTS } from "../../lib/casino/rouletteConstants";
 import { formatTokens } from "../../lib/utils";
 import { Button } from "../ui/Button";
@@ -12,10 +12,15 @@ interface RouletteControlsProps {
   maxPotentialWin: number;
   disabled: boolean;
   soundEnabled: boolean;
+  phase: "idle" | "betting" | "spinning" | "resolving" | "payout";
+  hasLastBets: boolean;
   onBetAmountChange: (amount: number) => void;
   onSpin: () => void;
   onClearBets: () => void;
   onToggleSound: () => void;
+  onRebet: () => void;
+  onDoubleBets: () => void;
+  onHalveBets: () => void;
 }
 
 export function RouletteControls({
@@ -25,10 +30,15 @@ export function RouletteControls({
   maxPotentialWin,
   disabled,
   soundEnabled,
+  phase,
+  hasLastBets,
   onBetAmountChange,
   onSpin,
   onClearBets,
   onToggleSound,
+  onRebet,
+  onDoubleBets,
+  onHalveBets,
 }: RouletteControlsProps) {
   return (
     <Card accent="cyan" className="min-w-[300px]">
@@ -119,7 +129,38 @@ export function RouletteControls({
         </button>
       </div>
 
-      <div className="mt-6 space-y-3">
+      <div className="mt-4 flex flex-wrap gap-2">
+        {phase === "idle" && (
+          <button
+            aria-label="Rejouer les mises précédentes"
+            className="flex items-center gap-1.5 rounded-full border px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 border-white/10 bg-white/5 text-brand-text hover:border-brand-cyan/45 hover:bg-white/10 disabled:hover:border-white/10 disabled:hover:bg-white/5"
+            disabled={!hasLastBets}
+            onClick={onRebet}
+            type="button"
+          >
+            <History className="h-3.5 w-3.5" />
+            Rebet
+          </button>
+        )}
+        <button
+          className="rounded-full border px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 border-white/10 bg-white/5 text-brand-text hover:border-brand-cyan/45 hover:bg-white/10 disabled:hover:border-white/10 disabled:hover:bg-white/5"
+          disabled={disabled || totalBet === 0}
+          onClick={onDoubleBets}
+          type="button"
+        >
+          ×2
+        </button>
+        <button
+          className="rounded-full border px-3 py-2 text-sm font-semibold transition disabled:cursor-not-allowed disabled:opacity-50 border-white/10 bg-white/5 text-brand-text hover:border-brand-cyan/45 hover:bg-white/10 disabled:hover:border-white/10 disabled:hover:bg-white/5"
+          disabled={disabled || totalBet === 0}
+          onClick={onHalveBets}
+          type="button"
+        >
+          ÷2
+        </button>
+      </div>
+
+      <div className="mt-3 space-y-3">
         <Button disabled={disabled || totalBet === 0} fullWidth onClick={onSpin} size="lg">
           {disabled ? "Rotation en cours..." : "Lancer la roue"}
         </Button>

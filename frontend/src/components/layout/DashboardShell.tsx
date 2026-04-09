@@ -1,4 +1,4 @@
-import { type ReactNode, useEffect, useMemo, useState } from "react";
+import { type ReactNode, useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import {
@@ -37,12 +37,7 @@ interface DashboardShellProps {
 
 export function DashboardShell({ user, onLogout, children }: DashboardShellProps) {
   const location = useLocation();
-  const [chatOpen, setChatOpen] = useState(false);
-  const { setOpen: setChatStoreOpen, unreadCount, unreadMentions, clearUnread, resetKey } = useChatStore();
-
-  useEffect(() => {
-    setChatStoreOpen(chatOpen);
-  }, [chatOpen, setChatStoreOpen]);
+  const { isOpen: chatOpen, setOpen: setChatOpen, unreadCount, unreadMentions, resetKey } = useChatStore();
   const liveBalance = useAuthStore((state) => state.user?.balance ?? user.balance);
   const cartSelectionsCount = useBetCartStore((state) => state.selections.length);
   const setCartOpen = useBetCartStore((state) => state.setOpen);
@@ -155,12 +150,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
               "w-full justify-between text-left enabled:hover:border-zinc-700 enabled:hover:bg-zinc-800",
               chatOpen && "border-emerald-500/20 bg-emerald-500/10 text-emerald-400",
             )}
-            onClick={() => {
-              setChatOpen((v) => {
-                if (!v) clearUnread();
-                return !v;
-              });
-            }}
+            onClick={() => setChatOpen(!chatOpen)}
             type="button"
           >
             <span className="inline-flex items-center gap-2">
@@ -378,12 +368,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
               "flex flex-col items-center justify-center rounded-lg px-1 py-2 text-[10px] transition-colors",
               chatOpen ? "bg-emerald-500/10 text-emerald-400" : "text-zinc-400",
             )}
-            onClick={() => {
-              setChatOpen((v) => {
-                if (!v) clearUnread();
-                return !v;
-              });
-            }}
+            onClick={() => setChatOpen(!chatOpen)}
             type="button"
           >
             <span className="relative">

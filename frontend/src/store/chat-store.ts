@@ -16,7 +16,12 @@ export const useChatStore = create<ChatStore>()((set) => ({
   unreadCount: 0,
   unreadMentions: 0,
   resetKey: 0,
-  setOpen: (open) => set({ isOpen: open }),
+  setOpen: (open) =>
+    set((state) => ({
+      isOpen: open,
+      unreadCount: open ? 0 : state.unreadCount,
+      unreadMentions: open ? 0 : state.unreadMentions,
+    })),
   addUnread: (isMention) =>
     set((state) => ({
       unreadCount: state.unreadCount + 1,

@@ -32,6 +32,7 @@ export function RouletteGame() {
     "idle",
   );
   const [bets, setBets] = useState<RouletteBet[]>([]);
+  const [lastBets, setLastBets] = useState<RouletteBet[]>([]);
   const [betAmount, setBetAmount] = useState(10);
   const [history, setHistory] = useState<RouletteResult[]>([]);
   const [spinRequest, setSpinRequest] = useState<RouletteSpinAnimationRequest | null>(null);
@@ -109,6 +110,7 @@ export function RouletteGame() {
       return;
     }
 
+    setLastBets([...bets]);
     setPhase("spinning");
     soundManager.play("spin");
 
@@ -133,6 +135,46 @@ export function RouletteGame() {
       notify.error(getErrorMessage(error, "Erreur lors du lancer de la roue. Vérifiez votre solde et réessayez."));
     }
   }, [bets, phase]);
+
+  const handleRebet = useCallback(() => {
+    if (lastBets.length === 0) return;
+    const total = lastBets.reduce((sum, b) => sum + b.amount, 0);
+    let newBets: RouletteBet[];
+    if (total <= baseBalance) {
+      newBets = lastBets.map((b) => createBet(b.type, b.amount));
+    } else {
+      const factor = baseBalance / total;
+      newBets = lastBets
+        .map((b) => createBet(b.type, Math.floor(b.amount * factor)))
+        .filter((b) => b.amount > 0);
+    }
+    setBets(newBets);
+    if (newBets.length > 0) {
+      setPhase("betting");
+    }
+  }, [lastBets, baseBalance]);
+
+  const handleDoubleBets = useCallback(() => {
+    if (bets.length === 0) return;
+    if (totalBet * 2 > baseBalance) {
+      const factor = Math.floor(baseBalance / totalBet);
+      if (factor <= 1) return;
+      setBets(bets.map((b) => createBet(b.type, b.amount * factor)));
+    } else {
+      setBets(bets.map((b) => createBet(b.type, b.amount * 2)));
+    }
+  }, [bets, totalBet, baseBalance]);
+
+  const handleHalveBets = useCallback(() => {
+    if (bets.length === 0) return;
+    const newBets = bets
+      .map((b) => createBet(b.type, Math.floor(b.amount / 2)))
+      .filter((b) => b.amount > 0);
+    setBets(newBets);
+    if (newBets.length === 0) {
+      setPhase("idle");
+    }
+  }, [bets]);
 
   const handleSpinComplete = useCallback(
     (spinId: string) => {
@@ -263,11 +305,16 @@ export function RouletteGame() {
             balance={availableBalance}
             betAmount={betAmount}
             disabled={phase === "spinning" || phase === "resolving"}
+            hasLastBets={lastBets.length > 0}
             maxPotentialWin={maxPotentialWin}
             onBetAmountChange={setBetAmount}
             onClearBets={handleClearBets}
+            onDoubleBets={handleDoubleBets}
+            onHalveBets={handleHalveBets}
+            onRebet={handleRebet}
             onSpin={() => void handleSpin()}
             onToggleSound={handleToggleSound}
+            phase={phase}
             soundEnabled={soundEnabled}
             totalBet={totalBet}
           />
