@@ -161,8 +161,8 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
               <span
                 className={`absolute right-2 top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-medium ${
                   unreadMentions > 0
-                    ? "animate-pulse bg-yellow-400 text-black"
-                    : "animate-pulse bg-green-500 text-black"
+                    ? "bg-yellow-400 text-black"
+                    : "bg-red-500 text-black"
                 }`}
               >
                 {unreadCount > 9 ? "9+" : unreadCount}
@@ -375,8 +375,8 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
               <span
                 className={`absolute right-0 top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-medium ${
                   unreadMentions > 0
-                    ? "animate-pulse bg-yellow-400 text-black"
-                    : "animate-pulse bg-green-500 text-black"
+                    ? "bg-yellow-400 text-black"
+                    : "bg-red-500 text-black"
                 }`}
               >
                 {unreadCount > 9 ? "9+" : unreadCount}
