@@ -154,22 +154,20 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
             type="button"
           >
             <span className="inline-flex items-center gap-2">
-              <span className="relative">
-                <MessageSquare className="h-4 w-4 text-emerald-400" />
-                {unreadCount > 0 && (
-                  <span
-                    className={`absolute -right-1.5 -top-1.5 flex h-[14px] min-w-[14px] items-center justify-center rounded-full px-0.5 text-[8px] font-bold ${
-                      unreadMentions > 0
-                        ? "animate-pulse bg-yellow-400 text-black"
-                        : "bg-red-500 text-white"
-                    }`}
-                  >
-                    {unreadCount > 99 ? "99+" : unreadCount}
-                  </span>
-                )}
-              </span>
+              <MessageSquare className="h-4 w-4 text-emerald-400" />
               Chat
             </span>
+            {unreadCount > 0 && (
+              <span
+                className={`absolute right-2 top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-medium ${
+                  unreadMentions > 0
+                    ? "animate-pulse bg-yellow-400 text-black"
+                    : "animate-pulse bg-green-500 text-black"
+                }`}
+              >
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
           </button>
 
           <button
@@ -365,27 +363,25 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
           {/* Chat button in mobile nav */}
           <button
             className={cn(
-              "flex flex-col items-center justify-center rounded-lg px-1 py-2 text-[10px] transition-colors",
+              "relative flex flex-col items-center justify-center rounded-lg px-1 py-2 text-[10px] transition-colors",
               chatOpen ? "bg-emerald-500/10 text-emerald-400" : "text-zinc-400",
             )}
             onClick={() => setChatOpen(!chatOpen)}
             type="button"
           >
-            <span className="relative">
-              <MessageSquare className="h-4 w-4" />
-              {unreadCount > 0 && (
-                <span
-                  className={`absolute -right-1.5 -top-1.5 flex h-[14px] min-w-[14px] items-center justify-center rounded-full px-0.5 text-[8px] font-bold ${
-                    unreadMentions > 0
-                      ? "animate-pulse bg-yellow-400 text-black"
-                      : "bg-red-500 text-white"
-                  }`}
-                >
-                  {unreadCount > 99 ? "99+" : unreadCount}
-                </span>
-              )}
-            </span>
+            <MessageSquare className="h-4 w-4" />
             <span className="mt-1">Chat</span>
+            {unreadCount > 0 && (
+              <span
+                className={`absolute right-0 top-1/2 -translate-y-1/2 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-medium ${
+                  unreadMentions > 0
+                    ? "animate-pulse bg-yellow-400 text-black"
+                    : "animate-pulse bg-green-500 text-black"
+                }`}
+              >
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
           </button>
         </div>
       </nav>
