@@ -92,16 +92,16 @@ function makeEntry(prob: number): MultiplierEntry {
 }
 
 function getMultipliers(value: number): HiloMultipliers {
-  const total = 51;
+  const DECK_SIZE = 52;
 
   if (value === 1) {
     // As: can only go higher (strictly) or equal — lower is impossible
     return {
       higherOrEqual: null,
       lowerOrEqual: null,
-      higher: makeEntry(48 / total),
+      higher: makeEntry(48 / DECK_SIZE),
       lower: null,
-      equal: makeEntry(3 / total),
+      equal: makeEntry(4 / DECK_SIZE),
     };
   }
 
@@ -111,14 +111,14 @@ function getMultipliers(value: number): HiloMultipliers {
       higherOrEqual: null,
       lowerOrEqual: null,
       higher: null,
-      lower: makeEntry(48 / total),
-      equal: makeEntry(3 / total),
+      lower: makeEntry(48 / DECK_SIZE),
+      equal: makeEntry(4 / DECK_SIZE),
     };
   }
 
   // Normal cards (2–12): inclusive bets, no separate equal button
-  const pHigherOrEqual = ((13 - value) * 4 + 3) / total;
-  const pLowerOrEqual = ((value - 1) * 4 + 3) / total;
+  const pHigherOrEqual = ((13 - value + 1) * 4) / DECK_SIZE;
+  const pLowerOrEqual = (value * 4) / DECK_SIZE;
   return {
     higherOrEqual: makeEntry(pHigherOrEqual),
     lowerOrEqual: makeEntry(pLowerOrEqual),

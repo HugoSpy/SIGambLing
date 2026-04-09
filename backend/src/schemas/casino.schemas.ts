@@ -83,7 +83,7 @@ export const hiloStartSchema = z.object({
 });
 
 export const hiloPredictSchema = z.object({
-  prediction: z.enum(["higher", "lower"]),
+  prediction: z.enum(["higher", "lower", "equal"]),
 });
 
 export type HiloStartInput = z.infer<typeof hiloStartSchema>;
