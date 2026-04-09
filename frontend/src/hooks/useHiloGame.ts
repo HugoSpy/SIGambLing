@@ -45,7 +45,7 @@ export function useHiloGame() {
     }
   }
 
-  async function predict(prediction: "higher" | "lower") {
+  async function predict(prediction: "higher" | "lower" | "equal") {
     if (!currentCard) return;
     setIsLoading(true);
     try {

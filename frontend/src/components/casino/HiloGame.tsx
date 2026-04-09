@@ -15,7 +15,7 @@ const QUICK_BETS = [10, 25, 50, 100];
 export function HiloGame() {
   const user = useAuthStore((s) => s.user);
   const [bet, setBet] = useState(10);
-  const [hoveredAction, setHoveredAction] = useState<"higher" | "lower" | null>(null);
+  const [hoveredAction, setHoveredAction] = useState<"higher" | "lower" | "equal" | null>(null);
 
   const {
     phase,
@@ -122,65 +122,145 @@ export function HiloGame() {
 
                 <div className="h-px bg-white/5" />
 
-                {/* Higher */}
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <p className="text-xs text-zinc-400">
-                      Supérieure ≥{" "}
-                      <span className="text-zinc-200">
-                        {multipliers ? `${(multipliers.higherProbability * 100).toFixed(1)}%` : "—"}
-                      </span>
-                    </p>
-                    {multipliers && (
-                      <span className="text-xs font-mono text-emerald-400">x{multipliers.higher.toFixed(2)}</span>
-                    )}
-                  </div>
-                  <Button
-                    disabled={isLoading}
-                    onClick={() => predict("higher")}
-                    onMouseEnter={() => setHoveredAction("higher")}
-                    onMouseLeave={() => setHoveredAction(null)}
-                    className="w-full bg-emerald-600 hover:bg-emerald-500 gap-2"
-                  >
-                    <ArrowUp className="h-4 w-4" />
-                    Higher
-                    {multipliers && (
+                {/* Higher or Equal (normal cards 2-12) */}
+                {multipliers?.higherOrEqual && (
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <p className="text-xs text-zinc-400">
+                        Supérieure ou Égale ≥{" "}
+                        <span className="text-zinc-200">
+                          {(multipliers.higherOrEqual.probability * 100).toFixed(1)}%
+                        </span>
+                      </p>
+                      <span className="text-xs font-mono text-emerald-400">x{multipliers.higherOrEqual.multiplier.toFixed(2)}</span>
+                    </div>
+                    <Button
+                      disabled={isLoading}
+                      onClick={() => predict("higher")}
+                      onMouseEnter={() => setHoveredAction("higher")}
+                      onMouseLeave={() => setHoveredAction(null)}
+                      className="w-full bg-emerald-600 hover:bg-emerald-500 gap-2"
+                    >
+                      <ArrowUp className="h-4 w-4" />
+                      Higher or Equal
                       <span className="ml-auto text-xs opacity-80">
-                        {formatTokens(Math.floor(initialBet * accumulatedMultiplier * multipliers.higher))} T
+                        {formatTokens(Math.floor(initialBet * accumulatedMultiplier * multipliers.higherOrEqual.multiplier))} T
                       </span>
-                    )}
-                  </Button>
-                </div>
+                    </Button>
+                  </div>
+                )}
 
-                {/* Lower */}
-                <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <p className="text-xs text-zinc-400">
-                      Inférieure ≤{" "}
-                      <span className="text-zinc-200">
-                        {multipliers ? `${(multipliers.lowerProbability * 100).toFixed(1)}%` : "—"}
-                      </span>
-                    </p>
-                    {multipliers && (
-                      <span className="text-xs font-mono text-blue-400">x{multipliers.lower.toFixed(2)}</span>
-                    )}
-                  </div>
-                  <Button
-                    disabled={isLoading}
-                    onClick={() => predict("lower")}
-                    onMouseEnter={() => setHoveredAction("lower")}
-                    onMouseLeave={() => setHoveredAction(null)}
-                    className="w-full bg-blue-600 hover:bg-blue-500 gap-2"
-                  >
-                    <ArrowDown className="h-4 w-4" />
-                    Lower
-                    {multipliers && (
+                {/* Higher strictly (As only) */}
+                {multipliers?.higher && (
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <p className="text-xs text-zinc-400">
+                        Supérieure &gt;{" "}
+                        <span className="text-zinc-200">
+                          {(multipliers.higher.probability * 100).toFixed(1)}%
+                        </span>
+                      </p>
+                      <span className="text-xs font-mono text-emerald-400">x{multipliers.higher.multiplier.toFixed(2)}</span>
+                    </div>
+                    <Button
+                      disabled={isLoading}
+                      onClick={() => predict("higher")}
+                      onMouseEnter={() => setHoveredAction("higher")}
+                      onMouseLeave={() => setHoveredAction(null)}
+                      className="w-full bg-emerald-600 hover:bg-emerald-500 gap-2"
+                    >
+                      <ArrowUp className="h-4 w-4" />
+                      Higher
                       <span className="ml-auto text-xs opacity-80">
-                        {formatTokens(Math.floor(initialBet * accumulatedMultiplier * multipliers.lower))} T
+                        {formatTokens(Math.floor(initialBet * accumulatedMultiplier * multipliers.higher.multiplier))} T
                       </span>
-                    )}
-                  </Button>
-                </div>
+                    </Button>
+                  </div>
+                )}
+
+                {/* Lower or Equal (normal cards 2-12) */}
+                {multipliers?.lowerOrEqual && (
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <p className="text-xs text-zinc-400">
+                        Inférieure ou Égale ≤{" "}
+                        <span className="text-zinc-200">
+                          {(multipliers.lowerOrEqual.probability * 100).toFixed(1)}%
+                        </span>
+                      </p>
+                      <span className="text-xs font-mono text-blue-400">x{multipliers.lowerOrEqual.multiplier.toFixed(2)}</span>
+                    </div>
+                    <Button
+                      disabled={isLoading}
+                      onClick={() => predict("lower")}
+                      onMouseEnter={() => setHoveredAction("lower")}
+                      onMouseLeave={() => setHoveredAction(null)}
+                      className="w-full bg-blue-600 hover:bg-blue-500 gap-2"
+                    >
+                      <ArrowDown className="h-4 w-4" />
+                      Lower or Equal
+                      <span className="ml-auto text-xs opacity-80">
+                        {formatTokens(Math.floor(initialBet * accumulatedMultiplier * multipliers.lowerOrEqual.multiplier))} T
+                      </span>
+                    </Button>
+                  </div>
+                )}
+
+                {/* Lower strictly (Roi only) */}
+                {multipliers?.lower && (
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <p className="text-xs text-zinc-400">
+                        Inférieure &lt;{" "}
+                        <span className="text-zinc-200">
+                          {(multipliers.lower.probability * 100).toFixed(1)}%
+                        </span>
+                      </p>
+                      <span className="text-xs font-mono text-blue-400">x{multipliers.lower.multiplier.toFixed(2)}</span>
+                    </div>
+                    <Button
+                      disabled={isLoading}
+                      onClick={() => predict("lower")}
+                      onMouseEnter={() => setHoveredAction("lower")}
+                      onMouseLeave={() => setHoveredAction(null)}
+                      className="w-full bg-blue-600 hover:bg-blue-500 gap-2"
+                    >
+                      <ArrowDown className="h-4 w-4" />
+                      Lower
+                      <span className="ml-auto text-xs opacity-80">
+                        {formatTokens(Math.floor(initialBet * accumulatedMultiplier * multipliers.lower.multiplier))} T
+                      </span>
+                    </Button>
+                  </div>
+                )}
+
+                {/* Equal (As and Roi only) */}
+                {multipliers?.equal && (
+                  <div>
+                    <div className="flex items-center justify-between mb-1.5">
+                      <p className="text-xs text-zinc-400">
+                        Égale ={" "}
+                        <span className="text-zinc-200">
+                          {(multipliers.equal.probability * 100).toFixed(1)}%
+                        </span>
+                      </p>
+                      <span className="text-xs font-mono text-yellow-400">x{multipliers.equal.multiplier.toFixed(2)}</span>
+                    </div>
+                    <Button
+                      disabled={isLoading}
+                      onClick={() => predict("equal")}
+                      onMouseEnter={() => setHoveredAction("equal")}
+                      onMouseLeave={() => setHoveredAction(null)}
+                      className="w-full bg-yellow-600 hover:bg-yellow-500 gap-2"
+                    >
+                      =
+                      Equal
+                      <span className="ml-auto text-xs opacity-80">
+                        {formatTokens(Math.floor(initialBet * accumulatedMultiplier * multipliers.equal.multiplier))} T
+                      </span>
+                    </Button>
+                  </div>
+                )}
 
                 <div className="h-px bg-white/5" />
 
@@ -254,24 +334,58 @@ export function HiloGame() {
           </div>
 
           {/* Profit preview */}
-          {isPlaying && (
-            <div className="grid grid-cols-2 gap-3 mb-6">
-              <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
-                <p className="text-sm font-semibold text-zinc-400 mb-1">
-                  Profit Higher {multipliers ? `(x${multipliers.higher.toFixed(2)})` : ""}
-                </p>
-                <p className="text-lg font-mono font-bold text-emerald-400">
-                  {multipliers ? `${formatTokens(Math.floor(initialBet * accumulatedMultiplier * multipliers.higher))} T` : "—"}
-                </p>
-              </div>
-              <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 px-4 py-3">
-                <p className="text-sm font-semibold text-zinc-400 mb-1">
-                  Profit Lower {multipliers ? `(x${multipliers.lower.toFixed(2)})` : ""}
-                </p>
-                <p className="text-lg font-mono font-bold text-blue-400">
-                  {multipliers ? `${formatTokens(Math.floor(initialBet * accumulatedMultiplier * multipliers.lower))} T` : "—"}
-                </p>
-              </div>
+          {isPlaying && multipliers && (
+            <div className="flex flex-wrap gap-3 mb-6">
+              {multipliers.higherOrEqual && (
+                <div className="flex-1 min-w-[120px] rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
+                  <p className="text-sm font-semibold text-zinc-400 mb-1">
+                    Higher or Equal (x{multipliers.higherOrEqual.multiplier.toFixed(2)})
+                  </p>
+                  <p className="text-lg font-mono font-bold text-emerald-400">
+                    {formatTokens(Math.floor(initialBet * accumulatedMultiplier * multipliers.higherOrEqual.multiplier))} T
+                  </p>
+                </div>
+              )}
+              {multipliers.higher && (
+                <div className="flex-1 min-w-[120px] rounded-xl border border-emerald-500/20 bg-emerald-500/5 px-4 py-3">
+                  <p className="text-sm font-semibold text-zinc-400 mb-1">
+                    Higher (x{multipliers.higher.multiplier.toFixed(2)})
+                  </p>
+                  <p className="text-lg font-mono font-bold text-emerald-400">
+                    {formatTokens(Math.floor(initialBet * accumulatedMultiplier * multipliers.higher.multiplier))} T
+                  </p>
+                </div>
+              )}
+              {multipliers.lowerOrEqual && (
+                <div className="flex-1 min-w-[120px] rounded-xl border border-blue-500/20 bg-blue-500/5 px-4 py-3">
+                  <p className="text-sm font-semibold text-zinc-400 mb-1">
+                    Lower or Equal (x{multipliers.lowerOrEqual.multiplier.toFixed(2)})
+                  </p>
+                  <p className="text-lg font-mono font-bold text-blue-400">
+                    {formatTokens(Math.floor(initialBet * accumulatedMultiplier * multipliers.lowerOrEqual.multiplier))} T
+                  </p>
+                </div>
+              )}
+              {multipliers.lower && (
+                <div className="flex-1 min-w-[120px] rounded-xl border border-blue-500/20 bg-blue-500/5 px-4 py-3">
+                  <p className="text-sm font-semibold text-zinc-400 mb-1">
+                    Lower (x{multipliers.lower.multiplier.toFixed(2)})
+                  </p>
+                  <p className="text-lg font-mono font-bold text-blue-400">
+                    {formatTokens(Math.floor(initialBet * accumulatedMultiplier * multipliers.lower.multiplier))} T
+                  </p>
+                </div>
+              )}
+              {multipliers.equal && (
+                <div className="flex-1 min-w-[120px] rounded-xl border border-yellow-500/20 bg-yellow-500/5 px-4 py-3">
+                  <p className="text-sm font-semibold text-zinc-400 mb-1">
+                    Equal (x{multipliers.equal.multiplier.toFixed(2)})
+                  </p>
+                  <p className="text-lg font-mono font-bold text-yellow-400">
+                    {formatTokens(Math.floor(initialBet * accumulatedMultiplier * multipliers.equal.multiplier))} T
+                  </p>
+                </div>
+              )}
             </div>
           )}
 

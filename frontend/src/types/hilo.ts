@@ -5,11 +5,17 @@ export interface HiloCard {
   value: number; // 1=As, 2-10, 11=J, 12=Q, 13=K
 }
 
+export interface MultiplierEntry {
+  probability: number;
+  multiplier: number;
+}
+
 export interface HiloMultipliers {
-  higher: number;
-  lower: number;
-  higherProbability: number;
-  lowerProbability: number;
+  higherOrEqual: MultiplierEntry | null;
+  lowerOrEqual: MultiplierEntry | null;
+  higher: MultiplierEntry | null;
+  lower: MultiplierEntry | null;
+  equal: MultiplierEntry | null;
 }
 
 export interface HiloStartResponse {

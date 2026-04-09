@@ -76,17 +76,22 @@ function mapCasinoToWin(
     gameData: unknown;
   },
 ): WinEntry {
-  const isRoulette = game.gameType === "roulette";
+  const sourceMap: Record<string, string> = {
+    roulette: "Roulette",
+    blackjack: "Blackjack",
+    hilo: "HiLo",
+  };
+  const source = sourceMap[game.gameType] ?? game.gameType;
   // DB payout is already net profit (totalPayout - totalBet at write time)
   return {
     id: game.id,
     type: "casino",
-    source: isRoulette ? "Roulette" : "Blackjack",
+    source,
     amount: game.betAmount,
     payout: game.payout + game.betAmount,
     profit: game.payout,
     date: game.createdAt.toISOString(),
-    detail: isRoulette ? formatRouletteDetail(game.gameData) : "Blackjack",
+    detail: source === "Roulette" ? formatRouletteDetail(game.gameData) : source,
   };
 }
 

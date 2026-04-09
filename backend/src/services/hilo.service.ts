@@ -22,11 +22,17 @@ interface HiloSession {
   lastActivityAt: Date;
 }
 
+export interface MultiplierEntry {
+  probability: number;
+  multiplier: number;
+}
+
 export interface HiloMultipliers {
-  higher: number;
-  lower: number;
-  higherProbability: number;
-  lowerProbability: number;
+  higherOrEqual: MultiplierEntry | null; // normal cards (2-12): ≥ current
+  lowerOrEqual: MultiplierEntry | null;  // normal cards (2-12): ≤ current
+  higher: MultiplierEntry | null;        // As (1): strictly higher
+  lower: MultiplierEntry | null;         // Roi (13): strictly lower
+  equal: MultiplierEntry | null;         // As & Roi: same value
 }
 
 export interface HiloStartResult {
@@ -77,30 +83,48 @@ function drawRandomCard(): HiloCard {
   return { suit, value };
 }
 
-function getMultipliers(currentValue: number): HiloMultipliers {
-  // 51 remaining cards (deck reshuffled each draw, exclude current card value from same rank)
-  // Cards >= currentValue: (13 - currentValue + 1) * 4 = (14 - currentValue) * 4
-  // Cards <= currentValue: currentValue * 4
-  // But we exclude one card (the current one) from the count
-  const totalRemaining = 51;
+function calcMultiplier(prob: number): number {
+  return Math.max(1.02, Math.round((1 / prob) * 0.97 * 100) / 100);
+}
 
-  const countHigherOrEqual = (14 - currentValue) * 4 - 1; // -1 for current card
-  const countLowerOrEqual = currentValue * 4 - 1;           // -1 for current card
+function makeEntry(prob: number): MultiplierEntry {
+  return { probability: prob, multiplier: calcMultiplier(prob) };
+}
 
-  const pHigher = countHigherOrEqual / totalRemaining;
-  const pLower = countLowerOrEqual / totalRemaining;
+function getMultipliers(value: number): HiloMultipliers {
+  const total = 51;
 
-  const rawHigher = (1 / pHigher) * 0.97;
-  const rawLower = (1 / pLower) * 0.97;
+  if (value === 1) {
+    // As: can only go higher (strictly) or equal — lower is impossible
+    return {
+      higherOrEqual: null,
+      lowerOrEqual: null,
+      higher: makeEntry(48 / total),
+      lower: null,
+      equal: makeEntry(3 / total),
+    };
+  }
 
-  const higher = Math.max(1.02, Math.round(rawHigher * 100) / 100);
-  const lower = Math.max(1.02, Math.round(rawLower * 100) / 100);
+  if (value === 13) {
+    // Roi: can only go lower (strictly) or equal — higher is impossible
+    return {
+      higherOrEqual: null,
+      lowerOrEqual: null,
+      higher: null,
+      lower: makeEntry(48 / total),
+      equal: makeEntry(3 / total),
+    };
+  }
 
+  // Normal cards (2–12): inclusive bets, no separate equal button
+  const pHigherOrEqual = ((13 - value) * 4 + 3) / total;
+  const pLowerOrEqual = ((value - 1) * 4 + 3) / total;
   return {
-    higher,
-    lower,
-    higherProbability: pHigher,
-    lowerProbability: pLower,
+    higherOrEqual: makeEntry(pHigherOrEqual),
+    lowerOrEqual: makeEntry(pLowerOrEqual),
+    higher: null,
+    lower: null,
+    equal: null,
   };
 }
 
@@ -166,19 +190,41 @@ class HiloService {
     };
   }
 
-  async predict(userId: string, prediction: "higher" | "lower"): Promise<HiloPredictResult> {
+  async predict(userId: string, prediction: "higher" | "lower" | "equal"): Promise<HiloPredictResult> {
     const session = getActiveSession(userId);
     const currentValue = session.currentCard.value;
     const newCard = drawRandomCard();
     const newValue = newCard.value;
 
-    const correct =
-      prediction === "higher"
-        ? newValue >= currentValue
-        : newValue <= currentValue;
-
     const mults = getMultipliers(currentValue);
-    const multiplierGained = prediction === "higher" ? mults.higher : mults.lower;
+
+    let correct: boolean;
+    let multiplierGained: number;
+
+    if (prediction === "equal") {
+      correct = newValue === currentValue;
+      multiplierGained = mults.equal!.multiplier;
+    } else if (prediction === "higher") {
+      if (currentValue === 1) {
+        // As: strictly higher
+        correct = newValue > currentValue;
+        multiplierGained = mults.higher!.multiplier;
+      } else {
+        // Normal: higher or equal
+        correct = newValue >= currentValue;
+        multiplierGained = mults.higherOrEqual!.multiplier;
+      }
+    } else {
+      if (currentValue === 13) {
+        // Roi: strictly lower
+        correct = newValue < currentValue;
+        multiplierGained = mults.lower!.multiplier;
+      } else {
+        // Normal: lower or equal
+        correct = newValue <= currentValue;
+        multiplierGained = mults.lowerOrEqual!.multiplier;
+      }
+    }
 
     session.lastActivityAt = new Date();
 
