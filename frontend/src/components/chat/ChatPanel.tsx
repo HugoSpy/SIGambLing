@@ -172,7 +172,7 @@ export function ChatPanel({ open, onClose, initialPrefs }: ChatPanelProps) {
     [currentUser, scrollToBottom],
   );
 
-  useChatStream({ onMessage: handleIncoming, enabled: open, isNearBottom });
+  useChatStream({ onMessage: handleIncoming, enabled: true, isNearBottom });
 
   // ─── Scroll handler ──────────────────────────────────────────────────────────
   const handleScroll = useCallback(() => {

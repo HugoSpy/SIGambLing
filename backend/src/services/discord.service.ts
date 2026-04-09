@@ -116,7 +116,7 @@ function buildDiscordContent(input: NotifyEventCreatedInput) {
     "",
     `## 🚀💰 [Rejoindre l'événement maintenant](${buildEventUrl(input.eventId)}) 💰🚀`,
     "",
-    "<@&1363082435868364820>",
+    "<@1363082435868364820>",
   ].filter((line): line is string => Boolean(line));
 
   return truncate(lines.join("\n"), MAX_DISCORD_CONTENT_LENGTH);
