@@ -54,16 +54,6 @@ const betLimiter = rateLimit({
   message: { message: "Trop de paris envoyes en peu de temps." },
 });
 
-const adminLimiter = rateLimit({
-  windowMs: 60 * 1000,
-  max: 30,
-  standardHeaders: true,
-  legacyHeaders: false,
-  keyGenerator: (request) =>
-    ((request as { auth?: { id?: string } }).auth?.id ?? request.ip ?? "anonymous"),
-  message: { message: "Trop d'actions admin en peu de temps." },
-});
-
 eventsRouter.use(requireAuth);
 eventsRouter.get("/", listEventsController);
 eventsRouter.get("/proposals/me", listMyProposalsController);
@@ -75,7 +65,7 @@ eventsRouter.get("/:id/odds-history", getEventOddsHistoryController);
 eventsRouter.get("/:id/my-bet", getMyEventBetController);
 eventsRouter.post("/:id/bet", betLimiter, validateBody(placeEventBetSchema), placeEventBetController);
 
-adminEventsRouter.use(requireAuth, requireRole(["admin", "validator"]), adminLimiter);
+adminEventsRouter.use(requireAuth, requireRole(["admin", "validator"]));
 adminEventsRouter.get("/", listAdminEventsController);
 adminEventsRouter.get("/proposals", listAdminProposalsController);
 adminEventsRouter.get("/proposals/saved", listSavedProposalsController);
