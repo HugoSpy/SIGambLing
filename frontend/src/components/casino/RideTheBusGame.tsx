@@ -191,7 +191,7 @@ export function RideTheBusGame() {
                         animate={{ scale: 1, opacity: 1 }}
                         className="font-mono font-bold text-emerald-400"
                       >
-                        ×{currentMultiplier.toFixed(2)}
+                        ×{(currentMultiplier ?? 1).toFixed(2)}
                       </motion.span>
                     </AnimatePresence>
                   </div>
@@ -346,10 +346,10 @@ export function RideTheBusGame() {
                     <div className="space-y-3">
                       <div className="grid grid-cols-2 gap-3 text-center text-xs text-zinc-500 px-1">
                         <span>
-                          {(step2Multipliers.higherOrEqualProb * 100).toFixed(1)}% de chance
+                          {((step2Multipliers?.higherOrEqualProb ?? 0) * 100).toFixed(1)}% de chance
                         </span>
                         <span>
-                          {(step2Multipliers.lowerOrEqualProb * 100).toFixed(1)}% de chance
+                          {((step2Multipliers?.lowerOrEqualProb ?? 0) * 100).toFixed(1)}% de chance
                         </span>
                       </div>
                       <div className="grid grid-cols-2 gap-3">
@@ -362,7 +362,7 @@ export function RideTheBusGame() {
                           <ArrowUp className="h-4 w-4" />
                           Sup. ou égal
                           <span className="ml-auto text-xs opacity-80">
-                            ×{step2Multipliers.higherOrEqual.toFixed(2)}
+                            ×{(step2Multipliers?.higherOrEqual ?? 1).toFixed(2)}
                           </span>
                         </Button>
                         <Button
@@ -374,7 +374,7 @@ export function RideTheBusGame() {
                           <ArrowDown className="h-4 w-4" />
                           Inf. ou égal
                           <span className="ml-auto text-xs opacity-80">
-                            ×{step2Multipliers.lowerOrEqual.toFixed(2)}
+                            ×{(step2Multipliers?.lowerOrEqual ?? 1).toFixed(2)}
                           </span>
                         </Button>
                       </div>
@@ -404,10 +404,10 @@ export function RideTheBusGame() {
                   <div className="space-y-3">
                     <div className="grid grid-cols-2 gap-3 text-center text-xs text-zinc-500 px-1">
                       <span>
-                        {(step3Multipliers.insideProb * 100).toFixed(1)}% de chance
+                        {((step3Multipliers?.insideProb ?? 0) * 100).toFixed(1)}% de chance
                       </span>
                       <span>
-                        {(step3Multipliers.outsideProb * 100).toFixed(1)}% de chance
+                        {((step3Multipliers?.outsideProb ?? 0) * 100).toFixed(1)}% de chance
                       </span>
                     </div>
                     <div className="grid grid-cols-2 gap-3">
@@ -418,7 +418,7 @@ export function RideTheBusGame() {
                       >
                         ⬥ Inside
                         <span className="ml-auto text-xs opacity-80">
-                          ×{step3Multipliers.inside.toFixed(2)}
+                          ×{(step3Multipliers?.inside ?? 1).toFixed(2)}
                         </span>
                       </Button>
                       <Button
@@ -428,7 +428,7 @@ export function RideTheBusGame() {
                       >
                         ⬦ Outside
                         <span className="ml-auto text-xs opacity-80">
-                          ×{step3Multipliers.outside.toFixed(2)}
+                          ×{(step3Multipliers?.outside ?? 1).toFixed(2)}
                         </span>
                       </Button>
                     </div>
@@ -484,7 +484,7 @@ export function RideTheBusGame() {
                       Si correct :{" "}
                       <span className="text-zinc-300 font-mono">
                         {currentStep === 4
-                          ? formatTokens(Math.floor(betAmount * currentMultiplier * 4))
+                          ? formatTokens(Math.floor(betAmount * (currentMultiplier ?? 1) * 4))
                           : formatTokens(potentialWin)}{" "}
                         T
                       </span>
@@ -506,7 +506,7 @@ export function RideTheBusGame() {
               >
                 <p className="text-xl sm:text-2xl font-bold text-emerald-300 mb-1">Bravo !</p>
                 <p className="text-sm text-zinc-400 mb-2 sm:mb-3">
-                  Multiplicateur final ×{currentMultiplier.toFixed(2)}
+                  Multiplicateur final ×{(currentMultiplier ?? 1).toFixed(2)}
                 </p>
                 <p className="text-2xl sm:text-3xl font-mono font-bold text-emerald-400">
                   {formatTokens(lastPayout)} tokens
