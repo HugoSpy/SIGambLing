@@ -162,6 +162,12 @@ export function CasinoPage() {
 
                     <p className="max-w-xl text-sm leading-7 text-brand-muted">{tab.description}</p>
 
+                    {tab.id === "ride-the-bus" && (
+                      <p className="text-xs text-orange-400 mt-1">
+                        ⚡ Volatilité extrême · Multiplicateur max : ×1 331
+                      </p>
+                    )}
+
                     <div className="mt-auto">
                       {disabled ? (
                         <div className="inline-flex items-center gap-2 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-400">

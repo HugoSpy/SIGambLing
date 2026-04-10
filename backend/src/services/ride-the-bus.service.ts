@@ -108,7 +108,7 @@ function drawTop(deck: RidetheBusCard[]): RidetheBusCard {
 
 function safeMultiplier(prob: number): number {
   if (prob <= 0) return 50;
-  return Math.max(1.05, Math.round((1 / prob) * 0.97 * 100) / 100);
+  return Math.max(1.05, Math.round((1 / prob) * 0.985 * 100) / 100);
 }
 
 // Infinite deck probabilities: 4 cards of each value 1-13 → uniform distribution
