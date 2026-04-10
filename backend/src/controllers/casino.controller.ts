@@ -1,6 +1,7 @@
 import type { RequestHandler } from "express";
 import { blackjackService } from "../services/blackjack.service";
 import { hiloService } from "../services/hilo.service";
+import { ridethebusService } from "../services/ride-the-bus.service";
 import { rouletteService } from "../services/roulette.service";
 
 function getAuthUserId(request: unknown): string {
@@ -143,6 +144,36 @@ export const hiloCurrentController: RequestHandler = (request, response, next) =
   try {
     const userId = getAuthUserId(request);
     const result = hiloService.getCurrent(userId);
+    response.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const ridethebusStartController: RequestHandler = async (request, response, next) => {
+  try {
+    const userId = getAuthUserId(request);
+    const result = await ridethebusService.start(userId, request.body.betAmount);
+    response.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const ridethebusAnswerController: RequestHandler = async (request, response, next) => {
+  try {
+    const userId = getAuthUserId(request);
+    const result = await ridethebusService.answer(userId, request.body.step, request.body.answer);
+    response.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const ridethebusCurrentController: RequestHandler = (request, response, next) => {
+  try {
+    const userId = getAuthUserId(request);
+    const result = ridethebusService.getCurrent(userId);
     response.json(result);
   } catch (error) {
     next(error);

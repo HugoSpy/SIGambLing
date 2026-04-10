@@ -14,6 +14,9 @@ import {
   hiloPredictController,
   hiloSkipController,
   hiloStartController,
+  ridethebusAnswerController,
+  ridethebusCurrentController,
+  ridethebusStartController,
   spinRouletteController,
 } from "../controllers/casino.controller";
 import { requireAuth } from "../middleware/require-auth";
@@ -23,6 +26,8 @@ import {
   blackjackDealSchema,
   hiloPredictSchema,
   hiloStartSchema,
+  ridethebusAnswerSchema,
+  ridethebusStartSchema,
   rouletteSpinSchema,
 } from "../schemas/casino.schemas";
 
@@ -125,3 +130,21 @@ casinoRouter.post(
 casinoRouter.post("/hilo/skip", requireAuth, casinoLimiter, hiloSkipController);
 
 casinoRouter.post("/hilo/cashout", requireAuth, casinoLimiter, hiloCashOutController);
+
+casinoRouter.get("/ride-the-bus/current", requireAuth, ridethebusCurrentController);
+
+casinoRouter.post(
+  "/ride-the-bus/start",
+  requireAuth,
+  casinoLimiter,
+  validateBody(ridethebusStartSchema),
+  ridethebusStartController,
+);
+
+casinoRouter.post(
+  "/ride-the-bus/answer",
+  requireAuth,
+  casinoLimiter,
+  validateBody(ridethebusAnswerSchema),
+  ridethebusAnswerController,
+);

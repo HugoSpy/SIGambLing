@@ -89,6 +89,23 @@ export const hiloPredictSchema = z.object({
 export type HiloStartInput = z.infer<typeof hiloStartSchema>;
 export type HiloPredictInput = z.infer<typeof hiloPredictSchema>;
 
+export const ridethebusStartSchema = z.object({
+  betAmount: z.coerce.number().int().min(10),
+});
+
+export const ridethebusAnswerSchema = z.object({
+  step: z.coerce.number().int().min(1).max(4),
+  answer: z.enum([
+    "red", "black",
+    "higher", "lower",
+    "inside", "outside",
+    "hearts", "diamonds", "clubs", "spades",
+  ]),
+});
+
+export type RidethebusStartInput = z.infer<typeof ridethebusStartSchema>;
+export type RidethebusAnswerInput = z.infer<typeof ridethebusAnswerSchema>;
+
 export const blackjackDealSchema = z.object({
   bet: z.coerce.number().int().min(1),
 });

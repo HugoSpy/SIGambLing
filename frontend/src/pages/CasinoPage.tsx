@@ -1,10 +1,11 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, CircleDot, Coins, Sparkles, Waves } from "lucide-react";
+import { ArrowRight, Bus, CircleDot, Coins, Sparkles, Waves } from "lucide-react";
 import toast from "react-hot-toast";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { BlackjackGame } from "../components/casino/BlackjackGame";
 import { HiloGame } from "../components/casino/HiloGame";
+import { RideTheBusGame } from "../components/casino/RideTheBusGame";
 import { RouletteGame } from "../components/casino/RouletteGame";
 import { DashboardShell } from "../components/layout/DashboardShell";
 import { LoadingScreen } from "../components/layout/LoadingScreen";
@@ -14,7 +15,7 @@ import { fetchCurrentUser, logoutRequest } from "../lib/api";
 import { cn } from "../lib/utils";
 import { useAuthStore } from "../store/auth-store";
 
-type GameTab = "roulette" | "blackjack" | "hilo";
+type GameTab = "roulette" | "blackjack" | "hilo" | "ride-the-bus";
 
 const TABS: {
   id: GameTab;
@@ -52,10 +53,19 @@ const TABS: {
       accentClassName: "from-violet-500/20 via-violet-500/5 to-transparent",
       icon: Sparkles,
     },
+    {
+      id: "ride-the-bus",
+      label: "Ride the Bus",
+      eyebrow: "Tout ou rien",
+      description: "4 questions, 4 bonnes réponses pour tout gagner. Une seule erreur et tout est perdu.",
+      href: "/casino/ride-the-bus",
+      accentClassName: "from-rose-500/20 via-rose-500/5 to-transparent",
+      icon: Bus,
+    },
   ];
 
 function isGameTab(value: string | undefined): value is GameTab {
-  return value === "roulette" || value === "blackjack" || value === "hilo";
+  return value === "roulette" || value === "blackjack" || value === "hilo" || value === "ride-the-bus";
 }
 
 export function CasinoPage() {
@@ -97,7 +107,7 @@ export function CasinoPage() {
   if (activeGame === "blackjack" && blackjackDisabled && !isAdmin) {
     return <Navigate replace to="/casino" />;
   }
-  // hilo has no feature flag yet — no redirect needed
+  // hilo and ride-the-bus have no feature flag yet — no redirect needed
 
   const isGameDisabled = (id: GameTab) =>
     (id === "roulette" && rouletteDisabled && !isAdmin) ||
@@ -107,6 +117,7 @@ export function CasinoPage() {
     roulette: "Roulette temporairement indisponible",
     blackjack: "Blackjack temporairement indisponible",
     hilo: "HiLo temporairement indisponible",
+    "ride-the-bus": "Ride the Bus temporairement indisponible",
   };
 
   const handleLogout = async () => {
@@ -169,50 +180,13 @@ export function CasinoPage() {
                 </Card>
               );
             })}
-            {/* Cards jeux en maintenance */}
-            {[
-              {
-                icon: "🃏",
-                label: "Nouveau jeu de cartes",
-                description: "🔨🔧 Un nouveau jeu débarquera très prochainement",
-              },
-            ].map((wip) => (
-              <div
-                key={wip.label}
-                className="group relative overflow-hidden rounded-2xl border border-white/10 bg-zinc-900/95 p-0 opacity-60 cursor-not-allowed select-none hover:border-amber-500/40 transition-colors"
-                aria-disabled="true"
-                tabIndex={-1}
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-gray-500/10 via-gray-500/5 to-transparent" />
-                <div className="relative flex h-full flex-col gap-6 p-6">
-                  <div className="flex items-start justify-between gap-4">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">
-                        Bientôt disponible
-                      </p>
-                      <h2 className="mt-3 font-display text-3xl text-brand-text">{wip.label}</h2>
-                    </div>
-                    <div className="rounded-2xl border border-white/10 bg-black/20 p-3 text-2xl leading-none">
-                      {wip.icon}
-                    </div>
-                  </div>
-
-                  <p className="max-w-xl text-sm leading-7 text-gray-400 italic">{wip.description}</p>
-
-                  <div className="mt-auto">
-                    <div className="inline-flex items-center gap-2 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-400">
-                      🚧 En maintenance
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+            </div>
         ) : null}
 
         {activeGame === "roulette" ? <RouletteGame /> : null}
         {activeGame === "blackjack" ? <BlackjackGame /> : null}
         {activeGame === "hilo" ? <HiloGame /> : null}
+        {activeGame === "ride-the-bus" ? <RideTheBusGame /> : null}
 
         {!activeGame ? (
           <Card className="border-white/10 bg-zinc-900/95">
