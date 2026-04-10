@@ -62,6 +62,19 @@ function StepDots({ current, total = 4 }: { current: number; total?: number }) {
 export function RideTheBusGame() {
   const user = useAuthStore((s) => s.user);
   const [bet, setBet] = useState(10);
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== "undefined" && window.innerWidth < 640,
+  );
+
+  useEffect(() => {
+    const handler = () => setIsMobile(window.innerWidth < 640);
+    window.addEventListener("resize", handler);
+    return () => window.removeEventListener("resize", handler);
+  }, []);
+
+  const cardSize = isMobile ? "sm" : "md";
+  const slotW = isMobile ? "w-16" : "w-24";
+  const slotH = isMobile ? "h-24" : "h-36";
 
   const {
     phase,
@@ -96,10 +109,10 @@ export function RideTheBusGame() {
   }
 
   return (
-    <div className="flex flex-col gap-6 lg:flex-row lg:items-start">
+    <div className="flex flex-col gap-4 sm:gap-6 lg:flex-row lg:items-start">
       {/* ── Sidebar ── */}
       <div className="flex flex-col gap-4 lg:w-72 shrink-0">
-        <Card className="border-white/10 bg-zinc-900/95 p-5">
+        <Card className="border-white/10 bg-zinc-900/95 p-4 sm:p-5">
           <div className="flex flex-col gap-4">
             <Link
               to="/casino"
@@ -131,7 +144,7 @@ export function RideTheBusGame() {
                     disabled={isPlaying}
                     onClick={() => setBet(q)}
                     className={cn(
-                      "rounded-md px-2 py-1 text-xs border transition-colors",
+                      "rounded-md px-3 py-1.5 text-xs border transition-colors min-h-[32px]",
                       bet === q
                         ? "border-brand-cyan bg-brand-cyan/10 text-brand-cyan"
                         : "border-white/10 text-zinc-400 hover:border-white/30 hover:text-zinc-200",
@@ -230,22 +243,22 @@ export function RideTheBusGame() {
       </div>
 
       {/* ── Main game area ── */}
-      <div className="flex flex-col gap-6 flex-1 min-w-0">
+      <div className="flex flex-col gap-4 sm:gap-6 flex-1 min-w-0">
         <Card
           className={cn(
-            "border-white/10 bg-zinc-900/95 p-6 transition-colors duration-500",
+            "border-white/10 bg-zinc-900/95 p-4 sm:p-6 transition-colors duration-500",
             phase === "won" && "border-emerald-500/40",
             phase === "lost" && "border-red-500/40",
           )}
         >
           {/* Cards row */}
-          <div className="flex items-center justify-center gap-3 mb-8 flex-wrap">
+          <div className="flex items-center justify-center gap-2 sm:gap-3 mb-6 sm:mb-8">
             {cards.map((card, i) => (
               <HiloCard
                 key={`${i}-${card.value}-${card.suit}`}
                 card={toHiloCard(card)}
                 animateKey={`${i}-${card.value}-${card.suit}`}
-                size="md"
+                size={cardSize}
               />
             ))}
 
@@ -254,22 +267,30 @@ export function RideTheBusGame() {
               <motion.div
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="w-24 h-36 rounded-xl border-2 border-dashed border-white/20 bg-zinc-800/40 flex items-center justify-center"
+                className={cn(
+                  "rounded-xl border-2 border-dashed border-white/20 bg-zinc-800/40 flex items-center justify-center",
+                  slotW,
+                  slotH,
+                )}
               >
-                <ChevronRight className="h-6 w-6 text-zinc-600" />
+                <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6 text-zinc-600" />
               </motion.div>
             )}
 
             {/* Idle placeholder */}
             {isIdle && (
-              <div className="flex gap-3">
+              <div className="flex gap-2 sm:gap-3">
                 {[0, 1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className="w-24 h-36 rounded-xl border border-white/10 bg-zinc-800/30 flex items-center justify-center"
+                    className={cn(
+                      "rounded-xl border border-white/10 bg-zinc-800/30 flex items-center justify-center",
+                      slotW,
+                      slotH,
+                    )}
                     style={{ opacity: 1 - i * 0.2 }}
                   >
-                    <span className="text-3xl text-zinc-700">🚌</span>
+                    <span className={cn("text-zinc-700", isMobile ? "text-2xl" : "text-3xl")}>🚌</span>
                   </div>
                 ))}
               </div>
@@ -480,13 +501,13 @@ export function RideTheBusGame() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}
-                className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-6 py-5 text-center"
+                className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 sm:px-6 py-4 sm:py-5 text-center"
               >
-                <p className="text-2xl font-bold text-emerald-300 mb-1">Bravo !</p>
-                <p className="text-sm text-zinc-400 mb-3">
+                <p className="text-xl sm:text-2xl font-bold text-emerald-300 mb-1">Bravo !</p>
+                <p className="text-sm text-zinc-400 mb-2 sm:mb-3">
                   Multiplicateur final ×{currentMultiplier.toFixed(2)}
                 </p>
-                <p className="text-3xl font-mono font-bold text-emerald-400">
+                <p className="text-2xl sm:text-3xl font-mono font-bold text-emerald-400">
                   {formatTokens(lastPayout)} tokens
                 </p>
               </motion.div>
@@ -497,9 +518,9 @@ export function RideTheBusGame() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0 }}
-                className="rounded-xl border border-red-500/40 bg-red-500/10 px-6 py-5 text-center"
+                className="rounded-xl border border-red-500/40 bg-red-500/10 px-4 sm:px-6 py-4 sm:py-5 text-center"
               >
-                <p className="text-2xl font-bold text-red-400 mb-1">Perdu !</p>
+                <p className="text-xl sm:text-2xl font-bold text-red-400 mb-1">Perdu !</p>
                 <p className="text-sm text-zinc-400">
                   Mauvaise réponse à l'étape {cards.length} — mise perdue.
                 </p>

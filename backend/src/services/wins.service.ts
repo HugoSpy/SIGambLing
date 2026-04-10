@@ -80,6 +80,7 @@ function mapCasinoToWin(
     roulette: "Roulette",
     blackjack: "Blackjack",
     hilo: "HiLo",
+    ride_the_bus: "Ride The Bus",
   };
   const source = sourceMap[game.gameType] ?? game.gameType;
   // DB payout is already net profit (totalPayout - totalBet at write time)
@@ -213,10 +214,16 @@ export async function getWinForShare(
     throw new AppError("Cette partie n'est pas une victoire.", 400);
   }
 
+  const shareSourceMap: Record<string, string> = {
+    roulette: "Roulette",
+    blackjack: "Blackjack",
+    hilo: "HiLo",
+    ride_the_bus: "Ride The Bus",
+  };
   // DB payout is already net profit (totalPayout - totalBet at write time)
   return {
     amount: game.betAmount,
     profit: game.payout,
-    source: game.gameType,
+    source: shareSourceMap[game.gameType] ?? game.gameType,
   };
 }
