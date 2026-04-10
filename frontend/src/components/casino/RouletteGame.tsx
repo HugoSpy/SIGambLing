@@ -73,8 +73,8 @@ export function RouletteGame() {
         return;
       }
 
-      if (betAmount < 10) {
-        notify.error(`Mise minimale : 10 tokens. Vous avez entré ${betAmount} token${betAmount <= 1 ? "" : "s"}.`);
+      if (betAmount < 1) {
+        notify.error(`Mise minimale : 1 token. Vous avez entré ${betAmount} token${betAmount <= 1 ? "" : "s"}.`);
         return;
       }
 

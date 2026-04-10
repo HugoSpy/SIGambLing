@@ -39,7 +39,7 @@ export function MinesSidebar({
   const isPlaying = phase === "playing";
   const isIdle = phase === "idle";
   const isOver = phase === "won" || phase === "lost";
-  const canCashout = isPlaying && gemsFound > 0 && !isLoading;
+  const canCashout = isPlaying && gemsFound > 0 && !isLoading && potentialWin > bet;
 
   function handleBetInput(raw: string) {
     const n = parseInt(raw, 10);
@@ -57,7 +57,7 @@ export function MinesSidebar({
         <div className="relative">
           <input
             type="number"
-            min={10}
+            min={1}
             max={userBalance}
             value={bet}
             onChange={(e) => handleBetInput(e.target.value)}
@@ -74,7 +74,7 @@ export function MinesSidebar({
         {/* Quick bet buttons */}
         <div className="flex gap-1.5">
           {[
-            { label: "×½", fn: () => onBetChange(Math.max(10, Math.floor(bet / 2))) },
+            { label: "×½", fn: () => onBetChange(Math.max(1, Math.floor(bet / 2))) },
             { label: "×2", fn: () => onBetChange(Math.min(userBalance, bet * 2)) },
             { label: "Max", fn: () => onBetChange(userBalance) },
           ].map(({ label, fn }) => (
@@ -218,7 +218,7 @@ export function MinesSidebar({
         {(isIdle || isOver) && (
           <button
             onClick={isOver ? onReset : onStart}
-            disabled={isLoading || bet < 10 || bet > userBalance}
+            disabled={isLoading || bet < 1 || bet > userBalance}
             className="w-full rounded-xl py-3 text-sm font-bold transition active:scale-95 disabled:opacity-50"
             style={{
               background: isOver

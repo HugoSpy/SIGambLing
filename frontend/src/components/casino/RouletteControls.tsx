@@ -83,20 +83,20 @@ export function RouletteControls({
       <div className="mt-6">
         <Input
           label="Montant par jeton"
-          min={10}
+          min={1}
           onChange={(event) => {
             const raw = event.target.value.replace(/^0+(?=\d)/, "");
             onBetAmountChange(Number(raw) || 0);
           }}
-          placeholder="10"
-          step={5}
+          placeholder="1"
+          step={1}
           type="number"
           value={betAmount || ""}
         />
       </div>
 
       <p className="mt-3 text-sm text-brand-muted">
-        Mise minimum : 10 tokens. Les paris sont bloqués pendant la rotation.
+        Mise minimum : 1 token. Les paris sont bloqués pendant la rotation.
       </p>
 
       <div className="mt-4 flex flex-wrap gap-2">

@@ -129,12 +129,12 @@ export function RideTheBusGame() {
               </p>
               <input
                 type="number"
-                min={10}
-                max={user?.balance ?? 10}
-                step={10}
+                min={1}
+                max={user?.balance ?? 1}
+                step={1}
                 value={bet}
                 disabled={isPlaying}
-                onChange={(e) => setBet(Math.max(10, parseInt(e.target.value) || 10))}
+                onChange={(e) => setBet(Math.max(1, parseInt(e.target.value) || 1))}
                 className="w-full rounded-lg border border-white/10 bg-zinc-800 px-3 py-2 text-sm text-brand-text focus:outline-none focus:ring-1 focus:ring-brand-cyan disabled:opacity-50"
               />
               <div className="mt-2 flex gap-1.5 flex-wrap">
@@ -160,7 +160,7 @@ export function RideTheBusGame() {
             {isIdle && (
               <Button
                 onClick={() => start(bet)}
-                disabled={isLoading || bet < 10 || (user?.balance ?? 0) < bet}
+                disabled={isLoading || bet < 1 || (user?.balance ?? 0) < bet}
                 className="w-full"
               >
                 {isLoading ? "Démarrage..." : "Prendre le bus"}

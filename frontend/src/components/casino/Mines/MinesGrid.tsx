@@ -27,8 +27,8 @@ export function MinesGrid({
   const isOver = phase === "lost" || phase === "won";
 
   function getCellState(index: number): MinesCellState {
-    if (revealedCells.includes(index)) return "gem";
     if (isOver && minePositions.includes(index)) return "mine";
+    if (revealedCells.includes(index)) return "gem";
     return "hidden";
   }
 
