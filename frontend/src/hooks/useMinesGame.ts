@@ -62,11 +62,23 @@ export function useMinesGame() {
       const { data } = await api.post<MinesRevealResponse>("/casino/mines/reveal", { cellIndex });
 
       if (data.result === "gem") {
+        const newGemsFound = data.gemsFound ?? 0;
         setRevealedCells((prev) => [...prev, cellIndex]);
-        setGemsFound(data.gemsFound ?? 0);
+        setGemsFound(newGemsFound);
         setCurrentMultiplier(data.currentMultiplier ?? 1);
         setNextMultiplier(data.nextMultiplier ?? 1);
         setPotentialWin(data.potentialWin ?? 0);
+
+        // Toutes les gemmes trouvées → cashout automatique
+        if (newGemsFound >= gemsTotal && gemsTotal > 0) {
+          setRevealingCell(null);
+          const cashoutData = await api.post<MinesCashoutResponse>("/casino/mines/cashout");
+          setMinePositions(cashoutData.data.minePositions);
+          setLastPayout(cashoutData.data.payout);
+          setPhase("won");
+          updateBalance(cashoutData.data.balance);
+          return;
+        }
       } else {
         // Mine hit — reveal all mines
         setMinePositions(data.minePositions ?? [cellIndex]);
