@@ -8,10 +8,10 @@ export interface RidetheBusCard {
 }
 
 export interface Step2Multipliers {
-  higher: number;
-  lower: number;
-  higherProb: number;
-  lowerProb: number;
+  higherOrEqual: number;
+  lowerOrEqual: number;
+  higherOrEqualProb: number;
+  lowerOrEqualProb: number;
 }
 
 export interface Step3Multipliers {

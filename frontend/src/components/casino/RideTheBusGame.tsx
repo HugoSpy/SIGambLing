@@ -36,7 +36,7 @@ const SUITS: RidetheBusSuit[] = ["spades", "hearts", "diamonds", "clubs"];
 
 const STEP_LABELS: Record<number, string> = {
   1: "Quelle est la couleur de la prochaine carte ?",
-  2: "Plus haute ou plus basse que la carte précédente ?",
+  2: "Supérieure ou égale, ou inférieure ou égale à la carte précédente ?",
   3: "La prochaine carte sera-t-elle entre les deux (inside) ou en dehors (outside) ?",
   4: "Quelle est la couleur de la prochaine carte ?",
 };
@@ -308,13 +308,6 @@ export function RideTheBusGame() {
                 transition={{ duration: 0.25 }}
                 className="space-y-4"
               >
-                {/* Step skipped notice */}
-                {lastResult?.stepSkipped && (
-                  <div className="rounded-xl border border-yellow-500/30 bg-yellow-500/10 px-4 py-2 text-center text-sm text-yellow-400">
-                    Égalité 3 fois — étape passée sans multiplicateur
-                  </div>
-                )}
-
                 <div className="text-center">
                   <p className="text-xs uppercase tracking-[0.28em] text-brand-muted mb-1">
                     Étape {currentStep} / 4
@@ -344,59 +337,67 @@ export function RideTheBusGame() {
                   </div>
                 )}
 
-                {/* Step 2 — Higher / Lower */}
-                {currentStep === 2 && step2Multipliers && (
-                  <div className="space-y-3">
-                    <div className="grid grid-cols-2 gap-3 text-center text-xs text-zinc-500 px-1">
-                      <span>
-                        {(step2Multipliers.higherProb * 100).toFixed(1)}% de chance
-                      </span>
-                      <span>
-                        {(step2Multipliers.lowerProb * 100).toFixed(1)}% de chance
-                      </span>
+                {/* Step 2 — Higher or equal / Lower or equal */}
+                {currentStep === 2 && step2Multipliers && (() => {
+                  const refValue = cards[0]?.value ?? 0;
+                  const isAce = refValue === 1;
+                  const isKing = refValue === 13;
+                  return (
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-2 gap-3 text-center text-xs text-zinc-500 px-1">
+                        <span>
+                          {(step2Multipliers.higherOrEqualProb * 100).toFixed(1)}% de chance
+                        </span>
+                        <span>
+                          {(step2Multipliers.lowerOrEqualProb * 100).toFixed(1)}% de chance
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-2 gap-3">
+                        <Button
+                          disabled={isLoading || isKing}
+                          onClick={() => answer(2, "higher_or_equal")}
+                          className="w-full bg-emerald-700 hover:bg-emerald-600 gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                          title={isKing ? "Impossible — le Roi est la plus haute carte" : undefined}
+                        >
+                          <ArrowUp className="h-4 w-4" />
+                          Sup. ou égal
+                          <span className="ml-auto text-xs opacity-80">
+                            ×{step2Multipliers.higherOrEqual.toFixed(2)}
+                          </span>
+                        </Button>
+                        <Button
+                          disabled={isLoading || isAce}
+                          onClick={() => answer(2, "lower_or_equal")}
+                          className="w-full bg-blue-700 hover:bg-blue-600 gap-2 disabled:opacity-40 disabled:cursor-not-allowed"
+                          title={isAce ? "Impossible — l'As est la plus basse carte" : undefined}
+                        >
+                          <ArrowDown className="h-4 w-4" />
+                          Inf. ou égal
+                          <span className="ml-auto text-xs opacity-80">
+                            ×{step2Multipliers.lowerOrEqual.toFixed(2)}
+                          </span>
+                        </Button>
+                      </div>
+                      {cards[0] && (
+                        <p className="text-center text-xs text-zinc-500">
+                          Carte de référence :{" "}
+                          <span className="font-mono text-zinc-300">
+                            {cards[0].value === 1
+                              ? "A"
+                              : cards[0].value === 11
+                                ? "J"
+                                : cards[0].value === 12
+                                  ? "Q"
+                                  : cards[0].value === 13
+                                    ? "K"
+                                    : cards[0].value}
+                          </span>
+                          {" "}· égalité = victoire pour les deux
+                        </p>
+                      )}
                     </div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <Button
-                        disabled={isLoading}
-                        onClick={() => answer(2, "higher")}
-                        className="w-full bg-emerald-700 hover:bg-emerald-600 gap-2"
-                      >
-                        <ArrowUp className="h-4 w-4" />
-                        Plus haute
-                        <span className="ml-auto text-xs opacity-80">
-                          ×{step2Multipliers.higher.toFixed(2)}
-                        </span>
-                      </Button>
-                      <Button
-                        disabled={isLoading}
-                        onClick={() => answer(2, "lower")}
-                        className="w-full bg-blue-700 hover:bg-blue-600 gap-2"
-                      >
-                        <ArrowDown className="h-4 w-4" />
-                        Plus basse
-                        <span className="ml-auto text-xs opacity-80">
-                          ×{step2Multipliers.lower.toFixed(2)}
-                        </span>
-                      </Button>
-                    </div>
-                    {cards[0] && (
-                      <p className="text-center text-xs text-zinc-500">
-                        Carte de référence :{" "}
-                        <span className="font-mono text-zinc-300">
-                          {cards[0].value === 1
-                            ? "A"
-                            : cards[0].value === 11
-                              ? "J"
-                              : cards[0].value === 12
-                                ? "Q"
-                                : cards[0].value === 13
-                                  ? "K"
-                                  : cards[0].value}
-                        </span>
-                      </p>
-                    )}
-                  </div>
-                )}
+                  );
+                })()}
 
                 {/* Step 3 — Inside / Outside */}
                 {currentStep === 3 && step3Multipliers && (

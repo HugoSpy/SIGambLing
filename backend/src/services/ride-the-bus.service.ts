@@ -14,10 +14,10 @@ export interface RidetheBusCard {
 }
 
 export interface Step2Multipliers {
-  higher: number;
-  lower: number;
-  higherProb: number;
-  lowerProb: number;
+  higherOrEqual: number;
+  lowerOrEqual: number;
+  higherOrEqualProb: number;
+  lowerOrEqualProb: number;
 }
 
 export interface Step3Multipliers {
@@ -78,7 +78,6 @@ const RED_SUITS = new Set<Suit>(["hearts", "diamonds"]);
 const STEP1_MULTIPLIER = 1.95;
 const STEP4_MULTIPLIER = 4;
 const MIN_BET = 10;
-const MAX_TIE_ATTEMPTS = 3;
 
 const activeSessions = new Map<string, RidetheBusSession>();
 
@@ -109,36 +108,33 @@ function drawTop(deck: RidetheBusCard[]): RidetheBusCard {
 
 function safeMultiplier(prob: number): number {
   if (prob <= 0) return 50;
-  return Math.max(1.05, Math.round((1 / prob) * 0.95 * 100) / 100);
+  return Math.max(1.05, Math.round((1 / prob) * 0.97 * 100) / 100);
 }
 
-function calcStep2Multipliers(deck: RidetheBusCard[], card1Value: number): Step2Multipliers {
-  const total = deck.length;
-  const higherCount = deck.filter((c) => c.value > card1Value).length;
-  const lowerCount = deck.filter((c) => c.value < card1Value).length;
+// Infinite deck probabilities: 4 cards of each value 1-13 → uniform distribution
+function calcStep2Multipliers(card1Value: number): Step2Multipliers {
+  const higherOrEqualProb = (13 - card1Value + 1) / 13; // values from card1Value to 13
+  const lowerOrEqualProb = card1Value / 13;              // values from 1 to card1Value
   return {
-    higher: safeMultiplier(higherCount / total),
-    lower: safeMultiplier(lowerCount / total),
-    higherProb: higherCount / total,
-    lowerProb: lowerCount / total,
+    higherOrEqual: safeMultiplier(higherOrEqualProb),
+    lowerOrEqual: safeMultiplier(lowerOrEqualProb),
+    higherOrEqualProb,
+    lowerOrEqualProb,
   };
 }
 
-function calcStep3Multipliers(
-  deck: RidetheBusCard[],
-  card1Value: number,
-  card2Value: number,
-): Step3Multipliers {
-  const minVal = Math.min(card1Value, card2Value);
-  const maxVal = Math.max(card1Value, card2Value);
-  const total = deck.length;
-  const insideCount = deck.filter((c) => c.value >= minVal && c.value <= maxVal).length;
-  const outsideCount = total - insideCount;
+function calcStep3Multipliers(card1Value: number, card2Value: number): Step3Multipliers {
+  const low = Math.min(card1Value, card2Value);
+  const high = Math.max(card1Value, card2Value);
+  const insideCount = high - low + 1; // values from low to high inclusive
+  const outsideCount = 13 - insideCount;
+  const insideProb = insideCount / 13;
+  const outsideProb = outsideCount / 13;
   return {
-    inside: safeMultiplier(insideCount / total),
-    outside: safeMultiplier(outsideCount / total),
-    insideProb: insideCount / total,
-    outsideProb: outsideCount / total,
+    inside: safeMultiplier(insideProb),
+    outside: safeMultiplier(outsideProb),
+    insideProb,
+    outsideProb,
   };
 }
 
@@ -192,7 +188,7 @@ class RidetheBusService {
     session.lastActivityAt = new Date();
 
     if (step === 1) return this.handleStep1(userId, session, answer as "red" | "black");
-    if (step === 2) return this.handleStep2(userId, session, answer as "higher" | "lower");
+    if (step === 2) return this.handleStep2(userId, session, answer as "higher_or_equal" | "lower_or_equal");
     if (step === 3) return this.handleStep3(userId, session, answer as "inside" | "outside");
     if (step === 4) return this.handleStep4(userId, session, answer as Suit);
     throw new AppError("Étape invalide.", 400);
@@ -228,7 +224,7 @@ class RidetheBusService {
       Math.round(session.currentMultiplier * STEP1_MULTIPLIER * 100) / 100;
     session.currentStep = 2;
 
-    const s2 = calcStep2Multipliers(session.deck, card.value);
+    const s2 = calcStep2Multipliers(card.value);
     return {
       correct: true,
       revealedCard: card,
@@ -245,47 +241,18 @@ class RidetheBusService {
   private async handleStep2(
     userId: string,
     session: RidetheBusSession,
-    answer: "higher" | "lower",
+    answer: "higher_or_equal" | "lower_or_equal",
   ): Promise<RidetheBusAnswerResult> {
     const card1 = session.cards[0]!;
-    const mults = calcStep2Multipliers(session.deck, card1.value);
-    const appliedMultiplier = answer === "higher" ? mults.higher : mults.lower;
+    const mults = calcStep2Multipliers(card1.value);
+    const appliedMultiplier = answer === "higher_or_equal" ? mults.higherOrEqual : mults.lowerOrEqual;
 
-    // Draw with tie-redraw (max MAX_TIE_ATTEMPTS attempts total)
-    const tiedCards: RidetheBusCard[] = [];
-    let finalCard: RidetheBusCard | null = null;
-    for (let attempt = 0; attempt < MAX_TIE_ATTEMPTS; attempt++) {
-      const drawn = drawTop(session.deck);
-      if (drawn.value !== card1.value) {
-        finalCard = drawn;
-        break;
-      }
-      tiedCards.push(drawn);
-    }
+    const drawnCard = drawTop(session.deck);
+    session.cards.push(drawnCard);
 
-    // All attempts tied — skip step, use last tied card
-    if (!finalCard) {
-      finalCard = tiedCards[tiedCards.length - 1]!;
-      session.cards.push(finalCard);
-      session.currentStep = 3;
-      const s3 = calcStep3Multipliers(session.deck, card1.value, finalCard.value);
-      return {
-        correct: true,
-        revealedCard: finalCard,
-        tiedCards,
-        stepSkipped: true,
-        nextStep: 3,
-        currentMultiplier: session.currentMultiplier,
-        step3Multipliers: s3,
-        potentialWin: Math.floor(session.betAmount * session.currentMultiplier),
-        gameState: "active",
-      };
-    }
-
-    session.cards.push(finalCard);
-
+    // Equality wins for both choices
     const correct =
-      answer === "higher" ? finalCard.value > card1.value : finalCard.value < card1.value;
+      answer === "higher_or_equal" ? drawnCard.value >= card1.value : drawnCard.value <= card1.value;
 
     if (!correct) {
       activeSessions.delete(userId);
@@ -293,8 +260,8 @@ class RidetheBusService {
       const { balance } = (await prisma.user.findUnique({ where: { id: userId } }))!;
       return {
         correct: false,
-        revealedCard: finalCard,
-        tiedCards,
+        revealedCard: drawnCard,
+        tiedCards: [],
         stepSkipped: false,
         nextStep: null,
         currentMultiplier: 0,
@@ -309,11 +276,11 @@ class RidetheBusService {
       Math.round(session.currentMultiplier * appliedMultiplier * 100) / 100;
     session.currentStep = 3;
 
-    const s3 = calcStep3Multipliers(session.deck, card1.value, finalCard.value);
+    const s3 = calcStep3Multipliers(card1.value, drawnCard.value);
     return {
       correct: true,
-      revealedCard: finalCard,
-      tiedCards,
+      revealedCard: drawnCard,
+      tiedCards: [],
       stepSkipped: false,
       nextStep: 3,
       currentMultiplier: session.currentMultiplier,
@@ -330,7 +297,7 @@ class RidetheBusService {
   ): Promise<RidetheBusAnswerResult> {
     const card1 = session.cards[0]!;
     const card2 = session.cards[1]!;
-    const mults = calcStep3Multipliers(session.deck, card1.value, card2.value);
+    const mults = calcStep3Multipliers(card1.value, card2.value);
     const appliedMultiplier = answer === "inside" ? mults.inside : mults.outside;
 
     const card = drawTop(session.deck);
@@ -469,14 +436,10 @@ class RidetheBusService {
     let step3Multipliers: Step3Multipliers | undefined;
 
     if (session.currentStep === 2 && session.cards[0]) {
-      step2Multipliers = calcStep2Multipliers(session.deck, session.cards[0].value);
+      step2Multipliers = calcStep2Multipliers(session.cards[0].value);
     }
     if (session.currentStep === 3 && session.cards[0] && session.cards[1]) {
-      step3Multipliers = calcStep3Multipliers(
-        session.deck,
-        session.cards[0].value,
-        session.cards[1].value,
-      );
+      step3Multipliers = calcStep3Multipliers(session.cards[0].value, session.cards[1].value);
     }
 
     return {

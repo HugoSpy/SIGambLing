@@ -97,7 +97,7 @@ export const ridethebusAnswerSchema = z.object({
   step: z.coerce.number().int().min(1).max(4),
   answer: z.enum([
     "red", "black",
-    "higher", "lower",
+    "higher_or_equal", "lower_or_equal",
     "inside", "outside",
     "hearts", "diamonds", "clubs", "spades",
   ]),
