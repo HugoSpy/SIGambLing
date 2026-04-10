@@ -45,6 +45,7 @@ enum CasinoGameType {
   blackjack
   hilo
   ride_the_bus
+  mines
 }
 
 enum CasinoGameResult {

@@ -14,6 +14,10 @@ import {
   hiloPredictController,
   hiloSkipController,
   hiloStartController,
+  minesCashoutController,
+  minesCurrentController,
+  minesRevealController,
+  minesStartController,
   ridethebusAnswerController,
   ridethebusCurrentController,
   ridethebusStartController,
@@ -26,6 +30,8 @@ import {
   blackjackDealSchema,
   hiloPredictSchema,
   hiloStartSchema,
+  minesRevealSchema,
+  minesStartSchema,
   ridethebusAnswerSchema,
   ridethebusStartSchema,
   rouletteSpinSchema,
@@ -148,3 +154,23 @@ casinoRouter.post(
   validateBody(ridethebusAnswerSchema),
   ridethebusAnswerController,
 );
+
+casinoRouter.get("/mines/current", requireAuth, minesCurrentController);
+
+casinoRouter.post(
+  "/mines/start",
+  requireAuth,
+  casinoLimiter,
+  validateBody(minesStartSchema),
+  minesStartController,
+);
+
+casinoRouter.post(
+  "/mines/reveal",
+  requireAuth,
+  casinoLimiter,
+  validateBody(minesRevealSchema),
+  minesRevealController,
+);
+
+casinoRouter.post("/mines/cashout", requireAuth, casinoLimiter, minesCashoutController);

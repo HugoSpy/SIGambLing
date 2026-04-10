@@ -1,10 +1,11 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Bus, CircleDot, Coins, Sparkles, Waves } from "lucide-react";
+import { ArrowRight, Bus, CircleDot, Coins, Sparkles, Waves, Bomb } from "lucide-react";
 import toast from "react-hot-toast";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { BlackjackGame } from "../components/casino/BlackjackGame";
 import { HiloGame } from "../components/casino/HiloGame";
+import { MinesGame } from "../components/casino/MinesGame";
 import { RideTheBusGame } from "../components/casino/RideTheBusGame";
 import { RouletteGame } from "../components/casino/RouletteGame";
 import { DashboardShell } from "../components/layout/DashboardShell";
@@ -15,7 +16,7 @@ import { fetchCurrentUser, logoutRequest } from "../lib/api";
 import { cn } from "../lib/utils";
 import { useAuthStore } from "../store/auth-store";
 
-type GameTab = "roulette" | "blackjack" | "hilo" | "ride-the-bus";
+type GameTab = "roulette" | "blackjack" | "hilo" | "ride-the-bus" | "mines";
 
 const TABS: {
   id: GameTab;
@@ -62,10 +63,25 @@ const TABS: {
       accentClassName: "from-rose-500/20 via-rose-500/5 to-transparent",
       icon: Bus,
     },
+    {
+      id: "mines",
+      label: "Mines",
+      eyebrow: "Volatilité variable",
+      description: "Évitez les mines, encaissez quand vous voulez. Plus vous avancez, plus ça paie.",
+      href: "/casino/mines",
+      accentClassName: "from-cyan-500/20 via-cyan-500/5 to-transparent",
+      icon: Bomb,
+    },
   ];
 
 function isGameTab(value: string | undefined): value is GameTab {
-  return value === "roulette" || value === "blackjack" || value === "hilo" || value === "ride-the-bus";
+  return (
+    value === "roulette" ||
+    value === "blackjack" ||
+    value === "hilo" ||
+    value === "ride-the-bus" ||
+    value === "mines"
+  );
 }
 
 export function CasinoPage() {
@@ -118,6 +134,7 @@ export function CasinoPage() {
     blackjack: "Blackjack temporairement indisponible",
     hilo: "HiLo temporairement indisponible",
     "ride-the-bus": "Ride the Bus temporairement indisponible",
+    mines: "Mines temporairement indisponible",
   };
 
   const handleLogout = async () => {
@@ -167,6 +184,11 @@ export function CasinoPage() {
                         ⚡ Volatilité extrême · Multiplicateur max : ×1 331
                       </p>
                     )}
+                    {tab.id === "mines" && (
+                      <p className="text-xs text-cyan-400 mt-1">
+                        ⚡ Volatilité variable · Jusqu'à ×24.75 (24 mines)
+                      </p>
+                    )}
 
                     <div className="mt-auto">
                       {disabled ? (
@@ -193,6 +215,7 @@ export function CasinoPage() {
         {activeGame === "blackjack" ? <BlackjackGame /> : null}
         {activeGame === "hilo" ? <HiloGame /> : null}
         {activeGame === "ride-the-bus" ? <RideTheBusGame /> : null}
+        {activeGame === "mines" ? <MinesGame /> : null}
 
         {!activeGame ? (
           <Card className="border-white/10 bg-zinc-900/95">

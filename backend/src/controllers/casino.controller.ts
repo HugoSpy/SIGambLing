@@ -1,6 +1,7 @@
 import type { RequestHandler } from "express";
 import { blackjackService } from "../services/blackjack.service";
 import { hiloService } from "../services/hilo.service";
+import { minesService } from "../services/mines.service";
 import { ridethebusService } from "../services/ride-the-bus.service";
 import { rouletteService } from "../services/roulette.service";
 
@@ -174,6 +175,46 @@ export const ridethebusCurrentController: RequestHandler = (request, response, n
   try {
     const userId = getAuthUserId(request);
     const result = ridethebusService.getCurrent(userId);
+    response.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const minesStartController: RequestHandler = async (request, response, next) => {
+  try {
+    const userId = getAuthUserId(request);
+    const result = await minesService.start(userId, request.body.betAmount, request.body.minesCount);
+    response.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const minesRevealController: RequestHandler = async (request, response, next) => {
+  try {
+    const userId = getAuthUserId(request);
+    const result = await minesService.reveal(userId, request.body.cellIndex);
+    response.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const minesCashoutController: RequestHandler = async (request, response, next) => {
+  try {
+    const userId = getAuthUserId(request);
+    const result = await minesService.cashout(userId);
+    response.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const minesCurrentController: RequestHandler = (request, response, next) => {
+  try {
+    const userId = getAuthUserId(request);
+    const result = minesService.getCurrent(userId);
     response.json(result);
   } catch (error) {
     next(error);

@@ -175,7 +175,7 @@ class JackpotService {
   async recordCasinoContribution(
     userId: string,
     wagerAmount: number,
-    sourceGameType: "roulette" | "blackjack" | "hilo" | "ride_the_bus",
+    sourceGameType: "roulette" | "blackjack" | "hilo" | "ride_the_bus" | "mines",
     sourceReference?: string,
     client?: DatabaseClient,
   ) {

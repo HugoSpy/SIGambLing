@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+const MIN_BET = 10;
+
 const VALID_STREET_STARTS = new Set([1, 4, 7, 10, 13, 16, 19, 22, 25, 28, 31, 34]);
 const VALID_CORNER_STARTS = new Set([
   1, 2, 4, 5, 7, 8, 10, 11, 13, 14, 16, 17, 19, 20, 22, 23, 25, 26, 28, 29, 31,
@@ -105,6 +107,18 @@ export const ridethebusAnswerSchema = z.object({
 
 export type RidethebusStartInput = z.infer<typeof ridethebusStartSchema>;
 export type RidethebusAnswerInput = z.infer<typeof ridethebusAnswerSchema>;
+
+export const minesStartSchema = z.object({
+  betAmount: z.coerce.number().int().min(MIN_BET),
+  minesCount: z.coerce.number().int().min(1).max(24),
+});
+
+export const minesRevealSchema = z.object({
+  cellIndex: z.coerce.number().int().min(0).max(24),
+});
+
+export type MinesStartInput = z.infer<typeof minesStartSchema>;
+export type MinesRevealInput = z.infer<typeof minesRevealSchema>;
 
 export const blackjackDealSchema = z.object({
   bet: z.coerce.number().int().min(1),
