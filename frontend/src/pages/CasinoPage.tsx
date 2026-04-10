@@ -186,7 +186,7 @@ export function CasinoPage() {
                     )}
                     {tab.id === "mines" && (
                       <p className="text-xs text-cyan-400 mt-1">
-                        ⚡ Volatilité variable · Jusqu'à ×24.75 (24 mines)
+                        ⚡ Volatilité variable · Jusqu'à ×5 140 000 (12-13 mines)
                       </p>
                     )}
 
@@ -208,7 +208,7 @@ export function CasinoPage() {
                 </Card>
               );
             })}
-            </div>
+          </div>
         ) : null}
 
         {activeGame === "roulette" ? <RouletteGame /> : null}
