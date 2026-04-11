@@ -17,7 +17,6 @@ interface MinesSidebarProps {
   isLoading: boolean;
   onStart: () => void;
   onCashout: () => void;
-  onReset: () => void;
 }
 
 const QUICK_MINES = [1, 3, 5, 10, 24];
@@ -36,7 +35,6 @@ export function MinesSidebar({
   isLoading,
   onStart,
   onCashout,
-  onReset,
 }: MinesSidebarProps) {
   const isPlaying = phase === "playing";
   const isIdle = phase === "idle";
@@ -225,18 +223,15 @@ export function MinesSidebar({
         {/* Bet / New game button */}
         {(isIdle || isOver) && (
           <button
-            onClick={isOver ? onReset : onStart}
+            onClick={onStart}
             disabled={isLoading || bet < 1 || bet > userBalance}
             className="w-full rounded-xl py-3 text-sm font-bold transition active:scale-95 disabled:opacity-50"
             style={{
-              background: isOver
-                ? "linear-gradient(135deg, #1e3a5f 0%, #152a47 100%)"
-                : "linear-gradient(135deg, #00e701 0%, #00cc00 100%)",
-              color: isOver ? "#93c5fd" : "#0a1f0a",
-              border: isOver ? "1px solid rgba(59,130,246,0.3)" : "none",
+              background: "linear-gradient(135deg, #00e701 0%, #00cc00 100%)",
+              color: "#0a1f0a",
             }}
           >
-            {isLoading ? "..." : isOver ? "Nouvelle partie" : "Lancer la mise"}
+            {isLoading ? "..." : "Lancer la mise"}
           </button>
         )}
 

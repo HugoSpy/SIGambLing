@@ -27,7 +27,6 @@ export function MinesGame() {
     revealCell,
     cashout,
     restoreSession,
-    resetGame,
   } = useMinesGame();
 
   const [bet, setBet] = useState(100);
@@ -54,10 +53,6 @@ export function MinesGame() {
     if (phase !== "playing") setMines(v);
   }
 
-  function handleReset() {
-    resetGame();
-  }
-
   return (
     <div
       className="min-h-screen w-full rounded-2xl overflow-hidden"
@@ -80,7 +75,6 @@ export function MinesGame() {
             isLoading={isLoading}
             onStart={handleStart}
             onCashout={cashout}
-            onReset={handleReset}
           />
         </div>
 
