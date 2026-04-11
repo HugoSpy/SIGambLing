@@ -1,4 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
+import { ArrowLeft } from "lucide-react";
+import { Link } from "react-router-dom";
 import type { MinesGamePhase } from "../../../types/mines";
 
 interface MinesSidebarProps {
@@ -51,6 +53,12 @@ export function MinesSidebar({
       className="flex flex-col gap-4 rounded-xl p-4"
       style={{ background: "#172531", border: "1px solid rgba(255,255,255,0.06)" }}
     >
+      {/* Retour au casino */}
+      <Link to="/casino" className="flex items-center gap-1.5 text-xs text-brand-muted hover:text-brand-text transition-colors">
+        <ArrowLeft className="h-3.5 w-3.5" />
+        Retour au casino
+      </Link>
+
       {/* Bet input */}
       <div className="flex flex-col gap-1.5">
         <label className="text-xs uppercase tracking-widest text-zinc-500">Mise</label>

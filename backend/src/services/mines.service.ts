@@ -5,7 +5,7 @@ import { jackpotService } from "./jackpot.service";
 import { prisma } from "./prisma.service";
 
 const TOTAL_CELLS = 25;
-const MIN_BET = 10;
+const MIN_BET = 1;
 const HOUSE_EDGE = 0.01;
 
 interface MinesSession {
