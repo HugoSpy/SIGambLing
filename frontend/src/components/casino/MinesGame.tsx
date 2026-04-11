@@ -1,12 +1,9 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "../../store/auth-store";
 import { useMinesGame } from "../../hooks/useMinesGame";
 import { MinesGrid } from "./Mines/MinesGrid";
 import { MinesSidebar } from "./Mines/MinesSidebar";
 import { WinPopup, useWinPopup } from "../ui/WinPopup";
-
-// Delay before the win popup appears — lets the mine reveal cascade animate first
-const MODAL_DELAY_WON = 900;
 
 export function MinesGame() {
   const user = useAuthStore((s) => s.user);
@@ -36,7 +33,6 @@ export function MinesGame() {
   const [bet, setBet] = useState(100);
   const [mines, setMines] = useState(3);
   const { popupProps, showWin } = useWinPopup();
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     restoreSession();
@@ -44,15 +40,9 @@ export function MinesGame() {
   }, []);
 
   useEffect(() => {
-    if (timerRef.current) clearTimeout(timerRef.current);
     if (phase === "won") {
-      timerRef.current = setTimeout(() => {
-        showWin({ multiplier: currentMultiplier, netGain: lastPayout - betAmount });
-      }, MODAL_DELAY_WON);
+      showWin({ multiplier: currentMultiplier, netGain: lastPayout - betAmount });
     }
-    return () => {
-      if (timerRef.current) clearTimeout(timerRef.current);
-    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
