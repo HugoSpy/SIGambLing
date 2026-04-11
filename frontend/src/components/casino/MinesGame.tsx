@@ -60,11 +60,9 @@ export function MinesGame() {
 
   return (
     <div
-      className="relative min-h-screen w-full rounded-2xl overflow-hidden"
+      className="min-h-screen w-full rounded-2xl overflow-hidden"
       style={{ background: "#0f1923" }}
     >
-      <WinPopup {...popupProps} />
-
       <div className="flex flex-col lg:flex-row gap-4 p-4">
         {/* Sidebar */}
         <div className="w-full lg:w-64 shrink-0">
@@ -88,7 +86,7 @@ export function MinesGame() {
 
         {/* Grid */}
         <div className="flex-1 flex items-start">
-          <div className="w-full max-w-lg mx-auto">
+          <div className="relative w-full max-w-lg mx-auto">
             <MinesGrid
               phase={phase}
               revealedCells={revealedCells}
@@ -99,6 +97,7 @@ export function MinesGame() {
               nextMultiplier={nextMultiplier}
               onReveal={revealCell}
             />
+            <WinPopup {...popupProps} />
           </div>
         </div>
       </div>

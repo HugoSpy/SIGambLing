@@ -77,25 +77,16 @@ export function WinPopup({ multiplier, netGain, visible }: WinPopupProps) {
               gap: 6,
             }}
           >
-            {/* Filled token circle */}
+            {/* Token circle */}
             <div
               style={{
-                width: 18,
-                height: 18,
+                width: 14,
+                height: 14,
                 borderRadius: "50%",
                 background: color,
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                fontSize: 9,
-                fontWeight: 900,
-                color: "#060606",
                 flexShrink: 0,
-                lineHeight: 1,
               }}
-            >
-              S
-            </div>
+            />
             <span
               style={{
                 color,
@@ -105,9 +96,6 @@ export function WinPopup({ multiplier, netGain, visible }: WinPopupProps) {
               }}
             >
               +{netGain.toLocaleString("fr-FR")}
-            </span>
-            <span style={{ color: `${color}80`, fontSize: "0.75rem", fontWeight: 600 }}>
-              S
             </span>
           </div>
         </motion.div>
