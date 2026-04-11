@@ -22,6 +22,7 @@ import { RouletteHistory } from "./RouletteHistory";
 import { RouletteStats } from "./RouletteStats";
 import { RouletteWheel } from "./RouletteWheel";
 import { Button } from "../ui/Button";
+import { WinPopup, useWinPopup } from "../ui/WinPopup";
 
 export function RouletteGame() {
   const queryClient = useQueryClient();
@@ -39,6 +40,7 @@ export function RouletteGame() {
   const [pendingResponse, setPendingResponse] = useState<RouletteSpinResponse | null>(null);
   const [soundEnabled, setSoundEnabled] = useState(soundManager.isEnabled());
   const pendingTimeoutsRef = useRef<number[]>([]);
+  const { popupProps, showWin, showPush } = useWinPopup();
 
   const baseBalance = user?.balance ?? 0;
   const totalBet = useMemo(() => bets.reduce((sum, bet) => sum + bet.amount, 0), [bets]);
@@ -199,13 +201,19 @@ export function RouletteGame() {
 
       if (pendingResponse.payout > 0) {
         soundManager.play("win");
-        notify.success(`Gain valide : +${formatTokens(pendingResponse.payout)} tokens`);
         if (navigator.vibrate) {
           navigator.vibrate([60, 40, 90]);
         }
       } else {
         soundManager.play("lose");
-        notify.info("Aucun gain sur ce tour.");
+      }
+
+      const netGain = pendingResponse.payout - pendingResponse.bet_amount;
+      if (netGain > 0) {
+        const multiplier = pendingResponse.bet_amount > 0 ? pendingResponse.payout / pendingResponse.bet_amount : 1;
+        showWin({ multiplier, netGain });
+      } else if (netGain === 0 && pendingResponse.payout > 0) {
+        showPush({ multiplier: 1, netGain: 0 });
       }
 
       setSpinRequest(null);
@@ -226,7 +234,7 @@ export function RouletteGame() {
       }, 1000);
       pendingTimeoutsRef.current.push(t1);
     },
-    [bets, pendingResponse, queryClient, spinRequest, updateBalance],
+    [bets, pendingResponse, queryClient, spinRequest, updateBalance, showWin, showPush],
   );
 
   const handleToggleSound = useCallback(() => {
@@ -289,7 +297,10 @@ export function RouletteGame() {
                 ) : null}
               </div>
 
-              <RouletteWheel onSpinComplete={handleSpinComplete} spinRequest={spinRequest} />
+              <div className="relative">
+                <RouletteWheel onSpinComplete={handleSpinComplete} spinRequest={spinRequest} />
+                <WinPopup {...popupProps} />
+              </div>
             </div>
           </Card>
 

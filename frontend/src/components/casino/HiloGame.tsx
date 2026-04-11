@@ -1,12 +1,13 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowDown, ArrowLeft, ArrowUp, ChevronRight, Coins, SkipForward } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useHiloGame } from "../../hooks/useHiloGame";
 import { cn, formatTokens } from "../../lib/utils";
 import { useAuthStore } from "../../store/auth-store";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
+import { WinPopup, useWinPopup } from "../ui/WinPopup";
 import { HiloCard, HiloCardGhost } from "./HiloCard";
 import { HiloHistory } from "./HiloHistory";
 
@@ -16,6 +17,8 @@ export function HiloGame() {
   const user = useAuthStore((s) => s.user);
   const [bet, setBet] = useState(10);
   const [hoveredAction, setHoveredAction] = useState<"higher" | "lower" | "equal" | null>(null);
+  const { popupProps, showWin } = useWinPopup();
+  const prevPhaseRef = useRef<string>("");
 
   const {
     phase,
@@ -39,6 +42,14 @@ export function HiloGame() {
     restoreSession();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (prevPhaseRef.current !== "win" && phase === "win") {
+      showWin({ multiplier: accumulatedMultiplier, netGain: lastPayout - initialBet });
+    }
+    prevPhaseRef.current = phase;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
 
   const isPlaying = phase === "playing";
   const isIdle = phase === "idle";
@@ -289,7 +300,7 @@ export function HiloGame() {
 
       {/* ── Main game area ── */}
       <div className="flex flex-col gap-6 flex-1 min-w-0">
-        <Card className="border-white/10 bg-zinc-900/95 p-6">
+        <Card className="border-white/10 bg-zinc-900/95 p-6 relative">
           {/* Card display */}
           <div className="flex items-center justify-center gap-6 mb-8">
             <HiloCardGhost
@@ -389,20 +400,8 @@ export function HiloGame() {
             </div>
           )}
 
-          {/* Win / Loss overlay */}
+          {/* Loss indicator */}
           <AnimatePresence>
-            {phase === "win" && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-                className="rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 mb-4 text-center"
-              >
-                <p className="text-emerald-400 font-semibold">
-                  Cash out réussi — {formatTokens(lastPayout)} tokens encaissés !
-                </p>
-              </motion.div>
-            )}
             {phase === "loss" && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -414,6 +413,8 @@ export function HiloGame() {
               </motion.div>
             )}
           </AnimatePresence>
+
+          <WinPopup {...popupProps} />
 
           {/* History */}
           {history.length > 0 && (

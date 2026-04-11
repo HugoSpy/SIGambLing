@@ -6,13 +6,14 @@ import {
   ChevronRight,
   Coins,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useRideTheBusGame } from "../../hooks/useRideTheBusGame";
 import { cn, formatTokens } from "../../lib/utils";
 import { useAuthStore } from "../../store/auth-store";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
+import { WinPopup, useWinPopup } from "../ui/WinPopup";
 import { HiloCard } from "./HiloCard";
 import type { RidetheBusSuit } from "../../types/ride-the-bus";
 
@@ -62,6 +63,8 @@ function StepDots({ current, total = 4 }: { current: number; total?: number }) {
 export function RideTheBusGame() {
   const user = useAuthStore((s) => s.user);
   const [bet, setBet] = useState(10);
+  const { popupProps, showWin } = useWinPopup();
+  const prevPhaseRef = useRef<string>("");
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== "undefined" && window.innerWidth < 640,
   );
@@ -98,6 +101,14 @@ export function RideTheBusGame() {
     restoreSession();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (prevPhaseRef.current !== "won" && phase === "won") {
+      showWin({ multiplier: currentMultiplier, netGain: lastPayout - betAmount });
+    }
+    prevPhaseRef.current = phase;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase]);
 
   const isPlaying = phase === "playing";
   const isIdle = phase === "idle";
@@ -246,7 +257,7 @@ export function RideTheBusGame() {
       <div className="flex flex-col gap-4 sm:gap-6 flex-1 min-w-0">
         <Card
           className={cn(
-            "border-white/10 bg-zinc-900/95 p-4 sm:p-6 transition-colors duration-500",
+            "border-white/10 bg-zinc-900/95 p-4 sm:p-6 transition-colors duration-500 relative",
             phase === "won" && "border-emerald-500/40",
             phase === "lost" && "border-red-500/40",
           )}
@@ -495,25 +506,10 @@ export function RideTheBusGame() {
             )}
           </AnimatePresence>
 
-          {/* Win overlay */}
-          <AnimatePresence>
-            {phase === "won" && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0 }}
-                className="rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 sm:px-6 py-4 sm:py-5 text-center"
-              >
-                <p className="text-xl sm:text-2xl font-bold text-emerald-300 mb-1">Bravo !</p>
-                <p className="text-sm text-zinc-400 mb-2 sm:mb-3">
-                  Multiplicateur final ×{(currentMultiplier ?? 1).toFixed(2)}
-                </p>
-                <p className="text-2xl sm:text-3xl font-mono font-bold text-emerald-400">
-                  {formatTokens(lastPayout)} tokens
-                </p>
-              </motion.div>
-            )}
+          <WinPopup {...popupProps} />
 
+          {/* Loss overlay */}
+          <AnimatePresence>
             {phase === "lost" && (
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}

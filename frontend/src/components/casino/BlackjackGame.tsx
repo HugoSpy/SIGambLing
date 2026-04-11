@@ -20,6 +20,7 @@ import type {
 } from "../../types/blackjack";
 import { Button } from "../ui/Button";
 import { Card } from "../ui/Card";
+import { WinPopup, useWinPopup } from "../ui/WinPopup";
 
 const SUIT_SYMBOLS: Record<string, string> = {
   hearts: "♥",
@@ -243,50 +244,6 @@ function HandTotal({
   );
 }
 
-function getResultConfig(result: BlackjackResult | "bust") {
-  const config: Record<
-    BlackjackResult | "bust",
-    { label: string; amountColor: string; borderClass: string; ringClass: string; isWin: boolean }
-  > = {
-    win: {
-      label: "GAGNÉ",
-      amountColor: "text-emerald-400",
-      borderClass: "border-emerald-500/70",
-      ringClass: "ring-emerald-500",
-      isWin: true,
-    },
-    blackjack: {
-      label: "BLACKJACK",
-      amountColor: "text-yellow-400",
-      borderClass: "border-yellow-400/70",
-      ringClass: "ring-emerald-500",
-      isWin: true,
-    },
-    loss: {
-      label: "PERDU",
-      amountColor: "text-red-400",
-      borderClass: "border-red-500/70",
-      ringClass: "ring-red-500",
-      isWin: false,
-    },
-    bust: {
-      label: "BUST",
-      amountColor: "text-red-400",
-      borderClass: "border-red-500/70",
-      ringClass: "ring-red-500",
-      isWin: false,
-    },
-    push: {
-      label: "ÉGALITÉ",
-      amountColor: "text-orange-400",
-      borderClass: "border-orange-500/70",
-      ringClass: "ring-orange-500",
-      isWin: false,
-    },
-  };
-
-  return config[result];
-}
 
 function calcHandTotal(hand: BlackjackCard[]): number {
   let total = 0;
@@ -306,178 +263,6 @@ function calcHandTotal(hand: BlackjackCard[]): number {
   return total;
 }
 
-function ResultModal({
-  show,
-  result,
-  resultConfig,
-  payout,
-  bet,
-  splitResults,
-  onClose,
-}: {
-  show: boolean;
-  result: BlackjackResult | null;
-  resultConfig: ReturnType<typeof getResultConfig> | null;
-  payout: number;
-  bet: number;
-  splitResults?: SplitHandResult[] | null;
-  onClose: () => void;
-}) {
-  useEffect(() => {
-    if (!show) return;
-    const timer = setTimeout(onClose, 4000);
-    return () => clearTimeout(timer);
-  }, [show, onClose]);
-
-  if (splitResults && splitResults.length === 2) {
-    const totalBet = splitResults.reduce((s, r) => s + r.bet, 0);
-    const netChange = payout - totalBet;
-    const hasWin = splitResults.some((r) => r.result === "win");
-    const overallBorderClass = hasWin ? "border-emerald-500/70" : "border-red-500/70";
-
-    return (
-      <AnimatePresence>
-        {show ? (
-          <motion.div
-            animate={{ opacity: 1 }}
-            className="fixed inset-0 z-50 flex items-center justify-center p-4"
-            exit={{ opacity: 0 }}
-            initial={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-          >
-            <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-            <motion.div
-              animate={{ opacity: 1, y: 0 }}
-              className={cn(
-                "relative z-10 w-full max-w-[300px] rounded-2xl border-2 bg-zinc-900/95 px-6 py-5 text-center shadow-2xl",
-                overallBorderClass,
-              )}
-              exit={{ opacity: 0, y: 20 }}
-              initial={{ opacity: 0, y: 20 }}
-              transition={{ duration: 0.18, ease: "easeOut" }}
-            >
-              <p className="text-[11px] font-black uppercase tracking-[0.36em] text-white/60">
-                RÉSULTAT SPLIT
-              </p>
-
-              <div className="mt-3 space-y-2">
-                {splitResults.map((r, i) => {
-                  const cfg = getResultConfig(r.result);
-                  const net = r.payout - r.bet;
-                  return (
-                    <div
-                      key={i}
-                      className="flex items-center justify-between rounded-xl border border-white/10 bg-white/5 px-3 py-2"
-                    >
-                      <span className="text-xs font-semibold text-white/70">Main {i + 1}</span>
-                      <span className={cn("text-xs font-black uppercase", cfg.amountColor)}>
-                        {cfg.label}
-                      </span>
-                      <span className={cn("text-sm font-black", cfg.amountColor)}>
-                        {net > 0 ? `+${formatTokens(net)}` : net === 0 ? "±0" : `-${formatTokens(r.bet)}`}
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-
-              <div className="mt-3 border-t border-white/10 pt-3">
-                <p className="text-xs text-white/45">Total</p>
-                <motion.p
-                  animate={{ scale: [1, 1.08, 1] }}
-                  className={cn(
-                    "mt-1 text-2xl font-black",
-                    netChange > 0
-                      ? "text-emerald-400"
-                      : netChange < 0
-                        ? "text-red-400"
-                        : "text-orange-400",
-                  )}
-                  transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
-                >
-                  {netChange > 0
-                    ? `+${formatTokens(netChange)}`
-                    : netChange < 0
-                      ? `-${formatTokens(-netChange)}`
-                      : "±0"}
-                </motion.p>
-                <p className="mt-0.5 text-[11px] text-white/40">tokens</p>
-              </div>
-
-              <button
-                className="mt-4 w-full rounded-xl bg-white/10 py-2 text-xs font-bold text-white/80 transition hover:bg-white/20"
-                onClick={onClose}
-                type="button"
-              >
-                Rejouer
-              </button>
-            </motion.div>
-          </motion.div>
-        ) : null}
-      </AnimatePresence>
-    );
-  }
-
-  const amountDisplay =
-    result === "push"
-      ? "±0"
-      : resultConfig?.isWin
-        ? `+${formatTokens(payout)}`
-        : `-${formatTokens(bet)}`;
-
-  return (
-    <AnimatePresence>
-      {show && result && resultConfig ? (
-        <motion.div
-          animate={{ opacity: 1 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4"
-          exit={{ opacity: 0 }}
-          initial={{ opacity: 0 }}
-          transition={{ duration: 0.15 }}
-        >
-          <div className="absolute inset-0 bg-black/30" onClick={onClose} />
-          <motion.div
-            animate={{ opacity: 1, y: 0 }}
-            className={cn(
-              "relative z-10 w-full max-w-[260px] rounded-2xl border-2 bg-zinc-900/95 px-6 py-5 text-center shadow-2xl",
-              resultConfig.borderClass,
-            )}
-            exit={{ opacity: 0, y: 20 }}
-            initial={{ opacity: 0, y: 20 }}
-            transition={{ duration: 0.18, ease: "easeOut" }}
-          >
-            <p
-              className={cn(
-                "text-[11px] font-black uppercase tracking-[0.36em]",
-                resultConfig.amountColor,
-              )}
-            >
-              {resultConfig.label}
-            </p>
-
-            <motion.p
-              animate={{ scale: [1, 1.08, 1] }}
-              className={cn("mt-2 font-black leading-none", resultConfig.amountColor)}
-              style={{ fontSize: "2.6rem" }}
-              transition={{ duration: 0.5, delay: 0.15, ease: "easeOut" }}
-            >
-              {amountDisplay}
-            </motion.p>
-            <p className="mt-1 text-[11px] text-white/40">tokens</p>
-
-            <button
-              className="mt-4 w-full rounded-xl bg-white/10 py-2 text-xs font-bold text-white/80 transition hover:bg-white/20"
-              onClick={onClose}
-              type="button"
-            >
-              Rejouer
-            </button>
-          </motion.div>
-        </motion.div>
-      ) : null}
-    </AnimatePresence>
-  );
-}
 
 function SplitHandsArea({
   splitHands,
@@ -597,8 +382,8 @@ export function BlackjackGame() {
   const [insurancePayout, setInsurancePayout] = useState(0);
   const [insuranceAvailable, setInsuranceAvailable] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [showResultModal, setShowResultModal] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const { popupProps, showWin, showPush } = useWinPopup();
   // Split state
   const [splitHands, setSplitHands] = useState<SplitHandDisplay[] | null>(null);
   const [currentSplitHand, setCurrentSplitHand] = useState<0 | 1>(0);
@@ -656,16 +441,21 @@ export function BlackjackGame() {
         }
 
         setGameState("GAME_OVER");
-        setShowResultModal(true);
 
+        const resPayout = response.payout ?? 0;
         if (finalResult === "blackjack" || finalResult === "win") {
           soundManager.play("win");
+          const multiplier = currentBet > 0 ? resPayout / currentBet : 1;
+          showWin({ multiplier, netGain: resPayout - currentBet });
+        } else if (finalResult === "push") {
+          soundManager.play("lose");
+          showPush({ multiplier: 1, netGain: 0 });
         } else {
           soundManager.play("lose");
         }
       }
     },
-    [playerHand, queryClient, updateBalance],
+    [playerHand, queryClient, updateBalance, currentBet, showWin, showPush],
   );
 
   const handleSplitResponse = useCallback(
@@ -690,12 +480,19 @@ export function BlackjackGame() {
           void queryClient.invalidateQueries({ queryKey: ["jackpot"] });
         }
         setGameState("GAME_OVER");
-        setShowResultModal(true);
         const hasWin = data.split_results.some((r) => r.result === "win");
         soundManager.play(hasWin ? "win" : "lose");
+        const totalPayout = data.payout ?? 0;
+        const totalBet = data.split_results.reduce((s, r) => s + r.bet, 0);
+        const netGain = totalPayout - totalBet;
+        if (netGain > 0) {
+          showWin({ multiplier: totalBet > 0 ? totalPayout / totalBet : 1, netGain });
+        } else if (netGain === 0) {
+          showPush({ multiplier: 1, netGain: 0 });
+        }
       }
     },
-    [updateBalance, queryClient],
+    [updateBalance, queryClient, showWin, showPush],
   );
 
   const dealCardsProgressively = useCallback(
@@ -977,7 +774,6 @@ export function BlackjackGame() {
   }, [gameId, handleSplitResponse, resolveGame]);
 
   const handleNewGame = useCallback(() => {
-    setShowResultModal(false);
     setGameState("BETTING");
     setGameId(null);
     setPlayerHand([]);
@@ -1053,7 +849,17 @@ export function BlackjackGame() {
               : result === "loss"
                 ? "Defaite"
                 : "En attente";
-  const resultConfig = result ? getResultConfig(result) : null;
+  const playerHandBorderClass = (() => {
+    if (gameState !== "GAME_OVER") return "border-white/10";
+    if (splitResults) {
+      const splitTotalBet = splitResults.reduce((s, r) => s + r.bet, 0);
+      const splitNet = payout - splitTotalBet;
+      return splitNet > 0 ? "border-emerald-500/60" : splitNet === 0 ? "border-orange-500/60" : "border-red-500/60";
+    }
+    if (result === "win" || result === "blackjack") return "border-emerald-500/60";
+    if (result === "push") return "border-orange-500/60";
+    return "border-red-500/60";
+  })();
 
   if (isCheckingSession) {
     return (
@@ -1065,15 +871,6 @@ export function BlackjackGame() {
 
   return (
     <div className="flex flex-col gap-3">
-      <ResultModal
-        bet={currentBet}
-        onClose={handleNewGame}
-        payout={payout}
-        result={result}
-        resultConfig={resultConfig}
-        show={showResultModal}
-        splitResults={splitResults}
-      />
       <Link to="/casino">
         <Button className="gap-2" size="sm" variant="secondary">
           <ArrowLeft className="h-4 w-4" />
@@ -1117,15 +914,7 @@ export function BlackjackGame() {
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px] min-h-0">
         <div
-          className={cn(
-            "relative overflow-y-auto rounded-[36px] border border-amber-200/20 p-4 shadow-[0_30px_80px_rgba(0,0,0,0.32)] sm:p-5 xl:flex xl:flex-col ring-2 ring-transparent transition-all duration-500",
-            gameState === "GAME_OVER" && !splitResults && resultConfig?.ringClass,
-            gameState === "GAME_OVER" && splitResults
-              ? splitResults.some((r) => r.result === "win")
-                ? "ring-emerald-500"
-                : "ring-red-500"
-              : "",
-          )}
+          className="relative overflow-y-auto rounded-[36px] border border-amber-200/20 p-4 shadow-[0_30px_80px_rgba(0,0,0,0.32)] sm:p-5 xl:flex xl:flex-col"
           style={{
             background:
               "radial-gradient(circle at top, rgba(40,123,88,0.88), rgba(10,50,32,0.98) 62%)",
@@ -1188,7 +977,7 @@ export function BlackjackGame() {
                 />
               </div>
             ) : (
-              <div className="rounded-[28px] border border-white/10 bg-black/10 p-3 backdrop-blur-sm">
+              <div className={cn("rounded-[28px] border bg-black/10 p-3 backdrop-blur-sm transition-colors duration-500", playerHandBorderClass)}>
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/55">
@@ -1302,6 +1091,7 @@ export function BlackjackGame() {
             )}
           </div>
 
+          <WinPopup {...popupProps} />
         </div>
 
         <div className="flex flex-col gap-3">
