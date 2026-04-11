@@ -7,4 +7,5 @@ export const sounds = {
   cardShuffle:     new Howl({ src: ['/card_shuffle.mp3'],         volume: 0.4 }),
   bombClick:       new Howl({ src: ['/bomb_click.mp3'],           volume: 0.7 }),
   betButton:       new Howl({ src: ['/bouton parier clique.mp3'], volume: 0.5 }),
+  gemmeClick:      new Howl({ src: ['/gemme_click.mp3'],          volume: 0.6 }),
 };

@@ -34,6 +34,7 @@ export function MinesGame() {
   const [mines, setMines] = useState(3);
   const { popupProps, showWin } = useWinPopup();
   const prevPhaseRef = useRef<string>("");
+  const prevRevealedLengthRef = useRef<number>(0);
 
   useEffect(() => {
     restoreSession();
@@ -50,6 +51,14 @@ export function MinesGame() {
     prevPhaseRef.current = phase;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
+
+  useEffect(() => {
+    if (phase === "playing" && revealedCells.length === prevRevealedLengthRef.current + 1) {
+      sounds.gemmeClick.play();
+    }
+    prevRevealedLengthRef.current = revealedCells.length;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [revealedCells]);
 
   function handleStart() {
     sounds.betButton.play();

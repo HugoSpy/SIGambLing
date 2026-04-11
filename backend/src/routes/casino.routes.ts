@@ -49,6 +49,16 @@ const casinoLimiter = rateLimit({
   message: { message: "Too many casino requests" },
 });
 
+const minesRevealLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 180,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (request) =>
+    ((request as { auth?: { id?: string } }).auth?.id ?? request.ip ?? "anonymous"),
+  message: { message: "Too many casino requests" },
+});
+
 casinoRouter.post(
   "/roulette/spin",
   requireAuth,
@@ -168,7 +178,7 @@ casinoRouter.post(
 casinoRouter.post(
   "/mines/reveal",
   requireAuth,
-  casinoLimiter,
+  minesRevealLimiter,
   validateBody(minesRevealSchema),
   minesRevealController,
 );

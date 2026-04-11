@@ -394,6 +394,7 @@ export function BlackjackGame() {
   const [visiblePlayerCards, setVisiblePlayerCards] = useState<BlackjackCard[]>([]);
   const [visibleDealerCards, setVisibleDealerCards] = useState<BlackjackCard[]>([]);
   const [dealerHiddenDealt, setDealerHiddenDealt] = useState(false);
+  const [hasPlayedBefore, setHasPlayedBefore] = useState(false);
 
   const balance = user?.balance ?? 0;
   const isPlaying = gameState === "PLAYER_TURN";
@@ -569,9 +570,9 @@ export function BlackjackGame() {
 
     setLoading(true);
     setGameState("DEALING");
+    setHasPlayedBefore(true);
     setResult(null);
     setDealerHandFinal(null);
-    sounds.cardShuffle.play();
     soundManager.play("chip");
 
     try {
@@ -1234,7 +1235,12 @@ export function BlackjackGame() {
                   disabled={isDisabled || bet < 1 || bet > balance}
                   onClick={() => {
                     if (gameState === "GAME_OVER") {
+                      sounds.cardShuffle.play();
                       handleNewGame();
+                      void handleBet();
+                    } else if (hasPlayedBefore) {
+                      sounds.cardShuffle.play();
+                      void handleBet();
                     } else {
                       sounds.betButton.play();
                       void handleBet();
@@ -1242,7 +1248,7 @@ export function BlackjackGame() {
                   }}
                   size="lg"
                 >
-                  {gameState === "GAME_OVER" ? "Nouvelle partie" : "Distribuer"}
+                  Distribuer
                   <ArrowRight className="h-4 w-4" />
                 </Button>
               ) : null}
