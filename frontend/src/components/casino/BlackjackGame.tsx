@@ -977,7 +977,7 @@ export function BlackjackGame() {
                 />
               </div>
             ) : (
-              <div className={cn("rounded-[28px] border bg-black/10 p-3 backdrop-blur-sm transition-colors duration-500", playerHandBorderClass)}>
+              <div className="rounded-[28px] bg-black/10 p-3 backdrop-blur-sm">
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <div>
                     <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/55">
@@ -1006,7 +1006,7 @@ export function BlackjackGame() {
                     ) : null}
                   </div>
                 </div>
-                <div className="flex min-h-[70px] flex-wrap gap-2 sm:min-h-[100px] sm:gap-3">
+                <div className={cn("flex min-h-[70px] flex-wrap gap-2 rounded-xl border p-2 transition-colors duration-500 sm:min-h-[100px] sm:gap-3", playerHandBorderClass)}>
                   <AnimatePresence mode="popLayout">
                     {(isDealing ? visiblePlayerCards : playerHand).map((card, index) => (
                       <PlayingCard
