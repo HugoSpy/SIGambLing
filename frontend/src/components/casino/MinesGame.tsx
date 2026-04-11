@@ -60,7 +60,7 @@ export function MinesGame() {
 
   return (
     <div
-      className="min-h-screen w-full rounded-2xl overflow-hidden"
+      className="relative min-h-screen w-full rounded-2xl overflow-hidden"
       style={{ background: "#0f1923" }}
     >
       <WinPopup {...popupProps} />
