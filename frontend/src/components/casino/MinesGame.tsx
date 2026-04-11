@@ -1,6 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "../../store/auth-store";
 import { useMinesGame } from "../../hooks/useMinesGame";
+import { sounds } from "../../lib/sounds";
 import { MinesGrid } from "./Mines/MinesGrid";
 import { MinesSidebar } from "./Mines/MinesSidebar";
 import { WinPopup, useWinPopup } from "../ui/WinPopup";
@@ -32,6 +33,7 @@ export function MinesGame() {
   const [bet, setBet] = useState(100);
   const [mines, setMines] = useState(3);
   const { popupProps, showWin } = useWinPopup();
+  const prevPhaseRef = useRef<string>("");
 
   useEffect(() => {
     restoreSession();
@@ -39,13 +41,18 @@ export function MinesGame() {
   }, []);
 
   useEffect(() => {
-    if (phase === "won") {
+    if (prevPhaseRef.current !== "lost" && phase === "lost") {
+      sounds.bombClick.play();
+    }
+    if (prevPhaseRef.current !== "won" && phase === "won") {
       showWin({ multiplier: currentMultiplier, netGain: lastPayout - betAmount });
     }
+    prevPhaseRef.current = phase;
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
   function handleStart() {
+    sounds.betButton.play();
     startGame(bet, mines);
   }
 

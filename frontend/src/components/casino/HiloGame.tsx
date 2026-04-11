@@ -3,6 +3,7 @@ import { ArrowDown, ArrowLeft, ArrowUp, ChevronRight, Coins, SkipForward } from 
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useHiloGame } from "../../hooks/useHiloGame";
+import { sounds } from "../../lib/sounds";
 import { cn, formatTokens } from "../../lib/utils";
 import { useAuthStore } from "../../store/auth-store";
 import { Button } from "../ui/Button";
@@ -102,7 +103,7 @@ export function HiloGame() {
 
             {isIdle && (
               <Button
-                onClick={() => start(bet)}
+                onClick={() => { sounds.betButton.play(); start(bet); }}
                 disabled={isLoading || bet < 1 || (user?.balance ?? 0) < bet}
                 className="w-full"
               >

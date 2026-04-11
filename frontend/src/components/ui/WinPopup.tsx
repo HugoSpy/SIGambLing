@@ -1,11 +1,6 @@
 import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Howl } from "howler";
-
-const winSound = new Howl({
-  src: ["/win_sound.mp3"],
-  volume: 0.6,
-});
+import { sounds } from "../../lib/sounds";
 
 const DEFAULT_DURATION = 2200;
 
@@ -142,7 +137,7 @@ export function useWinPopup(duration?: number): {
   const showWin = useCallback(
     (p: { multiplier: number; netGain: number }) => {
       if (p.netGain > 0) {
-        winSound.play();
+        sounds.win.play();
         show(p);
       }
     },

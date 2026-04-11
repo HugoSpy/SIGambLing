@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { api } from "../../lib/api";
 import { getErrorMessage, notify } from "../../lib/notifications";
 import { soundManager } from "../../lib/casino/soundManager";
+import { sounds } from "../../lib/sounds";
 import { cn, formatTokens } from "../../lib/utils";
 import { useAuthStore } from "../../store/auth-store";
 import type {
@@ -511,11 +512,26 @@ export function BlackjackGame() {
         setTimeout(() => {
           if (target === "player") {
             const card = playerCards[playerIdx++];
-            if (card) setVisiblePlayerCards((prev) => [...prev, card]);
+            if (card) {
+              setVisiblePlayerCards((prev) => [...prev, card]);
+              if (index === 0) {
+                // Step 1: player card 1 arrives
+                sounds.cardDistributed.play();
+              } else {
+                // Step 3: player card 2 arrives + dealer card 1 reveals simultaneously
+                sounds.cardReveal.play();
+                sounds.cardDistributed.play();
+              }
+            }
           } else if (target === "dealer") {
+            // Step 2: dealer card 1 arrives + player card 1 reveals simultaneously
             setVisibleDealerCards([upcard]);
+            sounds.cardReveal.play();
+            sounds.cardDistributed.play();
           } else {
+            // Step 4: player card 2 reveals, dealer hidden card arrives (no sound for hidden)
             setDealerHiddenDealt(true);
+            sounds.cardReveal.play();
           }
           if (index === queue.length - 1) {
             setIsDealing(false);
@@ -525,6 +541,21 @@ export function BlackjackGame() {
     },
     [],
   );
+
+  // Dealer-turn sounds: fires when the full dealer hand is revealed at game resolution
+  useEffect(() => {
+    if (!dealerHandFinal || dealerHandFinal.length === 0) return;
+    // Index 1 = the hidden card that was face-down — now revealed
+    if (dealerHandFinal.length >= 2) {
+      sounds.cardReveal.play();
+    }
+    // Index 2+ = extra cards the dealer drew during their turn
+    for (let i = 2; i < dealerHandFinal.length; i++) {
+      sounds.cardDistributed.play();
+      sounds.cardReveal.play();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dealerHandFinal]);
 
   const handleBet = useCallback(async () => {
     if (bet < 1) {
@@ -540,6 +571,7 @@ export function BlackjackGame() {
     setGameState("DEALING");
     setResult(null);
     setDealerHandFinal(null);
+    sounds.cardShuffle.play();
     soundManager.play("chip");
 
     try {
@@ -1204,6 +1236,7 @@ export function BlackjackGame() {
                     if (gameState === "GAME_OVER") {
                       handleNewGame();
                     } else {
+                      sounds.betButton.play();
                       void handleBet();
                     }
                   }}

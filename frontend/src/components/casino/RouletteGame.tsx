@@ -4,6 +4,7 @@ import { ArrowLeft, Coins, Sparkles } from "lucide-react";
 import { Link } from "react-router-dom";
 import { api } from "../../lib/api";
 import { soundManager } from "../../lib/casino/soundManager";
+import { sounds } from "../../lib/sounds";
 import { getErrorMessage, notify } from "../../lib/notifications";
 import { createBet, resolveRound } from "../../lib/casino/rouletteUtils";
 import { formatTokens } from "../../lib/utils";
@@ -114,6 +115,7 @@ export function RouletteGame() {
 
     setLastBets([...bets]);
     setPhase("spinning");
+    sounds.betButton.play();
     soundManager.play("spin");
 
     try {
