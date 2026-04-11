@@ -3,12 +3,10 @@ import { useAuthStore } from "../../store/auth-store";
 import { useMinesGame } from "../../hooks/useMinesGame";
 import { MinesGrid } from "./Mines/MinesGrid";
 import { MinesSidebar } from "./Mines/MinesSidebar";
-import { MinesResult } from "./Mines/MinesResult";
-import type { MinesGamePhase } from "../../types/mines";
+import { WinPopup, useWinPopup } from "../ui/WinPopup";
 
-// Délai avant l'apparition du modal pour laisser la cascade de mines s'animer
-const MODAL_DELAY_WON = 900;  // cashout : laisser les mines se révéler
-const MODAL_DELAY_LOST = 600; // mine touchée : flash + cascade avant modal
+// Delay before the win popup appears — lets the mine reveal cascade animate first
+const MODAL_DELAY_WON = 900;
 
 export function MinesGame() {
   const user = useAuthStore((s) => s.user);
@@ -37,8 +35,7 @@ export function MinesGame() {
 
   const [bet, setBet] = useState(100);
   const [mines, setMines] = useState(3);
-  // Phase affichée dans le modal — retardée pour laisser la grille s'animer
-  const [modalPhase, setModalPhase] = useState<MinesGamePhase>("idle");
+  const { popupProps, showWin } = useWinPopup();
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -48,17 +45,15 @@ export function MinesGame() {
 
   useEffect(() => {
     if (timerRef.current) clearTimeout(timerRef.current);
-
-    if (phase === "won" || phase === "lost") {
-      const delay = phase === "won" ? MODAL_DELAY_WON : MODAL_DELAY_LOST;
-      timerRef.current = setTimeout(() => setModalPhase(phase), delay);
-    } else {
-      // Réinitialisation immédiate (nouvelle partie)
-      setModalPhase(phase);
+    if (phase === "won") {
+      timerRef.current = setTimeout(() => {
+        showWin({ multiplier: currentMultiplier, netGain: lastPayout - betAmount });
+      }, MODAL_DELAY_WON);
     }
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase]);
 
   function handleStart() {
@@ -70,7 +65,6 @@ export function MinesGame() {
   }
 
   function handleReset() {
-    setModalPhase("idle");
     resetGame();
   }
 
@@ -79,13 +73,7 @@ export function MinesGame() {
       className="min-h-screen w-full rounded-2xl overflow-hidden"
       style={{ background: "#0f1923" }}
     >
-      <MinesResult
-        phase={modalPhase}
-        payout={lastPayout}
-        betAmount={betAmount}
-        multiplier={currentMultiplier}
-        onPlayAgain={handleReset}
-      />
+      <WinPopup {...popupProps} />
 
       <div className="flex flex-col lg:flex-row gap-4 p-4">
         {/* Sidebar */}

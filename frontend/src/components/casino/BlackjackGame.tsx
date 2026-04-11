@@ -383,7 +383,7 @@ export function BlackjackGame() {
   const [insuranceAvailable, setInsuranceAvailable] = useState(false);
   const [loading, setLoading] = useState(false);
   const [isCheckingSession, setIsCheckingSession] = useState(true);
-  const { popupProps, showWin, showPush } = useWinPopup();
+  const { popupProps, showWin } = useWinPopup();
   // Split state
   const [splitHands, setSplitHands] = useState<SplitHandDisplay[] | null>(null);
   const [currentSplitHand, setCurrentSplitHand] = useState<0 | 1>(0);
@@ -447,15 +447,12 @@ export function BlackjackGame() {
           soundManager.play("win");
           const multiplier = currentBet > 0 ? resPayout / currentBet : 1;
           showWin({ multiplier, netGain: resPayout - currentBet });
-        } else if (finalResult === "push") {
-          soundManager.play("lose");
-          showPush({ multiplier: 1, netGain: 0 });
         } else {
           soundManager.play("lose");
         }
       }
     },
-    [playerHand, queryClient, updateBalance, currentBet, showWin, showPush],
+    [playerHand, queryClient, updateBalance, currentBet, showWin],
   );
 
   const handleSplitResponse = useCallback(
@@ -487,12 +484,10 @@ export function BlackjackGame() {
         const netGain = totalPayout - totalBet;
         if (netGain > 0) {
           showWin({ multiplier: totalBet > 0 ? totalPayout / totalBet : 1, netGain });
-        } else if (netGain === 0) {
-          showPush({ multiplier: 1, netGain: 0 });
         }
       }
     },
-    [updateBalance, queryClient, showWin, showPush],
+    [updateBalance, queryClient, showWin],
   );
 
   const dealCardsProgressively = useCallback(
