@@ -124,7 +124,6 @@ export const minesAutobetSchema = z.object({
     z.literal("random"),
     z.array(z.number().int().min(0).max(24)).min(1).max(24),
   ]),
-  gemCount: z.coerce.number().int().min(1).max(24),
 });
 
 export type MinesStartInput = z.infer<typeof minesStartSchema>;

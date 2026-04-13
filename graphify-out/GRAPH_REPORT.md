@@ -1,11 +1,11 @@
 # Graph Report - .  (2026-04-13)
 
 ## Corpus Check
-- 183 files · ~139,660 words
+- 183 files · ~140,775 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1030 nodes · 1484 edges · 183 communities detected
+- 1031 nodes · 1485 edges · 183 communities detected
 - Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 70 edges (avg confidence: 0.59)
 - Token cost: 0 input · 0 output
 
@@ -356,24 +356,24 @@ Cohesion: 0.43
 Nodes (6): claimBadgeRewardController(), claimDailyRewardController(), getAuthenticatedUserId(), getMyGamificationStateController(), getMyJackpotStateController(), getMyLeaderboardController()
 
 ### Community 32 - "Community 32"
+Cohesion: 0.25
+Nodes (0): 
+
+### Community 33 - "Community 33"
 Cohesion: 0.38
 Nodes (3): getAuthenticatedUserId(), setFeatureFlagsConfig(), setMaintenanceConfig()
 
-### Community 33 - "Community 33"
+### Community 34 - "Community 34"
 Cohesion: 0.33
 Nodes (0): 
-
-### Community 34 - "Community 34"
-Cohesion: 0.47
-Nodes (3): getCorsAllowedOrigins(), normalizeOrigin(), parseOriginList()
 
 ### Community 35 - "Community 35"
 Cohesion: 0.47
-Nodes (3): buildPayload(), signAccessToken(), signRefreshToken()
+Nodes (3): getCorsAllowedOrigins(), normalizeOrigin(), parseOriginList()
 
 ### Community 36 - "Community 36"
-Cohesion: 0.33
-Nodes (0): 
+Cohesion: 0.47
+Nodes (3): buildPayload(), signAccessToken(), signRefreshToken()
 
 ### Community 37 - "Community 37"
 Cohesion: 0.33
@@ -432,44 +432,44 @@ Cohesion: 0.4
 Nodes (1): AppErrorBoundary
 
 ### Community 51 - "Community 51"
-Cohesion: 0.4
-Nodes (0): 
-
-### Community 52 - "Community 52"
 Cohesion: 0.5
 Nodes (2): submitProposal(), toErrorMessage()
 
-### Community 53 - "Community 53"
+### Community 52 - "Community 52"
 Cohesion: 0.4
 Nodes (0): 
 
-### Community 54 - "Community 54"
+### Community 53 - "Community 53"
 Cohesion: 0.5
 Nodes (3): BaseSettings, Config, Settings
 
-### Community 55 - "Community 55"
+### Community 54 - "Community 54"
 Cohesion: 0.67
 Nodes (2): generateRandomNumber(), spinRoulette()
 
-### Community 56 - "Community 56"
+### Community 55 - "Community 55"
 Cohesion: 0.67
 Nodes (2): containsBanword(), normalize()
 
-### Community 57 - "Community 57"
+### Community 56 - "Community 56"
 Cohesion: 0.83
 Nodes (3): getAuthenticatedUserId(), getMyWinsController(), shareWinController()
 
-### Community 58 - "Community 58"
+### Community 57 - "Community 57"
 Cohesion: 0.83
 Nodes (3): buildPoolByOption(), main(), toJsonOptions()
 
-### Community 59 - "Community 59"
+### Community 58 - "Community 58"
 Cohesion: 0.5
 Nodes (0): 
 
-### Community 60 - "Community 60"
+### Community 59 - "Community 59"
 Cohesion: 0.83
 Nodes (3): confirmOddsChange(), invalidateBetQueries(), submitBet()
+
+### Community 60 - "Community 60"
+Cohesion: 0.5
+Nodes (0): 
 
 ### Community 61 - "Community 61"
 Cohesion: 0.5

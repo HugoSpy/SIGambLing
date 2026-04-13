@@ -39,7 +39,7 @@ export function MinesGame() {
   const [mines, setMines] = useState(3);
 
   // ── Auto-bet cell selection state (lifted from sidebar) ──────────────────────
-  const [autoCellMode, setAutoCellMode] = useState<"random" | "fixed">("random");
+  const [autoCellMode, setAutoCellMode] = useState<"random" | "fixed">("fixed");
   const [autoFixedCells, setAutoFixedCells] = useState<number[]>([]);
 
   // ── Auto-bet grid animation state ────────────────────────────────────────────
