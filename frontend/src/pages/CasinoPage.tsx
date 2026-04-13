@@ -90,6 +90,7 @@ export function CasinoPage() {
   const setStatus = useAuthStore((state) => state.setStatus);
   const rouletteDisabled = useAuthStore((state) => state.rouletteDisabled);
   const blackjackDisabled = useAuthStore((state) => state.blackjackDisabled);
+  const minesDisabled = useAuthStore((state) => state.minesDisabled);
   const { game } = useParams<{ game?: string }>();
   const activeGame = isGameTab(game) ? game : null;
 
@@ -123,11 +124,15 @@ export function CasinoPage() {
   if (activeGame === "blackjack" && blackjackDisabled && !isAdmin) {
     return <Navigate replace to="/casino" />;
   }
+  if (activeGame === "mines" && minesDisabled && !isAdmin) {
+    return <Navigate replace to="/casino" />;
+  }
   // hilo and ride-the-bus have no feature flag yet — no redirect needed
 
   const isGameDisabled = (id: GameTab) =>
     (id === "roulette" && rouletteDisabled && !isAdmin) ||
-    (id === "blackjack" && blackjackDisabled && !isAdmin);
+    (id === "blackjack" && blackjackDisabled && !isAdmin) ||
+    (id === "mines" && minesDisabled && !isAdmin);
 
   const disabledLabel: Record<GameTab, string> = {
     roulette: "Roulette temporairement indisponible",

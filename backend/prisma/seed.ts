@@ -499,6 +499,12 @@ async function main() {
     create: { key: "eventsDisabled", value: "false" },
   });
 
+  await prisma.siteConfig.upsert({
+    where: { key: "minesDisabled" },
+    update: {},
+    create: { key: "minesDisabled", value: "false" },
+  });
+
   await prisma.eventProposal.upsert({
     where: { id: "7d6b8a60-f3d2-4e1b-93e2-0d2f4a5d1003" },
     update: {

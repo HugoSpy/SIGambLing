@@ -60,7 +60,7 @@ export const setMaintenanceConfig: RequestHandler = async (request, response, ne
   }
 };
 
-const ALL_CONFIG_KEYS = ["maintenanceMode", "rouletteDisabled", "blackjackDisabled", "eventsDisabled"] as const;
+const ALL_CONFIG_KEYS = ["maintenanceMode", "rouletteDisabled", "blackjackDisabled", "eventsDisabled", "minesDisabled"] as const;
 
 export const getPublicMaintenanceConfig: RequestHandler = async (_request, response, next) => {
   try {
@@ -75,13 +75,14 @@ export const getPublicMaintenanceConfig: RequestHandler = async (_request, respo
       rouletteDisabled: map["rouletteDisabled"] ?? false,
       blackjackDisabled: map["blackjackDisabled"] ?? false,
       eventsDisabled: map["eventsDisabled"] ?? false,
+      minesDisabled: map["minesDisabled"] ?? false,
     });
   } catch (error) {
     next(error);
   }
 };
 
-const FEATURE_FLAG_KEYS = ["rouletteDisabled", "blackjackDisabled", "eventsDisabled"] as const;
+const FEATURE_FLAG_KEYS = ["rouletteDisabled", "blackjackDisabled", "eventsDisabled", "minesDisabled"] as const;
 type FeatureFlagKey = (typeof FEATURE_FLAG_KEYS)[number];
 
 export const getFeatureFlagsConfig: RequestHandler = async (_request, response, next) => {
@@ -96,6 +97,7 @@ export const getFeatureFlagsConfig: RequestHandler = async (_request, response, 
       rouletteDisabled: map["rouletteDisabled"] ?? false,
       blackjackDisabled: map["blackjackDisabled"] ?? false,
       eventsDisabled: map["eventsDisabled"] ?? false,
+      minesDisabled: map["minesDisabled"] ?? false,
     });
   } catch (error) {
     next(error);
@@ -153,6 +155,7 @@ export const setFeatureFlagsConfig: RequestHandler = async (request, response, n
       rouletteDisabled: map["rouletteDisabled"] ?? false,
       blackjackDisabled: map["blackjackDisabled"] ?? false,
       eventsDisabled: map["eventsDisabled"] ?? false,
+      minesDisabled: map["minesDisabled"] ?? false,
     });
   } catch (error) {
     next(error);

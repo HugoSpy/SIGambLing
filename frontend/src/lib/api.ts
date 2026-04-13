@@ -137,6 +137,7 @@ export interface PublicConfig {
   rouletteDisabled: boolean;
   blackjackDisabled: boolean;
   eventsDisabled: boolean;
+  minesDisabled: boolean;
 }
 
 export async function getMaintenanceStatus(): Promise<PublicConfig> {
@@ -159,6 +160,7 @@ export interface FeatureFlagsResponse {
   rouletteDisabled: boolean;
   blackjackDisabled: boolean;
   eventsDisabled: boolean;
+  minesDisabled: boolean;
 }
 
 export async function getFeatureFlags(): Promise<FeatureFlagsResponse> {
@@ -167,7 +169,7 @@ export async function getFeatureFlags(): Promise<FeatureFlagsResponse> {
 }
 
 export async function setFeatureFlag(
-  key: "rouletteDisabled" | "blackjackDisabled" | "eventsDisabled",
+  key: "rouletteDisabled" | "blackjackDisabled" | "eventsDisabled" | "minesDisabled",
   value: boolean,
 ): Promise<FeatureFlagsResponse> {
   const response = await api.post<FeatureFlagsResponse>("/admin/config/features", { [key]: value });
