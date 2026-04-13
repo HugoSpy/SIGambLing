@@ -838,6 +838,431 @@ export class GamificationService {
     };
   }
 
+  async getBalanceLeaderboard(userId: string, limit = 10) {
+    const safeLimit = Math.min(Math.max(limit, 1), 50);
+    const [allUsers, deltaMap] = await Promise.all([
+      prisma.user.findMany({
+        where: { isBanned: false, balance: { gt: 0 } },
+        orderBy: [{ balance: "desc" }, { pseudo: "asc" }],
+        select: { id: true, pseudo: true, avatarUrl: true, balance: true },
+      }),
+      this.getRankDeltaMap("balance"),
+    ]);
+
+    const ranked = allUsers.map((u, i) => ({
+      rank: i + 1,
+      user: { id: u.id, pseudo: u.pseudo, avatar_url: u.avatarUrl },
+      balance: u.balance,
+      is_current_user: u.id === userId,
+      rank_delta: deltaMap.get(u.id) ?? null,
+    }));
+
+    const currentUserEntry = ranked.find((e) => e.is_current_user) ?? null;
+
+    return {
+      tab: "balance" as const,
+      limit: safeLimit,
+      total_ranked_users: ranked.length,
+      entries: ranked.slice(0, safeLimit),
+      current_user_entry: currentUserEntry,
+    };
+  }
+
+  async computeRankingsForSnapshot(tab: string): Promise<Array<{ userId: string; rank: number }>> {
+    switch (tab) {
+      case "balance": {
+        const users = await prisma.user.findMany({
+          where: { isBanned: false, balance: { gt: 0 } },
+          orderBy: [{ balance: "desc" }, { pseudo: "asc" }],
+          select: { id: true },
+          take: 50,
+        });
+        return users.map((u, i) => ({ userId: u.id, rank: i + 1 }));
+      }
+      case "volume": {
+        const [betRows, casinoRows] = await Promise.all([
+          prisma.bet.groupBy({
+            by: ["userId"],
+            where: { status: { not: "cancelled" }, user: { isBanned: false } },
+            _sum: { amount: true },
+          }),
+          prisma.casinoGame.groupBy({
+            by: ["userId"],
+            where: { user: { isBanned: false } },
+            _sum: { betAmount: true },
+          }),
+        ]);
+        const merged = new Map<string, number>();
+        for (const r of betRows) merged.set(r.userId, r._sum.amount ?? 0);
+        for (const r of casinoRows) {
+          merged.set(r.userId, (merged.get(r.userId) ?? 0) + (r._sum.betAmount ?? 0));
+        }
+        return [...merged.entries()]
+          .filter(([, v]) => v > 0)
+          .sort(([, a], [, b]) => b - a)
+          .slice(0, 50)
+          .map(([userId], i) => ({ userId, rank: i + 1 }));
+      }
+      case "winrate_global": {
+        const [wonBets, totalBets, casinoWins, totalCasino] = await Promise.all([
+          prisma.bet.groupBy({
+            by: ["userId"],
+            where: { status: "won", user: { isBanned: false } },
+            _count: { id: true },
+          }),
+          prisma.bet.groupBy({
+            by: ["userId"],
+            where: { status: { not: "cancelled" }, user: { isBanned: false } },
+            _count: { id: true },
+          }),
+          prisma.casinoGame.groupBy({
+            by: ["userId"],
+            where: { result: "win", user: { isBanned: false } },
+            _count: { id: true },
+          }),
+          prisma.casinoGame.groupBy({
+            by: ["userId"],
+            where: { user: { isBanned: false } },
+            _count: { id: true },
+          }),
+        ]);
+        const wonMap = new Map(wonBets.map((r) => [r.userId, r._count.id]));
+        const totalBetsMap = new Map(totalBets.map((r) => [r.userId, r._count.id]));
+        const cWinsMap = new Map(casinoWins.map((r) => [r.userId, r._count.id]));
+        const allIds = new Set([...totalBetsMap.keys(), ...totalCasino.map((r) => r.userId)]);
+        const totalCasinoMap = new Map(totalCasino.map((r) => [r.userId, r._count.id]));
+        return [...allIds]
+          .map((uid) => {
+            const bW = wonMap.get(uid) ?? 0;
+            const bT = totalBetsMap.get(uid) ?? 0;
+            const cW = cWinsMap.get(uid) ?? 0;
+            const cT = totalCasinoMap.get(uid) ?? 0;
+            const total = bT + cT;
+            return { userId: uid, winrate: total >= 10 ? (bW + cW) / total : -1, total };
+          })
+          .filter((x) => x.winrate >= 0)
+          .sort((a, b) => b.winrate - a.winrate)
+          .slice(0, 50)
+          .map(({ userId }, i) => ({ userId, rank: i + 1 }));
+      }
+      case "winrate_casino": {
+        const [casinoWins, totalCasino] = await Promise.all([
+          prisma.casinoGame.groupBy({
+            by: ["userId"],
+            where: { result: "win", user: { isBanned: false } },
+            _count: { id: true },
+          }),
+          prisma.casinoGame.groupBy({
+            by: ["userId"],
+            where: { user: { isBanned: false } },
+            _count: { id: true },
+          }),
+        ]);
+        const cWinsMap = new Map(casinoWins.map((r) => [r.userId, r._count.id]));
+        return totalCasino
+          .filter((r) => r._count.id >= 10)
+          .map((r) => ({ userId: r.userId, winrate: (cWinsMap.get(r.userId) ?? 0) / r._count.id }))
+          .sort((a, b) => b.winrate - a.winrate)
+          .slice(0, 50)
+          .map(({ userId }, i) => ({ userId, rank: i + 1 }));
+      }
+      default:
+        return [];
+    }
+  }
+
+  async getRankDeltaMap(tab: string): Promise<Map<string, number | null>> {
+    const recent = await prisma.leaderboardSnapshot.findFirst({
+      where: { tab },
+      orderBy: { takenAt: "desc" },
+    });
+    if (!recent) return new Map();
+
+    const target = new Date(recent.takenAt.getTime() - 24 * 60 * 60 * 1000);
+    const old = await prisma.leaderboardSnapshot.findFirst({
+      where: {
+        tab,
+        takenAt: {
+          gte: new Date(target.getTime() - 60 * 60 * 1000),
+          lte: new Date(target.getTime() + 60 * 60 * 1000),
+        },
+        id: { not: recent.id },
+      },
+      orderBy: { takenAt: "desc" },
+    });
+    if (!old) return new Map();
+
+    const recentRankings = recent.rankings as Array<{ userId: string; rank: number }>;
+    const oldRankings = old.rankings as Array<{ userId: string; rank: number }>;
+    const oldRankMap = new Map(oldRankings.map(({ userId, rank }) => [userId, rank]));
+
+    const deltaMap = new Map<string, number | null>();
+    for (const { userId, rank: rankNow } of recentRankings) {
+      const rankBefore = oldRankMap.get(userId);
+      deltaMap.set(userId, rankBefore != null ? rankBefore - rankNow : null);
+    }
+    return deltaMap;
+  }
+
+  async getVolumeLeaderboard(userId: string) {
+    const [betRows, casinoRows, deltaMap] = await Promise.all([
+      prisma.bet.groupBy({
+        by: ["userId"],
+        where: { status: { not: "cancelled" }, user: { isBanned: false } },
+        _sum: { amount: true },
+        _count: { id: true },
+      }),
+      prisma.casinoGame.groupBy({
+        by: ["userId"],
+        where: { user: { isBanned: false } },
+        _sum: { betAmount: true },
+        _count: { id: true },
+      }),
+      this.getRankDeltaMap("volume"),
+    ]);
+
+    const merged = new Map<string, { totalTokens: number; totalBets: number }>();
+    for (const row of betRows) {
+      merged.set(row.userId, {
+        totalTokens: row._sum.amount ?? 0,
+        totalBets: row._count.id,
+      });
+    }
+    for (const row of casinoRows) {
+      const existing = merged.get(row.userId);
+      merged.set(row.userId, {
+        totalTokens: (existing?.totalTokens ?? 0) + (row._sum.betAmount ?? 0),
+        totalBets: (existing?.totalBets ?? 0) + row._count.id,
+      });
+    }
+
+    const sorted = [...merged.entries()]
+      .filter(([, v]) => v.totalTokens > 0)
+      .sort(([, a], [, b]) => b.totalTokens - a.totalTokens)
+      .slice(0, 50);
+
+    const participantIds = [...new Set([...sorted.map(([id]) => id), userId])];
+    const users = await prisma.user.findMany({
+      where: { id: { in: participantIds }, isBanned: false },
+      select: { id: true, pseudo: true, avatarUrl: true },
+    });
+    const userMap = new Map(users.map((u) => [u.id, u]));
+
+    const entries = sorted
+      .map(([uid, stats], index) => {
+        const user = userMap.get(uid);
+        if (!user) return null;
+        return {
+          rank: index + 1,
+          user: { id: uid, pseudo: user.pseudo, avatar_url: user.avatarUrl },
+          total_tokens: stats.totalTokens,
+          total_bets: stats.totalBets,
+          is_current_user: uid === userId,
+          rank_delta: deltaMap.get(uid) ?? null,
+        };
+      })
+      .filter((e): e is NonNullable<typeof e> => e !== null);
+
+    const currentUserEntry =
+      entries.find((e) => e.is_current_user) ??
+      (() => {
+        const all = [...merged.entries()].sort(([, a], [, b]) => b.totalTokens - a.totalTokens);
+        const rank = all.findIndex(([id]) => id === userId) + 1;
+        const stats = merged.get(userId);
+        const user = userMap.get(userId);
+        if (!user || !stats || rank === 0) return null;
+        return {
+          rank,
+          user: { id: userId, pseudo: user.pseudo, avatar_url: user.avatarUrl },
+          total_tokens: stats.totalTokens,
+          total_bets: stats.totalBets,
+          is_current_user: true,
+          rank_delta: deltaMap.get(userId) ?? null,
+        };
+      })();
+
+    return {
+      tab: "volume" as const,
+      total_ranked_users: merged.size,
+      entries,
+      current_user_entry: currentUserEntry,
+    };
+  }
+
+  async getWinrateGlobalLeaderboard(userId: string) {
+    const [wonBets, totalBets, casinoWins, totalCasino, deltaMap] = await Promise.all([
+      prisma.bet.groupBy({
+        by: ["userId"],
+        where: { status: "won", user: { isBanned: false } },
+        _count: { id: true },
+      }),
+      prisma.bet.groupBy({
+        by: ["userId"],
+        where: { status: { not: "cancelled" }, user: { isBanned: false } },
+        _count: { id: true },
+      }),
+      prisma.casinoGame.groupBy({
+        by: ["userId"],
+        where: { result: "win", user: { isBanned: false } },
+        _count: { id: true },
+      }),
+      prisma.casinoGame.groupBy({
+        by: ["userId"],
+        where: { user: { isBanned: false } },
+        _count: { id: true },
+      }),
+      this.getRankDeltaMap("winrate_global"),
+    ]);
+
+    const wonBetsMap = new Map(wonBets.map((r) => [r.userId, r._count.id]));
+    const totalBetsMap = new Map(totalBets.map((r) => [r.userId, r._count.id]));
+    const casinoWinsMap = new Map(casinoWins.map((r) => [r.userId, r._count.id]));
+    const totalCasinoMap = new Map(totalCasino.map((r) => [r.userId, r._count.id]));
+
+    const allUserIds = new Set([
+      ...totalBetsMap.keys(),
+      ...totalCasinoMap.keys(),
+    ]);
+
+    const candidates: Array<{ userId: string; winrate: number; totalGames: number }> = [];
+    for (const uid of allUserIds) {
+      const betsWon = wonBetsMap.get(uid) ?? 0;
+      const betsTotal = totalBetsMap.get(uid) ?? 0;
+      const cWins = casinoWinsMap.get(uid) ?? 0;
+      const cTotal = totalCasinoMap.get(uid) ?? 0;
+      const totalGames = betsTotal + cTotal;
+      if (totalGames < 10) continue;
+      candidates.push({ userId: uid, winrate: (betsWon + cWins) / totalGames, totalGames });
+    }
+
+    candidates.sort((a, b) => b.winrate - a.winrate);
+    const top50 = candidates.slice(0, 50);
+
+    const participantIds = [...new Set([...top50.map((c) => c.userId), userId])];
+    const users = await prisma.user.findMany({
+      where: { id: { in: participantIds }, isBanned: false },
+      select: { id: true, pseudo: true, avatarUrl: true },
+    });
+    const userMap = new Map(users.map((u) => [u.id, u]));
+
+    const entries = top50
+      .map((c, index) => {
+        const user = userMap.get(c.userId);
+        if (!user) return null;
+        return {
+          rank: index + 1,
+          user: { id: c.userId, pseudo: user.pseudo, avatar_url: user.avatarUrl },
+          winrate: Math.round(c.winrate * 1000) / 10,
+          total_games: c.totalGames,
+          is_current_user: c.userId === userId,
+          rank_delta: deltaMap.get(c.userId) ?? null,
+        };
+      })
+      .filter((e): e is NonNullable<typeof e> => e !== null);
+
+    const currentUserEntry =
+      entries.find((e) => e.is_current_user) ??
+      (() => {
+        const rank = candidates.findIndex((c) => c.userId === userId) + 1;
+        const c = candidates.find((c) => c.userId === userId);
+        const user = userMap.get(userId);
+        if (!c || !user || rank === 0) return null;
+        return {
+          rank,
+          user: { id: userId, pseudo: user.pseudo, avatar_url: user.avatarUrl },
+          winrate: Math.round(c.winrate * 1000) / 10,
+          total_games: c.totalGames,
+          is_current_user: true,
+          rank_delta: deltaMap.get(userId) ?? null,
+        };
+      })();
+
+    return {
+      tab: "winrate_global" as const,
+      total_ranked_users: candidates.length,
+      entries,
+      current_user_entry: currentUserEntry,
+    };
+  }
+
+  async getWinrateCasinoLeaderboard(userId: string) {
+    const [casinoWins, totalCasino, deltaMap] = await Promise.all([
+      prisma.casinoGame.groupBy({
+        by: ["userId"],
+        where: { result: "win", user: { isBanned: false } },
+        _count: { id: true },
+      }),
+      prisma.casinoGame.groupBy({
+        by: ["userId"],
+        where: { user: { isBanned: false } },
+        _count: { id: true },
+      }),
+      this.getRankDeltaMap("winrate_casino"),
+    ]);
+
+    const casinoWinsMap = new Map(casinoWins.map((r) => [r.userId, r._count.id]));
+
+    const candidates: Array<{ userId: string; winrate: number; totalGames: number }> = [];
+    for (const row of totalCasino) {
+      if (row._count.id < 10) continue;
+      const wins = casinoWinsMap.get(row.userId) ?? 0;
+      candidates.push({
+        userId: row.userId,
+        winrate: wins / row._count.id,
+        totalGames: row._count.id,
+      });
+    }
+
+    candidates.sort((a, b) => b.winrate - a.winrate);
+    const top50 = candidates.slice(0, 50);
+
+    const participantIds = [...new Set([...top50.map((c) => c.userId), userId])];
+    const users = await prisma.user.findMany({
+      where: { id: { in: participantIds }, isBanned: false },
+      select: { id: true, pseudo: true, avatarUrl: true },
+    });
+    const userMap = new Map(users.map((u) => [u.id, u]));
+
+    const entries = top50
+      .map((c, index) => {
+        const user = userMap.get(c.userId);
+        if (!user) return null;
+        return {
+          rank: index + 1,
+          user: { id: c.userId, pseudo: user.pseudo, avatar_url: user.avatarUrl },
+          winrate: Math.round(c.winrate * 1000) / 10,
+          total_games: c.totalGames,
+          is_current_user: c.userId === userId,
+          rank_delta: deltaMap.get(c.userId) ?? null,
+        };
+      })
+      .filter((e): e is NonNullable<typeof e> => e !== null);
+
+    const currentUserEntry =
+      entries.find((e) => e.is_current_user) ??
+      (() => {
+        const rank = candidates.findIndex((c) => c.userId === userId) + 1;
+        const c = candidates.find((c) => c.userId === userId);
+        const user = userMap.get(userId);
+        if (!c || !user || rank === 0) return null;
+        return {
+          rank,
+          user: { id: userId, pseudo: user.pseudo, avatar_url: user.avatarUrl },
+          winrate: Math.round(c.winrate * 1000) / 10,
+          total_games: c.totalGames,
+          is_current_user: true,
+          rank_delta: deltaMap.get(userId) ?? null,
+        };
+      })();
+
+    return {
+      tab: "winrate_casino" as const,
+      total_ranked_users: candidates.length,
+      entries,
+      current_user_entry: currentUserEntry,
+    };
+  }
+
   async updateLowestBalanceOnDebit(userId: string, newBalance: number, client?: DatabaseClient) {
     const db = this.getClient(client);
     await db.user.update({

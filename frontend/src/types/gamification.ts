@@ -110,6 +110,59 @@ export interface LeaderboardView {
   current_user_entry: LeaderboardEntry | null;
 }
 
+type LeaderboardUser = { id: string; pseudo: string; avatar_url: string | null };
+
+export interface BalanceEntry {
+  rank: number;
+  user: LeaderboardUser;
+  balance: number;
+  is_current_user: boolean;
+  rank_delta: number | null;
+}
+
+export interface VolumeEntry {
+  rank: number;
+  user: LeaderboardUser;
+  total_tokens: number;
+  total_bets: number;
+  is_current_user: boolean;
+  rank_delta: number | null;
+}
+
+export interface WinrateEntry {
+  rank: number;
+  user: LeaderboardUser;
+  winrate: number;
+  total_games: number;
+  is_current_user: boolean;
+  rank_delta: number | null;
+}
+
+export interface BalanceLeaderboardView {
+  tab: "balance";
+  limit: number;
+  total_ranked_users: number;
+  entries: BalanceEntry[];
+  current_user_entry: BalanceEntry | null;
+}
+
+export interface VolumeLeaderboardView {
+  tab: "volume";
+  total_ranked_users: number;
+  entries: VolumeEntry[];
+  current_user_entry: VolumeEntry | null;
+}
+
+export interface WinrateLeaderboardView {
+  tab: "winrate_global" | "winrate_casino";
+  total_ranked_users: number;
+  entries: WinrateEntry[];
+  current_user_entry: WinrateEntry | null;
+}
+
+export type AnyLeaderboardView = BalanceLeaderboardView | VolumeLeaderboardView | WinrateLeaderboardView;
+export type LeaderboardApiTab = "balance" | "volume" | "winrate_global" | "winrate_casino";
+
 export interface GamificationState {
   daily_reward: GamificationDailyRewardState;
   badges: GamificationBadge[];

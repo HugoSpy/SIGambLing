@@ -37,17 +37,31 @@ export const getMyJackpotStateController: RequestHandler = async (request, respo
   }
 };
 
+const VALID_TABS = ["balance", "volume", "winrate_global", "winrate_casino"] as const;
+type LeaderboardTab = (typeof VALID_TABS)[number];
+
+function parseTab(raw: unknown): LeaderboardTab {
+  return VALID_TABS.includes(raw as LeaderboardTab) ? (raw as LeaderboardTab) : "balance";
+}
+
 export const getMyLeaderboardController: RequestHandler = async (request, response, next) => {
   try {
     const userId = getAuthenticatedUserId(request);
-    const scope = request.query.scope === "casino" ? "casino" : "global";
+    const tab = parseTab(request.query.tab);
     const rawLimit =
       typeof request.query.limit === "string" ? Number.parseInt(request.query.limit, 10) : undefined;
-    const leaderboard = await gamificationService.getLeaderboard(userId, {
-      scope,
-      limit: Number.isFinite(rawLimit) ? rawLimit : undefined,
-    });
-    response.json(leaderboard);
+    const limit = Number.isFinite(rawLimit) ? rawLimit : undefined;
+
+    switch (tab) {
+      case "balance":
+        return void response.json(await gamificationService.getBalanceLeaderboard(userId, limit));
+      case "volume":
+        return void response.json(await gamificationService.getVolumeLeaderboard(userId));
+      case "winrate_global":
+        return void response.json(await gamificationService.getWinrateGlobalLeaderboard(userId));
+      case "winrate_casino":
+        return void response.json(await gamificationService.getWinrateCasinoLeaderboard(userId));
+    }
   } catch (error) {
     next(error);
   }

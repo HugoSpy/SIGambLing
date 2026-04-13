@@ -16,9 +16,11 @@ import type {
   UpdateEventPayload,
 } from "../types/event";
 import type {
+  AnyLeaderboardView,
   ClaimDailyRewardResponse,
   GamificationState,
   JackpotState,
+  LeaderboardApiTab,
   LeaderboardView,
 } from "../types/gamification";
 import type {
@@ -238,9 +240,9 @@ export async function updatePinnedBadges(
   return response.data;
 }
 
-export async function fetchLeaderboard(scope: "global" | "casino", limit: number) {
-  const response = await api.get<LeaderboardView>("/rewards/leaderboard", {
-    params: { scope, limit },
+export async function fetchLeaderboard(tab: LeaderboardApiTab, limit?: number) {
+  const response = await api.get<AnyLeaderboardView>("/rewards/leaderboard", {
+    params: { tab, ...(limit !== undefined ? { limit } : {}) },
   });
   return response.data;
 }

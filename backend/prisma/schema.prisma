@@ -319,3 +319,12 @@ model SiteConfig {
   value     String
   updatedAt DateTime @updatedAt
 }
+
+model LeaderboardSnapshot {
+  id       String   @id @default(cuid())
+  tab      String
+  rankings Json
+  takenAt  DateTime @default(now())
+
+  @@index([tab, takenAt(sort: Desc)])
+}
