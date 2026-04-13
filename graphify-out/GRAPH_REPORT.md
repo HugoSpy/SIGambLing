@@ -1,11 +1,11 @@
 # Graph Report - .  (2026-04-13)
 
 ## Corpus Check
-- 183 files · ~140,775 words
+- 183 files · ~143,260 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1031 nodes · 1485 edges · 183 communities detected
+- 1044 nodes · 1503 edges · 183 communities detected
 - Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 70 edges (avg confidence: 0.59)
 - Token cost: 0 input · 0 output
 
@@ -196,8 +196,8 @@
 
 ## God Nodes (most connected - your core abstractions)
 1. `EventService` - 32 edges
-2. `getAuthUserId()` - 23 edges
-3. `GamificationService` - 20 edges
+2. `GamificationService` - 26 edges
+3. `getAuthUserId()` - 23 edges
 4. `BlackjackService` - 20 edges
 5. `getAuthenticatedUserId()` - 19 edges
 6. `api()` - 17 edges
@@ -244,7 +244,7 @@ Cohesion: 0.13
 Nodes (37): adminAction(), adminResolve(), api(), apiForm(), bjAction(), bjStart(), changeAvatar(), claimChallenge() (+29 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.13
+Cohesion: 0.11
 Nodes (13): canContinueStreak(), GamificationService, getCurrentTier(), getDailyBase(), getErrorDetails(), getNextTier(), getRankScore(), getStreakBonus() (+5 more)
 
 ### Community 5 - "Community 5"
@@ -333,51 +333,51 @@ Nodes (2): AuthService, getMicrosoftEmail()
 
 ### Community 26 - "Community 26"
 Cohesion: 0.39
-Nodes (5): confirmOddsChange(), invalidateBetQueries(), submitParlay(), submitSimple(), syncOddsFromConflict()
+Nodes (7): claimBadgeRewardController(), claimDailyRewardController(), getAuthenticatedUserId(), getMyGamificationStateController(), getMyJackpotStateController(), getMyLeaderboardController(), parseTab()
 
 ### Community 27 - "Community 27"
+Cohesion: 0.39
+Nodes (5): confirmOddsChange(), invalidateBetQueries(), submitParlay(), submitSimple(), syncOddsFromConflict()
+
+### Community 28 - "Community 28"
 Cohesion: 0.33
 Nodes (1): SoundManager
 
-### Community 28 - "Community 28"
+### Community 29 - "Community 29"
 Cohesion: 0.46
 Nodes (6): buildPseudoFromEpitaEmail(), ensurePseudoLength(), ensureUniquePseudo(), normalizePseudo(), stripUnsafePseudoChars(), truncatePseudo()
 
-### Community 29 - "Community 29"
+### Community 30 - "Community 30"
 Cohesion: 0.32
 Nodes (3): broadcastMessage(), checkRateLimit(), sendMessage()
 
-### Community 30 - "Community 30"
+### Community 31 - "Community 31"
 Cohesion: 0.36
 Nodes (6): formatRouletteDetail(), getUserWins(), mapBetToWin(), mapCasinoToWin(), sortWins(), truncate()
-
-### Community 31 - "Community 31"
-Cohesion: 0.43
-Nodes (6): claimBadgeRewardController(), claimDailyRewardController(), getAuthenticatedUserId(), getMyGamificationStateController(), getMyJackpotStateController(), getMyLeaderboardController()
 
 ### Community 32 - "Community 32"
 Cohesion: 0.25
 Nodes (0): 
 
 ### Community 33 - "Community 33"
+Cohesion: 0.25
+Nodes (0): 
+
+### Community 34 - "Community 34"
 Cohesion: 0.38
 Nodes (3): getAuthenticatedUserId(), setFeatureFlagsConfig(), setMaintenanceConfig()
 
-### Community 34 - "Community 34"
+### Community 35 - "Community 35"
 Cohesion: 0.33
 Nodes (0): 
-
-### Community 35 - "Community 35"
-Cohesion: 0.47
-Nodes (3): getCorsAllowedOrigins(), normalizeOrigin(), parseOriginList()
 
 ### Community 36 - "Community 36"
 Cohesion: 0.47
-Nodes (3): buildPayload(), signAccessToken(), signRefreshToken()
+Nodes (3): getCorsAllowedOrigins(), normalizeOrigin(), parseOriginList()
 
 ### Community 37 - "Community 37"
-Cohesion: 0.33
-Nodes (0): 
+Cohesion: 0.47
+Nodes (3): buildPayload(), signAccessToken(), signRefreshToken()
 
 ### Community 38 - "Community 38"
 Cohesion: 0.33
@@ -388,88 +388,88 @@ Cohesion: 0.33
 Nodes (0): 
 
 ### Community 40 - "Community 40"
+Cohesion: 0.33
+Nodes (0): 
+
+### Community 41 - "Community 41"
 Cohesion: 0.5
 Nodes (2): _seed_data(), startup()
 
-### Community 41 - "Community 41"
+### Community 42 - "Community 42"
 Cohesion: 0.7
 Nodes (4): notify_admin_new_event(), notify_user_event_approved(), notify_user_event_rejected(), send_email()
 
-### Community 42 - "Community 42"
+### Community 43 - "Community 43"
 Cohesion: 0.6
 Nodes (3): buildAdminEvent(), buildEventRecord(), buildStoredOptions()
 
-### Community 43 - "Community 43"
+### Community 44 - "Community 44"
 Cohesion: 0.6
 Nodes (3): featureFlagsMiddleware(), getFeatureFlagValues(), isAdmin()
 
-### Community 44 - "Community 44"
+### Community 45 - "Community 45"
 Cohesion: 0.6
 Nodes (3): getMaintenanceModeValue(), isBypassed(), maintenanceMiddleware()
 
-### Community 45 - "Community 45"
+### Community 46 - "Community 46"
 Cohesion: 0.7
 Nodes (4): getBadgeConfig(), getBadgeRarity(), getBadgeReward(), getBadgeVisibility()
 
-### Community 46 - "Community 46"
+### Community 47 - "Community 47"
 Cohesion: 0.5
 Nodes (2): getMicrosoftOAuthStateCookieOptions(), issueMicrosoftOAuthState()
 
-### Community 47 - "Community 47"
+### Community 48 - "Community 48"
 Cohesion: 0.4
 Nodes (1): StorageService
 
-### Community 48 - "Community 48"
+### Community 49 - "Community 49"
 Cohesion: 0.4
 Nodes (0): 
 
-### Community 49 - "Community 49"
+### Community 50 - "Community 50"
 Cohesion: 0.5
 Nodes (2): formatVolume(), getStatisticsOverview()
 
-### Community 50 - "Community 50"
+### Community 51 - "Community 51"
 Cohesion: 0.4
 Nodes (1): AppErrorBoundary
 
-### Community 51 - "Community 51"
+### Community 52 - "Community 52"
 Cohesion: 0.5
 Nodes (2): submitProposal(), toErrorMessage()
 
-### Community 52 - "Community 52"
+### Community 53 - "Community 53"
 Cohesion: 0.4
 Nodes (0): 
 
-### Community 53 - "Community 53"
+### Community 54 - "Community 54"
 Cohesion: 0.5
 Nodes (3): BaseSettings, Config, Settings
 
-### Community 54 - "Community 54"
+### Community 55 - "Community 55"
 Cohesion: 0.67
 Nodes (2): generateRandomNumber(), spinRoulette()
 
-### Community 55 - "Community 55"
+### Community 56 - "Community 56"
 Cohesion: 0.67
 Nodes (2): containsBanword(), normalize()
 
-### Community 56 - "Community 56"
+### Community 57 - "Community 57"
 Cohesion: 0.83
 Nodes (3): getAuthenticatedUserId(), getMyWinsController(), shareWinController()
 
-### Community 57 - "Community 57"
+### Community 58 - "Community 58"
 Cohesion: 0.83
 Nodes (3): buildPoolByOption(), main(), toJsonOptions()
 
-### Community 58 - "Community 58"
+### Community 59 - "Community 59"
 Cohesion: 0.5
 Nodes (0): 
-
-### Community 59 - "Community 59"
-Cohesion: 0.83
-Nodes (3): confirmOddsChange(), invalidateBetQueries(), submitBet()
 
 ### Community 60 - "Community 60"
-Cohesion: 0.5
-Nodes (0): 
+Cohesion: 0.83
+Nodes (3): confirmOddsChange(), invalidateBetQueries(), submitBet()
 
 ### Community 61 - "Community 61"
 Cohesion: 0.5
@@ -512,7 +512,7 @@ Cohesion: 0.5
 Nodes (0): 
 
 ### Community 71 - "Community 71"
-Cohesion: 0.67
+Cohesion: 0.5
 Nodes (0): 
 
 ### Community 72 - "Community 72"
@@ -541,7 +541,7 @@ Nodes (0):
 
 ### Community 78 - "Community 78"
 Cohesion: 0.67
-Nodes (1): AppError
+Nodes (0): 
 
 ### Community 79 - "Community 79"
 Cohesion: 0.67
@@ -549,7 +549,7 @@ Nodes (0):
 
 ### Community 80 - "Community 80"
 Cohesion: 0.67
-Nodes (0): 
+Nodes (1): AppError
 
 ### Community 81 - "Community 81"
 Cohesion: 0.67
@@ -588,7 +588,7 @@ Cohesion: 0.67
 Nodes (0): 
 
 ### Community 90 - "Community 90"
-Cohesion: 1.0
+Cohesion: 0.67
 Nodes (0): 
 
 ### Community 91 - "Community 91"
@@ -962,33 +962,31 @@ Nodes (0):
 ## Knowledge Gaps
 - **17 isolated node(s):** `Config`, `Strategy`, `Casino Client-Side Logic Library`, `Deleted Legacy Files (91 files, ~9800 lines)`, `Legacy FastAPI Python Requirements` (+12 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **Thin community `Community 90`** (2 nodes): `pseudo.test.ts`, `stubProperty()`
+- **Thin community `Community 91`** (2 nodes): `pseudo.test.ts`, `stubProperty()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 91`** (2 nodes): `backfill-jackpot-total.ts`, `main()`
+- **Thin community `Community 92`** (2 nodes): `backfill-jackpot-total.ts`, `main()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 92`** (2 nodes): `createApp()`, `app.ts`
+- **Thin community `Community 93`** (2 nodes): `createApp()`, `app.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 93`** (2 nodes): `validate.ts`, `validateBody()`
+- **Thin community `Community 94`** (2 nodes): `validate.ts`, `validateBody()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 94`** (2 nodes): `error-handler.ts`, `errorHandler()`
+- **Thin community `Community 95`** (2 nodes): `error-handler.ts`, `errorHandler()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 95`** (2 nodes): `not-found.ts`, `notFoundHandler()`
+- **Thin community `Community 96`** (2 nodes): `not-found.ts`, `notFoundHandler()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 96`** (2 nodes): `require-auth.ts`, `requireAuth()`
+- **Thin community `Community 97`** (2 nodes): `require-auth.ts`, `requireAuth()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 97`** (2 nodes): `require-role.ts`, `requireRole()`
+- **Thin community `Community 98`** (2 nodes): `require-role.ts`, `requireRole()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 98`** (2 nodes): `request-logger.ts`, `requestLogger()`
+- **Thin community `Community 99`** (2 nodes): `request-logger.ts`, `requestLogger()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 99`** (2 nodes): `env.ts`, `emptyStringToUndefined()`
+- **Thin community `Community 100`** (2 nodes): `env.ts`, `emptyStringToUndefined()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 100`** (2 nodes): `passport.ts`, `configurePassport()`
+- **Thin community `Community 101`** (2 nodes): `passport.ts`, `configurePassport()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 101`** (2 nodes): `events.routes.ts`, `uploadEventImageMiddleware()`
+- **Thin community `Community 102`** (2 nodes): `events.routes.ts`, `uploadEventImageMiddleware()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 102`** (2 nodes): `chat.routes.ts`, `cleanup()`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Community 103`** (2 nodes): `cron.ts`, `startCronJobs()`
+- **Thin community `Community 103`** (2 nodes): `chat.routes.ts`, `cleanup()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 - **Thin community `Community 104`** (2 nodes): `user-serializer.ts`, `serializeUser()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
@@ -1165,4 +1163,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `Community 3` be split into smaller, more focused modules?**
   _Cohesion score 0.13 - nodes in this community are weakly interconnected._
 - **Should `Community 4` be split into smaller, more focused modules?**
-  _Cohesion score 0.13 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.11 - nodes in this community are weakly interconnected._

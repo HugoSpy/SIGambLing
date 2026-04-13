@@ -344,9 +344,6 @@ export function LeaderboardPage() {
                     <RankDeltaBadge delta={pinnedEntry.rank_delta} />
                     {pinnedEntry.user.pseudo}
                   </p>
-                  <p className="text-xs text-zinc-400">
-                    Hors top {limit}, mais toujours épinglé pour suivi.
-                  </p>
                 </div>
                 <div className="text-sm font-semibold text-zinc-100">
                   {activeTab === "balance" && `${formatTokens((pinnedEntry as BalanceEntry).balance)} tokens`}
