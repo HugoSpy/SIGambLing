@@ -159,7 +159,12 @@ export function LeaderboardPage() {
                       )}
                     </div>
                     <div>
-                      <p className="text-sm font-semibold text-zinc-100">{entry.user.pseudo}</p>
+                      <Link
+                        to={`/profile/${entry.user.id}`}
+                        className="text-sm font-semibold text-zinc-100 hover:text-emerald-400 transition-colors"
+                      >
+                        {entry.user.pseudo}
+                      </Link>
                       <p className="text-xs text-zinc-500">
                         Dernière activité {formatActivityLabel(entry.recent_activity_at)}
                       </p>

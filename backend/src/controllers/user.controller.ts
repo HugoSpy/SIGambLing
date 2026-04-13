@@ -166,6 +166,27 @@ export const resetChatPreferencesController: RequestHandler = async (request, re
   }
 };
 
+export const getUserPublicProfileController: RequestHandler = async (request, response, next) => {
+  try {
+    const targetUserId = String(request.params.userId);
+    const profile = await userService.getPublicProfile(targetUserId);
+    response.json(profile);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updatePinnedBadgesController: RequestHandler = async (request, response, next) => {
+  try {
+    const userId = getAuthenticatedUserId(request);
+    await userService.updatePinnedBadges(userId, request.body);
+    const profile = await userService.getPublicProfile(userId);
+    response.json({ pinnedBadges: profile.pinnedBadges });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const mentionSearchController: RequestHandler = async (request, response, next) => {
   try {
     const query = String(request.query.q ?? "").trim().slice(0, 50);

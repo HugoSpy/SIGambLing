@@ -1,7 +1,22 @@
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Award, Camera, Coins, Flame, LayoutPanelLeft, Save, Shield, Trophy, UserRound } from "lucide-react";
+import { Award, Camera, Check, Coins, Flame, LayoutPanelLeft, Pin, Save, Shield, Trophy, UserRound, X } from "lucide-react";
 import toast from "react-hot-toast";
+import {
+  DndContext,
+  closestCenter,
+  type DragEndEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  horizontalListSortingStrategy,
+  useSortable,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { DashboardShell } from "../components/layout/DashboardShell";
 import { LoadingScreen } from "../components/layout/LoadingScreen";
 import { BadgeCard } from "../components/ui/BadgeCard";
@@ -13,9 +28,11 @@ import {
   ApiError,
   claimBadgeReward,
   fetchCurrentUser,
+  fetchUserPublicProfile,
   logoutRequest,
   resetChatPreferences,
   updateCurrentUserProfile,
+  updatePinnedBadges,
   uploadCurrentUserAvatar,
 } from "../lib/api";
 import { getErrorMessage, notify } from "../lib/notifications";
@@ -24,6 +41,255 @@ import { useAuthStore } from "../store/auth-store";
 import { useChatStore } from "../store/chat-store";
 import type { AuthUser } from "../types/auth";
 import type { GamificationBadge } from "../types/gamification";
+
+const RARITY_COLOR: Record<string, string> = {
+  COMMON: "text-zinc-500",
+  RARE: "text-purple-400",
+  EPIC: "text-yellow-400",
+  LEGENDARY: "text-amber-300",
+};
+
+function SortableSlotItem({
+  id,
+  badgeKey,
+  allBadges,
+  onRemove,
+}: {
+  id: string;
+  badgeKey: string | null;
+  allBadges: GamificationBadge[];
+  onRemove: () => void;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+  });
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.4 : 1,
+  };
+  const badge = badgeKey ? allBadges.find((b) => b.key === badgeKey) : null;
+  const slotNum = parseInt(id, 10) + 1;
+
+  if (!badge) {
+    return (
+      <div
+        ref={setNodeRef}
+        style={style}
+        {...attributes}
+        {...listeners}
+        className="flex min-h-[80px] flex-col items-center justify-center gap-1 rounded-xl border border-dashed border-zinc-700 bg-zinc-900/50 px-3 py-4 text-center cursor-grab"
+      >
+        <span className="text-xs font-semibold text-zinc-600">Slot {slotNum}</span>
+        <Award className="h-5 w-5 text-zinc-700" />
+        <span className="text-[11px] text-zinc-700">Vide</span>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      className="relative flex min-h-[80px] cursor-grab flex-col gap-1.5 rounded-xl border border-zinc-700 bg-zinc-800 px-3 py-3"
+    >
+      <div className="flex items-center gap-2 pr-5">
+        <Award className="h-4 w-4 shrink-0 text-emerald-400" />
+        <span className="text-xs font-semibold leading-tight text-zinc-100">{badge.name}</span>
+      </div>
+      <span
+        className={`text-[11px] font-semibold uppercase tracking-wider ${RARITY_COLOR[badge.catalog_rarity]}`}
+      >
+        {badge.catalog_rarity}
+      </span>
+      <button
+        className="absolute right-2 top-2 rounded-full p-0.5 text-zinc-500 hover:text-zinc-300"
+        onPointerDown={(e) => e.stopPropagation()}
+        onClick={onRemove}
+        aria-label="Retirer ce badge"
+      >
+        <X className="h-3.5 w-3.5" />
+      </button>
+    </div>
+  );
+}
+
+interface PinnedBadgesEditorProps {
+  userId: string;
+  unlockedBadges: GamificationBadge[];
+}
+
+function PinnedBadgesEditor({ userId, unlockedBadges }: PinnedBadgesEditorProps) {
+  const queryClient = useQueryClient();
+  const [slots, setSlots] = useState<(string | null)[]>([null, null, null]);
+  const [saving, setSaving] = useState(false);
+
+  const { data: profile } = useQuery({
+    queryKey: ["user-profile", userId],
+    queryFn: () => fetchUserPublicProfile(userId),
+  });
+
+  useEffect(() => {
+    if (profile) {
+      const initial: (string | null)[] = [null, null, null];
+      for (const b of profile.pinnedBadges) {
+        if (b.pinnedOrder !== null && b.pinnedOrder >= 1 && b.pinnedOrder <= 3) {
+          initial[b.pinnedOrder - 1] = b.badgeType;
+        }
+      }
+      setSlots(initial);
+    }
+  }, [profile]);
+
+  const sensors = useSensors(useSensor(PointerSensor));
+
+  function getInitialSlots(p: typeof profile) {
+    const initial: (string | null)[] = [null, null, null];
+    if (!p) return initial;
+    for (const b of p.pinnedBadges) {
+      if (b.pinnedOrder !== null && b.pinnedOrder >= 1 && b.pinnedOrder <= 3) {
+        initial[b.pinnedOrder - 1] = b.badgeType;
+      }
+    }
+    return initial;
+  }
+
+  const isDirty =
+    profile !== undefined &&
+    JSON.stringify(slots) !== JSON.stringify(getInitialSlots(profile));
+
+  function handleDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (over && active.id !== over.id) {
+      const oldIndex = parseInt(String(active.id), 10);
+      const newIndex = parseInt(String(over.id), 10);
+      setSlots((prev) => arrayMove(prev, oldIndex, newIndex));
+    }
+  }
+
+  function handleBadgeClick(badgeKey: string) {
+    if (slots.includes(badgeKey)) {
+      setSlots((prev) => prev.map((s) => (s === badgeKey ? null : s)));
+    } else {
+      const emptyIndex = slots.findIndex((s) => s === null);
+      if (emptyIndex === -1) {
+        toast("3 badges maximum épinglés.", { icon: "⚠️" });
+        return;
+      }
+      setSlots((prev) => {
+        const next = [...prev];
+        next[emptyIndex] = badgeKey;
+        return next;
+      });
+    }
+  }
+
+  async function handleSave() {
+    const payload = slots
+      .map((badgeType, i) => (badgeType ? { badgeType, order: i + 1 } : null))
+      .filter((x): x is { badgeType: string; order: number } => x !== null);
+    try {
+      setSaving(true);
+      await updatePinnedBadges(payload);
+      await queryClient.invalidateQueries({ queryKey: ["user-profile", userId] });
+      notify.success("Profil public mis à jour.");
+    } catch (error) {
+      notify.error(getErrorMessage(error));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Card className="min-w-0">
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">Profil public</p>
+          <h2 className="mt-3 font-display text-3xl text-brand-text">Badges épinglés</h2>
+        </div>
+        <Pin className="h-6 w-6 text-brand-orange" />
+      </div>
+
+      <p className="mt-2 text-sm leading-6 text-brand-muted">
+        Jusqu'à 3 badges visibles sur votre profil public. Glissez pour réordonner.
+      </p>
+
+      <div className="mt-5">
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleDragEnd}
+        >
+          <SortableContext items={["0", "1", "2"]} strategy={horizontalListSortingStrategy}>
+            <div className="grid grid-cols-3 gap-3">
+              {slots.map((badgeKey, i) => (
+                <SortableSlotItem
+                  key={String(i)}
+                  id={String(i)}
+                  badgeKey={badgeKey}
+                  allBadges={unlockedBadges}
+                  onRemove={() =>
+                    setSlots((prev) => {
+                      const next = [...prev];
+                      next[i] = null;
+                      return next;
+                    })
+                  }
+                />
+              ))}
+            </div>
+          </SortableContext>
+        </DndContext>
+      </div>
+
+      <div className="mt-6">
+        <p className="mb-3 text-xs uppercase tracking-[0.24em] text-brand-muted">
+          Vos badges débloqués
+        </p>
+        {unlockedBadges.length > 0 ? (
+          <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+            {unlockedBadges.map((badge) => {
+              const isPinned = slots.includes(badge.key);
+              return (
+                <button
+                  key={badge.key}
+                  onClick={() => handleBadgeClick(badge.key)}
+                  className={`flex items-center gap-3 rounded-xl border px-3 py-3 text-left transition ${
+                    isPinned
+                      ? "border-emerald-500/50 bg-emerald-500/10 text-emerald-300"
+                      : "border-zinc-800 bg-zinc-950 text-zinc-300 hover:border-zinc-600"
+                  }`}
+                >
+                  <Award
+                    className={`h-5 w-5 shrink-0 ${isPinned ? "text-emerald-400" : "text-zinc-600"}`}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm font-semibold">{badge.name}</p>
+                    <p className={`text-[11px] uppercase tracking-wider ${RARITY_COLOR[badge.catalog_rarity]}`}>
+                      {badge.catalog_rarity}
+                    </p>
+                  </div>
+                  {isPinned && <Check className="ml-auto h-4 w-4 shrink-0 text-emerald-400" />}
+                </button>
+              );
+            })}
+          </div>
+        ) : (
+          <p className="text-sm text-brand-muted">Aucun badge débloqué pour le moment.</p>
+        )}
+      </div>
+
+      <div className="mt-5 flex justify-end">
+        <Button disabled={!isDirty || saving} onClick={() => void handleSave()}>
+          <Save className="mr-2 h-4 w-4" />
+          {saving ? "Sauvegarde..." : "Sauvegarder"}
+        </Button>
+      </div>
+    </Card>
+  );
+}
 
 const pseudoRules = [
   {
@@ -477,6 +743,13 @@ export function ProfilePage() {
               </p>
             )}
           </Card>
+        ) : null}
+
+        {gamification && user ? (
+          <PinnedBadgesEditor
+            userId={user.id}
+            unlockedBadges={gamification.badges.filter((b) => b.unlocked)}
+          />
         ) : null}
       </div>
     </DashboardShell>

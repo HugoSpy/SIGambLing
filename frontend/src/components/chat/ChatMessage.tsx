@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 function relativeTime(dateStr: string): string {
   const diff = (new Date(dateStr).getTime() - Date.now()) / 1000; // negative = past
   const rtf = new Intl.RelativeTimeFormat("fr", { numeric: "auto" });
@@ -72,25 +74,31 @@ export function ChatMessage({ message, currentUserId, currentUserPseudo }: ChatM
     .slice(0, 2)
     .toUpperCase();
 
+  const profileLink = `/profile/${message.user.id}`;
+
   return (
     <div className={`flex gap-2 ${isOwn ? "flex-row-reverse" : "flex-row"}`}>
-      {message.user.avatarUrl ? (
-        <img
-          alt={message.user.pseudo}
-          className="h-8 w-8 flex-shrink-0 rounded-full object-cover"
-          src={message.user.avatarUrl}
-          onError={(e) => {
-            e.currentTarget.src = "/default-avatar.svg";
-          }}
-        />
-      ) : (
-        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-emerald-500/10 text-xs font-bold text-emerald-400">
-          {initials}
-        </div>
-      )}
+      <Link to={profileLink} className="flex-shrink-0">
+        {message.user.avatarUrl ? (
+          <img
+            alt={message.user.pseudo}
+            className="h-8 w-8 rounded-full object-cover"
+            src={message.user.avatarUrl}
+            onError={(e) => {
+              e.currentTarget.src = "/default-avatar.svg";
+            }}
+          />
+        ) : (
+          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500/10 text-xs font-bold text-emerald-400">
+            {initials}
+          </div>
+        )}
+      </Link>
 
       <div className={`flex max-w-[75%] flex-col gap-0.5 ${isOwn ? "items-end" : "items-start"}`}>
-        <span className="text-xs text-zinc-400">{message.user.pseudo}</span>
+        <Link to={profileLink} className="text-xs text-zinc-400 hover:underline cursor-pointer">
+          {message.user.pseudo}
+        </Link>
         <div
           className={`rounded-xl px-3 py-2 text-[15px] leading-snug break-words ${
             isOwn

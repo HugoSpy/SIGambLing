@@ -430,11 +430,11 @@ class UserService {
 
     // Bet stats
     const [totalBets, wonBets, lostBets, volumeAgg] = await Promise.all([
-      prisma.bet.count({ where: { userId: targetUserId } }),
+      prisma.bet.count({ where: { userId: targetUserId, status: { not: "cancelled" } } }),
       prisma.bet.count({ where: { userId: targetUserId, status: "won" } }),
       prisma.bet.count({ where: { userId: targetUserId, status: "lost" } }),
       prisma.bet.aggregate({
-        where: { userId: targetUserId },
+        where: { userId: targetUserId, status: { not: "cancelled" } },
         _sum: { amount: true },
       }),
     ]);

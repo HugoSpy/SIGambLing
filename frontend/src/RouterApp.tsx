@@ -35,6 +35,9 @@ const LeaderboardPage = lazy(() =>
 const ProfilePage = lazy(() =>
   import("./pages/AccountProfilePage").then((module) => ({ default: module.ProfilePage })),
 );
+const UserProfilePage = lazy(() =>
+  import("./pages/UserProfilePage").then((module) => ({ default: module.UserProfilePage })),
+);
 const AdminEventsPage = lazy(() =>
   import("./pages/admin/AdminEventsPage").then((module) => ({ default: module.AdminEventsPage })),
 );
@@ -129,6 +132,7 @@ export default function RouterApp() {
             <Route path="/jackpot" element={<JackpotPage />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route path="/profile/:userId" element={<UserProfilePage />} />
             <Route path="/rewards" element={<RewardsPage />} />
             <Route path="/wins" element={<WinsPage />} />
             <Route path="/history" element={<HistoryPage />} />

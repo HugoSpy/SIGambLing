@@ -196,6 +196,46 @@ export async function claimBadgeReward(badgeType: string): Promise<{ reward: num
   return response.data;
 }
 
+export interface PinnedBadge {
+  badgeType: string;
+  label: string;
+  rarity: "COMMON" | "RARE" | "EPIC" | "LEGENDARY";
+  unlockedAt: string;
+  pinnedOrder: number | null;
+}
+
+export interface UserPublicProfile {
+  id: string;
+  pseudo: string;
+  avatarUrl: string | null;
+  email: string;
+  balance: number;
+  leaderboardRank: number | null;
+  createdAt: string;
+  pinnedBadges: PinnedBadge[];
+  stats: {
+    totalBets: number;
+    wonBets: number;
+    winRate: number;
+    totalVolume: number;
+  };
+}
+
+export async function fetchUserPublicProfile(userId: string): Promise<UserPublicProfile> {
+  const response = await api.get<UserPublicProfile>(`/users/${userId}/profile`);
+  return response.data;
+}
+
+export async function updatePinnedBadges(
+  pinnedBadges: Array<{ badgeType: string; order: number }>,
+): Promise<{ pinnedBadges: PinnedBadge[] }> {
+  const response = await api.patch<{ pinnedBadges: PinnedBadge[] }>(
+    "/users/me/pinned-badges",
+    { pinnedBadges },
+  );
+  return response.data;
+}
+
 export async function fetchLeaderboard(scope: "global" | "casino", limit: number) {
   const response = await api.get<LeaderboardView>("/rewards/leaderboard", {
     params: { scope, limit },

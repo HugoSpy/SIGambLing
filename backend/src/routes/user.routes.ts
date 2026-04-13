@@ -4,6 +4,7 @@ import { Router } from "express";
 import {
   adjustUserBalanceController,
   getCurrentUserController,
+  getUserPublicProfileController,
   listAvailableBadgesController,
   listCurrentUserEventBetsController,
   mentionSearchController,
@@ -12,6 +13,7 @@ import {
   unlockUserBadgeController,
   updateChatPreferencesController,
   updateCurrentUserController,
+  updatePinnedBadgesController,
   updateUserRewardController,
   uploadCurrentUserAvatarController,
 } from "../controllers/user.controller";
@@ -23,6 +25,7 @@ import {
   adjustUserBalanceSchema,
   unlockUserBadgeSchema,
   updateChatPreferencesSchema,
+  updatePinnedBadgesSchema,
   updateUserProfileSchema,
   updateUserRewardSchema,
 } from "../schemas/user.schemas";
@@ -92,8 +95,15 @@ userRouter.patch("/me/chat-preferences", requireAuth, validateBody(updateChatPre
 userRouter.delete("/me/chat-preferences", requireAuth, resetChatPreferencesController);
 userRouter.get("/mention-search", requireAuth, mentionSearchController);
 userRouter.post("/me/avatar", requireAuth, userLimiter, uploadAvatarMiddleware, uploadCurrentUserAvatarController);
+userRouter.patch(
+  "/me/pinned-badges",
+  requireAuth,
+  validateBody(updatePinnedBadgesSchema),
+  updatePinnedBadgesController,
+);
 userRouter.get("/", requireAuth, requireRole(["admin"]), searchUsersController);
 userRouter.get("/badges/catalog", requireAuth, requireRole(["admin"]), listAvailableBadgesController);
+userRouter.get("/:userId/profile", requireAuth, getUserPublicProfileController);
 userRouter.patch(
   "/:id/balance",
   requireAuth,
