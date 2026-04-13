@@ -1,194 +1,195 @@
 # Graph Report - .  (2026-04-13)
 
 ## Corpus Check
-- 198 files · ~129,369 words
+- 180 files · ~137,231 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1005 nodes · 1458 edges · 179 communities detected
+- 1017 nodes · 1470 edges · 180 communities detected
 - Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 70 edges (avg confidence: 0.59)
 - Token cost: 0 input · 0 output
 
 ## Community Hubs (Navigation)
-- [[_COMMUNITY_Event Betting Service|Event Betting Service]]
-- [[_COMMUNITY_Admin API Endpoints|Admin API Endpoints]]
-- [[_COMMUNITY_Legacy Python Backend|Legacy Python Backend]]
-- [[_COMMUNITY_Frontend App Types|Frontend App Types]]
-- [[_COMMUNITY_Gamification & Badges|Gamification & Badges]]
-- [[_COMMUNITY_Blackjack Game Engine|Blackjack Game Engine]]
-- [[_COMMUNITY_Events Controller|Events Controller]]
-- [[_COMMUNITY_Architecture & Docs|Architecture & Docs]]
-- [[_COMMUNITY_Casino Controller|Casino Controller]]
-- [[_COMMUNITY_Admin Events UI|Admin Events UI]]
-- [[_COMMUNITY_Roulette Visual Engine|Roulette Visual Engine]]
-- [[_COMMUNITY_Project Infrastructure|Project Infrastructure]]
-- [[_COMMUNITY_Roulette Bet Logic|Roulette Bet Logic]]
-- [[_COMMUNITY_Ride The Bus Game|Ride The Bus Game]]
-- [[_COMMUNITY_Jackpot System|Jackpot System]]
-- [[_COMMUNITY_Python Events API|Python Events API]]
-- [[_COMMUNITY_User Service|User Service]]
-- [[_COMMUNITY_User Controller|User Controller]]
-- [[_COMMUNITY_HiLo Card Game|HiLo Card Game]]
-- [[_COMMUNITY_Roulette Bet Types|Roulette Bet Types]]
-- [[_COMMUNITY_Mines Game Service|Mines Game Service]]
-- [[_COMMUNITY_Chat Panel UI|Chat Panel UI]]
-- [[_COMMUNITY_Result Overlay Canvas|Result Overlay Canvas]]
-- [[_COMMUNITY_Python Auth Routes|Python Auth Routes]]
-- [[_COMMUNITY_Discord Notifications|Discord Notifications]]
-- [[_COMMUNITY_Auth Service|Auth Service]]
-- [[_COMMUNITY_Bet Cart Drawer|Bet Cart Drawer]]
-- [[_COMMUNITY_Sound Manager|Sound Manager]]
-- [[_COMMUNITY_Pseudo Generator|Pseudo Generator]]
-- [[_COMMUNITY_Chat Service|Chat Service]]
-- [[_COMMUNITY_Win History Service|Win History Service]]
-- [[_COMMUNITY_Gamification Controller|Gamification Controller]]
-- [[_COMMUNITY_Admin Config Controller|Admin Config Controller]]
-- [[_COMMUNITY_Python Auth Utils|Python Auth Utils]]
-- [[_COMMUNITY_CORS Security Config|CORS Security Config]]
-- [[_COMMUNITY_JWT Utilities|JWT Utilities]]
-- [[_COMMUNITY_Roulette Betting Grid|Roulette Betting Grid]]
-- [[_COMMUNITY_Event Format Utils|Event Format Utils]]
-- [[_COMMUNITY_Python App Entry|Python App Entry]]
-- [[_COMMUNITY_Email Notifications|Email Notifications]]
-- [[_COMMUNITY_Event Service Tests|Event Service Tests]]
-- [[_COMMUNITY_Feature Flags Middleware|Feature Flags Middleware]]
-- [[_COMMUNITY_Maintenance Middleware|Maintenance Middleware]]
-- [[_COMMUNITY_Badges Config|Badges Config]]
-- [[_COMMUNITY_OAuth State Utils|OAuth State Utils]]
-- [[_COMMUNITY_Storage Service|Storage Service]]
-- [[_COMMUNITY_Microsoft OAuth Controller|Microsoft OAuth Controller]]
-- [[_COMMUNITY_Admin Statistics|Admin Statistics]]
-- [[_COMMUNITY_Error Boundary|Error Boundary]]
-- [[_COMMUNITY_Events Markets Page|Events Markets Page]]
-- [[_COMMUNITY_Wins History Page|Wins History Page]]
-- [[_COMMUNITY_Python Config|Python Config]]
-- [[_COMMUNITY_Roulette RNG|Roulette RNG]]
-- [[_COMMUNITY_Banword Filter|Banword Filter]]
-- [[_COMMUNITY_Wins Controller|Wins Controller]]
-- [[_COMMUNITY_Database Seed|Database Seed]]
-- [[_COMMUNITY_Frontend Router|Frontend Router]]
-- [[_COMMUNITY_Bet Drawer|Bet Drawer]]
-- [[_COMMUNITY_Odds History Chart|Odds History Chart]]
-- [[_COMMUNITY_Roulette Bet Grid UI|Roulette Bet Grid UI]]
-- [[_COMMUNITY_Blackjack Game UI|Blackjack Game UI]]
-- [[_COMMUNITY_Admin Statistics Tab|Admin Statistics Tab]]
-- [[_COMMUNITY_Rewards Page|Rewards Page]]
-- [[_COMMUNITY_Bet History Page|Bet History Page]]
-- [[_COMMUNITY_Login Page|Login Page]]
-- [[_COMMUNITY_Casino Page|Casino Page]]
-- [[_COMMUNITY_Admin Statistics Page|Admin Statistics Page]]
-- [[_COMMUNITY_Python Database|Python Database]]
-- [[_COMMUNITY_Auth Service Tests|Auth Service Tests]]
-- [[_COMMUNITY_Gamification Tests|Gamification Tests]]
-- [[_COMMUNITY_Blackjack Tests|Blackjack Tests]]
-- [[_COMMUNITY_Integration Tests|Integration Tests]]
-- [[_COMMUNITY_Env Validation Script|Env Validation Script]]
-- [[_COMMUNITY_User Routes|User Routes]]
-- [[_COMMUNITY_App Error Utils|App Error Utils]]
-- [[_COMMUNITY_Active Event Bets List|Active Event Bets List]]
-- [[_COMMUNITY_Event Card Component|Event Card Component]]
-- [[_COMMUNITY_Roulette Wheel UI|Roulette Wheel UI]]
-- [[_COMMUNITY_Mines Grid UI|Mines Grid UI]]
-- [[_COMMUNITY_Chat Message Component|Chat Message Component]]
-- [[_COMMUNITY_Frontend Utils|Frontend Utils]]
-- [[_COMMUNITY_Jackpot Page|Jackpot Page]]
-- [[_COMMUNITY_Leaderboard Page|Leaderboard Page]]
-- [[_COMMUNITY_Dashboard Page|Dashboard Page]]
-- [[_COMMUNITY_Gamification State Hook|Gamification State Hook]]
-- [[_COMMUNITY_Theme Store|Theme Store]]
-- [[_COMMUNITY_Backend Tests Pseudo|Backend Tests Pseudo]]
-- [[_COMMUNITY_Backend Scripts Backfill|Backend Scripts Backfill]]
-- [[_COMMUNITY_App Createapp|App Createapp]]
-- [[_COMMUNITY_Middleware Validate Ts|Middleware Validate Ts]]
-- [[_COMMUNITY_Middleware Error Handler|Middleware Error Handler]]
-- [[_COMMUNITY_Middleware Not Found|Middleware Not Found]]
-- [[_COMMUNITY_Middleware Require Auth|Middleware Require Auth]]
-- [[_COMMUNITY_Middleware Require Role|Middleware Require Role]]
-- [[_COMMUNITY_Middleware Request Logger|Middleware Request Logger]]
-- [[_COMMUNITY_Config Env Ts|Config Env Ts]]
-- [[_COMMUNITY_Config Passport Ts|Config Passport Ts]]
-- [[_COMMUNITY_Routes Events Routes|Routes Events Routes]]
-- [[_COMMUNITY_Routes Chat Routes|Routes Chat Routes]]
-- [[_COMMUNITY_Utils Cron Ts|Utils Cron Ts]]
-- [[_COMMUNITY_Utils User Serializer|Utils User Serializer]]
-- [[_COMMUNITY_Schemas Events Schemas|Schemas Events Schemas]]
-- [[_COMMUNITY_Types Passport Microsoft|Types Passport Microsoft]]
-- [[_COMMUNITY_Controllers Health Controller|Controllers Health Controller]]
-- [[_COMMUNITY_Dashboardshell Cn|Dashboardshell Cn]]
-- [[_COMMUNITY_Components Layout Loadingscreen|Components Layout Loadingscreen]]
-- [[_COMMUNITY_Components Casino Hilohistory|Components Casino Hilohistory]]
-- [[_COMMUNITY_Components Casino Hilocard|Components Casino Hilocard]]
-- [[_COMMUNITY_Components Casino Ridethebusgame|Components Casino Ridethebusgame]]
-- [[_COMMUNITY_Components Casino Roulettestats|Components Casino Roulettestats]]
-- [[_COMMUNITY_Components Casino Minesgame|Components Casino Minesgame]]
-- [[_COMMUNITY_Components Casino Roulettechip|Components Casino Roulettechip]]
-- [[_COMMUNITY_Components Casino Mines|Components Casino Mines]]
-- [[_COMMUNITY_Components Casino Mines|Components Casino Mines]]
-- [[_COMMUNITY_Components Chat Mentiondropdown|Components Chat Mentiondropdown]]
-- [[_COMMUNITY_Badgecard Badgecard|Badgecard Badgecard]]
-- [[_COMMUNITY_Button Button|Button Button]]
-- [[_COMMUNITY_Card Card|Card Card]]
-- [[_COMMUNITY_Fogeffect Fogeffect|Fogeffect Fogeffect]]
-- [[_COMMUNITY_Lib Notifications Ts|Lib Notifications Ts]]
-- [[_COMMUNITY_Eventsdisabledpage Eventsdisabledpage|Eventsdisabledpage Eventsdisabledpage]]
-- [[_COMMUNITY_Pages Maintenancepage Tsx|Pages Maintenancepage Tsx]]
-- [[_COMMUNITY_Authcallbackpage Authcallbackpage|Authcallbackpage Authcallbackpage]]
-- [[_COMMUNITY_Accountprofilepage Profilepage|Accountprofilepage Profilepage]]
-- [[_COMMUNITY_Eventdetailpage Handlelogout|Eventdetailpage Handlelogout]]
-- [[_COMMUNITY_Routes Protectedroute Tsx|Routes Protectedroute Tsx]]
-- [[_COMMUNITY_Hooks Useminesgame Ts|Hooks Useminesgame Ts]]
-- [[_COMMUNITY_Hooks Useauthenticateduser Ts|Hooks Useauthenticateduser Ts]]
-- [[_COMMUNITY_Hooks Useridethebusgame Ts|Hooks Useridethebusgame Ts]]
-- [[_COMMUNITY_Hooks Usechatstream Ts|Hooks Usechatstream Ts]]
-- [[_COMMUNITY_Hooks Usesessionbootstrap Ts|Hooks Usesessionbootstrap Ts]]
-- [[_COMMUNITY_Hooks Usehilogame Ts|Hooks Usehilogame Ts]]
-- [[_COMMUNITY_Auth Store Purgelegacyauthstorage|Auth Store Purgelegacyauthstorage]]
-- [[_COMMUNITY_Start Py|Start Py]]
-- [[_COMMUNITY_Backend Tests Security|Backend Tests Security]]
-- [[_COMMUNITY_Backend Routers Init|Backend Routers Init]]
-- [[_COMMUNITY_Index Ts|Index Ts]]
-- [[_COMMUNITY_Lib Prisma Ts|Lib Prisma Ts]]
-- [[_COMMUNITY_Routes Public Config|Routes Public Config]]
-- [[_COMMUNITY_Routes Casino Routes|Routes Casino Routes]]
-- [[_COMMUNITY_Routes Gamification Routes|Routes Gamification Routes]]
-- [[_COMMUNITY_Routes Auth Routes|Routes Auth Routes]]
-- [[_COMMUNITY_Routes Admin Routes|Routes Admin Routes]]
-- [[_COMMUNITY_Routes Admin Config|Routes Admin Config]]
-- [[_COMMUNITY_Routes Health Routes|Routes Health Routes]]
-- [[_COMMUNITY_Utils Logger Ts|Utils Logger Ts]]
-- [[_COMMUNITY_Schemas Casino Schemas|Schemas Casino Schemas]]
-- [[_COMMUNITY_Schemas Wins Schemas|Schemas Wins Schemas]]
-- [[_COMMUNITY_Schemas Auth Schemas|Schemas Auth Schemas]]
-- [[_COMMUNITY_Schemas User Schemas|Schemas User Schemas]]
-- [[_COMMUNITY_Services Prisma Service|Services Prisma Service]]
-- [[_COMMUNITY_Types Upload Ts|Types Upload Ts]]
-- [[_COMMUNITY_Types Express D|Types Express D]]
-- [[_COMMUNITY_Types Auth Ts|Types Auth Ts]]
-- [[_COMMUNITY_Frontend Tailwind Config|Frontend Tailwind Config]]
-- [[_COMMUNITY_Frontend Vite Config|Frontend Vite Config]]
-- [[_COMMUNITY_Main Tsx|Main Tsx]]
-- [[_COMMUNITY_Vite Env D|Vite Env D]]
-- [[_COMMUNITY_Components Oddschangemodal Tsx|Components Oddschangemodal Tsx]]
-- [[_COMMUNITY_Components Casino Hilogame|Components Casino Hilogame]]
-- [[_COMMUNITY_Components Casino Roulettehistory|Components Casino Roulettehistory]]
-- [[_COMMUNITY_Components Casino Roulettegame|Components Casino Roulettegame]]
-- [[_COMMUNITY_Components Casino Roulettecontrols|Components Casino Roulettecontrols]]
-- [[_COMMUNITY_Components Ui Winpopup|Components Ui Winpopup]]
-- [[_COMMUNITY_Components Ui Themetoggle|Components Ui Themetoggle]]
-- [[_COMMUNITY_Components Ui Modal|Components Ui Modal]]
-- [[_COMMUNITY_Components Ui Input|Components Ui Input]]
-- [[_COMMUNITY_Lib Sounds Ts|Lib Sounds Ts]]
-- [[_COMMUNITY_Lib Casino Rouletteconstants|Lib Casino Rouletteconstants]]
-- [[_COMMUNITY_Types Gamification Ts|Types Gamification Ts]]
-- [[_COMMUNITY_Types Blackjack Ts|Types Blackjack Ts]]
-- [[_COMMUNITY_Types Roulette Ts|Types Roulette Ts]]
-- [[_COMMUNITY_Types Ride The|Types Ride The]]
-- [[_COMMUNITY_Types Auth Ts|Types Auth Ts]]
-- [[_COMMUNITY_Types Mines Ts|Types Mines Ts]]
-- [[_COMMUNITY_Types Event Ts|Types Event Ts]]
-- [[_COMMUNITY_Types Hilo Ts|Types Hilo Ts]]
-- [[_COMMUNITY_Store Chat Store|Store Chat Store]]
-- [[_COMMUNITY_Store Bet Cart|Store Bet Cart]]
+- [[_COMMUNITY_Community 0|Community 0]]
+- [[_COMMUNITY_Community 1|Community 1]]
+- [[_COMMUNITY_Community 2|Community 2]]
+- [[_COMMUNITY_Community 3|Community 3]]
+- [[_COMMUNITY_Community 4|Community 4]]
+- [[_COMMUNITY_Community 5|Community 5]]
+- [[_COMMUNITY_Community 6|Community 6]]
+- [[_COMMUNITY_Community 7|Community 7]]
+- [[_COMMUNITY_Community 8|Community 8]]
+- [[_COMMUNITY_Community 9|Community 9]]
+- [[_COMMUNITY_Community 10|Community 10]]
+- [[_COMMUNITY_Community 11|Community 11]]
+- [[_COMMUNITY_Community 12|Community 12]]
+- [[_COMMUNITY_Community 13|Community 13]]
+- [[_COMMUNITY_Community 14|Community 14]]
+- [[_COMMUNITY_Community 15|Community 15]]
+- [[_COMMUNITY_Community 16|Community 16]]
+- [[_COMMUNITY_Community 17|Community 17]]
+- [[_COMMUNITY_Community 18|Community 18]]
+- [[_COMMUNITY_Community 19|Community 19]]
+- [[_COMMUNITY_Community 20|Community 20]]
+- [[_COMMUNITY_Community 21|Community 21]]
+- [[_COMMUNITY_Community 22|Community 22]]
+- [[_COMMUNITY_Community 23|Community 23]]
+- [[_COMMUNITY_Community 24|Community 24]]
+- [[_COMMUNITY_Community 25|Community 25]]
+- [[_COMMUNITY_Community 26|Community 26]]
+- [[_COMMUNITY_Community 27|Community 27]]
+- [[_COMMUNITY_Community 28|Community 28]]
+- [[_COMMUNITY_Community 29|Community 29]]
+- [[_COMMUNITY_Community 30|Community 30]]
+- [[_COMMUNITY_Community 31|Community 31]]
+- [[_COMMUNITY_Community 32|Community 32]]
+- [[_COMMUNITY_Community 33|Community 33]]
+- [[_COMMUNITY_Community 34|Community 34]]
+- [[_COMMUNITY_Community 35|Community 35]]
+- [[_COMMUNITY_Community 36|Community 36]]
+- [[_COMMUNITY_Community 37|Community 37]]
+- [[_COMMUNITY_Community 38|Community 38]]
+- [[_COMMUNITY_Community 39|Community 39]]
+- [[_COMMUNITY_Community 40|Community 40]]
+- [[_COMMUNITY_Community 41|Community 41]]
+- [[_COMMUNITY_Community 42|Community 42]]
+- [[_COMMUNITY_Community 43|Community 43]]
+- [[_COMMUNITY_Community 44|Community 44]]
+- [[_COMMUNITY_Community 45|Community 45]]
+- [[_COMMUNITY_Community 46|Community 46]]
+- [[_COMMUNITY_Community 47|Community 47]]
+- [[_COMMUNITY_Community 48|Community 48]]
+- [[_COMMUNITY_Community 49|Community 49]]
+- [[_COMMUNITY_Community 50|Community 50]]
+- [[_COMMUNITY_Community 51|Community 51]]
+- [[_COMMUNITY_Community 52|Community 52]]
+- [[_COMMUNITY_Community 53|Community 53]]
+- [[_COMMUNITY_Community 54|Community 54]]
+- [[_COMMUNITY_Community 55|Community 55]]
+- [[_COMMUNITY_Community 56|Community 56]]
+- [[_COMMUNITY_Community 57|Community 57]]
+- [[_COMMUNITY_Community 58|Community 58]]
+- [[_COMMUNITY_Community 59|Community 59]]
+- [[_COMMUNITY_Community 60|Community 60]]
+- [[_COMMUNITY_Community 61|Community 61]]
+- [[_COMMUNITY_Community 62|Community 62]]
+- [[_COMMUNITY_Community 63|Community 63]]
+- [[_COMMUNITY_Community 64|Community 64]]
+- [[_COMMUNITY_Community 65|Community 65]]
+- [[_COMMUNITY_Community 66|Community 66]]
+- [[_COMMUNITY_Community 67|Community 67]]
+- [[_COMMUNITY_Community 68|Community 68]]
+- [[_COMMUNITY_Community 69|Community 69]]
+- [[_COMMUNITY_Community 70|Community 70]]
+- [[_COMMUNITY_Community 71|Community 71]]
+- [[_COMMUNITY_Community 72|Community 72]]
+- [[_COMMUNITY_Community 73|Community 73]]
+- [[_COMMUNITY_Community 74|Community 74]]
+- [[_COMMUNITY_Community 75|Community 75]]
+- [[_COMMUNITY_Community 76|Community 76]]
+- [[_COMMUNITY_Community 77|Community 77]]
+- [[_COMMUNITY_Community 78|Community 78]]
+- [[_COMMUNITY_Community 79|Community 79]]
+- [[_COMMUNITY_Community 80|Community 80]]
+- [[_COMMUNITY_Community 81|Community 81]]
+- [[_COMMUNITY_Community 82|Community 82]]
+- [[_COMMUNITY_Community 83|Community 83]]
+- [[_COMMUNITY_Community 84|Community 84]]
+- [[_COMMUNITY_Community 85|Community 85]]
+- [[_COMMUNITY_Community 86|Community 86]]
+- [[_COMMUNITY_Community 87|Community 87]]
+- [[_COMMUNITY_Community 88|Community 88]]
+- [[_COMMUNITY_Community 89|Community 89]]
+- [[_COMMUNITY_Community 90|Community 90]]
+- [[_COMMUNITY_Community 91|Community 91]]
+- [[_COMMUNITY_Community 92|Community 92]]
+- [[_COMMUNITY_Community 93|Community 93]]
+- [[_COMMUNITY_Community 94|Community 94]]
+- [[_COMMUNITY_Community 95|Community 95]]
+- [[_COMMUNITY_Community 96|Community 96]]
+- [[_COMMUNITY_Community 97|Community 97]]
+- [[_COMMUNITY_Community 98|Community 98]]
+- [[_COMMUNITY_Community 99|Community 99]]
+- [[_COMMUNITY_Community 100|Community 100]]
+- [[_COMMUNITY_Community 101|Community 101]]
+- [[_COMMUNITY_Community 102|Community 102]]
+- [[_COMMUNITY_Community 103|Community 103]]
+- [[_COMMUNITY_Community 104|Community 104]]
+- [[_COMMUNITY_Community 105|Community 105]]
+- [[_COMMUNITY_Community 106|Community 106]]
+- [[_COMMUNITY_Community 107|Community 107]]
+- [[_COMMUNITY_Community 108|Community 108]]
+- [[_COMMUNITY_Community 109|Community 109]]
+- [[_COMMUNITY_Community 110|Community 110]]
+- [[_COMMUNITY_Community 111|Community 111]]
+- [[_COMMUNITY_Community 112|Community 112]]
+- [[_COMMUNITY_Community 113|Community 113]]
+- [[_COMMUNITY_Community 114|Community 114]]
+- [[_COMMUNITY_Community 115|Community 115]]
+- [[_COMMUNITY_Community 116|Community 116]]
+- [[_COMMUNITY_Community 117|Community 117]]
+- [[_COMMUNITY_Community 118|Community 118]]
+- [[_COMMUNITY_Community 119|Community 119]]
+- [[_COMMUNITY_Community 120|Community 120]]
+- [[_COMMUNITY_Community 121|Community 121]]
+- [[_COMMUNITY_Community 122|Community 122]]
+- [[_COMMUNITY_Community 123|Community 123]]
+- [[_COMMUNITY_Community 124|Community 124]]
+- [[_COMMUNITY_Community 125|Community 125]]
+- [[_COMMUNITY_Community 126|Community 126]]
+- [[_COMMUNITY_Community 127|Community 127]]
+- [[_COMMUNITY_Community 128|Community 128]]
+- [[_COMMUNITY_Community 129|Community 129]]
+- [[_COMMUNITY_Community 130|Community 130]]
+- [[_COMMUNITY_Community 131|Community 131]]
+- [[_COMMUNITY_Community 132|Community 132]]
+- [[_COMMUNITY_Community 133|Community 133]]
+- [[_COMMUNITY_Community 134|Community 134]]
+- [[_COMMUNITY_Community 135|Community 135]]
+- [[_COMMUNITY_Community 136|Community 136]]
+- [[_COMMUNITY_Community 137|Community 137]]
+- [[_COMMUNITY_Community 138|Community 138]]
+- [[_COMMUNITY_Community 139|Community 139]]
+- [[_COMMUNITY_Community 140|Community 140]]
+- [[_COMMUNITY_Community 141|Community 141]]
+- [[_COMMUNITY_Community 142|Community 142]]
+- [[_COMMUNITY_Community 143|Community 143]]
+- [[_COMMUNITY_Community 144|Community 144]]
+- [[_COMMUNITY_Community 145|Community 145]]
+- [[_COMMUNITY_Community 146|Community 146]]
+- [[_COMMUNITY_Community 147|Community 147]]
+- [[_COMMUNITY_Community 148|Community 148]]
+- [[_COMMUNITY_Community 149|Community 149]]
+- [[_COMMUNITY_Community 150|Community 150]]
+- [[_COMMUNITY_Community 151|Community 151]]
+- [[_COMMUNITY_Community 152|Community 152]]
+- [[_COMMUNITY_Community 153|Community 153]]
+- [[_COMMUNITY_Community 154|Community 154]]
+- [[_COMMUNITY_Community 155|Community 155]]
+- [[_COMMUNITY_Community 156|Community 156]]
+- [[_COMMUNITY_Community 157|Community 157]]
+- [[_COMMUNITY_Community 158|Community 158]]
+- [[_COMMUNITY_Community 159|Community 159]]
+- [[_COMMUNITY_Community 160|Community 160]]
+- [[_COMMUNITY_Community 161|Community 161]]
+- [[_COMMUNITY_Community 162|Community 162]]
+- [[_COMMUNITY_Community 163|Community 163]]
+- [[_COMMUNITY_Community 164|Community 164]]
+- [[_COMMUNITY_Community 165|Community 165]]
+- [[_COMMUNITY_Community 166|Community 166]]
+- [[_COMMUNITY_Community 167|Community 167]]
+- [[_COMMUNITY_Community 168|Community 168]]
+- [[_COMMUNITY_Community 169|Community 169]]
+- [[_COMMUNITY_Community 170|Community 170]]
+- [[_COMMUNITY_Community 171|Community 171]]
+- [[_COMMUNITY_Community 172|Community 172]]
+- [[_COMMUNITY_Community 173|Community 173]]
+- [[_COMMUNITY_Community 174|Community 174]]
+- [[_COMMUNITY_Community 175|Community 175]]
+- [[_COMMUNITY_Community 176|Community 176]]
+- [[_COMMUNITY_Community 177|Community 177]]
+- [[_COMMUNITY_Community 178|Community 178]]
+- [[_COMMUNITY_Community 179|Community 179]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `EventService` - 32 edges
@@ -203,16 +204,16 @@
 10. `User` - 13 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Default User Avatar SVG (dark circle, cyan head, amber arc)` --conceptually_related_to--> `SIGambling Platform`  [INFERRED]
-  frontend/public/default-avatar.svg → README.md
-- `Site Favicon` --conceptually_related_to--> `SIGambling Platform`  [INFERRED]
-  frontend/public/favicon.png → README.md
+- `SIGambling Platform` --conceptually_related_to--> `Default User Avatar SVG (dark circle, cyan head, amber arc)`  [INFERRED]
+  README.md → frontend/public/default-avatar.svg
+- `SIGambling Platform` --conceptually_related_to--> `Site Favicon`  [INFERRED]
+  README.md → frontend/public/favicon.png
 - `Casino Frontend Components` --implements--> `Casino Mini-Games (Roulette + Blackjack)`  [INFERRED]
   PAPERCLIP_SIGAMBLING_SKILL.md → docs/PRODUCT_BRIEF.md
-- `REST API Endpoint Definitions` --conceptually_related_to--> `Backend Controllers`  [INFERRED]
-  docs/ARCHITECTURE.md → PAPERCLIP_SIGAMBLING_SKILL.md
-- `Jackpot Degraded-Mode Handling` --conceptually_related_to--> `Backend Services`  [INFERRED]
-  DEBUG_REPORT.md → PAPERCLIP_SIGAMBLING_SKILL.md
+- `Backend Controllers` --conceptually_related_to--> `REST API Endpoint Definitions`  [INFERRED]
+  PAPERCLIP_SIGAMBLING_SKILL.md → docs/ARCHITECTURE.md
+- `Backend Services` --conceptually_related_to--> `Jackpot Degraded-Mode Handling`  [INFERRED]
+  PAPERCLIP_SIGAMBLING_SKILL.md → DEBUG_REPORT.md
 
 ## Hyperedges (group relationships)
 - **SIGambling Core Platform Components** — readme_sigambling_platform, readme_frontend_stack, readme_backend_stack, readme_supabase_db, readme_vercel_deploy, readme_microsoft_oauth [EXTRACTED 0.95]
@@ -223,926 +224,928 @@
 
 ## Communities
 
-### Community 0 - "Event Betting Service"
+### Community 0 - "Community 0"
 Cohesion: 0.06
 Nodes (28): assertMargin(), buildPoolByOption(), buildStoredOptions(), calculatePotentialPayout(), computeBetSettlement(), createOddsChangeEntry(), dedupeOptions(), EventService (+20 more)
 
-### Community 1 - "Admin API Endpoints"
+### Community 1 - "Community 1"
 Cohesion: 0.04
 Nodes (3): ApiError, performRefresh(), refreshSession()
 
-### Community 2 - "Legacy Python Backend"
+### Community 2 - "Community 2"
 Cohesion: 0.11
 Nodes (38): RegisterRequest, Base, BaseModel, blackjack_action(), blackjack_start(), BlackjackActionRequest, BlackjackStartRequest, _card_value() (+30 more)
 
-### Community 3 - "Frontend App Types"
+### Community 3 - "Community 3"
 Cohesion: 0.13
 Nodes (37): adminAction(), adminResolve(), api(), apiForm(), bjAction(), bjStart(), changeAvatar(), claimChallenge() (+29 more)
 
-### Community 4 - "Gamification & Badges"
+### Community 4 - "Community 4"
 Cohesion: 0.13
 Nodes (13): canContinueStreak(), GamificationService, getCurrentTier(), getDailyBase(), getErrorDetails(), getNextTier(), getRankScore(), getStreakBonus() (+5 more)
 
-### Community 5 - "Blackjack Game Engine"
+### Community 5 - "Community 5"
 Cohesion: 0.2
 Nodes (9): BlackjackService, buildDeck(), canOfferInsurance(), deckFactory(), formatSplitHands(), generateGameId(), getBlackjackValue(), handTotal() (+1 more)
 
-### Community 6 - "Events Controller"
+### Community 6 - "Community 6"
 Cohesion: 0.18
 Nodes (22): approveProposalController(), cancelEventController(), closeEventController(), createEventController(), createProposalController(), getAuthenticatedUserId(), getEventController(), getEventOddsHistoryController() (+14 more)
 
-### Community 7 - "Architecture & Docs"
+### Community 7 - "Community 7"
 Cohesion: 0.1
 Nodes (26): REST API Endpoint Definitions, Database ERD (users, events, bets, casino_games, badges, admin_logs), Materialized View: v_leaderboard (refreshed every 5 min), Banwords Content Filter List, Jackpot Degraded-Mode Handling, JackpotRound and JackpotEntry Tables, Debug Report: SIG-15 Backend Stabilization, API Routes Reference (+18 more)
 
-### Community 8 - "Casino Controller"
+### Community 8 - "Community 8"
 Cohesion: 0.17
 Nodes (22): blackjackCurrentController(), blackjackDealController(), blackjackDeclineInsuranceController(), blackjackDoubleController(), blackjackHitController(), blackjackInsuranceController(), blackjackSplitController(), blackjackStandController() (+14 more)
 
-### Community 9 - "Admin Events UI"
+### Community 9 - "Community 9"
 Cohesion: 0.16
 Nodes (16): applyEventToForm(), applyProposalToForm(), buildProbabilityRowsFromEvent(), calculateProbabilityTotal(), createDefaultProbabilityRows(), createProbabilityRow(), normalizeProbabilityRows(), refreshAdminUserData() (+8 more)
 
-### Community 10 - "Roulette Visual Engine"
+### Community 10 - "Community 10"
 Cohesion: 0.15
 Nodes (3): createAnnularSegmentPath(), polarPoint(), RouletteEngine
 
-### Community 11 - "Project Infrastructure"
+### Community 11 - "Community 11"
 Cohesion: 0.12
 Nodes (21): Global 3-Tier Architecture (Client → Vercel → Supabase), Default User Avatar SVG (dark circle, cyan head, amber arc), Graphify Integration Rules for SIGambling, Deleted Legacy Files (91 files, ~9800 lines), Cleanup: Legacy Code Removal, Site Favicon, Actual Infrastructure: Vercel + VM Ubuntu/Proxmox + Cloudflare Tunnel, PROJECT_MEMORY: Living Documentation (+13 more)
 
-### Community 12 - "Roulette Bet Logic"
+### Community 12 - "Community 12"
 Cohesion: 0.27
 Nodes (16): calculatePayout(), createBet(), getBetDisplayPosition(), getBetLabel(), getBetMultiplierLabel(), getBoardGridCellPosition(), getGridCellCoordinates(), getMultiplier() (+8 more)
 
-### Community 13 - "Ride The Bus Game"
+### Community 13 - "Community 13"
 Cohesion: 0.31
 Nodes (7): calcStep2Multipliers(), calcStep3Multipliers(), createDeck(), drawTop(), RidetheBusService, safeMultiplier(), shuffle()
 
-### Community 14 - "Jackpot System"
+### Community 14 - "Community 14"
+Cohesion: 0.21
+Nodes (11): adjustUserBalanceController(), getAuthenticatedUserId(), getCurrentUserController(), listCurrentUserEventBetsController(), resetChatPreferencesController(), unlockUserBadgeController(), updateChatPreferencesController(), updateCurrentUserController() (+3 more)
+
+### Community 15 - "Community 15"
 Cohesion: 0.32
 Nodes (7): buildUnavailableJackpotState(), getErrorDetails(), isJackpotStorageUnavailable(), isPrismaErrorLike(), JackpotService, logJackpotStorageFallback(), stringifyPrismaMeta()
 
-### Community 15 - "Python Events API"
+### Community 16 - "Community 16"
 Cohesion: 0.24
 Nodes (11): _bet_dict(), _compute_odds(), create_event(), _event_dict(), get_event(), list_events(), my_bets(), pending_events() (+3 more)
 
-### Community 16 - "User Service"
+### Community 17 - "Community 17"
 Cohesion: 0.2
 Nodes (2): serializeAdminUserSummary(), UserService
 
-### Community 17 - "User Controller"
-Cohesion: 0.24
-Nodes (10): adjustUserBalanceController(), getAuthenticatedUserId(), getCurrentUserController(), listCurrentUserEventBetsController(), resetChatPreferencesController(), unlockUserBadgeController(), updateChatPreferencesController(), updateCurrentUserController() (+2 more)
-
-### Community 18 - "HiLo Card Game"
+### Community 18 - "Community 18"
 Cohesion: 0.35
 Nodes (7): calcMultiplier(), drawRandomCard(), getActiveSession(), getMultipliers(), HiloService, isSessionExpired(), makeEntry()
 
-### Community 19 - "Roulette Bet Types"
+### Community 19 - "Community 19"
 Cohesion: 0.41
 Nodes (7): isCornerBetType(), isSixlineBetType(), isSplitBetType(), isStraightBetType(), isStreetBetType(), parseBetNumbers(), RouletteService
 
-### Community 20 - "Mines Game Service"
+### Community 20 - "Community 20"
 Cohesion: 0.36
 Nodes (6): getActiveSession(), getMinesMultiplier(), getNextMultiplier(), isSessionExpired(), MinesService, placeMines()
 
-### Community 21 - "Chat Panel UI"
+### Community 21 - "Community 21"
 Cohesion: 0.22
 Nodes (3): clientRateLimitOk(), handleKeyDown(), handleSend()
 
-### Community 22 - "Result Overlay Canvas"
+### Community 22 - "Community 22"
 Cohesion: 0.25
 Nodes (1): ResultOverlay
 
-### Community 23 - "Python Auth Routes"
+### Community 23 - "Community 23"
 Cohesion: 0.36
 Nodes (7): add_xp(), login(), me(), register(), _seed_daily_challenges(), _user_dict(), xp_for_level()
 
-### Community 24 - "Discord Notifications"
+### Community 24 - "Community 24"
 Cohesion: 0.42
 Nodes (6): buildDiscordContent(), buildEventUrl(), buildRoleMention(), DiscordService, postJson(), truncate()
 
-### Community 25 - "Auth Service"
+### Community 25 - "Community 25"
 Cohesion: 0.28
 Nodes (2): AuthService, getMicrosoftEmail()
 
-### Community 26 - "Bet Cart Drawer"
+### Community 26 - "Community 26"
 Cohesion: 0.39
 Nodes (5): confirmOddsChange(), invalidateBetQueries(), submitParlay(), submitSimple(), syncOddsFromConflict()
 
-### Community 27 - "Sound Manager"
+### Community 27 - "Community 27"
 Cohesion: 0.33
 Nodes (1): SoundManager
 
-### Community 28 - "Pseudo Generator"
+### Community 28 - "Community 28"
 Cohesion: 0.46
 Nodes (6): buildPseudoFromEpitaEmail(), ensurePseudoLength(), ensureUniquePseudo(), normalizePseudo(), stripUnsafePseudoChars(), truncatePseudo()
 
-### Community 29 - "Chat Service"
+### Community 29 - "Community 29"
 Cohesion: 0.32
 Nodes (3): broadcastMessage(), checkRateLimit(), sendMessage()
 
-### Community 30 - "Win History Service"
+### Community 30 - "Community 30"
 Cohesion: 0.36
 Nodes (6): formatRouletteDetail(), getUserWins(), mapBetToWin(), mapCasinoToWin(), sortWins(), truncate()
 
-### Community 31 - "Gamification Controller"
+### Community 31 - "Community 31"
 Cohesion: 0.43
 Nodes (6): claimBadgeRewardController(), claimDailyRewardController(), getAuthenticatedUserId(), getMyGamificationStateController(), getMyJackpotStateController(), getMyLeaderboardController()
 
-### Community 32 - "Admin Config Controller"
+### Community 32 - "Community 32"
 Cohesion: 0.38
 Nodes (3): getAuthenticatedUserId(), setFeatureFlagsConfig(), setMaintenanceConfig()
 
-### Community 33 - "Python Auth Utils"
+### Community 33 - "Community 33"
 Cohesion: 0.33
 Nodes (0): 
 
-### Community 34 - "CORS Security Config"
+### Community 34 - "Community 34"
 Cohesion: 0.47
 Nodes (3): getCorsAllowedOrigins(), normalizeOrigin(), parseOriginList()
 
-### Community 35 - "JWT Utilities"
+### Community 35 - "Community 35"
 Cohesion: 0.47
 Nodes (3): buildPayload(), signAccessToken(), signRefreshToken()
 
-### Community 36 - "Roulette Betting Grid"
+### Community 36 - "Community 36"
 Cohesion: 0.33
 Nodes (0): 
 
-### Community 37 - "Event Format Utils"
+### Community 37 - "Community 37"
 Cohesion: 0.33
 Nodes (0): 
 
-### Community 38 - "Python App Entry"
+### Community 38 - "Community 38"
+Cohesion: 0.33
+Nodes (0): 
+
+### Community 39 - "Community 39"
 Cohesion: 0.5
 Nodes (2): _seed_data(), startup()
 
-### Community 39 - "Email Notifications"
+### Community 40 - "Community 40"
 Cohesion: 0.7
 Nodes (4): notify_admin_new_event(), notify_user_event_approved(), notify_user_event_rejected(), send_email()
 
-### Community 40 - "Event Service Tests"
+### Community 41 - "Community 41"
 Cohesion: 0.6
 Nodes (3): buildAdminEvent(), buildEventRecord(), buildStoredOptions()
 
-### Community 41 - "Feature Flags Middleware"
+### Community 42 - "Community 42"
 Cohesion: 0.6
 Nodes (3): featureFlagsMiddleware(), getFeatureFlagValues(), isAdmin()
 
-### Community 42 - "Maintenance Middleware"
+### Community 43 - "Community 43"
 Cohesion: 0.6
 Nodes (3): getMaintenanceModeValue(), isBypassed(), maintenanceMiddleware()
 
-### Community 43 - "Badges Config"
+### Community 44 - "Community 44"
 Cohesion: 0.7
 Nodes (4): getBadgeConfig(), getBadgeRarity(), getBadgeReward(), getBadgeVisibility()
 
-### Community 44 - "OAuth State Utils"
+### Community 45 - "Community 45"
 Cohesion: 0.5
 Nodes (2): getMicrosoftOAuthStateCookieOptions(), issueMicrosoftOAuthState()
 
-### Community 45 - "Storage Service"
+### Community 46 - "Community 46"
 Cohesion: 0.4
 Nodes (1): StorageService
 
-### Community 46 - "Microsoft OAuth Controller"
+### Community 47 - "Community 47"
 Cohesion: 0.4
 Nodes (0): 
 
-### Community 47 - "Admin Statistics"
+### Community 48 - "Community 48"
 Cohesion: 0.5
 Nodes (2): formatVolume(), getStatisticsOverview()
 
-### Community 48 - "Error Boundary"
+### Community 49 - "Community 49"
 Cohesion: 0.4
 Nodes (1): AppErrorBoundary
 
-### Community 49 - "Events Markets Page"
+### Community 50 - "Community 50"
 Cohesion: 0.5
 Nodes (2): submitProposal(), toErrorMessage()
 
-### Community 50 - "Wins History Page"
+### Community 51 - "Community 51"
 Cohesion: 0.4
 Nodes (0): 
 
-### Community 51 - "Python Config"
+### Community 52 - "Community 52"
 Cohesion: 0.5
 Nodes (3): BaseSettings, Config, Settings
 
-### Community 52 - "Roulette RNG"
+### Community 53 - "Community 53"
 Cohesion: 0.67
 Nodes (2): generateRandomNumber(), spinRoulette()
 
-### Community 53 - "Banword Filter"
+### Community 54 - "Community 54"
 Cohesion: 0.67
 Nodes (2): containsBanword(), normalize()
 
-### Community 54 - "Wins Controller"
+### Community 55 - "Community 55"
 Cohesion: 0.83
 Nodes (3): getAuthenticatedUserId(), getMyWinsController(), shareWinController()
 
-### Community 55 - "Database Seed"
+### Community 56 - "Community 56"
 Cohesion: 0.83
 Nodes (3): buildPoolByOption(), main(), toJsonOptions()
 
-### Community 56 - "Frontend Router"
+### Community 57 - "Community 57"
 Cohesion: 0.5
 Nodes (0): 
 
-### Community 57 - "Bet Drawer"
+### Community 58 - "Community 58"
 Cohesion: 0.83
 Nodes (3): confirmOddsChange(), invalidateBetQueries(), submitBet()
 
-### Community 58 - "Odds History Chart"
+### Community 59 - "Community 59"
 Cohesion: 0.5
 Nodes (0): 
 
-### Community 59 - "Roulette Bet Grid UI"
+### Community 60 - "Community 60"
 Cohesion: 0.5
 Nodes (0): 
 
-### Community 60 - "Blackjack Game UI"
+### Community 61 - "Community 61"
 Cohesion: 0.5
 Nodes (0): 
 
-### Community 61 - "Admin Statistics Tab"
+### Community 62 - "Community 62"
 Cohesion: 0.5
 Nodes (0): 
 
-### Community 62 - "Rewards Page"
+### Community 63 - "Community 63"
 Cohesion: 0.5
 Nodes (0): 
 
-### Community 63 - "Bet History Page"
+### Community 64 - "Community 64"
 Cohesion: 0.5
 Nodes (0): 
 
-### Community 64 - "Login Page"
+### Community 65 - "Community 65"
 Cohesion: 0.5
 Nodes (0): 
 
-### Community 65 - "Casino Page"
+### Community 66 - "Community 66"
 Cohesion: 0.5
 Nodes (0): 
 
-### Community 66 - "Admin Statistics Page"
+### Community 67 - "Community 67"
 Cohesion: 0.5
 Nodes (0): 
 
-### Community 67 - "Python Database"
+### Community 68 - "Community 68"
+Cohesion: 0.5
+Nodes (0): 
+
+### Community 69 - "Community 69"
 Cohesion: 0.67
 Nodes (0): 
 
-### Community 68 - "Auth Service Tests"
+### Community 70 - "Community 70"
 Cohesion: 0.67
 Nodes (0): 
 
-### Community 69 - "Gamification Tests"
+### Community 71 - "Community 71"
 Cohesion: 0.67
 Nodes (0): 
 
-### Community 70 - "Blackjack Tests"
+### Community 72 - "Community 72"
 Cohesion: 0.67
 Nodes (0): 
 
-### Community 71 - "Integration Tests"
+### Community 73 - "Community 73"
 Cohesion: 0.67
 Nodes (0): 
 
-### Community 72 - "Env Validation Script"
+### Community 74 - "Community 74"
 Cohesion: 0.67
 Nodes (0): 
 
-### Community 73 - "User Routes"
+### Community 75 - "Community 75"
 Cohesion: 0.67
 Nodes (0): 
 
-### Community 74 - "App Error Utils"
+### Community 76 - "Community 76"
 Cohesion: 0.67
 Nodes (1): AppError
 
-### Community 75 - "Active Event Bets List"
+### Community 77 - "Community 77"
 Cohesion: 0.67
 Nodes (0): 
 
-### Community 76 - "Event Card Component"
+### Community 78 - "Community 78"
 Cohesion: 0.67
 Nodes (0): 
 
-### Community 77 - "Roulette Wheel UI"
+### Community 79 - "Community 79"
 Cohesion: 0.67
 Nodes (0): 
 
-### Community 78 - "Mines Grid UI"
+### Community 80 - "Community 80"
 Cohesion: 0.67
 Nodes (0): 
 
-### Community 79 - "Chat Message Component"
+### Community 81 - "Community 81"
 Cohesion: 0.67
 Nodes (0): 
 
-### Community 80 - "Frontend Utils"
+### Community 82 - "Community 82"
 Cohesion: 0.67
 Nodes (0): 
 
-### Community 81 - "Jackpot Page"
+### Community 83 - "Community 83"
 Cohesion: 0.67
 Nodes (0): 
 
-### Community 82 - "Leaderboard Page"
+### Community 84 - "Community 84"
 Cohesion: 0.67
 Nodes (0): 
 
-### Community 83 - "Dashboard Page"
+### Community 85 - "Community 85"
 Cohesion: 0.67
 Nodes (0): 
 
-### Community 84 - "Gamification State Hook"
+### Community 86 - "Community 86"
 Cohesion: 0.67
 Nodes (0): 
 
-### Community 85 - "Theme Store"
+### Community 87 - "Community 87"
 Cohesion: 0.67
 Nodes (0): 
 
-### Community 86 - "Backend Tests Pseudo"
+### Community 88 - "Community 88"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 87 - "Backend Scripts Backfill"
+### Community 89 - "Community 89"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 88 - "App Createapp"
+### Community 90 - "Community 90"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 89 - "Middleware Validate Ts"
+### Community 91 - "Community 91"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 90 - "Middleware Error Handler"
+### Community 92 - "Community 92"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 91 - "Middleware Not Found"
+### Community 93 - "Community 93"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 92 - "Middleware Require Auth"
+### Community 94 - "Community 94"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 93 - "Middleware Require Role"
+### Community 95 - "Community 95"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 94 - "Middleware Request Logger"
+### Community 96 - "Community 96"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 95 - "Config Env Ts"
+### Community 97 - "Community 97"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 96 - "Config Passport Ts"
+### Community 98 - "Community 98"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 97 - "Routes Events Routes"
+### Community 99 - "Community 99"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 98 - "Routes Chat Routes"
+### Community 100 - "Community 100"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 99 - "Utils Cron Ts"
+### Community 101 - "Community 101"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 100 - "Utils User Serializer"
+### Community 102 - "Community 102"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 101 - "Schemas Events Schemas"
+### Community 103 - "Community 103"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 102 - "Types Passport Microsoft"
+### Community 104 - "Community 104"
 Cohesion: 1.0
 Nodes (1): Strategy
 
-### Community 103 - "Controllers Health Controller"
+### Community 105 - "Community 105"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 104 - "Dashboardshell Cn"
+### Community 106 - "Community 106"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 105 - "Components Layout Loadingscreen"
+### Community 107 - "Community 107"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 106 - "Components Casino Hilohistory"
+### Community 108 - "Community 108"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 107 - "Components Casino Hilocard"
+### Community 109 - "Community 109"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 108 - "Components Casino Ridethebusgame"
+### Community 110 - "Community 110"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 109 - "Components Casino Roulettestats"
+### Community 111 - "Community 111"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 110 - "Components Casino Minesgame"
+### Community 112 - "Community 112"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 111 - "Components Casino Roulettechip"
+### Community 113 - "Community 113"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 112 - "Components Casino Mines"
+### Community 114 - "Community 114"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 113 - "Components Casino Mines"
+### Community 115 - "Community 115"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 114 - "Components Chat Mentiondropdown"
+### Community 116 - "Community 116"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 115 - "Badgecard Badgecard"
+### Community 117 - "Community 117"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 116 - "Button Button"
+### Community 118 - "Community 118"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 117 - "Card Card"
+### Community 119 - "Community 119"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 118 - "Fogeffect Fogeffect"
+### Community 120 - "Community 120"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 119 - "Lib Notifications Ts"
+### Community 121 - "Community 121"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 120 - "Eventsdisabledpage Eventsdisabledpage"
+### Community 122 - "Community 122"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 121 - "Pages Maintenancepage Tsx"
+### Community 123 - "Community 123"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 122 - "Authcallbackpage Authcallbackpage"
+### Community 124 - "Community 124"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 123 - "Accountprofilepage Profilepage"
+### Community 125 - "Community 125"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 124 - "Eventdetailpage Handlelogout"
+### Community 126 - "Community 126"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 125 - "Routes Protectedroute Tsx"
+### Community 127 - "Community 127"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 126 - "Hooks Useminesgame Ts"
+### Community 128 - "Community 128"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 127 - "Hooks Useauthenticateduser Ts"
+### Community 129 - "Community 129"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 128 - "Hooks Useridethebusgame Ts"
+### Community 130 - "Community 130"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 129 - "Hooks Usechatstream Ts"
+### Community 131 - "Community 131"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 130 - "Hooks Usesessionbootstrap Ts"
+### Community 132 - "Community 132"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 131 - "Hooks Usehilogame Ts"
+### Community 133 - "Community 133"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 132 - "Auth Store Purgelegacyauthstorage"
+### Community 134 - "Community 134"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 133 - "Start Py"
+### Community 135 - "Community 135"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 134 - "Backend Tests Security"
+### Community 136 - "Community 136"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 135 - "Backend Routers Init"
+### Community 137 - "Community 137"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 136 - "Index Ts"
+### Community 138 - "Community 138"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 137 - "Lib Prisma Ts"
+### Community 139 - "Community 139"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 138 - "Routes Public Config"
+### Community 140 - "Community 140"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 139 - "Routes Casino Routes"
+### Community 141 - "Community 141"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 140 - "Routes Gamification Routes"
+### Community 142 - "Community 142"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 141 - "Routes Auth Routes"
+### Community 143 - "Community 143"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 142 - "Routes Admin Routes"
+### Community 144 - "Community 144"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 143 - "Routes Admin Config"
+### Community 145 - "Community 145"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 144 - "Routes Health Routes"
+### Community 146 - "Community 146"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 145 - "Utils Logger Ts"
+### Community 147 - "Community 147"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 146 - "Schemas Casino Schemas"
+### Community 148 - "Community 148"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 147 - "Schemas Wins Schemas"
+### Community 149 - "Community 149"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 148 - "Schemas Auth Schemas"
+### Community 150 - "Community 150"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 149 - "Schemas User Schemas"
+### Community 151 - "Community 151"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 150 - "Services Prisma Service"
+### Community 152 - "Community 152"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 151 - "Types Upload Ts"
+### Community 153 - "Community 153"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 152 - "Types Express D"
+### Community 154 - "Community 154"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 153 - "Types Auth Ts"
+### Community 155 - "Community 155"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 154 - "Frontend Tailwind Config"
+### Community 156 - "Community 156"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 155 - "Frontend Vite Config"
+### Community 157 - "Community 157"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 156 - "Main Tsx"
+### Community 158 - "Community 158"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 157 - "Vite Env D"
+### Community 159 - "Community 159"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 158 - "Components Oddschangemodal Tsx"
+### Community 160 - "Community 160"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 159 - "Components Casino Hilogame"
+### Community 161 - "Community 161"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 160 - "Components Casino Roulettehistory"
+### Community 162 - "Community 162"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 161 - "Components Casino Roulettegame"
+### Community 163 - "Community 163"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 162 - "Components Casino Roulettecontrols"
+### Community 164 - "Community 164"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 163 - "Components Ui Winpopup"
+### Community 165 - "Community 165"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 164 - "Components Ui Themetoggle"
+### Community 166 - "Community 166"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 165 - "Components Ui Modal"
+### Community 167 - "Community 167"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 166 - "Components Ui Input"
+### Community 168 - "Community 168"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 167 - "Lib Sounds Ts"
+### Community 169 - "Community 169"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 168 - "Lib Casino Rouletteconstants"
+### Community 170 - "Community 170"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 169 - "Types Gamification Ts"
+### Community 171 - "Community 171"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 170 - "Types Blackjack Ts"
+### Community 172 - "Community 172"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 171 - "Types Roulette Ts"
+### Community 173 - "Community 173"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 172 - "Types Ride The"
+### Community 174 - "Community 174"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 173 - "Types Auth Ts"
+### Community 175 - "Community 175"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 174 - "Types Mines Ts"
+### Community 176 - "Community 176"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 175 - "Types Event Ts"
+### Community 177 - "Community 177"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 176 - "Types Hilo Ts"
+### Community 178 - "Community 178"
 Cohesion: 1.0
 Nodes (0): 
 
-### Community 177 - "Store Chat Store"
-Cohesion: 1.0
-Nodes (0): 
-
-### Community 178 - "Store Bet Cart"
+### Community 179 - "Community 179"
 Cohesion: 1.0
 Nodes (0): 
 
 ## Knowledge Gaps
 - **17 isolated node(s):** `Config`, `Strategy`, `Casino Client-Side Logic Library`, `Deleted Legacy Files (91 files, ~9800 lines)`, `Legacy FastAPI Python Requirements` (+12 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **Thin community `Backend Tests Pseudo`** (2 nodes): `pseudo.test.ts`, `stubProperty()`
+- **Thin community `Community 88`** (2 nodes): `pseudo.test.ts`, `stubProperty()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Backend Scripts Backfill`** (2 nodes): `backfill-jackpot-total.ts`, `main()`
+- **Thin community `Community 89`** (2 nodes): `backfill-jackpot-total.ts`, `main()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `App Createapp`** (2 nodes): `createApp()`, `app.ts`
+- **Thin community `Community 90`** (2 nodes): `createApp()`, `app.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Middleware Validate Ts`** (2 nodes): `validate.ts`, `validateBody()`
+- **Thin community `Community 91`** (2 nodes): `validate.ts`, `validateBody()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Middleware Error Handler`** (2 nodes): `error-handler.ts`, `errorHandler()`
+- **Thin community `Community 92`** (2 nodes): `error-handler.ts`, `errorHandler()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Middleware Not Found`** (2 nodes): `not-found.ts`, `notFoundHandler()`
+- **Thin community `Community 93`** (2 nodes): `not-found.ts`, `notFoundHandler()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Middleware Require Auth`** (2 nodes): `require-auth.ts`, `requireAuth()`
+- **Thin community `Community 94`** (2 nodes): `require-auth.ts`, `requireAuth()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Middleware Require Role`** (2 nodes): `require-role.ts`, `requireRole()`
+- **Thin community `Community 95`** (2 nodes): `require-role.ts`, `requireRole()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Middleware Request Logger`** (2 nodes): `request-logger.ts`, `requestLogger()`
+- **Thin community `Community 96`** (2 nodes): `request-logger.ts`, `requestLogger()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Config Env Ts`** (2 nodes): `env.ts`, `emptyStringToUndefined()`
+- **Thin community `Community 97`** (2 nodes): `env.ts`, `emptyStringToUndefined()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Config Passport Ts`** (2 nodes): `passport.ts`, `configurePassport()`
+- **Thin community `Community 98`** (2 nodes): `passport.ts`, `configurePassport()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Routes Events Routes`** (2 nodes): `events.routes.ts`, `uploadEventImageMiddleware()`
+- **Thin community `Community 99`** (2 nodes): `events.routes.ts`, `uploadEventImageMiddleware()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Routes Chat Routes`** (2 nodes): `chat.routes.ts`, `cleanup()`
+- **Thin community `Community 100`** (2 nodes): `chat.routes.ts`, `cleanup()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Utils Cron Ts`** (2 nodes): `cron.ts`, `startCronJobs()`
+- **Thin community `Community 101`** (2 nodes): `cron.ts`, `startCronJobs()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Utils User Serializer`** (2 nodes): `user-serializer.ts`, `serializeUser()`
+- **Thin community `Community 102`** (2 nodes): `user-serializer.ts`, `serializeUser()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Schemas Events Schemas`** (2 nodes): `events.schemas.ts`, `trimString()`
+- **Thin community `Community 103`** (2 nodes): `events.schemas.ts`, `trimString()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Types Passport Microsoft`** (2 nodes): `passport-microsoft.d.ts`, `Strategy`
+- **Thin community `Community 104`** (2 nodes): `passport-microsoft.d.ts`, `Strategy`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Controllers Health Controller`** (2 nodes): `health.controller.ts`, `healthController()`
+- **Thin community `Community 105`** (2 nodes): `health.controller.ts`, `healthController()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Dashboardshell Cn`** (2 nodes): `cn()`, `DashboardShell.tsx`
+- **Thin community `Community 106`** (2 nodes): `cn()`, `DashboardShell.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Components Layout Loadingscreen`** (2 nodes): `LoadingScreen.tsx`, `LoadingScreen()`
+- **Thin community `Community 107`** (2 nodes): `LoadingScreen.tsx`, `LoadingScreen()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Components Casino Hilohistory`** (2 nodes): `HiloHistory.tsx`, `HiloHistory()`
+- **Thin community `Community 108`** (2 nodes): `HiloHistory.tsx`, `HiloHistory()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Components Casino Hilocard`** (2 nodes): `HiloCard.tsx`, `getValueLabel()`
+- **Thin community `Community 109`** (2 nodes): `HiloCard.tsx`, `getValueLabel()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Components Casino Ridethebusgame`** (2 nodes): `RideTheBusGame.tsx`, `handler()`
+- **Thin community `Community 110`** (2 nodes): `RideTheBusGame.tsx`, `handler()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Components Casino Roulettestats`** (2 nodes): `RouletteStats.tsx`, `NumberPill()`
+- **Thin community `Community 111`** (2 nodes): `RouletteStats.tsx`, `NumberPill()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Components Casino Minesgame`** (2 nodes): `MinesGame.tsx`, `MinesGame()`
+- **Thin community `Community 112`** (2 nodes): `MinesGame.tsx`, `MinesGame()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Components Casino Roulettechip`** (2 nodes): `RouletteChip.tsx`, `RouletteChip()`
+- **Thin community `Community 113`** (2 nodes): `RouletteChip.tsx`, `RouletteChip()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Components Casino Mines`** (2 nodes): `MinesSidebar.tsx`, `handleBetInput()`
+- **Thin community `Community 114`** (2 nodes): `MinesSidebar.tsx`, `handleBetInput()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Components Casino Mines`** (2 nodes): `MinesCell.tsx`, `GemIcon()`
+- **Thin community `Community 115`** (2 nodes): `MinesCell.tsx`, `GemIcon()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Components Chat Mentiondropdown`** (2 nodes): `MentionDropdown.tsx`, `fetchMentionUsers()`
+- **Thin community `Community 116`** (2 nodes): `MentionDropdown.tsx`, `fetchMentionUsers()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Badgecard Badgecard`** (2 nodes): `BadgeCard()`, `BadgeCard.tsx`
+- **Thin community `Community 117`** (2 nodes): `BadgeCard()`, `BadgeCard.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Button Button`** (2 nodes): `Button()`, `Button.tsx`
+- **Thin community `Community 118`** (2 nodes): `Button()`, `Button.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Card Card`** (2 nodes): `Card()`, `Card.tsx`
+- **Thin community `Community 119`** (2 nodes): `Card()`, `Card.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Fogeffect Fogeffect`** (2 nodes): `FogEffect()`, `FogEffect.tsx`
+- **Thin community `Community 120`** (2 nodes): `FogEffect()`, `FogEffect.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Lib Notifications Ts`** (2 nodes): `notifications.ts`, `getErrorMessage()`
+- **Thin community `Community 121`** (2 nodes): `notifications.ts`, `getErrorMessage()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Eventsdisabledpage Eventsdisabledpage`** (2 nodes): `EventsDisabledPage()`, `EventsDisabledPage.tsx`
+- **Thin community `Community 122`** (2 nodes): `EventsDisabledPage()`, `EventsDisabledPage.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Pages Maintenancepage Tsx`** (2 nodes): `MaintenancePage.tsx`, `MaintenancePage()`
+- **Thin community `Community 123`** (2 nodes): `MaintenancePage.tsx`, `MaintenancePage()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Authcallbackpage Authcallbackpage`** (2 nodes): `AuthCallbackPage()`, `AuthCallbackPage.tsx`
+- **Thin community `Community 124`** (2 nodes): `AuthCallbackPage()`, `AuthCallbackPage.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Accountprofilepage Profilepage`** (2 nodes): `ProfilePage()`, `AccountProfilePage.tsx`
+- **Thin community `Community 125`** (2 nodes): `handleLogout()`, `EventDetailPage.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Eventdetailpage Handlelogout`** (2 nodes): `handleLogout()`, `EventDetailPage.tsx`
+- **Thin community `Community 126`** (2 nodes): `ProtectedRoute.tsx`, `ProtectedRoute()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Routes Protectedroute Tsx`** (2 nodes): `ProtectedRoute.tsx`, `ProtectedRoute()`
+- **Thin community `Community 127`** (2 nodes): `useMinesGame.ts`, `useMinesGame()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Hooks Useminesgame Ts`** (2 nodes): `useMinesGame.ts`, `useMinesGame()`
+- **Thin community `Community 128`** (2 nodes): `useAuthenticatedUser.ts`, `useAuthenticatedUser()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Hooks Useauthenticateduser Ts`** (2 nodes): `useAuthenticatedUser.ts`, `useAuthenticatedUser()`
+- **Thin community `Community 129`** (2 nodes): `useRideTheBusGame.ts`, `useRideTheBusGame()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Hooks Useridethebusgame Ts`** (2 nodes): `useRideTheBusGame.ts`, `useRideTheBusGame()`
+- **Thin community `Community 130`** (2 nodes): `useChatStream.ts`, `useChatStream()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Hooks Usechatstream Ts`** (2 nodes): `useChatStream.ts`, `useChatStream()`
+- **Thin community `Community 131`** (2 nodes): `useSessionBootstrap.ts`, `useSessionBootstrap()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Hooks Usesessionbootstrap Ts`** (2 nodes): `useSessionBootstrap.ts`, `useSessionBootstrap()`
+- **Thin community `Community 132`** (2 nodes): `useHiloGame.ts`, `useHiloGame()`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Hooks Usehilogame Ts`** (2 nodes): `useHiloGame.ts`, `useHiloGame()`
+- **Thin community `Community 133`** (2 nodes): `purgeLegacyAuthStorage()`, `auth-store.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Auth Store Purgelegacyauthstorage`** (2 nodes): `purgeLegacyAuthStorage()`, `auth-store.ts`
+- **Thin community `Community 134`** (1 nodes): `start.py`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Start Py`** (1 nodes): `start.py`
+- **Thin community `Community 135`** (1 nodes): `security.test.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Backend Tests Security`** (1 nodes): `security.test.ts`
+- **Thin community `Community 136`** (1 nodes): `__init__.py`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Backend Routers Init`** (1 nodes): `__init__.py`
+- **Thin community `Community 137`** (1 nodes): `index.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Index Ts`** (1 nodes): `index.ts`
+- **Thin community `Community 138`** (1 nodes): `prisma.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Lib Prisma Ts`** (1 nodes): `prisma.ts`
+- **Thin community `Community 139`** (1 nodes): `public.config.routes.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Routes Public Config`** (1 nodes): `public.config.routes.ts`
+- **Thin community `Community 140`** (1 nodes): `casino.routes.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Routes Casino Routes`** (1 nodes): `casino.routes.ts`
+- **Thin community `Community 141`** (1 nodes): `gamification.routes.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Routes Gamification Routes`** (1 nodes): `gamification.routes.ts`
+- **Thin community `Community 142`** (1 nodes): `auth.routes.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Routes Auth Routes`** (1 nodes): `auth.routes.ts`
+- **Thin community `Community 143`** (1 nodes): `admin.routes.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Routes Admin Routes`** (1 nodes): `admin.routes.ts`
+- **Thin community `Community 144`** (1 nodes): `admin.config.routes.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Routes Admin Config`** (1 nodes): `admin.config.routes.ts`
+- **Thin community `Community 145`** (1 nodes): `health.routes.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Routes Health Routes`** (1 nodes): `health.routes.ts`
+- **Thin community `Community 146`** (1 nodes): `logger.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Utils Logger Ts`** (1 nodes): `logger.ts`
+- **Thin community `Community 147`** (1 nodes): `casino.schemas.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Schemas Casino Schemas`** (1 nodes): `casino.schemas.ts`
+- **Thin community `Community 148`** (1 nodes): `wins.schemas.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Schemas Wins Schemas`** (1 nodes): `wins.schemas.ts`
+- **Thin community `Community 149`** (1 nodes): `auth.schemas.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Schemas Auth Schemas`** (1 nodes): `auth.schemas.ts`
+- **Thin community `Community 150`** (1 nodes): `user.schemas.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Schemas User Schemas`** (1 nodes): `user.schemas.ts`
+- **Thin community `Community 151`** (1 nodes): `prisma.service.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Services Prisma Service`** (1 nodes): `prisma.service.ts`
+- **Thin community `Community 152`** (1 nodes): `upload.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Types Upload Ts`** (1 nodes): `upload.ts`
+- **Thin community `Community 153`** (1 nodes): `express.d.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Types Express D`** (1 nodes): `express.d.ts`
+- **Thin community `Community 154`** (1 nodes): `auth.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Types Auth Ts`** (1 nodes): `auth.ts`
+- **Thin community `Community 155`** (1 nodes): `tailwind.config.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Frontend Tailwind Config`** (1 nodes): `tailwind.config.ts`
+- **Thin community `Community 156`** (1 nodes): `vite.config.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Frontend Vite Config`** (1 nodes): `vite.config.ts`
+- **Thin community `Community 157`** (1 nodes): `main.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Main Tsx`** (1 nodes): `main.tsx`
+- **Thin community `Community 158`** (1 nodes): `vite-env.d.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Vite Env D`** (1 nodes): `vite-env.d.ts`
+- **Thin community `Community 159`** (1 nodes): `OddsChangeModal.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Components Oddschangemodal Tsx`** (1 nodes): `OddsChangeModal.tsx`
+- **Thin community `Community 160`** (1 nodes): `HiloGame.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Components Casino Hilogame`** (1 nodes): `HiloGame.tsx`
+- **Thin community `Community 161`** (1 nodes): `RouletteHistory.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Components Casino Roulettehistory`** (1 nodes): `RouletteHistory.tsx`
+- **Thin community `Community 162`** (1 nodes): `RouletteGame.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Components Casino Roulettegame`** (1 nodes): `RouletteGame.tsx`
+- **Thin community `Community 163`** (1 nodes): `RouletteControls.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Components Casino Roulettecontrols`** (1 nodes): `RouletteControls.tsx`
+- **Thin community `Community 164`** (1 nodes): `WinPopup.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Components Ui Winpopup`** (1 nodes): `WinPopup.tsx`
+- **Thin community `Community 165`** (1 nodes): `ThemeToggle.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Components Ui Themetoggle`** (1 nodes): `ThemeToggle.tsx`
+- **Thin community `Community 166`** (1 nodes): `Modal.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Components Ui Modal`** (1 nodes): `Modal.tsx`
+- **Thin community `Community 167`** (1 nodes): `Input.tsx`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Components Ui Input`** (1 nodes): `Input.tsx`
+- **Thin community `Community 168`** (1 nodes): `sounds.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Lib Sounds Ts`** (1 nodes): `sounds.ts`
+- **Thin community `Community 169`** (1 nodes): `rouletteConstants.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Lib Casino Rouletteconstants`** (1 nodes): `rouletteConstants.ts`
+- **Thin community `Community 170`** (1 nodes): `gamification.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Types Gamification Ts`** (1 nodes): `gamification.ts`
+- **Thin community `Community 171`** (1 nodes): `blackjack.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Types Blackjack Ts`** (1 nodes): `blackjack.ts`
+- **Thin community `Community 172`** (1 nodes): `roulette.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Types Roulette Ts`** (1 nodes): `roulette.ts`
+- **Thin community `Community 173`** (1 nodes): `ride-the-bus.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Types Ride The`** (1 nodes): `ride-the-bus.ts`
+- **Thin community `Community 174`** (1 nodes): `auth.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Types Auth Ts`** (1 nodes): `auth.ts`
+- **Thin community `Community 175`** (1 nodes): `mines.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Types Mines Ts`** (1 nodes): `mines.ts`
+- **Thin community `Community 176`** (1 nodes): `event.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Types Event Ts`** (1 nodes): `event.ts`
+- **Thin community `Community 177`** (1 nodes): `hilo.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Types Hilo Ts`** (1 nodes): `hilo.ts`
+- **Thin community `Community 178`** (1 nodes): `chat-store.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Store Chat Store`** (1 nodes): `chat-store.ts`
-  Too small to be a meaningful cluster - may be noise or needs more connections extracted.
-- **Thin community `Store Bet Cart`** (1 nodes): `bet-cart-store.ts`
+- **Thin community `Community 179`** (1 nodes): `bet-cart-store.ts`
   Too small to be a meaningful cluster - may be noise or needs more connections extracted.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `RegisterRequest` connect `Legacy Python Backend` to `Python Auth Routes`?**
+- **Why does `RegisterRequest` connect `Community 2` to `Community 23`?**
   _High betweenness centrality (0.001) - this node is a cross-community bridge._
 - **What connects `Config`, `Strategy`, `Casino Client-Side Logic Library` to the rest of the system?**
   _17 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Event Betting Service` be split into smaller, more focused modules?**
+- **Should `Community 0` be split into smaller, more focused modules?**
   _Cohesion score 0.06 - nodes in this community are weakly interconnected._
-- **Should `Admin API Endpoints` be split into smaller, more focused modules?**
+- **Should `Community 1` be split into smaller, more focused modules?**
   _Cohesion score 0.04 - nodes in this community are weakly interconnected._
-- **Should `Legacy Python Backend` be split into smaller, more focused modules?**
+- **Should `Community 2` be split into smaller, more focused modules?**
   _Cohesion score 0.11 - nodes in this community are weakly interconnected._
-- **Should `Frontend App Types` be split into smaller, more focused modules?**
+- **Should `Community 3` be split into smaller, more focused modules?**
   _Cohesion score 0.13 - nodes in this community are weakly interconnected._
-- **Should `Gamification & Badges` be split into smaller, more focused modules?**
+- **Should `Community 4` be split into smaller, more focused modules?**
   _Cohesion score 0.13 - nodes in this community are weakly interconnected._

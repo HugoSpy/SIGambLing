@@ -31,3 +31,4 @@ backend/prisma/*.db-journal
 remotion-video/
 SIGAMBLING_COLOR_PALETTE.md
 SIGAMBLING_COLOR_PALETTE_LIGHT.md
+graphify-out/*
