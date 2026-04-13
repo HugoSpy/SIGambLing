@@ -52,6 +52,15 @@ export interface MinesCashoutResult {
   balance: number;
 }
 
+export interface MinesAutobetResult {
+  win: boolean;
+  payout: number;
+  profit: number;
+  cells: number[];
+  multiplier: number;
+  newBalance: number;
+}
+
 export interface MinesCurrentResult {
   gemsTotal: number;
   minesCount: number;
@@ -271,6 +280,130 @@ class MinesService {
       currentMultiplier: session.currentMultiplier,
       nextMultiplier: session.nextMultiplier,
       potentialWin,
+    };
+  }
+
+  async autobet(
+    userId: string,
+    betAmount: number,
+    minesCount: number,
+    selectedCells: number[] | "random",
+    gemCount: number,
+  ): Promise<MinesAutobetResult> {
+    // Block if a manual session is active
+    const existing = activeSessions.get(userId);
+    if (existing && !isSessionExpired(existing)) {
+      throw new AppError("Une partie manuelle est en cours.", 409);
+    }
+    if (existing) activeSessions.delete(userId);
+
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new AppError("Utilisateur introuvable.", 404);
+    if (user.balance < betAmount) throw new AppError("Solde insuffisant.", 400);
+
+    const minePositions = placeMines(minesCount);
+    const totalGems = TOTAL_CELLS - minesCount;
+    const clampedGemCount = Math.min(Math.max(1, gemCount), totalGems);
+
+    // Determine which cells to play
+    let cellsToPlay: number[];
+    if (selectedCells === "random") {
+      // Pick clampedGemCount cells that are guaranteed safe (not mines)
+      const safeCells = Array.from({ length: TOTAL_CELLS }, (_, i) => i).filter(
+        (i) => !minePositions.includes(i),
+      );
+      for (let i = safeCells.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [safeCells[i], safeCells[j]] = [safeCells[j]!, safeCells[i]!];
+      }
+      cellsToPlay = safeCells.slice(0, clampedGemCount);
+    } else {
+      cellsToPlay = selectedCells;
+    }
+
+    // Deduct bet upfront
+    await prisma.user.update({
+      where: { id: userId },
+      data: { balance: { decrement: betAmount } },
+    });
+    await jackpotService.recordCasinoContribution(userId, betAmount, "mines");
+
+    // Simulate reveals — stop at first mine
+    const revealedGems: number[] = [];
+    let hitMine = false;
+    for (const cell of cellsToPlay) {
+      if (minePositions.includes(cell)) {
+        hitMine = true;
+        break;
+      }
+      revealedGems.push(cell);
+    }
+
+    if (hitMine) {
+      // Loss
+      const gameData: Prisma.InputJsonValue = {
+        minesCount,
+        gemsFound: revealedGems.length,
+        minePositions,
+        revealedCells: revealedGems,
+        hitMineCell: cellsToPlay[revealedGems.length],
+        autobet: true,
+      };
+      await prisma.casinoGame.create({
+        data: { userId, gameType: "mines", betAmount, result: "loss", payout: 0, gameData },
+      });
+      await gamificationService.synchronizeUserBadges(userId);
+      await gamificationService.triggerLeaderboardTop3(userId);
+
+      const after = await prisma.user.findUnique({ where: { id: userId } });
+      return {
+        win: false,
+        payout: 0,
+        profit: -betAmount,
+        cells: revealedGems,
+        multiplier: 1,
+        newBalance: after!.balance,
+      };
+    }
+
+    // All selected cells are gems — cashout
+    const gemsFound = revealedGems.length;
+    const multiplier = getMinesMultiplier(minesCount, gemsFound);
+    const payout = Math.floor(betAmount * multiplier);
+
+    const updated = await prisma.user.update({
+      where: { id: userId },
+      data: { balance: { increment: payout } },
+    });
+
+    const gameData: Prisma.InputJsonValue = {
+      minesCount,
+      gemsFound,
+      finalMultiplier: multiplier,
+      minePositions,
+      revealedCells: revealedGems,
+      autobet: true,
+    };
+    await prisma.casinoGame.create({
+      data: {
+        userId,
+        gameType: "mines",
+        betAmount,
+        result: "win",
+        payout: payout - betAmount,
+        gameData,
+      },
+    });
+    await gamificationService.synchronizeUserBadges(userId);
+    await gamificationService.triggerLeaderboardTop3(userId);
+
+    return {
+      win: true,
+      payout,
+      profit: payout - betAmount,
+      cells: revealedGems,
+      multiplier,
+      newBalance: updated.balance,
     };
   }
 }

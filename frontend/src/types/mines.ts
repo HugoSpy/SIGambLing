@@ -41,3 +41,20 @@ export interface MinesCurrentResponse {
 }
 
 export type MinesCellState = "hidden" | "gem" | "mine";
+
+export type AutoBetStrategy = "flat" | "martingale" | "anti-martingale" | "custom";
+
+export interface AutoBetConfig {
+  betAmount: number;
+  minesCount: number;
+  cellMode: "random" | "fixed";
+  fixedCells: number[];
+  gemCount: number;
+  strategy: AutoBetStrategy;
+  customMultiplier: number;
+  customCondition: "win" | "loss";
+  maxBet: number;
+  maxRounds: number | null;
+  stopLoss: number | null;
+  takeProfit: number | null;
+}

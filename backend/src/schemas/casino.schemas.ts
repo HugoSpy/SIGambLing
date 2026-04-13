@@ -117,8 +117,19 @@ export const minesRevealSchema = z.object({
   cellIndex: z.coerce.number().int().min(0).max(24),
 });
 
+export const minesAutobetSchema = z.object({
+  betAmount: z.coerce.number().int().min(MIN_BET),
+  minesCount: z.coerce.number().int().min(1).max(24),
+  selectedCells: z.union([
+    z.literal("random"),
+    z.array(z.number().int().min(0).max(24)).min(1).max(24),
+  ]),
+  gemCount: z.coerce.number().int().min(1).max(24),
+});
+
 export type MinesStartInput = z.infer<typeof minesStartSchema>;
 export type MinesRevealInput = z.infer<typeof minesRevealSchema>;
+export type MinesAutobetInput = z.infer<typeof minesAutobetSchema>;
 
 export const blackjackDealSchema = z.object({
   bet: z.coerce.number().int().min(1),

@@ -220,3 +220,14 @@ export const minesCurrentController: RequestHandler = (request, response, next) 
     next(error);
   }
 };
+
+export const minesAutobetController: RequestHandler = async (request, response, next) => {
+  try {
+    const userId = getAuthUserId(request);
+    const { betAmount, minesCount, selectedCells, gemCount } = request.body;
+    const result = await minesService.autobet(userId, betAmount, minesCount, selectedCells, gemCount);
+    response.json(result);
+  } catch (error) {
+    next(error);
+  }
+};

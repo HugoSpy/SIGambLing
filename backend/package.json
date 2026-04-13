@@ -15,7 +15,7 @@
     "prisma:seed": "prisma db seed"
   },
   "dependencies": {
-    "@prisma/client": "^6.4.1",
+    "@prisma/client": "^6.19.3",
     "bcrypt": "^6.0.0",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -44,7 +44,7 @@
     "@types/passport": "^1.0.17",
     "@types/passport-microsoft": "^2.1.1",
     "nodemon": "^3.1.9",
-    "prisma": "^7.7.0",
+    "prisma": "6.19.3",
     "supertest": "^7.2.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.3"

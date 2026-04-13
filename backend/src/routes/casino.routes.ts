@@ -14,6 +14,7 @@ import {
   hiloPredictController,
   hiloSkipController,
   hiloStartController,
+  minesAutobetController,
   minesCashoutController,
   minesCurrentController,
   minesRevealController,
@@ -30,6 +31,7 @@ import {
   blackjackDealSchema,
   hiloPredictSchema,
   hiloStartSchema,
+  minesAutobetSchema,
   minesRevealSchema,
   minesStartSchema,
   ridethebusAnswerSchema,
@@ -184,3 +186,11 @@ casinoRouter.post(
 );
 
 casinoRouter.post("/mines/cashout", requireAuth, casinoLimiter, minesCashoutController);
+
+casinoRouter.post(
+  "/mines/autobet-round",
+  requireAuth,
+  minesRevealLimiter,
+  validateBody(minesAutobetSchema),
+  minesAutobetController,
+);

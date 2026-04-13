@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useAuthStore } from "../../store/auth-store";
 import { useMinesGame } from "../../hooks/useMinesGame";
+import { useMinesAutoBet } from "../../hooks/useMinesAutoBet";
 import { sounds } from "../../lib/sounds";
 import { MinesGrid } from "./Mines/MinesGrid";
 import { MinesSidebar } from "./Mines/MinesSidebar";
+import { MinesAutoBetGraph } from "./Mines/MinesAutoBetGraph";
 import { WinPopup, useWinPopup } from "../ui/WinPopup";
+import type { AutoBetConfig } from "../../types/mines";
 
 export function MinesGame() {
   const user = useAuthStore((s) => s.user);
@@ -30,6 +33,8 @@ export function MinesGame() {
     restoreSession,
   } = useMinesGame();
 
+  const autoBet = useMinesAutoBet();
+
   const [bet, setBet] = useState(100);
   const [mines, setMines] = useState(3);
   const { popupProps, showWin } = useWinPopup();
@@ -38,6 +43,10 @@ export function MinesGame() {
 
   useEffect(() => {
     restoreSession();
+    // Cleanup auto-bet loop on unmount
+    return () => {
+      autoBet.cleanup();
+    };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -69,6 +78,21 @@ export function MinesGame() {
     if (phase !== "playing") setMines(v);
   }
 
+  function handleAutoBetStart(config: AutoBetConfig) {
+    autoBet.start(config, userBalance);
+  }
+
+  function handleAutoBetStop() {
+    autoBet.stop();
+  }
+
+  function handleSwitchToManual() {
+    autoBet.cleanup();
+    autoBet.clearHistory();
+  }
+
+  const showGraph = autoBet.isRunning || autoBet.rounds.length > 0;
+
   return (
     <div
       className="min-h-screen w-full rounded-2xl overflow-hidden"
@@ -91,6 +115,10 @@ export function MinesGame() {
             isLoading={isLoading}
             onStart={handleStart}
             onCashout={cashout}
+            autoBetRunning={autoBet.isRunning}
+            onAutoBetStart={handleAutoBetStart}
+            onAutoBetStop={handleAutoBetStop}
+            onSwitchToManual={handleSwitchToManual}
           />
         </div>
 
@@ -111,6 +139,19 @@ export function MinesGame() {
           </div>
         </div>
       </div>
+
+      {/* Auto-bet live graph — shown during and after a session, cleared on manual switch */}
+      {showGraph && (
+        <div className="px-4 pb-4">
+          <MinesAutoBetGraph
+            rounds={autoBet.rounds}
+            startingBalance={autoBet.startingBalance}
+            sessionProfit={autoBet.sessionProfit}
+            roundsPlayed={autoBet.roundsPlayed}
+            isRunning={autoBet.isRunning}
+          />
+        </div>
+      )}
     </div>
   );
 }
