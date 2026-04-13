@@ -11,6 +11,14 @@ interface MinesGridProps {
   gemsTotal: number;
   nextMultiplier: number;
   onReveal: (index: number) => void;
+  // Auto-bet: cell selection before launch (Fixe mode)
+  autoSelectMode?: boolean;
+  selectedAutoFixedCells?: number[];
+  onAutoSelectCell?: (index: number) => void;
+  // Auto-bet: live animation during a running session
+  isAutoBetRunning?: boolean;
+  autoRevealedCells?: number[];
+  autoMineCell?: number | null;
 }
 
 export function MinesGrid({
@@ -22,11 +30,24 @@ export function MinesGrid({
   gemsTotal,
   nextMultiplier,
   onReveal,
+  autoSelectMode = false,
+  selectedAutoFixedCells = [],
+  onAutoSelectCell,
+  isAutoBetRunning = false,
+  autoRevealedCells = [],
+  autoMineCell = null,
 }: MinesGridProps) {
   const isPlaying = phase === "playing";
   const isOver = phase === "lost" || phase === "won";
 
   function getCellState(index: number): MinesCellState {
+    // During auto-bet session: use animation state
+    if (isAutoBetRunning) {
+      if (autoMineCell === index) return "mine";
+      if (autoRevealedCells.includes(index)) return "gem";
+      return "hidden";
+    }
+    // Normal manual mode
     if (isOver && minePositions.includes(index)) return "mine";
     if (revealedCells.includes(index)) return "gem";
     return "hidden";
@@ -42,7 +63,13 @@ export function MinesGrid({
       {/* Stats bar */}
       <div className="flex items-center justify-between text-sm">
         <span className="text-zinc-400">
-          {isPlaying || isOver ? (
+          {autoSelectMode ? (
+            <span className="text-zinc-400 text-xs">
+              Cliquez sur les cases pour les sélectionner
+            </span>
+          ) : isAutoBetRunning ? (
+            <span className="text-zinc-500 text-xs">Auto-bet en cours…</span>
+          ) : isPlaying || isOver ? (
             <>
               <span className="font-semibold text-emerald-400">{gemsFound}</span>
               <span className="text-zinc-500"> / {gemsTotal} gemmes</span>
@@ -66,9 +93,9 @@ export function MinesGrid({
         )}
       </div>
 
-      {/* Flash overlay on mine hit */}
+      {/* Flash overlay on mine hit (manual mode only) */}
       <AnimatePresence>
-        {phase === "lost" && (
+        {phase === "lost" && !isAutoBetRunning && (
           <motion.div
             className="pointer-events-none fixed inset-0 z-40 bg-red-500"
             initial={{ opacity: 0.35 }}
@@ -83,19 +110,37 @@ export function MinesGrid({
       <motion.div
         className="grid gap-2"
         style={{ gridTemplateColumns: "repeat(5, 1fr)" }}
-        animate={phase === "lost" ? { x: [0, -6, 6, -4, 4, 0] } : {}}
+        animate={phase === "lost" && !isAutoBetRunning ? { x: [0, -6, 6, -4, 4, 0] } : {}}
         transition={{ duration: 0.4, ease: "easeInOut" }}
       >
         {Array.from({ length: 25 }, (_, i) => {
           const state = getCellState(i);
           const staggerIdx = state === "mine" ? getMineStaggerIndex(i) : 0;
+
+          // Auto-select mode: all cells clickable for selection
+          if (autoSelectMode) {
+            const isSelected = selectedAutoFixedCells.includes(i);
+            return (
+              <MinesCell
+                key={i}
+                index={i}
+                state="hidden"
+                isClickable={true}
+                isRevealing={false}
+                isAutoSelected={isSelected}
+                onClick={() => onAutoSelectCell?.(i)}
+              />
+            );
+          }
+
           const isClickable =
             isPlaying &&
             state === "hidden" &&
-            revealingCell === null;
+            revealingCell === null &&
+            !isAutoBetRunning;
           const isRevealing = revealingCell === i;
 
-          // Wrap mine cells in a motion.div for staggered cascade reveal
+          // Wrap mine cells in a motion.div for staggered cascade reveal (manual game-over)
           if (isOver && state === "mine") {
             return (
               <motion.div

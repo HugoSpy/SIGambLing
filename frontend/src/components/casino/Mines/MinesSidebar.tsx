@@ -22,6 +22,11 @@ interface MinesSidebarProps {
   onAutoBetStart: (config: AutoBetConfig) => void;
   onAutoBetStop: () => void;
   onSwitchToManual?: () => void;
+  // Auto-bet cell selection (managed in MinesGame)
+  autoCellMode: "random" | "fixed";
+  onAutoCellModeChange: (m: "random" | "fixed") => void;
+  autoFixedCells: number[];
+  onResetAutoFixedCells: () => void;
 }
 
 const QUICK_MINES = [1, 3, 5, 10, 24];
@@ -104,6 +109,10 @@ export function MinesSidebar({
   onAutoBetStart,
   onAutoBetStop,
   onSwitchToManual,
+  autoCellMode,
+  onAutoCellModeChange,
+  autoFixedCells,
+  onResetAutoFixedCells,
 }: MinesSidebarProps) {
   const isPlaying = phase === "playing";
   const isIdle = phase === "idle";
@@ -116,9 +125,6 @@ export function MinesSidebar({
   // ── Auto-bet config state ────────────────────────────────────────────────────
   const [autoBet, setAutoBet] = useState(bet || 100);
   const [autoMines, setAutoMines] = useState(minesCount || 3);
-  const [cellMode, setCellMode] = useState<"random" | "fixed">("random");
-  const [fixedCells, setFixedCells] = useState<number[]>([]);
-  const [gemCount, setGemCount] = useState(1);
   const [strategy, setStrategy] = useState<AutoBetStrategy>("flat");
   const [customMultiplier, setCustomMultiplier] = useState(1.5);
   const [customCondition, setCustomCondition] = useState<"win" | "loss">("loss");
@@ -127,32 +133,22 @@ export function MinesSidebar({
   const [stopLoss, setStopLoss] = useState<number | null>(null);
   const [takeProfit, setTakeProfit] = useState<number | null>(null);
 
-  const maxGemCount = Math.max(1, 25 - autoMines - 1);
-
   function handleBetInput(raw: string) {
     const n = parseInt(raw, 10);
     if (!isNaN(n) && n > 0) onBetChange(n);
   }
 
-  function toggleFixedCell(idx: number) {
-    setFixedCells((prev) =>
-      prev.includes(idx) ? prev.filter((c) => c !== idx) : [...prev, idx],
-    );
-  }
-
   function handleAutoBetMinesChange(v: number) {
     setAutoMines(v);
-    setGemCount((g) => Math.min(g, Math.max(1, 25 - v - 1)));
-    setFixedCells([]);
+    onResetAutoFixedCells();
   }
 
   function handleStart() {
     const config: AutoBetConfig = {
       betAmount: autoBet,
       minesCount: autoMines,
-      cellMode,
-      fixedCells: cellMode === "fixed" ? fixedCells : [],
-      gemCount: Math.min(gemCount, maxGemCount),
+      cellMode: autoCellMode,
+      fixedCells: autoCellMode === "fixed" ? autoFixedCells : [],
       strategy,
       customMultiplier,
       customCondition,
@@ -479,12 +475,12 @@ export function MinesSidebar({
               {(["random", "fixed"] as const).map((cm) => (
                 <button
                   key={cm}
-                  onClick={() => setCellMode(cm)}
+                  onClick={() => onAutoCellModeChange(cm)}
                   disabled={autoBetRunning}
                   className="flex-1 py-1.5 text-xs font-medium transition disabled:opacity-40"
                   style={{
-                    background: cellMode === cm ? "rgba(0,231,1,0.12)" : "transparent",
-                    color: cellMode === cm ? "#00e701" : "#71717a",
+                    background: autoCellMode === cm ? "rgba(0,231,1,0.12)" : "transparent",
+                    color: autoCellMode === cm ? "#00e701" : "#71717a",
                     borderRight: cm === "random" ? "1px solid rgba(255,255,255,0.08)" : undefined,
                   }}
                 >
@@ -493,52 +489,21 @@ export function MinesSidebar({
               ))}
             </div>
 
-            {/* Fixed cells 5×5 mini grid */}
-            {cellMode === "fixed" && (
-              <div className="grid grid-cols-5 gap-1 mt-1">
-                {Array.from({ length: 25 }, (_, i) => {
-                  const selected = fixedCells.includes(i);
-                  return (
-                    <button
-                      key={i}
-                      onClick={() => toggleFixedCell(i)}
-                      disabled={autoBetRunning}
-                      className="aspect-square rounded-md text-[10px] font-mono transition disabled:opacity-40"
-                      style={{
-                        background: selected ? "rgba(0,231,1,0.2)" : "rgba(255,255,255,0.05)",
-                        border: selected
-                          ? "1px solid rgba(0,231,1,0.5)"
-                          : "1px solid rgba(255,255,255,0.06)",
-                        color: selected ? "#00e701" : "#52525b",
-                      }}
-                    >
-                      {i + 1}
-                    </button>
-                  );
-                })}
+            {/* Fixed mode: instruction + counter (no mini-grid — selection is on the main grid) */}
+            {autoCellMode === "fixed" && (
+              <div
+                className="flex flex-col gap-1.5 rounded-lg px-3 py-2.5 mt-1"
+                style={{ background: "rgba(0,231,1,0.06)", border: "1px solid rgba(0,231,1,0.15)" }}
+              >
+                <p className="text-xs text-zinc-400 leading-snug">
+                  Cliquez sur les cases de la grille pour les sélectionner
+                </p>
+                <p className="text-xs font-mono font-semibold"
+                  style={{ color: autoFixedCells.length > 0 ? "#00e701" : "#71717a" }}>
+                  {autoFixedCells.length} case{autoFixedCells.length !== 1 ? "s" : ""} sélectionnée{autoFixedCells.length !== 1 ? "s" : ""}
+                </p>
               </div>
             )}
-          </div>
-
-          {/* Gem count slider */}
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center justify-between">
-              <label className="text-xs uppercase tracking-widest text-zinc-500">Gemmes</label>
-              <span className="text-xs font-mono text-emerald-400">{gemCount}</span>
-            </div>
-            <input
-              type="range"
-              min={1}
-              max={maxGemCount}
-              value={Math.min(gemCount, maxGemCount)}
-              onChange={(e) => setGemCount(Number(e.target.value))}
-              disabled={autoBetRunning}
-              className="w-full accent-emerald-500 disabled:opacity-40"
-            />
-            <div className="flex justify-between text-[10px] text-zinc-600">
-              <span>1</span>
-              <span>{maxGemCount}</span>
-            </div>
           </div>
 
           <div className="h-px bg-white/5" />
@@ -648,7 +613,7 @@ export function MinesSidebar({
                 disabled={
                   autoBet < 1 ||
                   autoBet > userBalance ||
-                  (cellMode === "fixed" && fixedCells.length === 0)
+                  (autoCellMode === "fixed" && autoFixedCells.length === 0)
                 }
                 className="w-full rounded-xl py-3 text-sm font-bold transition active:scale-95 disabled:opacity-50"
                 style={{

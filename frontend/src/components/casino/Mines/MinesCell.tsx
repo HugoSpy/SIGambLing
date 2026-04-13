@@ -7,6 +7,7 @@ interface MinesCellProps {
   isClickable: boolean;
   isRevealing: boolean;
   onClick: () => void;
+  isAutoSelected?: boolean;
 }
 
 function GemIcon() {
@@ -58,7 +59,7 @@ function MineIcon() {
   );
 }
 
-export function MinesCell({ index, state, isClickable, isRevealing, onClick }: MinesCellProps) {
+export function MinesCell({ index, state, isClickable, isRevealing, onClick, isAutoSelected }: MinesCellProps) {
   const isHidden = state === "hidden";
   const isGem = state === "gem";
   const isMine = state === "mine";
@@ -77,17 +78,23 @@ export function MinesCell({ index, state, isClickable, isRevealing, onClick }: M
           ? "linear-gradient(145deg, #3d1111 0%, #220808 100%)"
           : isGem
             ? "linear-gradient(145deg, #0d2e1a 0%, #071a0f 100%)"
-            : "linear-gradient(145deg, #1e3547 0%, #152636 100%)",
+            : isAutoSelected
+              ? "linear-gradient(145deg, #0c2217 0%, #071a0f 100%)"
+              : "linear-gradient(145deg, #1e3547 0%, #152636 100%)",
         border: isMine
           ? "1px solid rgba(255,68,68,0.4)"
           : isGem
             ? "1px solid rgba(0,231,1,0.4)"
-            : "1px solid rgba(255,255,255,0.06)",
+            : isAutoSelected
+              ? "1.5px dashed rgba(0,231,1,0.6)"
+              : "1px solid rgba(255,255,255,0.06)",
         boxShadow: isMine
           ? "inset 0 1px 0 rgba(255,100,100,0.15), 0 0 12px rgba(255,68,68,0.3)"
           : isGem
             ? "inset 0 1px 0 rgba(0,255,136,0.2), 0 0 12px rgba(0,231,1,0.25)"
-            : "inset 0 1px 0 rgba(255,255,255,0.08)",
+            : isAutoSelected
+              ? "inset 0 1px 0 rgba(0,255,136,0.1), 0 0 8px rgba(0,231,1,0.2)"
+              : "inset 0 1px 0 rgba(255,255,255,0.08)",
       }}
       aria-label={`Case ${index + 1}`}
     >

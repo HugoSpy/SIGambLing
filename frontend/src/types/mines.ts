@@ -49,7 +49,6 @@ export interface AutoBetConfig {
   minesCount: number;
   cellMode: "random" | "fixed";
   fixedCells: number[];
-  gemCount: number;
   strategy: AutoBetStrategy;
   customMultiplier: number;
   customCondition: "win" | "loss";

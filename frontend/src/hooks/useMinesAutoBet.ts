@@ -1,5 +1,4 @@
 import { useCallback, useRef, useState } from "react";
-import { Howl } from "howler";
 import { api } from "../lib/api";
 import { getErrorMessage, notify } from "../lib/notifications";
 import { useAuthStore } from "../store/auth-store";
@@ -13,9 +12,12 @@ export interface AutoBetRound {
   bet: number;
 }
 
-// Dedicated low-volume sounds for auto-bet — do not modify sounds.ts
-const autoWinSound = new Howl({ src: ["/win_sound.mp3"], volume: 0.3 });
-const autoLossSound = new Howl({ src: ["/bomb_click.mp3"], volume: 0.3 });
+export interface PendingRound {
+  cells: number[];
+  win: boolean;
+  multiplier: number;
+  profit: number;
+}
 
 export function useMinesAutoBet() {
   const updateBalance = useAuthStore((s) => s.updateBalance);
@@ -26,6 +28,7 @@ export function useMinesAutoBet() {
   const [roundsPlayed, setRoundsPlayed] = useState(0);
   const [currentBet, setCurrentBet] = useState(0);
   const [startingBalance, setStartingBalance] = useState(0);
+  const [pendingRound, setPendingRound] = useState<PendingRound | null>(null);
 
   // Refs — mutable loop state that async callbacks read without stale closures
   const isRunningRef = useRef(false);
@@ -34,6 +37,8 @@ export function useMinesAutoBet() {
   const currentBetRef = useRef(0);
   const roundsPlayedRef = useRef(0);
   const sessionProfitRef = useRef(0);
+  // Holds the runLoop function so acknowledgeRound can reschedule it
+  const loopRef = useRef<(() => Promise<void>) | null>(null);
 
   const doStop = useCallback((reason: string) => {
     isRunningRef.current = false;
@@ -42,6 +47,8 @@ export function useMinesAutoBet() {
       timeoutRef.current = null;
     }
     setIsRunning(false);
+    // Do NOT clear pendingRound here — let the animation in MinesGame complete first.
+    // MinesGame will call clearPendingRound() when it detects isRunning → false.
 
     const played = roundsPlayedRef.current;
     const profit = sessionProfitRef.current;
@@ -51,6 +58,25 @@ export function useMinesAutoBet() {
         `Auto-bet · ${played} round${played > 1 ? "s" : ""} · ${sign}${profit.toLocaleString()} tokens · ${reason}`,
       );
     }
+  }, []);
+
+  /**
+   * Called by MinesGame after the per-round animation completes.
+   * Clears pendingRound and schedules the next loop iteration if still running.
+   */
+  const acknowledgeRound = useCallback(() => {
+    setPendingRound(null);
+    if (isRunningRef.current && loopRef.current) {
+      timeoutRef.current = setTimeout(loopRef.current, 0);
+    }
+  }, []);
+
+  /**
+   * Called by MinesGame when the auto-bet is stopped mid-animation
+   * to discard the current pending round without scheduling next.
+   */
+  const clearPendingRound = useCallback(() => {
+    setPendingRound(null);
   }, []);
 
   const start = useCallback(
@@ -67,6 +93,7 @@ export function useMinesAutoBet() {
       setRoundsPlayed(0);
       setCurrentBet(config.betAmount);
       setStartingBalance(initialBalance);
+      setPendingRound(null);
 
       async function runLoop() {
         if (!isRunningRef.current) return;
@@ -92,18 +119,11 @@ export function useMinesAutoBet() {
             betAmount: bet,
             minesCount: cfg.minesCount,
             selectedCells: cfg.cellMode === "random" ? "random" : cfg.fixedCells,
-            gemCount: cfg.gemCount,
           });
 
           if (!isRunningRef.current) return;
 
           updateBalance(data.newBalance);
-
-          if (data.win) {
-            autoWinSound.play();
-          } else {
-            autoLossSound.play();
-          }
 
           roundsPlayedRef.current += 1;
           sessionProfitRef.current += data.profit;
@@ -150,34 +170,45 @@ export function useMinesAutoBet() {
           currentBetRef.current = nextBet;
           setCurrentBet(nextBet);
 
-          // Check stop conditions
+          // Check stop conditions — stop BEFORE setting pendingRound so that
+          // acknowledgeRound won't re-schedule (isRunningRef is false).
+          let shouldStop = false;
+          let stopReason = "";
           if (cfg.maxRounds !== null && roundsPlayedRef.current >= cfg.maxRounds) {
-            doStop(`${cfg.maxRounds} rounds atteints`);
-            return;
+            shouldStop = true;
+            stopReason = `${cfg.maxRounds} rounds atteints`;
+          } else if (cfg.stopLoss !== null && data.newBalance <= cfg.stopLoss) {
+            shouldStop = true;
+            stopReason = "Stop loss atteint";
+          } else if (cfg.takeProfit !== null && sessionProfitRef.current >= cfg.takeProfit) {
+            shouldStop = true;
+            stopReason = "Take profit atteint";
+          } else if (data.newBalance < nextBet) {
+            shouldStop = true;
+            stopReason = "Solde insuffisant pour continuer";
           }
-          if (cfg.stopLoss !== null && data.newBalance <= cfg.stopLoss) {
-            doStop("Stop loss atteint");
-            return;
+
+          if (shouldStop) {
+            doStop(stopReason);
+            // Still expose pending round so MinesGame can animate the last round.
+            // acknowledgeRound will be a no-op (isRunningRef=false).
           }
-          if (cfg.takeProfit !== null && sessionProfitRef.current >= cfg.takeProfit) {
-            doStop("Take profit atteint");
-            return;
-          }
-          if (data.newBalance < nextBet) {
-            doStop("Solde insuffisant pour continuer");
-            return;
-          }
+
+          // Always expose the round data for MinesGame to animate.
+          setPendingRound({
+            cells: data.cells,
+            win: data.win,
+            multiplier: data.multiplier,
+            profit: data.profit,
+          });
+
         } catch (err) {
           notify.error(getErrorMessage(err));
           doStop("Erreur réseau");
-          return;
-        }
-
-        if (isRunningRef.current) {
-          timeoutRef.current = setTimeout(runLoop, 1000);
         }
       }
 
+      loopRef.current = runLoop;
       // Start first round immediately
       timeoutRef.current = setTimeout(runLoop, 0);
     },
@@ -196,6 +227,7 @@ export function useMinesAutoBet() {
       timeoutRef.current = null;
     }
     setIsRunning(false);
+    setPendingRound(null);
   }, []);
 
   const clearHistory = useCallback(() => {
@@ -211,9 +243,12 @@ export function useMinesAutoBet() {
     roundsPlayed,
     currentBet,
     startingBalance,
+    pendingRound,
     start,
     stop,
     cleanup,
     clearHistory,
+    acknowledgeRound,
+    clearPendingRound,
   };
 }

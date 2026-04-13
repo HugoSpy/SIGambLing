@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAuthStore } from "../../store/auth-store";
 import { useMinesGame } from "../../hooks/useMinesGame";
 import { useMinesAutoBet } from "../../hooks/useMinesAutoBet";
@@ -37,19 +37,47 @@ export function MinesGame() {
 
   const [bet, setBet] = useState(100);
   const [mines, setMines] = useState(3);
-  const { popupProps, showWin } = useWinPopup();
+
+  // ── Auto-bet cell selection state (lifted from sidebar) ──────────────────────
+  const [autoCellMode, setAutoCellMode] = useState<"random" | "fixed">("random");
+  const [autoFixedCells, setAutoFixedCells] = useState<number[]>([]);
+
+  // ── Auto-bet grid animation state ────────────────────────────────────────────
+  const [autoRevealedCells, setAutoRevealedCells] = useState<number[]>([]);
+  const [autoMineCell, setAutoMineCell] = useState<number | null>(null);
+
+  // ── Auto-bet WinPopup (managed independently from manual useWinPopup) ────────
+  const [autoPopupVisible, setAutoPopupVisible] = useState(false);
+  const [autoPopupParams, setAutoPopupParams] = useState({ multiplier: 1, netGain: 0 });
+
+  // ── Refs ─────────────────────────────────────────────────────────────────────
+  const abortAnimationRef = useRef(false);
+  const autoRevealTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const autoPopupTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const wasRunningRef = useRef(false);
   const prevPhaseRef = useRef<string>("");
   const prevRevealedLengthRef = useRef<number>(0);
 
+  // ── Manual WinPopup ──────────────────────────────────────────────────────────
+  const { popupProps, showWin } = useWinPopup();
+
+  // ── Computed ─────────────────────────────────────────────────────────────────
+  // Auto-select mode: sidebar is in Fixe mode, autobet not yet running, no manual game active
+  const isAutoSelectMode =
+    autoCellMode === "fixed" && !autoBet.isRunning && phase === "idle";
+
+  // ── Initialisation ───────────────────────────────────────────────────────────
   useEffect(() => {
     restoreSession();
-    // Cleanup auto-bet loop on unmount
     return () => {
       autoBet.cleanup();
+      if (autoRevealTimerRef.current) clearTimeout(autoRevealTimerRef.current);
+      if (autoPopupTimerRef.current) clearTimeout(autoPopupTimerRef.current);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // ── Manual game phase effects ─────────────────────────────────────────────────
   useEffect(() => {
     if (prevPhaseRef.current !== "lost" && phase === "lost") {
       sounds.bombClick.play();
@@ -69,6 +97,89 @@ export function MinesGame() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [revealedCells]);
 
+  // ── Auto-bet: abort animation when isRunning goes false ──────────────────────
+  useEffect(() => {
+    if (wasRunningRef.current && !autoBet.isRunning) {
+      // Session stopped — abort any in-flight animation
+      abortAnimationRef.current = true;
+      if (autoRevealTimerRef.current) {
+        clearTimeout(autoRevealTimerRef.current);
+        autoRevealTimerRef.current = null;
+      }
+      setAutoRevealedCells([]);
+      setAutoMineCell(null);
+      autoBet.clearPendingRound();
+    }
+    wasRunningRef.current = autoBet.isRunning;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoBet.isRunning]);
+
+  // ── Auto-bet: animate each round when pendingRound arrives ───────────────────
+  const triggerAutoPopup = useCallback((multiplier: number, profit: number) => {
+    if (profit <= 0) return;
+    // Dismiss current (triggers exit animation), then show new after 250ms
+    setAutoPopupVisible(false);
+    if (autoPopupTimerRef.current) clearTimeout(autoPopupTimerRef.current);
+    autoPopupTimerRef.current = setTimeout(() => {
+      setAutoPopupParams({ multiplier, netGain: profit });
+      setAutoPopupVisible(true);
+      sounds.win.play();
+      autoPopupTimerRef.current = setTimeout(() => setAutoPopupVisible(false), 2200);
+    }, 250);
+  }, []);
+
+  useEffect(() => {
+    if (!autoBet.pendingRound) return;
+
+    const { cells, win, multiplier, profit } = autoBet.pendingRound;
+    abortAnimationRef.current = false;
+
+    // On win: all cells are gems. On loss: cells[0..n-2] are gems, cells[n-1] is the mine.
+    const gemCells = win ? cells : cells.slice(0, -1);
+    const mineCell = win ? null : (cells.length > 0 ? cells[cells.length - 1] : null);
+
+    let idx = 0;
+
+    function revealNext() {
+      if (abortAnimationRef.current) return;
+
+      if (idx < gemCells.length) {
+        const cell = gemCells[idx];
+        setAutoRevealedCells((prev) => [...prev, cell]);
+        sounds.gemmeClick.play();
+        idx++;
+        autoRevealTimerRef.current = setTimeout(revealNext, 120);
+      } else {
+        // All gems revealed — show mine if loss, popup if win
+        if (mineCell !== null) {
+          setAutoMineCell(mineCell);
+          sounds.bombClick.play();
+        } else {
+          triggerAutoPopup(multiplier, profit);
+        }
+
+        // Reset grid then acknowledge (triggers next round)
+        autoRevealTimerRef.current = setTimeout(() => {
+          if (abortAnimationRef.current) return;
+          setAutoRevealedCells([]);
+          setAutoMineCell(null);
+          autoBet.acknowledgeRound();
+        }, 400);
+      }
+    }
+
+    // Reset display state before starting animation
+    setAutoRevealedCells([]);
+    setAutoMineCell(null);
+    autoRevealTimerRef.current = setTimeout(revealNext, 0);
+
+    return () => {
+      if (autoRevealTimerRef.current) clearTimeout(autoRevealTimerRef.current);
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoBet.pendingRound]);
+
+  // ── Handlers ─────────────────────────────────────────────────────────────────
   function handleStart() {
     sounds.betButton.play();
     startGame(bet, mines);
@@ -79,6 +190,10 @@ export function MinesGame() {
   }
 
   function handleAutoBetStart(config: AutoBetConfig) {
+    abortAnimationRef.current = false;
+    setAutoRevealedCells([]);
+    setAutoMineCell(null);
+    setAutoPopupVisible(false);
     autoBet.start(config, userBalance);
   }
 
@@ -89,7 +204,29 @@ export function MinesGame() {
   function handleSwitchToManual() {
     autoBet.cleanup();
     autoBet.clearHistory();
+    setAutoCellMode("random");
+    setAutoFixedCells([]);
+    setAutoRevealedCells([]);
+    setAutoMineCell(null);
+    setAutoPopupVisible(false);
+    if (autoPopupTimerRef.current) clearTimeout(autoPopupTimerRef.current);
   }
+
+  function handleAutoSelectCell(i: number) {
+    if (!isAutoSelectMode) return;
+    setAutoFixedCells((prev) =>
+      prev.includes(i) ? prev.filter((c) => c !== i) : [...prev, i],
+    );
+  }
+
+  // ── Popup props: manual vs auto-bet ─────────────────────────────────────────
+  const activePopupProps = autoBet.isRunning || autoPopupVisible
+    ? {
+        multiplier: autoPopupParams.multiplier,
+        netGain: autoPopupParams.netGain,
+        visible: autoPopupVisible,
+      }
+    : popupProps;
 
   const showGraph = autoBet.isRunning || autoBet.rounds.length > 0;
 
@@ -119,6 +256,10 @@ export function MinesGame() {
             onAutoBetStart={handleAutoBetStart}
             onAutoBetStop={handleAutoBetStop}
             onSwitchToManual={handleSwitchToManual}
+            autoCellMode={autoCellMode}
+            onAutoCellModeChange={setAutoCellMode}
+            autoFixedCells={autoFixedCells}
+            onResetAutoFixedCells={() => setAutoFixedCells([])}
           />
         </div>
 
@@ -134,8 +275,14 @@ export function MinesGame() {
               gemsTotal={phase === "playing" ? gemsTotal : 25 - mines}
               nextMultiplier={nextMultiplier}
               onReveal={revealCell}
+              autoSelectMode={isAutoSelectMode}
+              selectedAutoFixedCells={autoFixedCells}
+              onAutoSelectCell={handleAutoSelectCell}
+              isAutoBetRunning={autoBet.isRunning}
+              autoRevealedCells={autoRevealedCells}
+              autoMineCell={autoMineCell}
             />
-            <WinPopup {...popupProps} />
+            <WinPopup {...activePopupProps} />
           </div>
         </div>
       </div>
