@@ -41,6 +41,9 @@ function sourceIcon(source: string) {
   if (source === "Blackjack") return "🃏";
   if (source === "HiLo") return "⬆️⬇️";
   if (source === "Ride The Bus") return "🚌";
+  if (source === "crash") return "🚀";
+  if (source === "Mines") return "💣";
+
   return "🏆";
 }
 

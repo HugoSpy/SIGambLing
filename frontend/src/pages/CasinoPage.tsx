@@ -171,27 +171,6 @@ export function CasinoPage() {
               const Icon = tab.icon;
               const disabled = isGameDisabled(tab.id);
 
-              if (tab.id === "crash" && !isAdmin) {
-                return (
-                  <Card
-                    key={tab.id}
-                    className="group relative overflow-hidden border-white/10 bg-zinc-900/95 p-0 opacity-60"
-                  >
-                    <div className="absolute inset-0 bg-gradient-to-br from-orange-500/10 via-orange-500/5 to-transparent" />
-                    <div className="relative flex h-full flex-col items-center justify-center gap-4 p-6 text-center">
-                      <div className="rounded-2xl border border-white/10 bg-black/20 p-4">
-                        <TrendingUp className="h-8 w-8 text-zinc-400" />
-                      </div>
-                      <div>
-                        <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">Crash</p>
-                        <h2 className="mt-2 font-display text-2xl text-brand-text">Work in Progress</h2>
-                        <p className="mt-2 text-sm text-brand-muted">Ce jeu est en cours de développement.</p>
-                      </div>
-                    </div>
-                  </Card>
-                );
-              }
-
               return (
                 <Card
                   key={tab.id}

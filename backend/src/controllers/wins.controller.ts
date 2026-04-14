@@ -56,7 +56,11 @@ export const shareWinController: RequestHandler = async (request, response, next
       content = `@${pseudo} a gagné ${win.profit} tokens en pariant ${win.amount} à Ride The Bus 🚌`;
     } else if (win.source === "mines") {
       content = `@${pseudo} a gagné ${win.profit} tokens en pariant ${win.amount} aux Mines 💣`;
-    } else {
+    } else if (win.source === "crash") {
+      content = `@${pseudo} a gagné ${win.profit} tokens en pariant ${win.amount} sur Crash 🚀`;
+    }
+
+    else {
       content = `@${pseudo} a gagné ${win.profit} tokens en pariant ${win.amount} sur ${win.eventTitle ?? "un événement"} 🏆`;
     }
 
