@@ -84,7 +84,7 @@
       "source_file": "test.py",
       "source_location": "L1",
       "id": "test_py",
-      "community": 142,
+      "community": 141,
       "norm_label": "test.py"
     },
     {
@@ -93,7 +93,7 @@
       "source_file": "start.py",
       "source_location": "L1",
       "id": "start_py",
-      "community": 143,
+      "community": 142,
       "norm_label": "start.py"
     },
     {
@@ -507,7 +507,7 @@
       "source_file": "backend/tests/pseudo.test.ts",
       "source_location": "L1",
       "id": "backend_tests_pseudo_test_ts",
-      "community": 97,
+      "community": 96,
       "norm_label": "pseudo.test.ts"
     },
     {
@@ -516,7 +516,7 @@
       "source_file": "backend/tests/pseudo.test.ts",
       "source_location": "L8",
       "id": "pseudo_test_stubproperty",
-      "community": 97,
+      "community": 96,
       "norm_label": "stubproperty()"
     },
     {
@@ -579,7 +579,7 @@
       "source_file": "backend/tests/security.test.ts",
       "source_location": "L1",
       "id": "backend_tests_security_test_ts",
-      "community": 144,
+      "community": 143,
       "norm_label": "security.test.ts"
     },
     {
@@ -588,7 +588,7 @@
       "source_file": "backend/scripts/backfill-jackpot-total.ts",
       "source_location": "L1",
       "id": "backend_scripts_backfill_jackpot_total_ts",
-      "community": 98,
+      "community": 97,
       "norm_label": "backfill-jackpot-total.ts"
     },
     {
@@ -597,7 +597,7 @@
       "source_file": "backend/scripts/backfill-jackpot-total.ts",
       "source_location": "L4",
       "id": "backfill_jackpot_total_main",
-      "community": 98,
+      "community": 97,
       "norm_label": "main()"
     },
     {
@@ -606,7 +606,7 @@
       "source_file": "backend/routers/events.py",
       "source_location": "L1",
       "id": "backend_routers_events_py",
-      "community": 16,
+      "community": 17,
       "norm_label": "events.py"
     },
     {
@@ -651,7 +651,7 @@
       "source_file": "backend/routers/events.py",
       "source_location": "L38",
       "id": "events_my_bets",
-      "community": 16,
+      "community": 17,
       "norm_label": "my_bets()"
     },
     {
@@ -660,7 +660,7 @@
       "source_file": "backend/routers/events.py",
       "source_location": "L52",
       "id": "events_pending_events",
-      "community": 16,
+      "community": 17,
       "norm_label": "pending_events()"
     },
     {
@@ -669,7 +669,7 @@
       "source_file": "backend/routers/events.py",
       "source_location": "L63",
       "id": "events_list_events",
-      "community": 16,
+      "community": 17,
       "norm_label": "list_events()"
     },
     {
@@ -678,7 +678,7 @@
       "source_file": "backend/routers/events.py",
       "source_location": "L86",
       "id": "events_get_event",
-      "community": 16,
+      "community": 17,
       "norm_label": "get_event()"
     },
     {
@@ -687,7 +687,7 @@
       "source_file": "backend/routers/events.py",
       "source_location": "L99",
       "id": "events_create_event",
-      "community": 16,
+      "community": 17,
       "norm_label": "create_event()"
     },
     {
@@ -696,7 +696,7 @@
       "source_file": "backend/routers/events.py",
       "source_location": "L145",
       "id": "events_place_bet",
-      "community": 16,
+      "community": 17,
       "norm_label": "place_bet()"
     },
     {
@@ -705,7 +705,7 @@
       "source_file": "backend/routers/events.py",
       "source_location": "L215",
       "id": "events_approve_event",
-      "community": 16,
+      "community": 17,
       "norm_label": "approve_event()"
     },
     {
@@ -714,7 +714,7 @@
       "source_file": "backend/routers/events.py",
       "source_location": "L236",
       "id": "events_reject_event",
-      "community": 16,
+      "community": 17,
       "norm_label": "reject_event()"
     },
     {
@@ -723,7 +723,7 @@
       "source_file": "backend/routers/events.py",
       "source_location": "L257",
       "id": "events_resolve_event",
-      "community": 16,
+      "community": 17,
       "norm_label": "resolve_event()"
     },
     {
@@ -732,7 +732,7 @@
       "source_file": "backend/routers/events.py",
       "source_location": "L312",
       "id": "events_compute_odds",
-      "community": 16,
+      "community": 17,
       "norm_label": "_compute_odds()"
     },
     {
@@ -741,7 +741,7 @@
       "source_file": "backend/routers/events.py",
       "source_location": "L321",
       "id": "events_update_challenges",
-      "community": 16,
+      "community": 17,
       "norm_label": "_update_challenges()"
     },
     {
@@ -750,7 +750,7 @@
       "source_file": "backend/routers/events.py",
       "source_location": "L340",
       "id": "events_event_dict",
-      "community": 16,
+      "community": 17,
       "norm_label": "_event_dict()"
     },
     {
@@ -759,7 +759,7 @@
       "source_file": "backend/routers/events.py",
       "source_location": "L379",
       "id": "events_bet_dict",
-      "community": 16,
+      "community": 17,
       "norm_label": "_bet_dict()"
     },
     {
@@ -1002,7 +1002,7 @@
       "source_file": "backend/routers/__init__.py",
       "source_location": "L1",
       "id": "backend_routers_init_py",
-      "community": 145,
+      "community": 144,
       "norm_label": "__init__.py"
     },
     {
@@ -1128,7 +1128,7 @@
       "source_file": "backend/src/index.ts",
       "source_location": "L1",
       "id": "backend_src_index_ts",
-      "community": 146,
+      "community": 145,
       "norm_label": "index.ts"
     },
     {
@@ -1137,7 +1137,7 @@
       "source_file": "backend/src/app.ts",
       "source_location": "L1",
       "id": "backend_src_app_ts",
-      "community": 99,
+      "community": 98,
       "norm_label": "app.ts"
     },
     {
@@ -1146,7 +1146,7 @@
       "source_file": "backend/src/app.ts",
       "source_location": "L27",
       "id": "app_createapp",
-      "community": 99,
+      "community": 98,
       "norm_label": "createapp()"
     },
     {
@@ -1227,7 +1227,7 @@
       "source_file": "backend/src/middleware/validate.ts",
       "source_location": "L1",
       "id": "backend_src_middleware_validate_ts",
-      "community": 100,
+      "community": 99,
       "norm_label": "validate.ts"
     },
     {
@@ -1236,7 +1236,7 @@
       "source_file": "backend/src/middleware/validate.ts",
       "source_location": "L4",
       "id": "validate_validatebody",
-      "community": 100,
+      "community": 99,
       "norm_label": "validatebody()"
     },
     {
@@ -1245,7 +1245,7 @@
       "source_file": "backend/src/middleware/error-handler.ts",
       "source_location": "L1",
       "id": "backend_src_middleware_error_handler_ts",
-      "community": 101,
+      "community": 100,
       "norm_label": "error-handler.ts"
     },
     {
@@ -1254,7 +1254,7 @@
       "source_file": "backend/src/middleware/error-handler.ts",
       "source_location": "L7",
       "id": "error_handler_errorhandler",
-      "community": 101,
+      "community": 100,
       "norm_label": "errorhandler()"
     },
     {
@@ -1308,7 +1308,7 @@
       "source_file": "backend/src/middleware/not-found.ts",
       "source_location": "L1",
       "id": "backend_src_middleware_not_found_ts",
-      "community": 102,
+      "community": 101,
       "norm_label": "not-found.ts"
     },
     {
@@ -1317,7 +1317,7 @@
       "source_file": "backend/src/middleware/not-found.ts",
       "source_location": "L3",
       "id": "not_found_notfoundhandler",
-      "community": 102,
+      "community": 101,
       "norm_label": "notfoundhandler()"
     },
     {
@@ -1326,7 +1326,7 @@
       "source_file": "backend/src/middleware/require-auth.ts",
       "source_location": "L1",
       "id": "backend_src_middleware_require_auth_ts",
-      "community": 103,
+      "community": 102,
       "norm_label": "require-auth.ts"
     },
     {
@@ -1335,7 +1335,7 @@
       "source_file": "backend/src/middleware/require-auth.ts",
       "source_location": "L6",
       "id": "require_auth_requireauth",
-      "community": 103,
+      "community": 102,
       "norm_label": "requireauth()"
     },
     {
@@ -1344,7 +1344,7 @@
       "source_file": "backend/src/middleware/require-role.ts",
       "source_location": "L1",
       "id": "backend_src_middleware_require_role_ts",
-      "community": 104,
+      "community": 103,
       "norm_label": "require-role.ts"
     },
     {
@@ -1353,7 +1353,7 @@
       "source_file": "backend/src/middleware/require-role.ts",
       "source_location": "L5",
       "id": "require_role_requirerole",
-      "community": 104,
+      "community": 103,
       "norm_label": "requirerole()"
     },
     {
@@ -1362,7 +1362,7 @@
       "source_file": "backend/src/middleware/request-logger.ts",
       "source_location": "L1",
       "id": "backend_src_middleware_request_logger_ts",
-      "community": 105,
+      "community": 104,
       "norm_label": "request-logger.ts"
     },
     {
@@ -1371,7 +1371,7 @@
       "source_file": "backend/src/middleware/request-logger.ts",
       "source_location": "L4",
       "id": "request_logger_requestlogger",
-      "community": 105,
+      "community": 104,
       "norm_label": "requestlogger()"
     },
     {
@@ -1380,7 +1380,7 @@
       "source_file": "backend/src/config/env.ts",
       "source_location": "L1",
       "id": "backend_src_config_env_ts",
-      "community": 106,
+      "community": 105,
       "norm_label": "env.ts"
     },
     {
@@ -1389,7 +1389,7 @@
       "source_file": "backend/src/config/env.ts",
       "source_location": "L21",
       "id": "env_emptystringtoundefined",
-      "community": 106,
+      "community": 105,
       "norm_label": "emptystringtoundefined()"
     },
     {
@@ -1398,7 +1398,7 @@
       "source_file": "backend/src/config/passport.ts",
       "source_location": "L1",
       "id": "backend_src_config_passport_ts",
-      "community": 107,
+      "community": 106,
       "norm_label": "passport.ts"
     },
     {
@@ -1407,7 +1407,7 @@
       "source_file": "backend/src/config/passport.ts",
       "source_location": "L22",
       "id": "passport_configurepassport",
-      "community": 107,
+      "community": 106,
       "norm_label": "configurepassport()"
     },
     {
@@ -1542,7 +1542,7 @@
       "source_file": "backend/src/lib/prisma.ts",
       "source_location": "L1",
       "id": "backend_src_lib_prisma_ts",
-      "community": 147,
+      "community": 146,
       "norm_label": "prisma.ts"
     },
     {
@@ -1578,7 +1578,7 @@
       "source_file": "backend/src/routes/public.config.routes.ts",
       "source_location": "L1",
       "id": "backend_src_routes_public_config_routes_ts",
-      "community": 148,
+      "community": 147,
       "norm_label": "public.config.routes.ts"
     },
     {
@@ -1587,7 +1587,7 @@
       "source_file": "backend/src/routes/casino.routes.ts",
       "source_location": "L1",
       "id": "backend_src_routes_casino_routes_ts",
-      "community": 149,
+      "community": 148,
       "norm_label": "casino.routes.ts"
     },
     {
@@ -1596,7 +1596,7 @@
       "source_file": "backend/src/routes/events.routes.ts",
       "source_location": "L1",
       "id": "backend_src_routes_events_routes_ts",
-      "community": 108,
+      "community": 107,
       "norm_label": "events.routes.ts"
     },
     {
@@ -1605,7 +1605,7 @@
       "source_file": "backend/src/routes/events.routes.ts",
       "source_location": "L87",
       "id": "events_routes_uploadeventimagemiddleware",
-      "community": 108,
+      "community": 107,
       "norm_label": "uploadeventimagemiddleware()"
     },
     {
@@ -1614,7 +1614,7 @@
       "source_file": "backend/src/routes/gamification.routes.ts",
       "source_location": "L1",
       "id": "backend_src_routes_gamification_routes_ts",
-      "community": 150,
+      "community": 149,
       "norm_label": "gamification.routes.ts"
     },
     {
@@ -1623,7 +1623,7 @@
       "source_file": "backend/src/routes/auth.routes.ts",
       "source_location": "L1",
       "id": "backend_src_routes_auth_routes_ts",
-      "community": 151,
+      "community": 150,
       "norm_label": "auth.routes.ts"
     },
     {
@@ -1632,7 +1632,7 @@
       "source_file": "backend/src/routes/admin.routes.ts",
       "source_location": "L1",
       "id": "backend_src_routes_admin_routes_ts",
-      "community": 152,
+      "community": 151,
       "norm_label": "admin.routes.ts"
     },
     {
@@ -1641,7 +1641,7 @@
       "source_file": "backend/src/routes/admin.config.routes.ts",
       "source_location": "L1",
       "id": "backend_src_routes_admin_config_routes_ts",
-      "community": 153,
+      "community": 152,
       "norm_label": "admin.config.routes.ts"
     },
     {
@@ -1650,7 +1650,7 @@
       "source_file": "backend/src/routes/chat.routes.ts",
       "source_location": "L1",
       "id": "backend_src_routes_chat_routes_ts",
-      "community": 109,
+      "community": 108,
       "norm_label": "chat.routes.ts"
     },
     {
@@ -1659,7 +1659,7 @@
       "source_file": "backend/src/routes/chat.routes.ts",
       "source_location": "L81",
       "id": "chat_routes_cleanup",
-      "community": 109,
+      "community": 108,
       "norm_label": "cleanup()"
     },
     {
@@ -1668,35 +1668,8 @@
       "source_file": "backend/src/routes/health.routes.ts",
       "source_location": "L1",
       "id": "backend_src_routes_health_routes_ts",
-      "community": 154,
+      "community": 153,
       "norm_label": "health.routes.ts"
-    },
-    {
-      "label": "crash.routes.ts",
-      "file_type": "code",
-      "source_file": "backend/src/routes/crash.routes.ts",
-      "source_location": "L1",
-      "id": "backend_src_routes_crash_routes_ts",
-      "community": 81,
-      "norm_label": "crash.routes.ts"
-    },
-    {
-      "label": "getAuthUserId()",
-      "file_type": "code",
-      "source_file": "backend/src/routes/crash.routes.ts",
-      "source_location": "L10",
-      "id": "crash_routes_getauthuserid",
-      "community": 81,
-      "norm_label": "getauthuserid()"
-    },
-    {
-      "label": "cleanup()",
-      "file_type": "code",
-      "source_file": "backend/src/routes/crash.routes.ts",
-      "source_location": "L42",
-      "id": "crash_routes_cleanup",
-      "community": 81,
-      "norm_label": "cleanup()"
     },
     {
       "label": "roulette-rng.ts",
@@ -1740,7 +1713,7 @@
       "source_file": "backend/src/utils/cron.ts",
       "source_location": "L1",
       "id": "backend_src_utils_cron_ts",
-      "community": 82,
+      "community": 81,
       "norm_label": "cron.ts"
     },
     {
@@ -1749,7 +1722,7 @@
       "source_file": "backend/src/utils/cron.ts",
       "source_location": "L8",
       "id": "cron_takeleaderboardsnapshots",
-      "community": 82,
+      "community": 81,
       "norm_label": "takeleaderboardsnapshots()"
     },
     {
@@ -1758,7 +1731,7 @@
       "source_file": "backend/src/utils/cron.ts",
       "source_location": "L28",
       "id": "cron_startcronjobs",
-      "community": 82,
+      "community": 81,
       "norm_label": "startcronjobs()"
     },
     {
@@ -1803,7 +1776,7 @@
       "source_file": "backend/src/utils/app-error.ts",
       "source_location": "L1",
       "id": "backend_src_utils_app_error_ts",
-      "community": 83,
+      "community": 82,
       "norm_label": "app-error.ts"
     },
     {
@@ -1812,7 +1785,7 @@
       "source_file": "backend/src/utils/app-error.ts",
       "source_location": "L1",
       "id": "app_error_apperror",
-      "community": 83,
+      "community": 82,
       "norm_label": "apperror"
     },
     {
@@ -1821,7 +1794,7 @@
       "source_file": "backend/src/utils/app-error.ts",
       "source_location": "L5",
       "id": "app_error_apperror_constructor",
-      "community": 83,
+      "community": 82,
       "norm_label": ".constructor()"
     },
     {
@@ -1830,7 +1803,7 @@
       "source_file": "backend/src/utils/logger.ts",
       "source_location": "L1",
       "id": "backend_src_utils_logger_ts",
-      "community": 155,
+      "community": 154,
       "norm_label": "logger.ts"
     },
     {
@@ -1893,7 +1866,7 @@
       "source_file": "backend/src/utils/user-serializer.ts",
       "source_location": "L1",
       "id": "backend_src_utils_user_serializer_ts",
-      "community": 110,
+      "community": 109,
       "norm_label": "user-serializer.ts"
     },
     {
@@ -1902,7 +1875,7 @@
       "source_file": "backend/src/utils/user-serializer.ts",
       "source_location": "L3",
       "id": "user_serializer_serializeuser",
-      "community": 110,
+      "community": 109,
       "norm_label": "serializeuser()"
     },
     {
@@ -2028,7 +2001,7 @@
       "source_file": "backend/src/schemas/casino.schemas.ts",
       "source_location": "L1",
       "id": "backend_src_schemas_casino_schemas_ts",
-      "community": 156,
+      "community": 155,
       "norm_label": "casino.schemas.ts"
     },
     {
@@ -2037,7 +2010,7 @@
       "source_file": "backend/src/schemas/events.schemas.ts",
       "source_location": "L1",
       "id": "backend_src_schemas_events_schemas_ts",
-      "community": 111,
+      "community": 110,
       "norm_label": "events.schemas.ts"
     },
     {
@@ -2046,7 +2019,7 @@
       "source_file": "backend/src/schemas/events.schemas.ts",
       "source_location": "L4",
       "id": "events_schemas_trimstring",
-      "community": 111,
+      "community": 110,
       "norm_label": "trimstring()"
     },
     {
@@ -2055,7 +2028,7 @@
       "source_file": "backend/src/schemas/wins.schemas.ts",
       "source_location": "L1",
       "id": "backend_src_schemas_wins_schemas_ts",
-      "community": 157,
+      "community": 156,
       "norm_label": "wins.schemas.ts"
     },
     {
@@ -2064,7 +2037,7 @@
       "source_file": "backend/src/schemas/auth.schemas.ts",
       "source_location": "L1",
       "id": "backend_src_schemas_auth_schemas_ts",
-      "community": 158,
+      "community": 157,
       "norm_label": "auth.schemas.ts"
     },
     {
@@ -2073,7 +2046,7 @@
       "source_file": "backend/src/schemas/user.schemas.ts",
       "source_location": "L1",
       "id": "backend_src_schemas_user_schemas_ts",
-      "community": 159,
+      "community": 158,
       "norm_label": "user.schemas.ts"
     },
     {
@@ -2199,7 +2172,7 @@
       "source_file": "backend/src/services/user.service.ts",
       "source_location": "L1",
       "id": "backend_src_services_user_service_ts",
-      "community": 17,
+      "community": 18,
       "norm_label": "user.service.ts"
     },
     {
@@ -2208,7 +2181,7 @@
       "source_file": "backend/src/services/user.service.ts",
       "source_location": "L20",
       "id": "user_service_serializeadminusersummary",
-      "community": 17,
+      "community": 18,
       "norm_label": "serializeadminusersummary()"
     },
     {
@@ -2217,7 +2190,7 @@
       "source_file": "backend/src/services/user.service.ts",
       "source_location": "L48",
       "id": "user_service_userservice",
-      "community": 17,
+      "community": 18,
       "norm_label": "userservice"
     },
     {
@@ -2226,7 +2199,7 @@
       "source_file": "backend/src/services/user.service.ts",
       "source_location": "L49",
       "id": "user_service_userservice_requireactiveuser",
-      "community": 17,
+      "community": 18,
       "norm_label": ".requireactiveuser()"
     },
     {
@@ -2235,7 +2208,7 @@
       "source_file": "backend/src/services/user.service.ts",
       "source_location": "L61",
       "id": "user_service_userservice_getcurrentuser",
-      "community": 17,
+      "community": 18,
       "norm_label": ".getcurrentuser()"
     },
     {
@@ -2244,7 +2217,7 @@
       "source_file": "backend/src/services/user.service.ts",
       "source_location": "L68",
       "id": "user_service_userservice_updatecurrentuser",
-      "community": 17,
+      "community": 18,
       "norm_label": ".updatecurrentuser()"
     },
     {
@@ -2253,7 +2226,7 @@
       "source_file": "backend/src/services/user.service.ts",
       "source_location": "L113",
       "id": "user_service_userservice_uploadavatar",
-      "community": 17,
+      "community": 18,
       "norm_label": ".uploadavatar()"
     },
     {
@@ -2262,7 +2235,7 @@
       "source_file": "backend/src/services/user.service.ts",
       "source_location": "L149",
       "id": "user_service_userservice_searchadminusers",
-      "community": 17,
+      "community": 18,
       "norm_label": ".searchadminusers()"
     },
     {
@@ -2271,7 +2244,7 @@
       "source_file": "backend/src/services/user.service.ts",
       "source_location": "L203",
       "id": "user_service_userservice_adjustuserbalance",
-      "community": 17,
+      "community": 18,
       "norm_label": ".adjustuserbalance()"
     },
     {
@@ -2280,7 +2253,7 @@
       "source_file": "backend/src/services/user.service.ts",
       "source_location": "L280",
       "id": "user_service_userservice_unlockuserbadge",
-      "community": 17,
+      "community": 18,
       "norm_label": ".unlockuserbadge()"
     },
     {
@@ -2289,7 +2262,7 @@
       "source_file": "backend/src/services/user.service.ts",
       "source_location": "L350",
       "id": "user_service_userservice_updateuserreward",
-      "community": 17,
+      "community": 18,
       "norm_label": ".updateuserreward()"
     },
     {
@@ -2298,7 +2271,7 @@
       "source_file": "backend/src/services/user.service.ts",
       "source_location": "L389",
       "id": "user_service_userservice_listavailablebadges",
-      "community": 17,
+      "community": 18,
       "norm_label": ".listavailablebadges()"
     },
     {
@@ -2307,7 +2280,7 @@
       "source_file": "backend/src/services/user.service.ts",
       "source_location": "L393",
       "id": "user_service_userservice_getpublicprofile",
-      "community": 17,
+      "community": 18,
       "norm_label": ".getpublicprofile()"
     },
     {
@@ -2316,7 +2289,7 @@
       "source_file": "backend/src/services/user.service.ts",
       "source_location": "L474",
       "id": "user_service_userservice_updatepinnedbadges",
-      "community": 17,
+      "community": 18,
       "norm_label": ".updatepinnedbadges()"
     },
     {
@@ -2687,15 +2660,6 @@
       "id": "gamification_service_gamificationservice_claimbadgereward",
       "community": 4,
       "norm_label": ".claimbadgereward()"
-    },
-    {
-      "label": "crash-sse.service.ts",
-      "file_type": "code",
-      "source_file": "backend/src/services/crash-sse.service.ts",
-      "source_location": "L1",
-      "id": "backend_src_services_crash_sse_service_ts",
-      "community": 160,
-      "norm_label": "crash-sse.service.ts"
     },
     {
       "label": "event.service.ts",
@@ -3297,124 +3261,133 @@
       "source_file": "backend/src/services/crash.service.ts",
       "source_location": "L1",
       "id": "backend_src_services_crash_service_ts",
-      "community": 18,
+      "community": 15,
       "norm_label": "crash.service.ts"
     },
     {
       "label": "generateCrashData()",
       "file_type": "code",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L16",
+      "source_location": "L19",
       "id": "crash_service_generatecrashdata",
-      "community": 18,
+      "community": 15,
       "norm_label": "generatecrashdata()"
     },
     {
       "label": "getMultiplierAtTime()",
       "file_type": "code",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L26",
+      "source_location": "L29",
       "id": "crash_service_getmultiplierattime",
-      "community": 18,
+      "community": 15,
       "norm_label": "getmultiplierattime()"
+    },
+    {
+      "label": "initCrashSocket()",
+      "file_type": "code",
+      "source_file": "backend/src/services/crash.service.ts",
+      "source_location": "L75",
+      "id": "crash_service_initcrashsocket",
+      "community": 15,
+      "norm_label": "initcrashsocket()"
     },
     {
       "label": "CrashService",
       "file_type": "code",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L67",
+      "source_location": "L168",
       "id": "crash_service_crashservice",
-      "community": 18,
+      "community": 15,
       "norm_label": "crashservice"
     },
     {
-      "label": ".getState()",
+      "label": ".getPublicState()",
       "file_type": "code",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L70",
-      "id": "crash_service_crashservice_getstate",
-      "community": 18,
-      "norm_label": ".getstate()"
+      "source_location": "L171",
+      "id": "crash_service_crashservice_getpublicstate",
+      "community": 15,
+      "norm_label": ".getpublicstate()"
     },
     {
       "label": ".getHistory()",
       "file_type": "code",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L94",
+      "source_location": "L198",
       "id": "crash_service_crashservice_gethistory",
-      "community": 18,
+      "community": 15,
       "norm_label": ".gethistory()"
     },
     {
       "label": ".placeBet()",
       "file_type": "code",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L103",
+      "source_location": "L207",
       "id": "crash_service_crashservice_placebet",
-      "community": 18,
+      "community": 15,
       "norm_label": ".placebet()"
     },
     {
       "label": ".cashout()",
       "file_type": "code",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L158",
+      "source_location": "L261",
       "id": "crash_service_crashservice_cashout",
-      "community": 18,
+      "community": 15,
       "norm_label": ".cashout()"
     },
     {
       "label": "._processCashout()",
       "file_type": "code",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L177",
+      "source_location": "L280",
       "id": "crash_service_crashservice_processcashout",
-      "community": 18,
+      "community": 15,
       "norm_label": "._processcashout()"
     },
     {
       "label": ".startGameLoop()",
       "file_type": "code",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L216",
+      "source_location": "L316",
       "id": "crash_service_crashservice_startgameloop",
-      "community": 18,
+      "community": 15,
       "norm_label": ".startgameloop()"
     },
     {
       "label": "._runWaitingPhase()",
       "file_type": "code",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L231",
+      "source_location": "L331",
       "id": "crash_service_crashservice_runwaitingphase",
-      "community": 18,
+      "community": 15,
       "norm_label": "._runwaitingphase()"
     },
     {
       "label": "._runRunningPhase()",
       "file_type": "code",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L268",
+      "source_location": "L366",
       "id": "crash_service_crashservice_runrunningphase",
-      "community": 18,
+      "community": 15,
       "norm_label": "._runrunningphase()"
     },
     {
       "label": "._runCrashedPhase()",
       "file_type": "code",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L320",
+      "source_location": "L415",
       "id": "crash_service_crashservice_runcrashedphase",
-      "community": 18,
+      "community": 15,
       "norm_label": "._runcrashedphase()"
     },
     {
       "label": "._sleep()",
       "file_type": "code",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L384",
+      "source_location": "L482",
       "id": "crash_service_crashservice_sleep",
-      "community": 18,
+      "community": 15,
       "norm_label": "._sleep()"
     },
     {
@@ -3531,7 +3504,7 @@
       "source_file": "backend/src/services/prisma.service.ts",
       "source_location": "L1",
       "id": "backend_src_services_prisma_service_ts",
-      "community": 161,
+      "community": 159,
       "norm_label": "prisma.service.ts"
     },
     {
@@ -4404,7 +4377,7 @@
       "source_file": "backend/src/services/jackpot.service.ts",
       "source_location": "L1",
       "id": "backend_src_services_jackpot_service_ts",
-      "community": 15,
+      "community": 16,
       "norm_label": "jackpot.service.ts"
     },
     {
@@ -4413,7 +4386,7 @@
       "source_file": "backend/src/services/jackpot.service.ts",
       "source_location": "L35",
       "id": "jackpot_service_isprismaerrorlike",
-      "community": 15,
+      "community": 16,
       "norm_label": "isprismaerrorlike()"
     },
     {
@@ -4422,7 +4395,7 @@
       "source_file": "backend/src/services/jackpot.service.ts",
       "source_location": "L39",
       "id": "jackpot_service_stringifyprismameta",
-      "community": 15,
+      "community": 16,
       "norm_label": "stringifyprismameta()"
     },
     {
@@ -4431,7 +4404,7 @@
       "source_file": "backend/src/services/jackpot.service.ts",
       "source_location": "L51",
       "id": "jackpot_service_geterrordetails",
-      "community": 15,
+      "community": 16,
       "norm_label": "geterrordetails()"
     },
     {
@@ -4440,7 +4413,7 @@
       "source_file": "backend/src/services/jackpot.service.ts",
       "source_location": "L67",
       "id": "jackpot_service_isjackpotstorageunavailable",
-      "community": 15,
+      "community": 16,
       "norm_label": "isjackpotstorageunavailable()"
     },
     {
@@ -4449,7 +4422,7 @@
       "source_file": "backend/src/services/jackpot.service.ts",
       "source_location": "L84",
       "id": "jackpot_service_logjackpotstoragefallback",
-      "community": 15,
+      "community": 16,
       "norm_label": "logjackpotstoragefallback()"
     },
     {
@@ -4458,7 +4431,7 @@
       "source_file": "backend/src/services/jackpot.service.ts",
       "source_location": "L90",
       "id": "jackpot_service_buildunavailablejackpotstate",
-      "community": 15,
+      "community": 16,
       "norm_label": "buildunavailablejackpotstate()"
     },
     {
@@ -4467,7 +4440,7 @@
       "source_file": "backend/src/services/jackpot.service.ts",
       "source_location": "L102",
       "id": "jackpot_service_jackpotservice",
-      "community": 15,
+      "community": 16,
       "norm_label": "jackpotservice"
     },
     {
@@ -4476,7 +4449,7 @@
       "source_file": "backend/src/services/jackpot.service.ts",
       "source_location": "L103",
       "id": "jackpot_service_jackpotservice_getclient",
-      "community": 15,
+      "community": 16,
       "norm_label": ".getclient()"
     },
     {
@@ -4485,7 +4458,7 @@
       "source_file": "backend/src/services/jackpot.service.ts",
       "source_location": "L107",
       "id": "jackpot_service_jackpotservice_ensurejackpot",
-      "community": 15,
+      "community": 16,
       "norm_label": ".ensurejackpot()"
     },
     {
@@ -4494,7 +4467,7 @@
       "source_file": "backend/src/services/jackpot.service.ts",
       "source_location": "L126",
       "id": "jackpot_service_jackpotservice_addcontribution",
-      "community": 15,
+      "community": 16,
       "norm_label": ".addcontribution()"
     },
     {
@@ -4503,7 +4476,7 @@
       "source_file": "backend/src/services/jackpot.service.ts",
       "source_location": "L176",
       "id": "jackpot_service_jackpotservice_recordcasinocontribution",
-      "community": 15,
+      "community": 16,
       "norm_label": ".recordcasinocontribution()"
     },
     {
@@ -4512,7 +4485,7 @@
       "source_file": "backend/src/services/jackpot.service.ts",
       "source_location": "L199",
       "id": "jackpot_service_jackpotservice_recordeventcontribution",
-      "community": 15,
+      "community": 16,
       "norm_label": ".recordeventcontribution()"
     },
     {
@@ -4521,7 +4494,7 @@
       "source_file": "backend/src/services/jackpot.service.ts",
       "source_location": "L215",
       "id": "jackpot_service_jackpotservice_triggergoldeventwinner",
-      "community": 15,
+      "community": 16,
       "norm_label": ".triggergoldeventwinner()"
     },
     {
@@ -4530,7 +4503,7 @@
       "source_file": "backend/src/services/jackpot.service.ts",
       "source_location": "L276",
       "id": "jackpot_service_jackpotservice_getstate",
-      "community": 15,
+      "community": 16,
       "norm_label": ".getstate()"
     },
     {
@@ -4539,7 +4512,7 @@
       "source_file": "backend/src/types/upload.ts",
       "source_location": "L1",
       "id": "backend_src_types_upload_ts",
-      "community": 162,
+      "community": 160,
       "norm_label": "upload.ts"
     },
     {
@@ -4548,7 +4521,7 @@
       "source_file": "backend/src/types/passport-microsoft.d.ts",
       "source_location": "L1",
       "id": "backend_src_types_passport_microsoft_d_ts",
-      "community": 112,
+      "community": 111,
       "norm_label": "passport-microsoft.d.ts"
     },
     {
@@ -4557,7 +4530,7 @@
       "source_file": "backend/src/types/passport-microsoft.d.ts",
       "source_location": "L43",
       "id": "passport_microsoft_d_strategy",
-      "community": 112,
+      "community": 111,
       "norm_label": "strategy"
     },
     {
@@ -4566,7 +4539,7 @@
       "source_file": "backend/src/types/express.d.ts",
       "source_location": "L1",
       "id": "backend_src_types_express_d_ts",
-      "community": 163,
+      "community": 161,
       "norm_label": "express.d.ts"
     },
     {
@@ -4575,7 +4548,7 @@
       "source_file": "backend/src/types/auth.ts",
       "source_location": "L1",
       "id": "backend_src_types_auth_ts",
-      "community": 164,
+      "community": 162,
       "norm_label": "auth.ts"
     },
     {
@@ -5043,7 +5016,7 @@
       "source_file": "backend/src/controllers/health.controller.ts",
       "source_location": "L1",
       "id": "backend_src_controllers_health_controller_ts",
-      "community": 113,
+      "community": 112,
       "norm_label": "health.controller.ts"
     },
     {
@@ -5052,7 +5025,7 @@
       "source_file": "backend/src/controllers/health.controller.ts",
       "source_location": "L3",
       "id": "health_controller_healthcontroller",
-      "community": 113,
+      "community": 112,
       "norm_label": "healthcontroller()"
     },
     {
@@ -5502,7 +5475,7 @@
       "source_file": "frontend/tailwind.config.ts",
       "source_location": "L1",
       "id": "frontend_tailwind_config_ts",
-      "community": 165,
+      "community": 163,
       "norm_label": "tailwind.config.ts"
     },
     {
@@ -5511,7 +5484,7 @@
       "source_file": "frontend/vite.config.ts",
       "source_location": "L1",
       "id": "frontend_vite_config_ts",
-      "community": 166,
+      "community": 164,
       "norm_label": "vite.config.ts"
     },
     {
@@ -5556,7 +5529,7 @@
       "source_file": "frontend/src/main.tsx",
       "source_location": "L1",
       "id": "frontend_src_main_tsx",
-      "community": 167,
+      "community": 165,
       "norm_label": "main.tsx"
     },
     {
@@ -5565,7 +5538,7 @@
       "source_file": "frontend/src/vite-env.d.ts",
       "source_location": "L1",
       "id": "frontend_src_vite_env_d_ts",
-      "community": 168,
+      "community": 166,
       "norm_label": "vite-env.d.ts"
     },
     {
@@ -5574,7 +5547,7 @@
       "source_file": "frontend/src/components/OddsChangeModal.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_oddschangemodal_tsx",
-      "community": 169,
+      "community": 167,
       "norm_label": "oddschangemodal.tsx"
     },
     {
@@ -5583,7 +5556,7 @@
       "source_file": "frontend/src/components/ActiveEventBetsList.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_activeeventbetslist_tsx",
-      "community": 84,
+      "community": 83,
       "norm_label": "activeeventbetslist.tsx"
     },
     {
@@ -5592,7 +5565,7 @@
       "source_file": "frontend/src/components/ActiveEventBetsList.tsx",
       "source_location": "L16",
       "id": "activeeventbetslist_resolvetargetevent",
-      "community": 84,
+      "community": 83,
       "norm_label": "resolvetargetevent()"
     },
     {
@@ -5601,7 +5574,7 @@
       "source_file": "frontend/src/components/ActiveEventBetsList.tsx",
       "source_location": "L34",
       "id": "activeeventbetslist_toggleexpandbet",
-      "community": 84,
+      "community": 83,
       "norm_label": "toggleexpandbet()"
     },
     {
@@ -5610,7 +5583,7 @@
       "source_file": "frontend/src/components/EventCard.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_eventcard_tsx",
-      "community": 85,
+      "community": 84,
       "norm_label": "eventcard.tsx"
     },
     {
@@ -5619,7 +5592,7 @@
       "source_file": "frontend/src/components/EventCard.tsx",
       "source_location": "L19",
       "id": "eventcard_getdisabledreason",
-      "community": 85,
+      "community": 84,
       "norm_label": "getdisabledreason()"
     },
     {
@@ -5628,7 +5601,7 @@
       "source_file": "frontend/src/components/EventCard.tsx",
       "source_location": "L110",
       "id": "eventcard_cn",
-      "community": 85,
+      "community": 84,
       "norm_label": "cn()"
     },
     {
@@ -5790,7 +5763,7 @@
       "source_file": "frontend/src/components/layout/DashboardShell.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_layout_dashboardshell_tsx",
-      "community": 114,
+      "community": 113,
       "norm_label": "dashboardshell.tsx"
     },
     {
@@ -5799,7 +5772,7 @@
       "source_file": "frontend/src/components/layout/DashboardShell.tsx",
       "source_location": "L368",
       "id": "dashboardshell_cn",
-      "community": 114,
+      "community": 113,
       "norm_label": "cn()"
     },
     {
@@ -5853,7 +5826,7 @@
       "source_file": "frontend/src/components/layout/LoadingScreen.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_layout_loadingscreen_tsx",
-      "community": 115,
+      "community": 114,
       "norm_label": "loadingscreen.tsx"
     },
     {
@@ -5862,7 +5835,7 @@
       "source_file": "frontend/src/components/layout/LoadingScreen.tsx",
       "source_location": "L3",
       "id": "loadingscreen_loadingscreen",
-      "community": 115,
+      "community": 114,
       "norm_label": "loadingscreen()"
     },
     {
@@ -5871,7 +5844,7 @@
       "source_file": "frontend/src/components/casino/HiloHistory.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_hilohistory_tsx",
-      "community": 116,
+      "community": 115,
       "norm_label": "hilohistory.tsx"
     },
     {
@@ -5880,7 +5853,7 @@
       "source_file": "frontend/src/components/casino/HiloHistory.tsx",
       "source_location": "L9",
       "id": "hilohistory_hilohistory",
-      "community": 116,
+      "community": 115,
       "norm_label": "hilohistory()"
     },
     {
@@ -5925,7 +5898,7 @@
       "source_file": "frontend/src/components/casino/HiloGame.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_hilogame_tsx",
-      "community": 170,
+      "community": 168,
       "norm_label": "hilogame.tsx"
     },
     {
@@ -5934,7 +5907,7 @@
       "source_file": "frontend/src/components/casino/RouletteHistory.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_roulettehistory_tsx",
-      "community": 171,
+      "community": 169,
       "norm_label": "roulettehistory.tsx"
     },
     {
@@ -5943,7 +5916,7 @@
       "source_file": "frontend/src/components/casino/HiloCard.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_hilocard_tsx",
-      "community": 117,
+      "community": 116,
       "norm_label": "hilocard.tsx"
     },
     {
@@ -5952,7 +5925,7 @@
       "source_file": "frontend/src/components/casino/HiloCard.tsx",
       "source_location": "L21",
       "id": "hilocard_getvaluelabel",
-      "community": 117,
+      "community": 116,
       "norm_label": "getvaluelabel()"
     },
     {
@@ -5961,7 +5934,7 @@
       "source_file": "frontend/src/components/casino/RouletteGame.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_roulettegame_tsx",
-      "community": 172,
+      "community": 170,
       "norm_label": "roulettegame.tsx"
     },
     {
@@ -5970,7 +5943,7 @@
       "source_file": "frontend/src/components/casino/RideTheBusGame.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_ridethebusgame_tsx",
-      "community": 118,
+      "community": 117,
       "norm_label": "ridethebusgame.tsx"
     },
     {
@@ -5979,7 +5952,7 @@
       "source_file": "frontend/src/components/casino/RideTheBusGame.tsx",
       "source_location": "L74",
       "id": "ridethebusgame_handler",
-      "community": 118,
+      "community": 117,
       "norm_label": "handler()"
     },
     {
@@ -6024,7 +5997,7 @@
       "source_file": "frontend/src/components/casino/RouletteStats.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_roulettestats_tsx",
-      "community": 119,
+      "community": 118,
       "norm_label": "roulettestats.tsx"
     },
     {
@@ -6033,7 +6006,7 @@
       "source_file": "frontend/src/components/casino/RouletteStats.tsx",
       "source_location": "L9",
       "id": "roulettestats_numberpill",
-      "community": 119,
+      "community": 118,
       "norm_label": "numberpill()"
     },
     {
@@ -6042,7 +6015,7 @@
       "source_file": "frontend/src/components/casino/RouletteWheel.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_roulettewheel_tsx",
-      "community": 86,
+      "community": 85,
       "norm_label": "roulettewheel.tsx"
     },
     {
@@ -6051,7 +6024,7 @@
       "source_file": "frontend/src/components/casino/RouletteWheel.tsx",
       "source_location": "L40",
       "id": "roulettewheel_resizewheel",
-      "community": 86,
+      "community": 85,
       "norm_label": "resizewheel()"
     },
     {
@@ -6060,7 +6033,7 @@
       "source_file": "frontend/src/components/casino/RouletteWheel.tsx",
       "source_location": "L83",
       "id": "roulettewheel_playspin",
-      "community": 86,
+      "community": 85,
       "norm_label": "playspin()"
     },
     {
@@ -6069,7 +6042,7 @@
       "source_file": "frontend/src/components/casino/RouletteControls.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_roulettecontrols_tsx",
-      "community": 173,
+      "community": 171,
       "norm_label": "roulettecontrols.tsx"
     },
     {
@@ -6204,7 +6177,7 @@
       "source_file": "frontend/src/components/casino/RouletteChip.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_roulettechip_tsx",
-      "community": 120,
+      "community": 119,
       "norm_label": "roulettechip.tsx"
     },
     {
@@ -6213,7 +6186,7 @@
       "source_file": "frontend/src/components/casino/RouletteChip.tsx",
       "source_location": "L9",
       "id": "roulettechip_roulettechip",
-      "community": 120,
+      "community": 119,
       "norm_label": "roulettechip()"
     },
     {
@@ -6267,7 +6240,7 @@
       "source_file": "frontend/src/components/casino/Mines/MinesCell.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_mines_minescell_tsx",
-      "community": 121,
+      "community": 120,
       "norm_label": "minescell.tsx"
     },
     {
@@ -6276,7 +6249,7 @@
       "source_file": "frontend/src/components/casino/Mines/MinesCell.tsx",
       "source_location": "L13",
       "id": "minescell_gemicon",
-      "community": 121,
+      "community": 120,
       "norm_label": "gemicon()"
     },
     {
@@ -6285,7 +6258,7 @@
       "source_file": "frontend/src/components/casino/Mines/MinesAutoBetGraph.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_mines_minesautobetgraph_tsx",
-      "community": 174,
+      "community": 172,
       "norm_label": "minesautobetgraph.tsx"
     },
     {
@@ -6294,7 +6267,7 @@
       "source_file": "frontend/src/components/casino/Mines/MinesGrid.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_mines_minesgrid_tsx",
-      "community": 87,
+      "community": 86,
       "norm_label": "minesgrid.tsx"
     },
     {
@@ -6303,7 +6276,7 @@
       "source_file": "frontend/src/components/casino/Mines/MinesGrid.tsx",
       "source_location": "L43",
       "id": "minesgrid_getcellstate",
-      "community": 87,
+      "community": 86,
       "norm_label": "getcellstate()"
     },
     {
@@ -6312,7 +6285,7 @@
       "source_file": "frontend/src/components/casino/Mines/MinesGrid.tsx",
       "source_location": "L57",
       "id": "minesgrid_getminestaggerindex",
-      "community": 87,
+      "community": 86,
       "norm_label": "getminestaggerindex()"
     },
     {
@@ -6321,7 +6294,7 @@
       "source_file": "frontend/src/components/casino/Crash/CrashPlayerList.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_crash_crashplayerlist_tsx",
-      "community": 122,
+      "community": 121,
       "norm_label": "crashplayerlist.tsx"
     },
     {
@@ -6330,7 +6303,7 @@
       "source_file": "frontend/src/components/casino/Crash/CrashPlayerList.tsx",
       "source_location": "L26",
       "id": "crashplayerlist_crashplayerrow",
-      "community": 122,
+      "community": 121,
       "norm_label": "crashplayerrow()"
     },
     {
@@ -6375,7 +6348,7 @@
       "source_file": "frontend/src/components/casino/Crash/CrashCurve.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_crash_crashcurve_tsx",
-      "community": 88,
+      "community": 87,
       "norm_label": "crashcurve.tsx"
     },
     {
@@ -6384,7 +6357,7 @@
       "source_file": "frontend/src/components/casino/Crash/CrashCurve.tsx",
       "source_location": "L19",
       "id": "crashcurve_buildpath",
-      "community": 88,
+      "community": 87,
       "norm_label": "buildpath()"
     },
     {
@@ -6393,7 +6366,7 @@
       "source_file": "frontend/src/components/casino/Crash/CrashCurve.tsx",
       "source_location": "L45",
       "id": "crashcurve_buildfillpath",
-      "community": 88,
+      "community": 87,
       "norm_label": "buildfillpath()"
     },
     {
@@ -6501,7 +6474,7 @@
       "source_file": "frontend/src/components/chat/MentionDropdown.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_chat_mentiondropdown_tsx",
-      "community": 123,
+      "community": 122,
       "norm_label": "mentiondropdown.tsx"
     },
     {
@@ -6510,7 +6483,7 @@
       "source_file": "frontend/src/components/chat/MentionDropdown.tsx",
       "source_location": "L19",
       "id": "mentiondropdown_fetchmentionusers",
-      "community": 123,
+      "community": 122,
       "norm_label": "fetchmentionusers()"
     },
     {
@@ -6519,7 +6492,7 @@
       "source_file": "frontend/src/components/chat/ChatMessage.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_chat_chatmessage_tsx",
-      "community": 89,
+      "community": 88,
       "norm_label": "chatmessage.tsx"
     },
     {
@@ -6528,7 +6501,7 @@
       "source_file": "frontend/src/components/chat/ChatMessage.tsx",
       "source_location": "L3",
       "id": "chatmessage_relativetime",
-      "community": 89,
+      "community": 88,
       "norm_label": "relativetime()"
     },
     {
@@ -6537,7 +6510,7 @@
       "source_file": "frontend/src/components/chat/ChatMessage.tsx",
       "source_location": "L29",
       "id": "chatmessage_rendercontent",
-      "community": 89,
+      "community": 88,
       "norm_label": "rendercontent()"
     },
     {
@@ -6546,7 +6519,7 @@
       "source_file": "frontend/src/components/ui/WinPopup.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_ui_winpopup_tsx",
-      "community": 175,
+      "community": 173,
       "norm_label": "winpopup.tsx"
     },
     {
@@ -6555,7 +6528,7 @@
       "source_file": "frontend/src/components/ui/BadgeCard.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_ui_badgecard_tsx",
-      "community": 124,
+      "community": 123,
       "norm_label": "badgecard.tsx"
     },
     {
@@ -6564,7 +6537,7 @@
       "source_file": "frontend/src/components/ui/BadgeCard.tsx",
       "source_location": "L35",
       "id": "badgecard_badgecard",
-      "community": 124,
+      "community": 123,
       "norm_label": "badgecard()"
     },
     {
@@ -6573,7 +6546,7 @@
       "source_file": "frontend/src/components/ui/ThemeToggle.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_ui_themetoggle_tsx",
-      "community": 176,
+      "community": 174,
       "norm_label": "themetoggle.tsx"
     },
     {
@@ -6582,7 +6555,7 @@
       "source_file": "frontend/src/components/ui/Button.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_ui_button_tsx",
-      "community": 125,
+      "community": 124,
       "norm_label": "button.tsx"
     },
     {
@@ -6591,7 +6564,7 @@
       "source_file": "frontend/src/components/ui/Button.tsx",
       "source_location": "L39",
       "id": "button_button",
-      "community": 125,
+      "community": 124,
       "norm_label": "button()"
     },
     {
@@ -6600,7 +6573,7 @@
       "source_file": "frontend/src/components/ui/Card.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_ui_card_tsx",
-      "community": 126,
+      "community": 125,
       "norm_label": "card.tsx"
     },
     {
@@ -6609,7 +6582,7 @@
       "source_file": "frontend/src/components/ui/Card.tsx",
       "source_location": "L16",
       "id": "card_card",
-      "community": 126,
+      "community": 125,
       "norm_label": "card()"
     },
     {
@@ -6618,7 +6591,7 @@
       "source_file": "frontend/src/components/ui/Modal.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_ui_modal_tsx",
-      "community": 177,
+      "community": 175,
       "norm_label": "modal.tsx"
     },
     {
@@ -6627,7 +6600,7 @@
       "source_file": "frontend/src/components/ui/Input.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_ui_input_tsx",
-      "community": 178,
+      "community": 176,
       "norm_label": "input.tsx"
     },
     {
@@ -6636,7 +6609,7 @@
       "source_file": "frontend/src/components/ui/FogEffect.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_ui_fogeffect_tsx",
-      "community": 127,
+      "community": 126,
       "norm_label": "fogeffect.tsx"
     },
     {
@@ -6645,7 +6618,7 @@
       "source_file": "frontend/src/components/ui/FogEffect.tsx",
       "source_location": "L16",
       "id": "fogeffect_fogeffect",
-      "community": 127,
+      "community": 126,
       "norm_label": "fogeffect()"
     },
     {
@@ -7230,7 +7203,7 @@
       "source_file": "frontend/src/lib/notifications.ts",
       "source_location": "L1",
       "id": "frontend_src_lib_notifications_ts",
-      "community": 128,
+      "community": 127,
       "norm_label": "notifications.ts"
     },
     {
@@ -7239,7 +7212,7 @@
       "source_file": "frontend/src/lib/notifications.ts",
       "source_location": "L9",
       "id": "notifications_geterrormessage",
-      "community": 128,
+      "community": 127,
       "norm_label": "geterrormessage()"
     },
     {
@@ -7248,7 +7221,7 @@
       "source_file": "frontend/src/lib/utils.ts",
       "source_location": "L1",
       "id": "frontend_src_lib_utils_ts",
-      "community": 90,
+      "community": 89,
       "norm_label": "utils.ts"
     },
     {
@@ -7257,7 +7230,7 @@
       "source_file": "frontend/src/lib/utils.ts",
       "source_location": "L4",
       "id": "utils_cn",
-      "community": 90,
+      "community": 89,
       "norm_label": "cn()"
     },
     {
@@ -7266,7 +7239,7 @@
       "source_file": "frontend/src/lib/utils.ts",
       "source_location": "L8",
       "id": "utils_formattokens",
-      "community": 90,
+      "community": 89,
       "norm_label": "formattokens()"
     },
     {
@@ -7329,7 +7302,7 @@
       "source_file": "frontend/src/lib/sounds.ts",
       "source_location": "L1",
       "id": "frontend_src_lib_sounds_ts",
-      "community": 179,
+      "community": 177,
       "norm_label": "sounds.ts"
     },
     {
@@ -7419,7 +7392,7 @@
       "source_file": "frontend/src/lib/casino/rouletteConstants.ts",
       "source_location": "L1",
       "id": "frontend_src_lib_casino_rouletteconstants_ts",
-      "community": 180,
+      "community": 178,
       "norm_label": "rouletteconstants.ts"
     },
     {
@@ -7941,7 +7914,7 @@
       "source_file": "frontend/src/pages/JackpotPage.tsx",
       "source_location": "L1",
       "id": "frontend_src_pages_jackpotpage_tsx",
-      "community": 91,
+      "community": 90,
       "norm_label": "jackpotpage.tsx"
     },
     {
@@ -7950,7 +7923,7 @@
       "source_file": "frontend/src/pages/JackpotPage.tsx",
       "source_location": "L12",
       "id": "jackpotpage_formatrelativedate",
-      "community": 91,
+      "community": 90,
       "norm_label": "formatrelativedate()"
     },
     {
@@ -7959,7 +7932,7 @@
       "source_file": "frontend/src/pages/JackpotPage.tsx",
       "source_location": "L86",
       "id": "jackpotpage_handlelogout",
-      "community": 91,
+      "community": 90,
       "norm_label": "handlelogout()"
     },
     {
@@ -8004,7 +7977,7 @@
       "source_file": "frontend/src/pages/EventsDisabledPage.tsx",
       "source_location": "L1",
       "id": "frontend_src_pages_eventsdisabledpage_tsx",
-      "community": 129,
+      "community": 128,
       "norm_label": "eventsdisabledpage.tsx"
     },
     {
@@ -8013,7 +7986,7 @@
       "source_file": "frontend/src/pages/EventsDisabledPage.tsx",
       "source_location": "L1",
       "id": "eventsdisabledpage_eventsdisabledpage",
-      "community": 129,
+      "community": 128,
       "norm_label": "eventsdisabledpage()"
     },
     {
@@ -8022,7 +7995,7 @@
       "source_file": "frontend/src/pages/MaintenancePage.tsx",
       "source_location": "L1",
       "id": "frontend_src_pages_maintenancepage_tsx",
-      "community": 130,
+      "community": 129,
       "norm_label": "maintenancepage.tsx"
     },
     {
@@ -8031,7 +8004,7 @@
       "source_file": "frontend/src/pages/MaintenancePage.tsx",
       "source_location": "L1",
       "id": "maintenancepage_maintenancepage",
-      "community": 130,
+      "community": 129,
       "norm_label": "maintenancepage()"
     },
     {
@@ -8040,7 +8013,7 @@
       "source_file": "frontend/src/pages/AuthCallbackPage.tsx",
       "source_location": "L1",
       "id": "frontend_src_pages_authcallbackpage_tsx",
-      "community": 131,
+      "community": 130,
       "norm_label": "authcallbackpage.tsx"
     },
     {
@@ -8049,7 +8022,7 @@
       "source_file": "frontend/src/pages/AuthCallbackPage.tsx",
       "source_location": "L8",
       "id": "authcallbackpage_authcallbackpage",
-      "community": 131,
+      "community": 130,
       "norm_label": "authcallbackpage()"
     },
     {
@@ -8220,7 +8193,7 @@
       "source_file": "frontend/src/pages/CrashPage.tsx",
       "source_location": "L1",
       "id": "frontend_src_pages_crashpage_tsx",
-      "community": 92,
+      "community": 91,
       "norm_label": "crashpage.tsx"
     },
     {
@@ -8229,16 +8202,16 @@
       "source_file": "frontend/src/pages/CrashPage.tsx",
       "source_location": "L15",
       "id": "crashpage_crashhistorypill",
-      "community": 92,
+      "community": 91,
       "norm_label": "crashhistorypill()"
     },
     {
       "label": "handleLogout()",
       "file_type": "code",
       "source_file": "frontend/src/pages/CrashPage.tsx",
-      "source_location": "L184",
+      "source_location": "L195",
       "id": "crashpage_handlelogout",
-      "community": 92,
+      "community": 91,
       "norm_label": "handlelogout()"
     },
     {
@@ -8247,7 +8220,7 @@
       "source_file": "frontend/src/pages/EventDetailPage.tsx",
       "source_location": "L1",
       "id": "frontend_src_pages_eventdetailpage_tsx",
-      "community": 132,
+      "community": 131,
       "norm_label": "eventdetailpage.tsx"
     },
     {
@@ -8256,7 +8229,7 @@
       "source_file": "frontend/src/pages/EventDetailPage.tsx",
       "source_location": "L54",
       "id": "eventdetailpage_handlelogout",
-      "community": 132,
+      "community": 131,
       "norm_label": "handlelogout()"
     },
     {
@@ -8337,7 +8310,7 @@
       "source_file": "frontend/src/pages/DashboardPage.tsx",
       "source_location": "L1",
       "id": "frontend_src_pages_dashboardpage_tsx",
-      "community": 93,
+      "community": 92,
       "norm_label": "dashboardpage.tsx"
     },
     {
@@ -8346,7 +8319,7 @@
       "source_file": "frontend/src/pages/DashboardPage.tsx",
       "source_location": "L29",
       "id": "dashboardpage_betstatusbadgeclass",
-      "community": 93,
+      "community": 92,
       "norm_label": "betstatusbadgeclass()"
     },
     {
@@ -8355,7 +8328,7 @@
       "source_file": "frontend/src/pages/DashboardPage.tsx",
       "source_location": "L88",
       "id": "dashboardpage_handlelogout",
-      "community": 93,
+      "community": 92,
       "norm_label": "handlelogout()"
     },
     {
@@ -8679,7 +8652,7 @@
       "source_file": "frontend/src/routes/ProtectedRoute.tsx",
       "source_location": "L1",
       "id": "frontend_src_routes_protectedroute_tsx",
-      "community": 133,
+      "community": 132,
       "norm_label": "protectedroute.tsx"
     },
     {
@@ -8688,7 +8661,7 @@
       "source_file": "frontend/src/routes/ProtectedRoute.tsx",
       "source_location": "L10",
       "id": "protectedroute_protectedroute",
-      "community": 133,
+      "community": 132,
       "norm_label": "protectedroute()"
     },
     {
@@ -8697,7 +8670,7 @@
       "source_file": "frontend/src/hooks/useMinesAutoBet.ts",
       "source_location": "L1",
       "id": "frontend_src_hooks_useminesautobet_ts",
-      "community": 134,
+      "community": 133,
       "norm_label": "useminesautobet.ts"
     },
     {
@@ -8706,7 +8679,7 @@
       "source_file": "frontend/src/hooks/useMinesAutoBet.ts",
       "source_location": "L22",
       "id": "useminesautobet_useminesautobet",
-      "community": 134,
+      "community": 133,
       "norm_label": "useminesautobet()"
     },
     {
@@ -8715,7 +8688,7 @@
       "source_file": "frontend/src/hooks/useMinesGame.ts",
       "source_location": "L1",
       "id": "frontend_src_hooks_useminesgame_ts",
-      "community": 135,
+      "community": 134,
       "norm_label": "useminesgame.ts"
     },
     {
@@ -8724,7 +8697,7 @@
       "source_file": "frontend/src/hooks/useMinesGame.ts",
       "source_location": "L13",
       "id": "useminesgame_useminesgame",
-      "community": 135,
+      "community": 134,
       "norm_label": "useminesgame()"
     },
     {
@@ -8733,7 +8706,7 @@
       "source_file": "frontend/src/hooks/useAuthenticatedUser.ts",
       "source_location": "L1",
       "id": "frontend_src_hooks_useauthenticateduser_ts",
-      "community": 136,
+      "community": 135,
       "norm_label": "useauthenticateduser.ts"
     },
     {
@@ -8742,7 +8715,7 @@
       "source_file": "frontend/src/hooks/useAuthenticatedUser.ts",
       "source_location": "L6",
       "id": "useauthenticateduser_useauthenticateduser",
-      "community": 136,
+      "community": 135,
       "norm_label": "useauthenticateduser()"
     },
     {
@@ -8751,7 +8724,7 @@
       "source_file": "frontend/src/hooks/useRideTheBusGame.ts",
       "source_location": "L1",
       "id": "frontend_src_hooks_useridethebusgame_ts",
-      "community": 137,
+      "community": 136,
       "norm_label": "useridethebusgame.ts"
     },
     {
@@ -8760,7 +8733,7 @@
       "source_file": "frontend/src/hooks/useRideTheBusGame.ts",
       "source_location": "L15",
       "id": "useridethebusgame_useridethebusgame",
-      "community": 137,
+      "community": 136,
       "norm_label": "useridethebusgame()"
     },
     {
@@ -8769,7 +8742,7 @@
       "source_file": "frontend/src/hooks/useGamificationState.ts",
       "source_location": "L1",
       "id": "frontend_src_hooks_usegamificationstate_ts",
-      "community": 94,
+      "community": 93,
       "norm_label": "usegamificationstate.ts"
     },
     {
@@ -8778,7 +8751,7 @@
       "source_file": "frontend/src/hooks/useGamificationState.ts",
       "source_location": "L4",
       "id": "usegamificationstate_usegamificationstate",
-      "community": 94,
+      "community": 93,
       "norm_label": "usegamificationstate()"
     },
     {
@@ -8787,7 +8760,7 @@
       "source_file": "frontend/src/hooks/useGamificationState.ts",
       "source_location": "L12",
       "id": "usegamificationstate_usejackpotstate",
-      "community": 94,
+      "community": 93,
       "norm_label": "usejackpotstate()"
     },
     {
@@ -8796,7 +8769,7 @@
       "source_file": "frontend/src/hooks/useChatStream.ts",
       "source_location": "L1",
       "id": "frontend_src_hooks_usechatstream_ts",
-      "community": 138,
+      "community": 137,
       "norm_label": "usechatstream.ts"
     },
     {
@@ -8805,7 +8778,7 @@
       "source_file": "frontend/src/hooks/useChatStream.ts",
       "source_location": "L25",
       "id": "usechatstream_usechatstream",
-      "community": 138,
+      "community": 137,
       "norm_label": "usechatstream()"
     },
     {
@@ -8814,7 +8787,7 @@
       "source_file": "frontend/src/hooks/useSessionBootstrap.ts",
       "source_location": "L1",
       "id": "frontend_src_hooks_usesessionbootstrap_ts",
-      "community": 139,
+      "community": 138,
       "norm_label": "usesessionbootstrap.ts"
     },
     {
@@ -8823,7 +8796,7 @@
       "source_file": "frontend/src/hooks/useSessionBootstrap.ts",
       "source_location": "L6",
       "id": "usesessionbootstrap_usesessionbootstrap",
-      "community": 139,
+      "community": 138,
       "norm_label": "usesessionbootstrap()"
     },
     {
@@ -8832,7 +8805,7 @@
       "source_file": "frontend/src/hooks/useHiloGame.ts",
       "source_location": "L1",
       "id": "frontend_src_hooks_usehilogame_ts",
-      "community": 140,
+      "community": 139,
       "norm_label": "usehilogame.ts"
     },
     {
@@ -8841,7 +8814,7 @@
       "source_file": "frontend/src/hooks/useHiloGame.ts",
       "source_location": "L17",
       "id": "usehilogame_usehilogame",
-      "community": 140,
+      "community": 139,
       "norm_label": "usehilogame()"
     },
     {
@@ -8850,7 +8823,7 @@
       "source_file": "frontend/src/hooks/useCrashStream.ts",
       "source_location": "L1",
       "id": "frontend_src_hooks_usecrashstream_ts",
-      "community": 95,
+      "community": 94,
       "norm_label": "usecrashstream.ts"
     },
     {
@@ -8859,7 +8832,7 @@
       "source_file": "frontend/src/hooks/useCrashStream.ts",
       "source_location": "L24",
       "id": "usecrashstream_calcmultiplier",
-      "community": 95,
+      "community": 94,
       "norm_label": "calcmultiplier()"
     },
     {
@@ -8868,7 +8841,7 @@
       "source_file": "frontend/src/hooks/useCrashStream.ts",
       "source_location": "L42",
       "id": "usecrashstream_usecrashstream",
-      "community": 95,
+      "community": 94,
       "norm_label": "usecrashstream()"
     },
     {
@@ -8877,7 +8850,7 @@
       "source_file": "frontend/src/types/gamification.ts",
       "source_location": "L1",
       "id": "frontend_src_types_gamification_ts",
-      "community": 181,
+      "community": 179,
       "norm_label": "gamification.ts"
     },
     {
@@ -8886,7 +8859,7 @@
       "source_file": "frontend/src/types/blackjack.ts",
       "source_location": "L1",
       "id": "frontend_src_types_blackjack_ts",
-      "community": 182,
+      "community": 180,
       "norm_label": "blackjack.ts"
     },
     {
@@ -8895,7 +8868,7 @@
       "source_file": "frontend/src/types/roulette.ts",
       "source_location": "L1",
       "id": "frontend_src_types_roulette_ts",
-      "community": 183,
+      "community": 181,
       "norm_label": "roulette.ts"
     },
     {
@@ -8904,7 +8877,7 @@
       "source_file": "frontend/src/types/ride-the-bus.ts",
       "source_location": "L1",
       "id": "frontend_src_types_ride_the_bus_ts",
-      "community": 184,
+      "community": 182,
       "norm_label": "ride-the-bus.ts"
     },
     {
@@ -8913,7 +8886,7 @@
       "source_file": "frontend/src/types/auth.ts",
       "source_location": "L1",
       "id": "frontend_src_types_auth_ts",
-      "community": 185,
+      "community": 183,
       "norm_label": "auth.ts"
     },
     {
@@ -8922,7 +8895,7 @@
       "source_file": "frontend/src/types/mines.ts",
       "source_location": "L1",
       "id": "frontend_src_types_mines_ts",
-      "community": 186,
+      "community": 184,
       "norm_label": "mines.ts"
     },
     {
@@ -8931,7 +8904,7 @@
       "source_file": "frontend/src/types/event.ts",
       "source_location": "L1",
       "id": "frontend_src_types_event_ts",
-      "community": 187,
+      "community": 185,
       "norm_label": "event.ts"
     },
     {
@@ -8940,7 +8913,7 @@
       "source_file": "frontend/src/types/hilo.ts",
       "source_location": "L1",
       "id": "frontend_src_types_hilo_ts",
-      "community": 188,
+      "community": 186,
       "norm_label": "hilo.ts"
     },
     {
@@ -8949,7 +8922,7 @@
       "source_file": "frontend/src/store/chat-store.ts",
       "source_location": "L1",
       "id": "frontend_src_store_chat_store_ts",
-      "community": 189,
+      "community": 187,
       "norm_label": "chat-store.ts"
     },
     {
@@ -8958,7 +8931,7 @@
       "source_file": "frontend/src/store/theme-store.ts",
       "source_location": "L1",
       "id": "frontend_src_store_theme_store_ts",
-      "community": 96,
+      "community": 95,
       "norm_label": "theme-store.ts"
     },
     {
@@ -8967,7 +8940,7 @@
       "source_file": "frontend/src/store/theme-store.ts",
       "source_location": "L14",
       "id": "theme_store_applytheme",
-      "community": 96,
+      "community": 95,
       "norm_label": "applytheme()"
     },
     {
@@ -8976,7 +8949,7 @@
       "source_file": "frontend/src/store/theme-store.ts",
       "source_location": "L25",
       "id": "theme_store_persisttheme",
-      "community": 96,
+      "community": 95,
       "norm_label": "persisttheme()"
     },
     {
@@ -8985,7 +8958,7 @@
       "source_file": "frontend/src/store/bet-cart-store.ts",
       "source_location": "L1",
       "id": "frontend_src_store_bet_cart_store_ts",
-      "community": 190,
+      "community": 188,
       "norm_label": "bet-cart-store.ts"
     },
     {
@@ -8994,7 +8967,7 @@
       "source_file": "frontend/src/store/auth-store.ts",
       "source_location": "L1",
       "id": "frontend_src_store_auth_store_ts",
-      "community": 141,
+      "community": 140,
       "norm_label": "auth-store.ts"
     },
     {
@@ -9003,7 +8976,7 @@
       "source_file": "frontend/src/store/auth-store.ts",
       "source_location": "L37",
       "id": "auth_store_purgelegacyauthstorage",
-      "community": 141,
+      "community": 140,
       "norm_label": "purgelegacyauthstorage()"
     },
     {
@@ -12928,30 +12901,6 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
-      "source_file": "backend/src/routes/crash.routes.ts",
-      "source_location": "L10",
-      "weight": 1.0,
-      "_src": "backend_src_routes_crash_routes_ts",
-      "_tgt": "crash_routes_getauthuserid",
-      "source": "backend_src_routes_crash_routes_ts",
-      "target": "crash_routes_getauthuserid",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "backend/src/routes/crash.routes.ts",
-      "source_location": "L42",
-      "weight": 1.0,
-      "_src": "backend_src_routes_crash_routes_ts",
-      "_tgt": "crash_routes_cleanup",
-      "source": "backend_src_routes_crash_routes_ts",
-      "target": "crash_routes_cleanup",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
       "source_file": "backend/src/utils/roulette-rng.ts",
       "source_location": "L3",
       "weight": 1.0,
@@ -16613,7 +16562,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L16",
+      "source_location": "L19",
       "weight": 1.0,
       "_src": "backend_src_services_crash_service_ts",
       "_tgt": "crash_service_generatecrashdata",
@@ -16625,7 +16574,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L26",
+      "source_location": "L29",
       "weight": 1.0,
       "_src": "backend_src_services_crash_service_ts",
       "_tgt": "crash_service_getmultiplierattime",
@@ -16637,7 +16586,19 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L67",
+      "source_location": "L75",
+      "weight": 1.0,
+      "_src": "backend_src_services_crash_service_ts",
+      "_tgt": "crash_service_initcrashsocket",
+      "source": "backend_src_services_crash_service_ts",
+      "target": "crash_service_initcrashsocket",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/src/services/crash.service.ts",
+      "source_location": "L168",
       "weight": 1.0,
       "_src": "backend_src_services_crash_service_ts",
       "_tgt": "crash_service_crashservice",
@@ -16649,7 +16610,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L232",
+      "source_location": "L332",
       "weight": 1.0,
       "_src": "crash_service_crashservice_runwaitingphase",
       "_tgt": "crash_service_generatecrashdata",
@@ -16661,7 +16622,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L168",
+      "source_location": "L271",
       "weight": 1.0,
       "_src": "crash_service_crashservice_cashout",
       "_tgt": "crash_service_getmultiplierattime",
@@ -16673,19 +16634,19 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L70",
+      "source_location": "L171",
       "weight": 1.0,
       "_src": "crash_service_crashservice",
-      "_tgt": "crash_service_crashservice_getstate",
+      "_tgt": "crash_service_crashservice_getpublicstate",
       "source": "crash_service_crashservice",
-      "target": "crash_service_crashservice_getstate",
+      "target": "crash_service_crashservice_getpublicstate",
       "confidence_score": 1.0
     },
     {
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L94",
+      "source_location": "L198",
       "weight": 1.0,
       "_src": "crash_service_crashservice",
       "_tgt": "crash_service_crashservice_gethistory",
@@ -16697,7 +16658,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L103",
+      "source_location": "L207",
       "weight": 1.0,
       "_src": "crash_service_crashservice",
       "_tgt": "crash_service_crashservice_placebet",
@@ -16709,7 +16670,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L158",
+      "source_location": "L261",
       "weight": 1.0,
       "_src": "crash_service_crashservice",
       "_tgt": "crash_service_crashservice_cashout",
@@ -16721,7 +16682,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L177",
+      "source_location": "L280",
       "weight": 1.0,
       "_src": "crash_service_crashservice",
       "_tgt": "crash_service_crashservice_processcashout",
@@ -16733,7 +16694,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L216",
+      "source_location": "L316",
       "weight": 1.0,
       "_src": "crash_service_crashservice",
       "_tgt": "crash_service_crashservice_startgameloop",
@@ -16745,7 +16706,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L231",
+      "source_location": "L331",
       "weight": 1.0,
       "_src": "crash_service_crashservice",
       "_tgt": "crash_service_crashservice_runwaitingphase",
@@ -16757,7 +16718,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L268",
+      "source_location": "L366",
       "weight": 1.0,
       "_src": "crash_service_crashservice",
       "_tgt": "crash_service_crashservice_runrunningphase",
@@ -16769,7 +16730,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L320",
+      "source_location": "L415",
       "weight": 1.0,
       "_src": "crash_service_crashservice",
       "_tgt": "crash_service_crashservice_runcrashedphase",
@@ -16781,7 +16742,7 @@
       "relation": "method",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L384",
+      "source_location": "L482",
       "weight": 1.0,
       "_src": "crash_service_crashservice",
       "_tgt": "crash_service_crashservice_sleep",
@@ -16793,7 +16754,19 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L170",
+      "source_location": "L183",
+      "weight": 1.0,
+      "_src": "crash_service_crashservice_getpublicstate",
+      "_tgt": "crash_service_crashservice_gethistory",
+      "source": "crash_service_crashservice_getpublicstate",
+      "target": "crash_service_crashservice_gethistory",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "calls",
+      "confidence": "EXTRACTED",
+      "source_file": "backend/src/services/crash.service.ts",
+      "source_location": "L273",
       "weight": 1.0,
       "_src": "crash_service_crashservice_cashout",
       "_tgt": "crash_service_crashservice_processcashout",
@@ -16805,7 +16778,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L221",
+      "source_location": "L321",
       "weight": 1.0,
       "_src": "crash_service_crashservice_startgameloop",
       "_tgt": "crash_service_crashservice_runwaitingphase",
@@ -16817,7 +16790,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L222",
+      "source_location": "L322",
       "weight": 1.0,
       "_src": "crash_service_crashservice_startgameloop",
       "_tgt": "crash_service_crashservice_runrunningphase",
@@ -16829,7 +16802,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L223",
+      "source_location": "L323",
       "weight": 1.0,
       "_src": "crash_service_crashservice_startgameloop",
       "_tgt": "crash_service_crashservice_runcrashedphase",
@@ -16841,7 +16814,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L226",
+      "source_location": "L326",
       "weight": 1.0,
       "_src": "crash_service_crashservice_startgameloop",
       "_tgt": "crash_service_crashservice_sleep",
@@ -16853,7 +16826,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L257",
+      "source_location": "L356",
       "weight": 1.0,
       "_src": "crash_service_crashservice_runwaitingphase",
       "_tgt": "crash_service_crashservice_sleep",
@@ -16865,7 +16838,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/services/crash.service.ts",
-      "source_location": "L381",
+      "source_location": "L479",
       "weight": 1.0,
       "_src": "crash_service_crashservice_runcrashedphase",
       "_tgt": "crash_service_crashservice_sleep",
@@ -25541,7 +25514,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/CrashPage.tsx",
-      "source_location": "L184",
+      "source_location": "L195",
       "weight": 1.0,
       "_src": "frontend_src_pages_crashpage_tsx",
       "_tgt": "crashpage_handlelogout",
