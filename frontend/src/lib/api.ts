@@ -140,6 +140,48 @@ export interface PublicConfig {
   blackjackDisabled: boolean;
   eventsDisabled: boolean;
   minesDisabled: boolean;
+  crashDisabled: boolean;
+}
+
+export interface CrashStateResponse {
+  status: "WAITING" | "RUNNING" | "CRASHED";
+  roundNumber: number;
+  hash: string;
+  countdown?: number;
+  startTime?: number | null;
+  crashPoint?: number | null;
+  bets: Array<{
+    userId: string;
+    pseudo: string;
+    avatarUrl: string | null;
+    amount: number;
+    autoCashout: number | null;
+    cashedOut: boolean;
+    cashedOutAt: number | null;
+    payout: number;
+  }>;
+  history: Array<{ roundNumber: number; crashPoint: number; hash: string; createdAt: string }>;
+}
+
+export async function getCrashState(): Promise<CrashStateResponse> {
+  const response = await api.get<CrashStateResponse>("/casino/crash/state");
+  return response.data;
+}
+
+export async function placeCrashBet(
+  amount: number,
+  autoCashout?: number | null,
+): Promise<{ success: true; amount: number }> {
+  const response = await api.post<{ success: true; amount: number }>("/casino/crash/bet", {
+    amount,
+    ...(autoCashout != null ? { autoCashout } : {}),
+  });
+  return response.data;
+}
+
+export async function cashoutCrash(): Promise<{ payout: number; multiplier: number }> {
+  const response = await api.post<{ payout: number; multiplier: number }>("/casino/crash/cashout");
+  return response.data;
 }
 
 export async function getMaintenanceStatus(): Promise<PublicConfig> {
@@ -163,6 +205,7 @@ export interface FeatureFlagsResponse {
   blackjackDisabled: boolean;
   eventsDisabled: boolean;
   minesDisabled: boolean;
+  crashDisabled: boolean;
 }
 
 export async function getFeatureFlags(): Promise<FeatureFlagsResponse> {
@@ -171,7 +214,7 @@ export async function getFeatureFlags(): Promise<FeatureFlagsResponse> {
 }
 
 export async function setFeatureFlag(
-  key: "rouletteDisabled" | "blackjackDisabled" | "eventsDisabled" | "minesDisabled",
+  key: "rouletteDisabled" | "blackjackDisabled" | "eventsDisabled" | "minesDisabled" | "crashDisabled",
   value: boolean,
 ): Promise<FeatureFlagsResponse> {
   const response = await api.post<FeatureFlagsResponse>("/admin/config/features", { [key]: value });
