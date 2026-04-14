@@ -360,5 +360,13 @@ export function useCrashStream() {
     };
   }, [connect, stopRaf]);
 
-  return state;
+  const setMyBetOptimistic = useCallback(
+    (amount: number, autoCashout: number | null) => {
+      myBetRef.current = { amount, autoCashout, cashedOutAt: null };
+      setState((prev) => ({ ...prev, myBet: myBetRef.current }));
+    },
+    [],
+  );
+
+  return { ...state, setMyBetOptimistic };
 }

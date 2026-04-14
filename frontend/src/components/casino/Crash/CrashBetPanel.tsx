@@ -16,9 +16,10 @@ interface CrashBetPanelProps {
   stream: CrashStreamState;
   onBet: (amount: number, autoCashout: number | null) => Promise<void>;
   onCashout: () => Promise<void>;
+  onBetPlaced: (amount: number, autoCashout: number | null) => void;
 }
 
-export function CrashBetPanel({ stream, onBet, onCashout }: CrashBetPanelProps) {
+export function CrashBetPanel({ stream, onBet, onCashout, onBetPlaced }: CrashBetPanelProps) {
   const user = useAuthStore((s) => s.user);
   const balance = user?.balance ?? 0;
 
@@ -75,7 +76,9 @@ export function CrashBetPanel({ stream, onBet, onCashout }: CrashBetPanelProps) 
     setIsLoading(true);
     try {
       sounds.betButton.play();
-      await onBet(bet, autoCashoutEnabled ? autoCashoutValue : null);
+      const autoCashout = autoCashoutEnabled ? autoCashoutValue : null;
+      await onBet(bet, autoCashout);
+      onBetPlaced(bet, autoCashout);
     } finally {
       setIsLoading(false);
     }

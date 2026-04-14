@@ -83,7 +83,7 @@ function CashoutNotifPill({ notif }: { notif: CashoutNotif }) {
 export function CrashPage() {
   const user = useAuthStore((s) => s.user);
   const updateBalance = useAuthStore((s) => s.updateBalance);
-  const stream = useCrashStream();
+  const { setMyBetOptimistic, ...stream } = useCrashStream();
 
   // ── Curve points ────────────────────────────────────────────────────────────
   const curvePointsRef = useRef<{ t: number; m: number }[]>([]);
@@ -251,6 +251,7 @@ export function CrashPage() {
               stream={stream}
               onBet={handleBet}
               onCashout={handleCashout}
+              onBetPlaced={setMyBetOptimistic}
             />
           </div>
         </div>
