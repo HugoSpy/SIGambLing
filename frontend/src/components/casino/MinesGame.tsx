@@ -148,7 +148,7 @@ export function MinesGame() {
         setAutoRevealedCells((prev) => [...prev, cell]);
         sounds.gemmeClick.play();
         idx++;
-        autoRevealTimerRef.current = setTimeout(revealNext, 120);
+        autoRevealTimerRef.current = setTimeout(revealNext, 30);
       } else {
         // All gems revealed — show mine if loss, popup if win
         if (mineCell !== null) {

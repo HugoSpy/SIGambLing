@@ -108,6 +108,20 @@ export function useMinesAutoBet() {
         }
 
         try {
+          // Guard: recover bet from config if ref somehow drifted to 0
+          const betToSend = bet > 0 ? bet : (configRef.current?.betAmount ?? 0);
+          if (betToSend <= 0) {
+            notify.error("Mise invalide");
+            doStop("Mise invalide");
+            return;
+          }
+
+          const payload = {
+            betAmount: betToSend,
+            minesCount: cfg.minesCount,
+            selectedCells: cfg.cellMode === "random" ? "random" : cfg.fixedCells,
+          };
+          console.log("autobet payload", payload);
           const { data } = await api.post<{
             win: boolean;
             payout: number;
@@ -115,11 +129,7 @@ export function useMinesAutoBet() {
             cells: number[];
             multiplier: number;
             newBalance: number;
-          }>("/casino/mines/autobet-round", {
-            betAmount: bet,
-            minesCount: cfg.minesCount,
-            selectedCells: cfg.cellMode === "random" ? "random" : cfg.fixedCells,
-          });
+          }>("/casino/mines/autobet-round", payload);
 
           if (!isRunningRef.current) return;
 

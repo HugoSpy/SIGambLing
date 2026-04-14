@@ -5,7 +5,7 @@ import { jackpotService } from "./jackpot.service";
 import { prisma } from "./prisma.service";
 
 const TOTAL_CELLS = 25;
-const MIN_BET = 1;
+const MIN_BET = 10;
 const HOUSE_EDGE = 0.01;
 
 interface MinesSession {
@@ -290,6 +290,10 @@ class MinesService {
     selectedCells: number[] | "random",
     gemCount: number,
   ): Promise<MinesAutobetResult> {
+    // Input validation
+    if (!betAmount || betAmount <= 0) throw new AppError("betAmount must be > 0", 400);
+    if (betAmount < MIN_BET) throw new AppError(`La mise minimum est de ${MIN_BET} tokens.`, 400);
+
     // Block if a manual session is active
     const existing = activeSessions.get(userId);
     if (existing && !isSessionExpired(existing)) {
@@ -303,7 +307,9 @@ class MinesService {
 
     const minePositions = placeMines(minesCount);
     const totalGems = TOTAL_CELLS - minesCount;
-    const clampedGemCount = Math.min(Math.max(1, gemCount), totalGems);
+    // Default gemCount to 1 when not provided (random mode without explicit count)
+    const safeGemCount = Number.isFinite(gemCount) && gemCount > 0 ? gemCount : 1;
+    const clampedGemCount = Math.min(Math.max(1, safeGemCount), totalGems);
 
     // Determine which cells to play
     let cellsToPlay: number[];

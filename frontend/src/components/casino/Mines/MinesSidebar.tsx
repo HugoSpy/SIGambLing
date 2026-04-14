@@ -30,6 +30,18 @@ interface MinesSidebarProps {
 }
 
 const QUICK_MINES = [1, 3, 5, 10, 24];
+const AUTO_MIN_BET = 10;
+
+/** Replicate backend getMinesMultiplier formula (house edge 1%). */
+function calcMultiplier(mines: number, gemsFound: number): number {
+  if (gemsFound <= 0) return 1;
+  const totalGems = 25 - mines;
+  let survivalProb = 1;
+  for (let i = 0; i < gemsFound; i++) {
+    survivalProb *= (totalGems - i) / (25 - i);
+  }
+  return Math.round((1 / survivalProb) * 0.99 * 100) / 100;
+}
 
 const STRATEGY_LABELS: Record<AutoBetStrategy, string> = {
   flat: "Flat bet",
@@ -395,7 +407,7 @@ export function MinesSidebar({
             <div className="relative">
               <input
                 type="number"
-                min={1}
+                min={AUTO_MIN_BET}
                 max={userBalance}
                 value={autoBet}
                 onChange={(e) => {
@@ -408,9 +420,12 @@ export function MinesSidebar({
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-500">tokens</span>
             </div>
+            {!autoBetRunning && autoBet < AUTO_MIN_BET && (
+              <p className="text-xs text-red-400">Mise minimale : {AUTO_MIN_BET} tokens</p>
+            )}
             <div className="flex gap-1.5">
               {[
-                { label: "×½", fn: () => setAutoBet((v) => Math.max(1, Math.floor(v / 2))) },
+                { label: "×½", fn: () => setAutoBet((v) => Math.max(AUTO_MIN_BET, Math.floor(v / 2))) },
                 { label: "×2", fn: () => setAutoBet((v) => Math.min(userBalance, v * 2)) },
                 { label: "Max", fn: () => setAutoBet(userBalance) },
               ].map(({ label, fn }) => (
@@ -606,12 +621,21 @@ export function MinesSidebar({
           </div>
 
           {/* Start / Stop button */}
-          <div className="mt-auto">
+          <div className="mt-auto flex flex-col gap-2">
+            {/* Multiplier preview (fixed mode only) */}
+            {!autoBetRunning && autoCellMode === "fixed" && autoFixedCells.length > 0 && (
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-zinc-400">Multi possible</span>
+                <span className="font-mono font-bold text-emerald-400">
+                  ×{calcMultiplier(autoMines, autoFixedCells.length).toFixed(2)}
+                </span>
+              </div>
+            )}
             {!autoBetRunning ? (
               <button
                 onClick={handleStart}
                 disabled={
-                  autoBet < 1 ||
+                  autoBet < AUTO_MIN_BET ||
                   autoBet > userBalance ||
                   (autoCellMode === "fixed" && autoFixedCells.length === 0)
                 }
