@@ -46,6 +46,13 @@ enum CasinoGameType {
   hilo
   ride_the_bus
   mines
+  crash
+}
+
+enum CrashRoundStatus {
+  WAITING
+  RUNNING
+  CRASHED
 }
 
 enum CasinoGameResult {
@@ -91,6 +98,7 @@ model User {
   lowestBalance   Int         @default(1000)
   chatMessages    ChatMessage[]
   chatBan         ChatBan?
+  crashBets       CrashBet[]
 
   @@index([email])
   @@index([balance(sort: Desc)])
@@ -327,4 +335,34 @@ model LeaderboardSnapshot {
   takenAt  DateTime @default(now())
 
   @@index([tab, takenAt(sort: Desc)])
+}
+
+model CrashRound {
+  id          String           @id @default(cuid())
+  roundNumber Int              @unique @default(autoincrement())
+  crashPoint  Float
+  seed        String
+  hash        String
+  status      CrashRoundStatus @default(WAITING)
+  startedAt   DateTime?
+  crashedAt   DateTime?
+  createdAt   DateTime         @default(now())
+  bets        CrashBet[]
+}
+
+model CrashBet {
+  id          String     @id @default(cuid())
+  roundId     String
+  userId      String     @db.Uuid
+  amount      Int
+  autoCashout Float?
+  cashedOutAt Float?
+  payout      Int        @default(0)
+  createdAt   DateTime   @default(now())
+  round       CrashRound @relation(fields: [roundId], references: [id])
+  user        User       @relation(fields: [userId], references: [id])
+
+  @@unique([roundId, userId])
+  @@index([roundId])
+  @@index([userId])
 }

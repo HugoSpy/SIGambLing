@@ -7,6 +7,7 @@ interface FeatureFlags {
   blackjackDisabled: boolean;
   eventsDisabled: boolean;
   minesDisabled: boolean;
+  crashDisabled: boolean;
 }
 
 // In-memory cache — invalidated on POST /admin/config/features
@@ -22,7 +23,7 @@ async function getFeatureFlagValues(): Promise<FeatureFlags> {
   }
 
   const configs = await prisma.siteConfig.findMany({
-    where: { key: { in: ["rouletteDisabled", "blackjackDisabled", "eventsDisabled", "minesDisabled"] } },
+    where: { key: { in: ["rouletteDisabled", "blackjackDisabled", "eventsDisabled", "minesDisabled", "crashDisabled"] } },
   });
 
   const map = Object.fromEntries(configs.map((c) => [c.key, c.value === "true"]));
@@ -32,6 +33,7 @@ async function getFeatureFlagValues(): Promise<FeatureFlags> {
     blackjackDisabled: map["blackjackDisabled"] ?? false,
     eventsDisabled: map["eventsDisabled"] ?? false,
     minesDisabled: map["minesDisabled"] ?? false,
+    crashDisabled: map["crashDisabled"] ?? false,
   };
 
   return cachedFlags;
@@ -53,6 +55,7 @@ function isAdmin(authorization: string | undefined): boolean {
 const FEATURE_RULES: {
   flag: keyof FeatureFlags;
   prefix: string;
+  except?: string[];
   error: string;
   message: string;
 }[] = [
@@ -80,19 +83,35 @@ const FEATURE_RULES: {
     error: "minesDisabled",
     message: "Les Mines sont temporairement indisponibles.",
   },
+  {
+    flag: "crashDisabled",
+    prefix: "/casino/crash",
+    except: ["/casino/crash/state"],
+    error: "crashDisabled",
+    message: "Le Crash est temporairement indisponible.",
+  },
 ];
 
 export const featureFlagsMiddleware: RequestHandler = async (request, response, next) => {
   try {
     const flags = await getFeatureFlagValues();
-    const anyDisabled = flags.rouletteDisabled || flags.blackjackDisabled || flags.eventsDisabled || flags.minesDisabled;
+    const anyDisabled =
+      flags.rouletteDisabled ||
+      flags.blackjackDisabled ||
+      flags.eventsDisabled ||
+      flags.minesDisabled ||
+      flags.crashDisabled;
 
     if (!anyDisabled) {
       return next();
     }
 
     for (const rule of FEATURE_RULES) {
-      if (flags[rule.flag] && request.path.startsWith(rule.prefix)) {
+      if (
+        flags[rule.flag] &&
+        request.path.startsWith(rule.prefix) &&
+        !(rule.except?.includes(request.path))
+      ) {
         if (isAdmin(request.headers.authorization)) {
           return next();
         }

@@ -140,3 +140,10 @@ export const blackjackActionSchema = z.object({
 
 export type BlackjackDealInput = z.infer<typeof blackjackDealSchema>;
 export type BlackjackActionInput = z.infer<typeof blackjackActionSchema>;
+
+export const crashBetSchema = z.object({
+  amount: z.number().int().min(120).max(1_000_000),
+  autoCashout: z.number().min(1.01).optional(),
+});
+
+export type CrashBetInput = z.infer<typeof crashBetSchema>;
