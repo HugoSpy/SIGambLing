@@ -1,10 +1,13 @@
 import crypto, { createHash } from "crypto";
+import http from "http";
+import { Server as SocketIOServer, Socket } from "socket.io";
 import { AppError } from "../utils/app-error";
 import { gamificationService } from "./gamification.service";
 import { jackpotService } from "./jackpot.service";
 import { prisma } from "./prisma.service";
-import { crashSSEService } from "./crash-sse.service";
 import { logger } from "../utils/logger";
+import { env } from "../config/env";
+import { verifyAccessToken } from "../utils/jwt";
 
 // ─── Timing constants ─────────────────────────────────────────────────────────
 
@@ -62,22 +65,122 @@ const state: CrashGameState = {
   lastCrashPoint: null,
 };
 
+// ─── Socket.io ────────────────────────────────────────────────────────────────
+
+let io: SocketIOServer;
+
+// userId → socket, for targeted emits (cashout_confirmed)
+const userSockets = new Map<string, Socket>();
+
+export function initCrashSocket(server: http.Server): void {
+  io = new SocketIOServer(server, {
+    cors: {
+      origin: env.FRONTEND_URL,
+      credentials: true,
+    },
+    path: "/socket.io/crash",
+  });
+
+  // Auth + feature-flag middleware
+  io.use(async (socket, next) => {
+    try {
+      const token = socket.handshake.auth?.token as string | undefined;
+      if (!token) return next(new Error("unauthorized"));
+
+      const payload = verifyAccessToken(token);
+      if (payload.tokenType !== "access") return next(new Error("unauthorized"));
+
+      const user = await prisma.user.findUnique({
+        where: { id: payload.userId },
+        select: {
+          id: true,
+          pseudo: true,
+          avatarUrl: true,
+          role: true,
+          isBanned: true,
+          sessionVersion: true,
+        },
+      });
+
+      if (!user || user.isBanned) return next(new Error("unauthorized"));
+      if (user.sessionVersion !== payload.sessionVersion) return next(new Error("unauthorized"));
+
+      // crashDisabled feature flag — admins bypass
+      if (user.role !== "admin") {
+        const crashConfig = await prisma.siteConfig.findUnique({ where: { key: "crashDisabled" } });
+        if (crashConfig?.value === "true") return next(new Error("crashDisabled"));
+      }
+
+      socket.data.userId = user.id;
+      socket.data.pseudo = user.pseudo;
+      socket.data.avatarUrl = user.avatarUrl;
+      next();
+    } catch {
+      next(new Error("unauthorized"));
+    }
+  });
+
+  io.on("connection", async (socket) => {
+    const userId = socket.data.userId as string;
+    userSockets.set(userId, socket);
+
+    // Send full current state to the newly connected client
+    socket.emit("state", await crashService.getPublicState());
+
+    socket.on("bet", async (data: { amount?: number; autoCashout?: number }) => {
+      try {
+        const amount = data?.amount;
+        const autoCashout = data?.autoCashout ?? null;
+
+        if (typeof amount !== "number" || amount < 10 || amount > 1_000_000) {
+          socket.emit("bet_error", { message: "Montant invalide (min 10, max 1 000 000)." });
+          return;
+        }
+        if (autoCashout !== null && (typeof autoCashout !== "number" || autoCashout < 1.01)) {
+          socket.emit("bet_error", { message: "Auto-cashout invalide (min 1.01)." });
+          return;
+        }
+
+        await crashService.placeBet(userId, amount, autoCashout);
+      } catch (err) {
+        const message = err instanceof AppError ? err.message : "Erreur lors du pari.";
+        socket.emit("bet_error", { message });
+      }
+    });
+
+    socket.on("cashout", async () => {
+      try {
+        await crashService.cashout(userId);
+      } catch (err) {
+        const message = err instanceof AppError ? err.message : "Erreur lors du cashout.";
+        socket.emit("cashout_error", { message });
+      }
+    });
+
+    socket.on("disconnect", () => {
+      userSockets.delete(userId);
+    });
+  });
+}
+
 // ─── Service ──────────────────────────────────────────────────────────────────
 
 class CrashService {
   // ── Public API ──────────────────────────────────────────────────────────────
 
-  getState() {
+  async getPublicState() {
     const bets = [...state.bets.values()].map((b) => ({
       userId: b.userId,
       pseudo: b.pseudo,
       avatarUrl: b.avatarUrl,
       amount: b.amount,
-      autoCashout: b.autoCashout,
+      // autoCashout intentionally omitted — private per player
       cashedOut: b.cashedOut,
       cashedOutAt: b.cashedOutAt,
       payout: b.payout,
     }));
+
+    const history = await this.getHistory(20);
 
     return {
       status: state.status,
@@ -86,7 +189,8 @@ class CrashService {
       startTime: state.startTime,
       lastCrashPoint: state.lastCrashPoint,
       bets,
-      // crashPoint is revealed only after crash
+      history,
+      // crashPoint revealed only after crash
       ...(state.status === "CRASHED" ? { crashPoint: state.crashPoint } : {}),
     };
   }
@@ -143,13 +247,12 @@ class CrashService {
       payout: 0,
     });
 
-    crashSSEService.broadcast({
-      type: "bet_placed",
+    // autoCashout NOT broadcast — private per player
+    io?.emit("bet_placed", {
       userId,
       pseudo: user.pseudo,
       avatarUrl: user.avatarUrl,
       amount,
-      autoCashout,
     });
 
     return { success: true, amount };
@@ -196,17 +299,14 @@ class CrashService {
       });
     }
 
-    crashSSEService.sendToClient(userId, {
-      type: "cashout_confirmed",
-      multiplier,
-      payout,
-    });
+    // Targeted emit — only to the player who cashed out
+    userSockets.get(userId)?.emit("cashout_confirmed", { cashedOutAt: multiplier, payout });
 
-    crashSSEService.broadcast({
-      type: "player_cashout",
+    // Broadcast to all players
+    io?.emit("player_cashout", {
       userId,
       pseudo: bet.pseudo,
-      multiplier,
+      cashedOutAt: multiplier,
       payout,
     });
   }
@@ -243,21 +343,19 @@ class CrashService {
     state.startTime = null;
     state.bets.clear();
 
-    const endTime = Date.now() + WAITING_DURATION_MS;
-
-    crashSSEService.broadcast({
-      type: "waiting",
+    io?.emit("waiting", {
       roundNumber: state.roundNumber,
       hash: state.hash,
       countdown: Math.ceil(WAITING_DURATION_MS / 1000),
     });
 
+    const endTime = Date.now() + WAITING_DURATION_MS;
+
     while (Date.now() < endTime) {
       const remaining = endTime - Date.now();
       await this._sleep(Math.min(1000, remaining));
       const countdown = Math.max(0, Math.ceil((endTime - Date.now()) / 1000));
-      crashSSEService.broadcast({
-        type: "waiting",
+      io?.emit("waiting", {
         roundNumber: state.roundNumber,
         hash: state.hash,
         countdown,
@@ -274,10 +372,7 @@ class CrashService {
     state.status = "RUNNING";
     state.startTime = Date.now();
 
-    crashSSEService.broadcast({
-      type: "running",
-      startTime: state.startTime,
-    });
+    io?.emit("running", { startTime: state.startTime });
 
     // Time (ms) until multiplier reaches crashPoint: t = ln(crashPoint) / 0.00006
     const crashTimeMs = Math.max(0, Math.ceil(Math.log(state.crashPoint) / 0.00006));
@@ -363,10 +458,8 @@ class CrashService {
       }
     }
 
-    crashSSEService.broadcast({
-      type: "crashed",
+    io?.emit("crashed", {
       crashPoint: state.crashPoint,
-      roundNumber: state.roundNumber,
       bets: allBets.map((b) => ({
         userId: b.userId,
         pseudo: b.pseudo,
@@ -376,6 +469,11 @@ class CrashService {
         cashedOutAt: b.cashedOutAt,
         payout: b.payout,
       })),
+    });
+
+    io?.emit("round_result", {
+      roundNumber: state.roundNumber,
+      crashPoint: state.crashPoint,
     });
 
     await this._sleep(CRASHED_DISPLAY_MS);

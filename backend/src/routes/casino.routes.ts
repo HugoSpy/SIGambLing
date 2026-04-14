@@ -1,6 +1,5 @@
 import rateLimit from "express-rate-limit";
 import { Router } from "express";
-import { crashRouter } from "./crash.routes";
 import {
   blackjackCurrentController,
   blackjackDealController,
@@ -195,5 +194,3 @@ casinoRouter.post(
   validateBody(minesAutobetSchema),
   minesAutobetController,
 );
-
-casinoRouter.use("/crash", crashRouter);
