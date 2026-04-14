@@ -32,6 +32,7 @@ export function CrashBetPanel({ stream, onBet, onCashout }: CrashBetPanelProps) 
   const prevStatusRef = useRef<string>("");
   const prevMyBetRef = useRef<CrashStreamState["myBet"]>(null);
   const cashoutTriggeredRef = useRef(false);
+  const hasSubmittedRef = useRef<boolean>(false);
 
   const { popupProps, showWin } = useWinPopup(2500);
 
@@ -54,6 +55,7 @@ export function CrashBetPanel({ stream, onBet, onCashout }: CrashBetPanelProps) 
   useEffect(() => {
     if (prevStatusRef.current !== "WAITING" && status === "WAITING") {
       cashoutTriggeredRef.current = false;
+      hasSubmittedRef.current = false;
     }
     if (prevStatusRef.current === "RUNNING" && status === "CRASHED" && myBet && !myBet.cashedOutAt) {
       sounds.bombClick.play();
@@ -68,6 +70,8 @@ export function CrashBetPanel({ stream, onBet, onCashout }: CrashBetPanelProps) 
   const clampBet = (v: number) => Math.max(MIN_BET, Math.min(MAX_BET, Math.round(v)));
 
   const handleBet = async () => {
+    if (hasSubmittedRef.current) return;
+    hasSubmittedRef.current = true;
     setIsLoading(true);
     try {
       sounds.betButton.play();
