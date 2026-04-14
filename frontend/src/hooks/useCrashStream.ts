@@ -76,11 +76,26 @@ export function useCrashStream() {
       const type = event.type as string;
 
       if (type === "state") {
-        // Initial hydration on connect
+        // Initial hydration on connect / reconnect
         const status = event.status as CrashStreamState["status"];
         const startTime = (event.startTime as number | null) ?? null;
         startTimeRef.current = startTime;
 
+        // Restore own bet on SSE reconnect during RUNNING (covers failed REST hydration too)
+        if (status === "RUNNING" && !myBetRef.current) {
+          const myUserId = useAuthStore.getState().user?.id;
+          const bets = (event.bets as CrashStreamState["liveBets"]) ?? [];
+          const myBetData = myUserId ? (bets.find((b) => b.userId === myUserId) ?? null) : null;
+          if (myBetData) {
+            myBetRef.current = {
+              amount: myBetData.amount,
+              autoCashout: null,
+              cashedOutAt: myBetData.cashedOutAt,
+            };
+          }
+        }
+
+        const restoredMyBet = myBetRef.current;
         setState((prev) => ({
           ...prev,
           status,
@@ -92,6 +107,7 @@ export function useCrashStream() {
           multiplier: startTime ? calcMultiplier(startTime) : 1.0,
           history: (event.history as CrashHistoryEntry[]) ?? [],
           liveBets: (event.bets as CrashStreamState["liveBets"]) ?? [],
+          myBet: restoredMyBet ?? prev.myBet,
         }));
 
         if (status === "RUNNING" && startTime !== null) {
@@ -178,24 +194,25 @@ export function useCrashStream() {
           cashedOutAt: null,
           payout: 0,
         };
-        setState((prev) => ({
-          ...prev,
-          liveBets: [...prev.liveBets.filter((b) => b.userId !== newBet.userId), newBet],
-        }));
 
-        // Track our own bet
+        // Capture own bet before setState so the updater closure uses a stable value
         const myUserId = useAuthStore.getState().user?.id;
-        if (event.userId === myUserId) {
-          myBetRef.current = {
+        const isMyBet = event.userId === myUserId;
+        let ownBet: CrashStreamState["myBet"] = null;
+        if (isMyBet) {
+          ownBet = {
             amount: event.amount as number,
             autoCashout: (event.autoCashout as number | null) ?? null,
             cashedOutAt: null,
           };
-          setState((prev) => ({
-            ...prev,
-            myBet: myBetRef.current,
-          }));
+          myBetRef.current = ownBet;
         }
+
+        setState((prev) => ({
+          ...prev,
+          liveBets: [...prev.liveBets.filter((b) => b.userId !== newBet.userId), newBet],
+          ...(isMyBet ? { myBet: ownBet } : {}),
+        }));
         return;
       }
 
@@ -362,8 +379,11 @@ export function useCrashStream() {
 
   const setMyBetOptimistic = useCallback(
     (amount: number, autoCashout: number | null) => {
-      myBetRef.current = { amount, autoCashout, cashedOutAt: null };
-      setState((prev) => ({ ...prev, myBet: myBetRef.current }));
+      // Capture before setState so the updater closure reads a stable value,
+      // not whatever myBetRef happens to hold when React finally runs the updater.
+      const bet: CrashStreamState["myBet"] = { amount, autoCashout, cashedOutAt: null };
+      myBetRef.current = bet;
+      setState((prev) => ({ ...prev, myBet: bet }));
     },
     [],
   );

@@ -314,15 +314,13 @@ class MinesService {
     // Determine which cells to play
     let cellsToPlay: number[];
     if (selectedCells === "random") {
-      // Pick clampedGemCount cells that are guaranteed safe (not mines)
-      const safeCells = Array.from({ length: TOTAL_CELLS }, (_, i) => i).filter(
-        (i) => !minePositions.includes(i),
-      );
-      for (let i = safeCells.length - 1; i > 0; i--) {
+      // Pick clampedGemCount cells from all cells (mines included) — genuine random play
+      const allCells = Array.from({ length: TOTAL_CELLS }, (_, i) => i);
+      for (let i = allCells.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [safeCells[i], safeCells[j]] = [safeCells[j]!, safeCells[i]!];
+        [allCells[i], allCells[j]] = [allCells[j]!, allCells[i]!];
       }
-      cellsToPlay = safeCells.slice(0, clampedGemCount);
+      cellsToPlay = allCells.slice(0, clampedGemCount);
     } else {
       cellsToPlay = selectedCells;
     }
