@@ -131,7 +131,7 @@ function CrashPlayerRow({ bet, isCurrentUser, status, multiplier, entryDelay }: 
       </div>
 
       {/* Gain */}
-      <div className="w-16 text-right shrink-0">
+      <div className="hidden sm:block w-16 text-right shrink-0">
         {bet.cashedOut ? (
           <span className="text-xs font-semibold text-emerald-400 tabular-nums">
             +{gainValue!.toLocaleString("fr-FR")}
@@ -178,7 +178,7 @@ export function CrashPlayerList({ bets, currentUserId, status, multiplier }: Cra
         <span className="flex-1 text-[10px] uppercase tracking-wider text-zinc-600">Joueur</span>
         <span className="w-16 text-right text-[10px] uppercase tracking-wider text-zinc-600">Mise</span>
         <span className="w-16 text-right text-[10px] uppercase tracking-wider text-zinc-600">Cashout</span>
-        <span className="w-16 text-right text-[10px] uppercase tracking-wider text-zinc-600">Gain</span>
+        <span className="hidden sm:block w-16 text-right text-[10px] uppercase tracking-wider text-zinc-600">Gain</span>
       </div>
 
       {/* Rows */}

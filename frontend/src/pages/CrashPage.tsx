@@ -191,41 +191,54 @@ export function CrashPage() {
   return (
     <DashboardShell onLogout={handleLogout} user={user}>
       {/*
-        Desktop layout:
+        Layout (grid):
         ┌──────────────────────────┬──────────────────┐
-        │  Curve (flex-1)          │  BetPanel (w-80) │
-        │  [history pills]         │                  │
-        │  [PlayerList]            │                  │
+        │  Curve          row 1    │  BetPanel        │
+        ├──────────────────────────┤  (row-span-2)    │
+        │  History + PlayerList    │                  │
+        │                 row 2    │                  │
         └──────────────────────────┴──────────────────┘
-        Mobile: flex-col (curve → panel → list)
+        Mobile (1 col): curve → betPanel → history+list
       */}
-      <div className="flex flex-col gap-4 lg:flex-row lg:gap-6 lg:items-start">
-        {/* ── Left column: curve + history + player list ── */}
-        <div className="flex flex-col flex-1 gap-3">
-          {/* Curve area with notification overlay */}
-          <div className="relative min-h-[300px] lg:min-h-[380px]">
-            {/* Curve card */}
-            <div className="h-full rounded-2xl overflow-hidden border border-white/10 bg-zinc-950 min-h-[300px] lg:min-h-[380px]">
-              <CrashCurve
-                status={stream.status}
-                multiplier={stream.multiplier}
-                crashPoint={stream.crashPoint}
-                startTime={stream.startTime}
-                countdown={stream.countdown}
-                curvePoints={curvePoints}
-              />
-            </div>
-
-            {/* Cashout notification overlay — absolute on top of curve */}
-            <div className="absolute top-3 left-3 z-20 flex flex-col gap-1.5 pointer-events-none">
-              <AnimatePresence initial={false}>
-                {notifications.map((n) => (
-                  <CashoutNotifPill key={n.id} notif={n} />
-                ))}
-              </AnimatePresence>
-            </div>
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1fr_20rem] lg:gap-6">
+        {/* ── Row 1, col 1: curve ── */}
+        <div className="relative min-h-[250px] sm:min-h-[300px] lg:min-h-[380px]">
+          {/* Curve card */}
+          <div className="h-full rounded-2xl overflow-hidden border border-white/10 bg-zinc-950 min-h-[250px] sm:min-h-[300px] lg:min-h-[380px]">
+            <CrashCurve
+              status={stream.status}
+              multiplier={stream.multiplier}
+              crashPoint={stream.crashPoint}
+              startTime={stream.startTime}
+              countdown={stream.countdown}
+              curvePoints={curvePoints}
+            />
           </div>
 
+          {/* Cashout notification overlay — absolute on top of curve */}
+          <div className="absolute top-3 left-3 z-20 flex flex-col gap-1.5 pointer-events-none">
+            <AnimatePresence initial={false}>
+              {notifications.map((n) => (
+                <CashoutNotifPill key={n.id} notif={n} />
+              ))}
+            </AnimatePresence>
+          </div>
+        </div>
+
+        {/* ── Col 2, rows 1–2: bet panel (DOM order = 2nd → mobile: after curve) ── */}
+        <div className="lg:row-span-2">
+          <div className="rounded-2xl border border-white/10 bg-zinc-900/95 p-5">
+            <CrashBetPanel
+              stream={stream}
+              onBet={handleBet}
+              onCashout={handleCashout}
+              onBetPlaced={setMyBetOptimistic}
+            />
+          </div>
+        </div>
+
+        {/* ── Row 2, col 1: history pills + player list ── */}
+        <div className="flex flex-col gap-3">
           {/* History pills */}
           <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-none">
             <AnimatePresence initial={false}>
@@ -242,18 +255,6 @@ export function CrashPage() {
             status={stream.status}
             multiplier={stream.multiplier}
           />
-        </div>
-
-        {/* ── Right column: bet panel ── */}
-        <div className="w-full lg:w-80 shrink-0">
-          <div className="rounded-2xl border border-white/10 bg-zinc-900/95 p-5">
-            <CrashBetPanel
-              stream={stream}
-              onBet={handleBet}
-              onCashout={handleCashout}
-              onBetPlaced={setMyBetOptimistic}
-            />
-          </div>
         </div>
       </div>
     </DashboardShell>

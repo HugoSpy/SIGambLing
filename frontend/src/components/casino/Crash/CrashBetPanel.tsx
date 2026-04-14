@@ -25,7 +25,7 @@ export function CrashBetPanel({ stream, onBet, onCashout, onBetPlaced }: CrashBe
 
   const { status, multiplier, myBet, hash, countdown } = stream;
 
-  const [bet, setBet] = useState(120);
+  const [bet, setBet] = useState(10);
   const [autoCashoutEnabled, setAutoCashoutEnabled] = useState(false);
   const [autoCashoutValue, setAutoCashoutValue] = useState(2.0);
   const [isLoading, setIsLoading] = useState(false);
