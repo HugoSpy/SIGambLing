@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Bus, CircleDot, Coins, Sparkles, Waves, Bomb } from "lucide-react";
+import { ArrowRight, Bus, CircleDot, Coins, Sparkles, TrendingUp, Waves, Bomb } from "lucide-react";
 import toast from "react-hot-toast";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { BlackjackGame } from "../components/casino/BlackjackGame";
@@ -16,7 +16,7 @@ import { fetchCurrentUser, logoutRequest } from "../lib/api";
 import { cn } from "../lib/utils";
 import { useAuthStore } from "../store/auth-store";
 
-type GameTab = "roulette" | "blackjack" | "hilo" | "ride-the-bus" | "mines";
+type GameTab = "roulette" | "blackjack" | "hilo" | "ride-the-bus" | "mines" | "crash";
 
 const TABS: {
   id: GameTab;
@@ -72,6 +72,15 @@ const TABS: {
       accentClassName: "from-cyan-500/20 via-cyan-500/5 to-transparent",
       icon: Bomb,
     },
+    {
+      id: "crash",
+      label: "Crash",
+      eyebrow: "Tension exponentielle",
+      description: "Le multiplicateur monte. Cashoutez avant le crash. Plus vous attendez, plus vous gagnez — ou perdez tout.",
+      href: "/casino/crash",
+      accentClassName: "from-orange-500/20 via-orange-500/5 to-transparent",
+      icon: TrendingUp,
+    },
   ];
 
 function isGameTab(value: string | undefined): value is GameTab {
@@ -80,7 +89,8 @@ function isGameTab(value: string | undefined): value is GameTab {
     value === "blackjack" ||
     value === "hilo" ||
     value === "ride-the-bus" ||
-    value === "mines"
+    value === "mines" ||
+    value === "crash"
   );
 }
 
@@ -91,6 +101,7 @@ export function CasinoPage() {
   const rouletteDisabled = useAuthStore((state) => state.rouletteDisabled);
   const blackjackDisabled = useAuthStore((state) => state.blackjackDisabled);
   const minesDisabled = useAuthStore((state) => state.minesDisabled);
+  const crashDisabled = useAuthStore((state) => state.crashDisabled);
   const { game } = useParams<{ game?: string }>();
   const activeGame = isGameTab(game) ? game : null;
 
@@ -132,7 +143,8 @@ export function CasinoPage() {
   const isGameDisabled = (id: GameTab) =>
     (id === "roulette" && rouletteDisabled && !isAdmin) ||
     (id === "blackjack" && blackjackDisabled && !isAdmin) ||
-    (id === "mines" && minesDisabled && !isAdmin);
+    (id === "mines" && minesDisabled && !isAdmin) ||
+    (id === "crash" && crashDisabled && !isAdmin);
 
   const disabledLabel: Record<GameTab, string> = {
     roulette: "Roulette temporairement indisponible",
@@ -140,6 +152,7 @@ export function CasinoPage() {
     hilo: "HiLo temporairement indisponible",
     "ride-the-bus": "Ride the Bus temporairement indisponible",
     mines: "Mines temporairement indisponible",
+    crash: "Crash temporairement indisponible",
   };
 
   const handleLogout = async () => {
@@ -192,6 +205,11 @@ export function CasinoPage() {
                     {tab.id === "mines" && (
                       <p className="text-xs text-cyan-400 mt-1">
                         ⚡ Volatilité variable · Jusqu'à ×5 140 000 (12-13 mines)
+                      </p>
+                    )}
+                    {tab.id === "crash" && (
+                      <p className="text-xs text-orange-400 mt-1">
+                        🚀 Provably fair · Maison à 3% · Multijoueur en temps réel
                       </p>
                     )}
 

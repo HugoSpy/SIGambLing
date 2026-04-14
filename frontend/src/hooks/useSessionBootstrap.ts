@@ -23,9 +23,9 @@ export function useSessionBootstrap() {
 
       try {
         // Fetch maintenance status + feature flags (public, no auth required, single request)
-        const { maintenanceMode, rouletteDisabled, blackjackDisabled, eventsDisabled, minesDisabled } = await getMaintenanceStatus();
+        const { maintenanceMode, rouletteDisabled, blackjackDisabled, eventsDisabled, minesDisabled, crashDisabled } = await getMaintenanceStatus();
         setMaintenanceMode(maintenanceMode);
-        setFeatureFlags({ rouletteDisabled, blackjackDisabled, eventsDisabled, minesDisabled });
+        setFeatureFlags({ rouletteDisabled, blackjackDisabled, eventsDisabled, minesDisabled, crashDisabled });
 
         const accessToken = useAuthStore.getState().accessToken;
 

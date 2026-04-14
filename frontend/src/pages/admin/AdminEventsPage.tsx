@@ -411,10 +411,12 @@ export function AdminEventsPage() {
   const [blackjackDisabled, setLocalBlackjackDisabled] = useState(false);
   const [eventsDisabled, setLocalEventsDisabled] = useState(false);
   const [minesDisabled, setLocalMinesDisabled] = useState(false);
+  const [crashDisabled, setLocalCrashDisabled] = useState(false);
   const [rouletteConfirmTarget, setRouletteConfirmTarget] = useState<boolean | null>(null);
   const [blackjackConfirmTarget, setBlackjackConfirmTarget] = useState<boolean | null>(null);
   const [eventsConfirmTarget, setEventsConfirmTarget] = useState<boolean | null>(null);
   const [minesConfirmTarget, setMinesConfirmTarget] = useState<boolean | null>(null);
+  const [crashConfirmTarget, setCrashConfirmTarget] = useState<boolean | null>(null);
   const setStoreFeatureFlags = useAuthStore((state) => state.setFeatureFlags);
 
   const { data: events, isLoading } = useQuery({
@@ -476,11 +478,12 @@ export function AdminEventsPage() {
       .then(({ maintenanceMode: enabled }) => setLocalMaintenanceMode(enabled))
       .catch(() => {});
     getFeatureFlags()
-      .then(({ rouletteDisabled: r, blackjackDisabled: b, eventsDisabled: e, minesDisabled: m }) => {
+      .then(({ rouletteDisabled: r, blackjackDisabled: b, eventsDisabled: e, minesDisabled: m, crashDisabled: c }) => {
         setLocalRouletteDisabled(r);
         setLocalBlackjackDisabled(b);
         setLocalEventsDisabled(e);
         setLocalMinesDisabled(m);
+        setLocalCrashDisabled(c);
       })
       .catch(() => {});
   }, []);
@@ -871,6 +874,24 @@ export function AdminEventsPage() {
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
                       minesDisabled ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-zinc-400">🚀 Crash</span>
+                <button
+                  aria-checked={crashDisabled}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none ${
+                    crashDisabled ? "bg-amber-500" : "bg-zinc-700"
+                  }`}
+                  onClick={() => setCrashConfirmTarget(!crashDisabled)}
+                  role="switch"
+                  type="button"
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                      crashDisabled ? "translate-x-6" : "translate-x-1"
                     }`}
                   />
                 </button>
@@ -1927,7 +1948,7 @@ export function AdminEventsPage() {
                     async () => {
                       const updated = await setFeatureFlag("rouletteDisabled", rouletteConfirmTarget);
                       setLocalRouletteDisabled(updated.rouletteDisabled);
-                      setStoreFeatureFlags({ rouletteDisabled: updated.rouletteDisabled, blackjackDisabled, eventsDisabled, minesDisabled });
+                      setStoreFeatureFlags({ rouletteDisabled: updated.rouletteDisabled, blackjackDisabled, eventsDisabled, minesDisabled, crashDisabled });
                       setRouletteConfirmTarget(null);
                     },
                     rouletteConfirmTarget ? "Roulette désactivée." : "Roulette réactivée.",
@@ -1967,7 +1988,7 @@ export function AdminEventsPage() {
                     async () => {
                       const updated = await setFeatureFlag("blackjackDisabled", blackjackConfirmTarget);
                       setLocalBlackjackDisabled(updated.blackjackDisabled);
-                      setStoreFeatureFlags({ rouletteDisabled, blackjackDisabled: updated.blackjackDisabled, eventsDisabled, minesDisabled });
+                      setStoreFeatureFlags({ rouletteDisabled, blackjackDisabled: updated.blackjackDisabled, eventsDisabled, minesDisabled, crashDisabled });
                       setBlackjackConfirmTarget(null);
                     },
                     blackjackConfirmTarget ? "Blackjack désactivé." : "Blackjack réactivé.",
@@ -2007,7 +2028,7 @@ export function AdminEventsPage() {
                     async () => {
                       const updated = await setFeatureFlag("eventsDisabled", eventsConfirmTarget);
                       setLocalEventsDisabled(updated.eventsDisabled);
-                      setStoreFeatureFlags({ rouletteDisabled, blackjackDisabled, eventsDisabled: updated.eventsDisabled, minesDisabled });
+                      setStoreFeatureFlags({ rouletteDisabled, blackjackDisabled, eventsDisabled: updated.eventsDisabled, minesDisabled, crashDisabled });
                       setEventsConfirmTarget(null);
                     },
                     eventsConfirmTarget ? "Événements désactivés." : "Événements réactivés.",
@@ -2046,13 +2067,53 @@ export function AdminEventsPage() {
                     async () => {
                       const updated = await setFeatureFlag("minesDisabled", minesConfirmTarget);
                       setLocalMinesDisabled(updated.minesDisabled);
-                      setStoreFeatureFlags({ rouletteDisabled, blackjackDisabled, eventsDisabled, minesDisabled: updated.minesDisabled });
+                      setStoreFeatureFlags({ rouletteDisabled, blackjackDisabled, eventsDisabled, minesDisabled: updated.minesDisabled, crashDisabled });
                       setMinesConfirmTarget(null);
                     },
                     minesConfirmTarget ? "Mines désactivées." : "Mines réactivées.",
                   )
                 }
                 variant={minesConfirmTarget ? "danger" : "primary"}
+              >
+                Confirmer
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        description={
+          crashConfirmTarget
+            ? "Désactiver le Crash ? Les joueurs ne pourront plus y accéder."
+            : "Réactiver le Crash ? Les joueurs pourront à nouveau y accéder."
+        }
+        onClose={() => setCrashConfirmTarget(null)}
+        open={crashConfirmTarget !== null}
+        title={crashConfirmTarget ? "Désactiver le Crash" : "Réactiver le Crash"}
+      >
+        {crashConfirmTarget !== null && (
+          <div className="space-y-5">
+            <div className="flex gap-3">
+              <Button fullWidth onClick={() => setCrashConfirmTarget(null)} variant="secondary">
+                Annuler
+              </Button>
+              <Button
+                disabled={actionKey === "crash-flag"}
+                fullWidth
+                onClick={() =>
+                  void runAction(
+                    "crash-flag",
+                    async () => {
+                      const updated = await setFeatureFlag("crashDisabled", crashConfirmTarget);
+                      setLocalCrashDisabled(updated.crashDisabled);
+                      setStoreFeatureFlags({ rouletteDisabled, blackjackDisabled, eventsDisabled, minesDisabled, crashDisabled: updated.crashDisabled });
+                      setCrashConfirmTarget(null);
+                    },
+                    crashConfirmTarget ? "Crash désactivé." : "Crash réactivé.",
+                  )
+                }
+                variant={crashConfirmTarget ? "danger" : "primary"}
               >
                 Confirmer
               </Button>

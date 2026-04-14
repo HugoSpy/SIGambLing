@@ -8,6 +8,7 @@ export interface FeatureFlags {
   blackjackDisabled: boolean;
   eventsDisabled: boolean;
   minesDisabled: boolean;
+  crashDisabled: boolean;
 }
 
 interface AuthState {
@@ -19,6 +20,7 @@ interface AuthState {
   blackjackDisabled: boolean;
   eventsDisabled: boolean;
   minesDisabled: boolean;
+  crashDisabled: boolean;
   setStatus: (status: AuthStatus) => void;
   setAccessToken: (token: string | null) => void;
   setUser: (user: AuthUser | null) => void;
@@ -51,6 +53,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
   blackjackDisabled: false,
   eventsDisabled: false,
   minesDisabled: false,
+  crashDisabled: false,
   setStatus: (status) => set({ status }),
   setAccessToken: (token) => set({ accessToken: token }),
   setUser: (user) => set({ user }),
