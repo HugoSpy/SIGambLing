@@ -2,7 +2,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useCallback, useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import { useAuthStore } from "../store/auth-store";
-import { cashoutCrash, placeCrashBet, logoutRequest, ApiError } from "../lib/api";
+import { logoutRequest } from "../lib/api";
 import { useCrashStream } from "../hooks/useCrashStream";
 import { CrashCurve } from "../components/casino/Crash/CrashCurve";
 import { CrashBetPanel } from "../components/casino/Crash/CrashBetPanel";
@@ -83,7 +83,7 @@ function CashoutNotifPill({ notif }: { notif: CashoutNotif }) {
 export function CrashPage() {
   const user = useAuthStore((s) => s.user);
   const updateBalance = useAuthStore((s) => s.updateBalance);
-  const { setMyBetOptimistic, ...stream } = useCrashStream();
+  const { setMyBetOptimistic, placeBet, cashout, ...stream } = useCrashStream();
 
   // ── Curve points ────────────────────────────────────────────────────────────
   const curvePointsRef = useRef<{ t: number; m: number }[]>([]);
@@ -157,29 +157,40 @@ export function CrashPage() {
     };
   }, []);
 
+  // ── Balance sync on cashout (cashedOutAt transition null → value) ────────────
+  const prevCashedOutAtRef = useRef<number | null>(null);
+  useEffect(() => {
+    const cashedOutAt = stream.myBet?.cashedOutAt ?? null;
+    if (cashedOutAt !== null && prevCashedOutAtRef.current === null && user && stream.myBet) {
+      const payout = Math.floor(stream.myBet.amount * cashedOutAt);
+      updateBalance(user.balance + payout);
+    }
+    prevCashedOutAtRef.current = cashedOutAt;
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [stream.myBet?.cashedOutAt]);
+
   // ── Actions ──────────────────────────────────────────────────────────────────
   const handleBet = useCallback(
     async (amount: number, autoCashout: number | null) => {
       try {
-        await placeCrashBet(amount, autoCashout);
+        await placeBet(amount, autoCashout ?? undefined);
         if (user) updateBalance(user.balance - amount);
       } catch (err) {
-        toast.error(err instanceof ApiError ? err.message : "Erreur lors du pari.");
+        toast.error(err instanceof Error ? err.message : "Erreur lors du pari.");
         throw err;
       }
     },
-    [user, updateBalance],
+    [placeBet, user, updateBalance],
   );
 
   const handleCashout = useCallback(async () => {
     try {
-      const { payout } = await cashoutCrash();
-      if (user) updateBalance(user.balance + payout);
+      await cashout();
     } catch (err) {
-      toast.error(err instanceof ApiError ? err.message : "Erreur lors du cashout.");
+      toast.error(err instanceof Error ? err.message : "Erreur lors du cashout.");
       throw err;
     }
-  }, [user, updateBalance]);
+  }, [cashout]);
 
   const handleLogout = async () => {
     await logoutRequest();
