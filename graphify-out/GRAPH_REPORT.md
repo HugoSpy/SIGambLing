@@ -1,11 +1,11 @@
-# Graph Report - .  (2026-04-13)
+# Graph Report - .  (2026-04-14)
 
 ## Corpus Check
-- 183 files · ~143,260 words
+- 183 files · ~143,442 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1044 nodes · 1503 edges · 183 communities detected
+- 1045 nodes · 1504 edges · 183 communities detected
 - Extraction: 95% EXTRACTED · 5% INFERRED · 0% AMBIGUOUS · INFERRED: 70 edges (avg confidence: 0.59)
 - Token cost: 0 input · 0 output
 
@@ -436,44 +436,44 @@ Cohesion: 0.4
 Nodes (1): AppErrorBoundary
 
 ### Community 52 - "Community 52"
-Cohesion: 0.5
-Nodes (2): submitProposal(), toErrorMessage()
-
-### Community 53 - "Community 53"
 Cohesion: 0.4
 Nodes (0): 
 
+### Community 53 - "Community 53"
+Cohesion: 0.5
+Nodes (2): submitProposal(), toErrorMessage()
+
 ### Community 54 - "Community 54"
+Cohesion: 0.4
+Nodes (0): 
+
+### Community 55 - "Community 55"
 Cohesion: 0.5
 Nodes (3): BaseSettings, Config, Settings
 
-### Community 55 - "Community 55"
+### Community 56 - "Community 56"
 Cohesion: 0.67
 Nodes (2): generateRandomNumber(), spinRoulette()
 
-### Community 56 - "Community 56"
+### Community 57 - "Community 57"
 Cohesion: 0.67
 Nodes (2): containsBanword(), normalize()
 
-### Community 57 - "Community 57"
+### Community 58 - "Community 58"
 Cohesion: 0.83
 Nodes (3): getAuthenticatedUserId(), getMyWinsController(), shareWinController()
 
-### Community 58 - "Community 58"
+### Community 59 - "Community 59"
 Cohesion: 0.83
 Nodes (3): buildPoolByOption(), main(), toJsonOptions()
 
-### Community 59 - "Community 59"
+### Community 60 - "Community 60"
 Cohesion: 0.5
 Nodes (0): 
-
-### Community 60 - "Community 60"
-Cohesion: 0.83
-Nodes (3): confirmOddsChange(), invalidateBetQueries(), submitBet()
 
 ### Community 61 - "Community 61"
-Cohesion: 0.5
-Nodes (0): 
+Cohesion: 0.83
+Nodes (3): confirmOddsChange(), invalidateBetQueries(), submitBet()
 
 ### Community 62 - "Community 62"
 Cohesion: 0.5

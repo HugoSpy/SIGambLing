@@ -345,7 +345,7 @@
       "source_file": "backend/config.py",
       "source_location": "L1",
       "id": "backend_config_py",
-      "community": 54,
+      "community": 55,
       "norm_label": "config.py"
     },
     {
@@ -354,7 +354,7 @@
       "source_file": "backend/config.py",
       "source_location": "L5",
       "id": "config_settings",
-      "community": 54,
+      "community": 55,
       "norm_label": "settings"
     },
     {
@@ -363,7 +363,7 @@
       "source_file": "",
       "source_location": "",
       "id": "basesettings",
-      "community": 54,
+      "community": 55,
       "norm_label": "basesettings"
     },
     {
@@ -372,7 +372,7 @@
       "source_file": "backend/config.py",
       "source_location": "L21",
       "id": "config_config",
-      "community": 54,
+      "community": 55,
       "norm_label": "config"
     },
     {
@@ -1677,7 +1677,7 @@
       "source_file": "backend/src/utils/roulette-rng.ts",
       "source_location": "L1",
       "id": "backend_src_utils_roulette_rng_ts",
-      "community": 55,
+      "community": 56,
       "norm_label": "roulette-rng.ts"
     },
     {
@@ -1686,7 +1686,7 @@
       "source_file": "backend/src/utils/roulette-rng.ts",
       "source_location": "L3",
       "id": "roulette_rng_generaterandomnumber",
-      "community": 55,
+      "community": 56,
       "norm_label": "generaterandomnumber()"
     },
     {
@@ -1695,7 +1695,7 @@
       "source_file": "backend/src/utils/roulette-rng.ts",
       "source_location": "L7",
       "id": "roulette_rng_spinroulette",
-      "community": 55,
+      "community": 56,
       "norm_label": "spinroulette()"
     },
     {
@@ -1704,7 +1704,7 @@
       "source_file": "backend/src/utils/roulette-rng.ts",
       "source_location": "L11",
       "id": "roulette_rng_generateprovablyfairspin",
-      "community": 55,
+      "community": 56,
       "norm_label": "generateprovablyfairspin()"
     },
     {
@@ -1740,7 +1740,7 @@
       "source_file": "backend/src/utils/banword-loader.ts",
       "source_location": "L1",
       "id": "backend_src_utils_banword_loader_ts",
-      "community": 56,
+      "community": 57,
       "norm_label": "banword-loader.ts"
     },
     {
@@ -1749,7 +1749,7 @@
       "source_file": "backend/src/utils/banword-loader.ts",
       "source_location": "L4",
       "id": "banword_loader_normalize",
-      "community": 56,
+      "community": 57,
       "norm_label": "normalize()"
     },
     {
@@ -1758,7 +1758,7 @@
       "source_file": "backend/src/utils/banword-loader.ts",
       "source_location": "L11",
       "id": "banword_loader_loadbanwords",
-      "community": 56,
+      "community": 57,
       "norm_label": "loadbanwords()"
     },
     {
@@ -1767,7 +1767,7 @@
       "source_file": "backend/src/utils/banword-loader.ts",
       "source_location": "L26",
       "id": "banword_loader_containsbanword",
-      "community": 56,
+      "community": 57,
       "norm_label": "containsbanword()"
     },
     {
@@ -4656,7 +4656,7 @@
       "source_file": "backend/src/controllers/wins.controller.ts",
       "source_location": "L1",
       "id": "backend_src_controllers_wins_controller_ts",
-      "community": 57,
+      "community": 58,
       "norm_label": "wins.controller.ts"
     },
     {
@@ -4665,7 +4665,7 @@
       "source_file": "backend/src/controllers/wins.controller.ts",
       "source_location": "L7",
       "id": "wins_controller_getauthenticateduserid",
-      "community": 57,
+      "community": 58,
       "norm_label": "getauthenticateduserid()"
     },
     {
@@ -4674,7 +4674,7 @@
       "source_file": "backend/src/controllers/wins.controller.ts",
       "source_location": "L15",
       "id": "wins_controller_getmywinscontroller",
-      "community": 57,
+      "community": 58,
       "norm_label": "getmywinscontroller()"
     },
     {
@@ -4683,7 +4683,7 @@
       "source_file": "backend/src/controllers/wins.controller.ts",
       "source_location": "L35",
       "id": "wins_controller_sharewincontroller",
-      "community": 57,
+      "community": 58,
       "norm_label": "sharewincontroller()"
     },
     {
@@ -5304,7 +5304,7 @@
       "source_file": "backend/prisma/seed.ts",
       "source_location": "L1",
       "id": "backend_prisma_seed_ts",
-      "community": 58,
+      "community": 59,
       "norm_label": "seed.ts"
     },
     {
@@ -5313,7 +5313,7 @@
       "source_file": "backend/prisma/seed.ts",
       "source_location": "L144",
       "id": "seed_buildpoolbyoption",
-      "community": 58,
+      "community": 59,
       "norm_label": "buildpoolbyoption()"
     },
     {
@@ -5322,7 +5322,7 @@
       "source_file": "backend/prisma/seed.ts",
       "source_location": "L156",
       "id": "seed_tojsonoptions",
-      "community": 58,
+      "community": 59,
       "norm_label": "tojsonoptions()"
     },
     {
@@ -5331,7 +5331,7 @@
       "source_file": "backend/prisma/seed.ts",
       "source_location": "L166",
       "id": "seed_main",
-      "community": 58,
+      "community": 59,
       "norm_label": "main()"
     },
     {
@@ -5358,7 +5358,7 @@
       "source_file": "frontend/src/RouterApp.tsx",
       "source_location": "L1",
       "id": "frontend_src_routerapp_tsx",
-      "community": 59,
+      "community": 60,
       "norm_label": "routerapp.tsx"
     },
     {
@@ -5367,7 +5367,7 @@
       "source_file": "frontend/src/RouterApp.tsx",
       "source_location": "L57",
       "id": "routerapp_scrolltotop",
-      "community": 59,
+      "community": 60,
       "norm_label": "scrolltotop()"
     },
     {
@@ -5376,7 +5376,7 @@
       "source_file": "frontend/src/RouterApp.tsx",
       "source_location": "L65",
       "id": "routerapp_landingredirect",
-      "community": 59,
+      "community": 60,
       "norm_label": "landingredirect()"
     },
     {
@@ -5385,7 +5385,7 @@
       "source_file": "frontend/src/RouterApp.tsx",
       "source_location": "L75",
       "id": "routerapp_publiconly",
-      "community": 59,
+      "community": 60,
       "norm_label": "publiconly()"
     },
     {
@@ -5475,7 +5475,7 @@
       "source_file": "frontend/src/components/BetDrawer.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_betdrawer_tsx",
-      "community": 60,
+      "community": 61,
       "norm_label": "betdrawer.tsx"
     },
     {
@@ -5484,7 +5484,7 @@
       "source_file": "frontend/src/components/BetDrawer.tsx",
       "source_location": "L75",
       "id": "betdrawer_invalidatebetqueries",
-      "community": 60,
+      "community": 61,
       "norm_label": "invalidatebetqueries()"
     },
     {
@@ -5493,7 +5493,7 @@
       "source_file": "frontend/src/components/BetDrawer.tsx",
       "source_location": "L85",
       "id": "betdrawer_submitbet",
-      "community": 60,
+      "community": 61,
       "norm_label": "submitbet()"
     },
     {
@@ -5502,7 +5502,7 @@
       "source_file": "frontend/src/components/BetDrawer.tsx",
       "source_location": "L128",
       "id": "betdrawer_confirmoddschange",
-      "community": 60,
+      "community": 61,
       "norm_label": "confirmoddschange()"
     },
     {
@@ -5592,7 +5592,7 @@
       "source_file": "frontend/src/components/OddsHistoryChart.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_oddshistorychart_tsx",
-      "community": 61,
+      "community": 62,
       "norm_label": "oddshistorychart.tsx"
     },
     {
@@ -5601,7 +5601,7 @@
       "source_file": "frontend/src/components/OddsHistoryChart.tsx",
       "source_location": "L6",
       "id": "oddshistorychart_buildpath",
-      "community": 61,
+      "community": 62,
       "norm_label": "buildpath()"
     },
     {
@@ -5610,7 +5610,7 @@
       "source_file": "frontend/src/components/OddsHistoryChart.tsx",
       "source_location": "L16",
       "id": "oddshistorychart_formattooltipdate",
-      "community": 61,
+      "community": 62,
       "norm_label": "formattooltipdate()"
     },
     {
@@ -5619,7 +5619,7 @@
       "source_file": "frontend/src/components/OddsHistoryChart.tsx",
       "source_location": "L55",
       "id": "oddshistorychart_handlemousemove",
-      "community": 61,
+      "community": 62,
       "norm_label": "handlemousemove()"
     },
     {
@@ -5727,7 +5727,7 @@
       "source_file": "frontend/src/components/casino/RouletteBetGrid.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_roulettebetgrid_tsx",
-      "community": 62,
+      "community": 63,
       "norm_label": "roulettebetgrid.tsx"
     },
     {
@@ -5736,7 +5736,7 @@
       "source_file": "frontend/src/components/casino/RouletteBetGrid.tsx",
       "source_location": "L22",
       "id": "roulettebetgrid_getnumbercellclasses",
-      "community": 62,
+      "community": 63,
       "norm_label": "getnumbercellclasses()"
     },
     {
@@ -5745,7 +5745,7 @@
       "source_file": "frontend/src/components/casino/RouletteBetGrid.tsx",
       "source_location": "L36",
       "id": "roulettebetgrid_getoutsidecellclasses",
-      "community": 62,
+      "community": 63,
       "norm_label": "getoutsidecellclasses()"
     },
     {
@@ -5754,7 +5754,7 @@
       "source_file": "frontend/src/components/casino/RouletteBetGrid.tsx",
       "source_location": "L55",
       "id": "roulettebetgrid_renderchip",
-      "community": 62,
+      "community": 63,
       "norm_label": "renderchip()"
     },
     {
@@ -5826,7 +5826,7 @@
       "source_file": "frontend/src/components/casino/BlackjackGame.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_blackjackgame_tsx",
-      "community": 63,
+      "community": 64,
       "norm_label": "blackjackgame.tsx"
     },
     {
@@ -5835,7 +5835,7 @@
       "source_file": "frontend/src/components/casino/BlackjackGame.tsx",
       "source_location": "L78",
       "id": "blackjackgame_isredsuit",
-      "community": 63,
+      "community": 64,
       "norm_label": "isredsuit()"
     },
     {
@@ -5844,7 +5844,7 @@
       "source_file": "frontend/src/components/casino/BlackjackGame.tsx",
       "source_location": "L82",
       "id": "blackjackgame_getblackjackrankvalue",
-      "community": 63,
+      "community": 64,
       "norm_label": "getblackjackrankvalue()"
     },
     {
@@ -5853,7 +5853,7 @@
       "source_file": "frontend/src/components/casino/BlackjackGame.tsx",
       "source_location": "L1214",
       "id": "blackjackgame_cn",
-      "community": 63,
+      "community": 64,
       "norm_label": "cn()"
     },
     {
@@ -6060,34 +6060,43 @@
       "source_file": "frontend/src/components/casino/Mines/MinesSidebar.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_mines_minessidebar_tsx",
-      "community": 64,
+      "community": 52,
       "norm_label": "minessidebar.tsx"
+    },
+    {
+      "label": "calcMultiplier()",
+      "file_type": "code",
+      "source_file": "frontend/src/components/casino/Mines/MinesSidebar.tsx",
+      "source_location": "L36",
+      "id": "minessidebar_calcmultiplier",
+      "community": 52,
+      "norm_label": "calcmultiplier()"
     },
     {
       "label": "handleBetInput()",
       "file_type": "code",
       "source_file": "frontend/src/components/casino/Mines/MinesSidebar.tsx",
-      "source_location": "L136",
+      "source_location": "L148",
       "id": "minessidebar_handlebetinput",
-      "community": 64,
+      "community": 52,
       "norm_label": "handlebetinput()"
     },
     {
       "label": "handleAutoBetMinesChange()",
       "file_type": "code",
       "source_file": "frontend/src/components/casino/Mines/MinesSidebar.tsx",
-      "source_location": "L141",
+      "source_location": "L153",
       "id": "minessidebar_handleautobetmineschange",
-      "community": 64,
+      "community": 52,
       "norm_label": "handleautobetmineschange()"
     },
     {
       "label": "handleStart()",
       "file_type": "code",
       "source_file": "frontend/src/components/casino/Mines/MinesSidebar.tsx",
-      "source_location": "L146",
+      "source_location": "L158",
       "id": "minessidebar_handlestart",
-      "community": 64,
+      "community": 52,
       "norm_label": "handlestart()"
     },
     {
@@ -7617,7 +7626,7 @@
       "source_file": "frontend/src/pages/EventsMarketsPage.tsx",
       "source_location": "L1",
       "id": "frontend_src_pages_eventsmarketspage_tsx",
-      "community": 52,
+      "community": 53,
       "norm_label": "eventsmarketspage.tsx"
     },
     {
@@ -7626,7 +7635,7 @@
       "source_file": "frontend/src/pages/EventsMarketsPage.tsx",
       "source_location": "L34",
       "id": "eventsmarketspage_toerrormessage",
-      "community": 52,
+      "community": 53,
       "norm_label": "toerrormessage()"
     },
     {
@@ -7635,7 +7644,7 @@
       "source_file": "frontend/src/pages/EventsMarketsPage.tsx",
       "source_location": "L42",
       "id": "eventsmarketspage_proposaltone",
-      "community": 52,
+      "community": 53,
       "norm_label": "proposaltone()"
     },
     {
@@ -7644,7 +7653,7 @@
       "source_file": "frontend/src/pages/EventsMarketsPage.tsx",
       "source_location": "L133",
       "id": "eventsmarketspage_handlelogout",
-      "community": 52,
+      "community": 53,
       "norm_label": "handlelogout()"
     },
     {
@@ -7653,7 +7662,7 @@
       "source_file": "frontend/src/pages/EventsMarketsPage.tsx",
       "source_location": "L138",
       "id": "eventsmarketspage_submitproposal",
-      "community": 52,
+      "community": 53,
       "norm_label": "submitproposal()"
     },
     {
@@ -8058,7 +8067,7 @@
       "source_file": "frontend/src/pages/WinsPage.tsx",
       "source_location": "L1",
       "id": "frontend_src_pages_winspage_tsx",
-      "community": 53,
+      "community": 54,
       "norm_label": "winspage.tsx"
     },
     {
@@ -8067,7 +8076,7 @@
       "source_file": "frontend/src/pages/WinsPage.tsx",
       "source_location": "L39",
       "id": "winspage_sourceicon",
-      "community": 53,
+      "community": 54,
       "norm_label": "sourceicon()"
     },
     {
@@ -8076,7 +8085,7 @@
       "source_file": "frontend/src/pages/WinsPage.tsx",
       "source_location": "L47",
       "id": "winspage_formatrelativedate",
-      "community": 53,
+      "community": 54,
       "norm_label": "formatrelativedate()"
     },
     {
@@ -8085,7 +8094,7 @@
       "source_file": "frontend/src/pages/WinsPage.tsx",
       "source_location": "L133",
       "id": "winspage_issharedisabled",
-      "community": 53,
+      "community": 54,
       "norm_label": "issharedisabled()"
     },
     {
@@ -8094,7 +8103,7 @@
       "source_file": "frontend/src/pages/WinsPage.tsx",
       "source_location": "L140",
       "id": "winspage_handlelogout",
-      "community": 53,
+      "community": 54,
       "norm_label": "handlelogout()"
     },
     {
@@ -18248,7 +18257,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/services/mines.service.ts",
-      "source_location": "L371",
+      "source_location": "L377",
       "weight": 1.0,
       "_src": "mines_service_minesservice_autobet",
       "_tgt": "mines_service_getminesmultiplier",
@@ -18296,7 +18305,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/services/mines.service.ts",
-      "source_location": "L304",
+      "source_location": "L308",
       "weight": 1.0,
       "_src": "mines_service_minesservice_autobet",
       "_tgt": "mines_service_placemines",
@@ -18332,7 +18341,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/services/mines.service.ts",
-      "source_location": "L295",
+      "source_location": "L299",
       "weight": 1.0,
       "_src": "mines_service_minesservice_autobet",
       "_tgt": "mines_service_issessionexpired",
@@ -22052,7 +22061,19 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/components/casino/Mines/MinesSidebar.tsx",
-      "source_location": "L136",
+      "source_location": "L36",
+      "weight": 1.0,
+      "_src": "frontend_src_components_casino_mines_minessidebar_tsx",
+      "_tgt": "minessidebar_calcmultiplier",
+      "source": "frontend_src_components_casino_mines_minessidebar_tsx",
+      "target": "minessidebar_calcmultiplier",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/components/casino/Mines/MinesSidebar.tsx",
+      "source_location": "L148",
       "weight": 1.0,
       "_src": "frontend_src_components_casino_mines_minessidebar_tsx",
       "_tgt": "minessidebar_handlebetinput",
@@ -22064,7 +22085,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/components/casino/Mines/MinesSidebar.tsx",
-      "source_location": "L141",
+      "source_location": "L153",
       "weight": 1.0,
       "_src": "frontend_src_components_casino_mines_minessidebar_tsx",
       "_tgt": "minessidebar_handleautobetmineschange",
@@ -22076,7 +22097,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/components/casino/Mines/MinesSidebar.tsx",
-      "source_location": "L146",
+      "source_location": "L158",
       "weight": 1.0,
       "_src": "frontend_src_components_casino_mines_minessidebar_tsx",
       "_tgt": "minessidebar_handlestart",
