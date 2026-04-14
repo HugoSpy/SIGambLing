@@ -48,6 +48,8 @@ export function useCrashStream() {
   const rafRef = useRef<number | null>(null);
   const startTimeRef = useRef<number | null>(null);
   const myBetRef = useRef<CrashStreamState["myBet"]>(null);
+  // Tracks the active round number so waiting-countdown ticks (same round) don't reset myBet
+  const currentRoundRef = useRef<number>(0);
 
   // rAF loop — only runs during RUNNING
   const startRaf = useCallback(() => {
@@ -79,18 +81,20 @@ export function useCrashStream() {
         // Initial hydration on connect / reconnect
         const status = event.status as CrashStreamState["status"];
         const startTime = (event.startTime as number | null) ?? null;
+        const incomingRound = (event.roundNumber as number) ?? 0;
         startTimeRef.current = startTime;
+        currentRoundRef.current = incomingRound;
 
-        // Restore own bet on SSE reconnect during RUNNING (covers failed REST hydration too)
-        if (status === "RUNNING" && !myBetRef.current) {
+        // Restore own bet on SSE reconnect (RUNNING or WAITING — covers mid-round rejoin)
+        if (!myBetRef.current) {
           const myUserId = useAuthStore.getState().user?.id;
-          const bets = (event.bets as CrashStreamState["liveBets"]) ?? [];
-          const myBetData = myUserId ? (bets.find((b) => b.userId === myUserId) ?? null) : null;
+          const rawBets = (event.bets as Array<Record<string, unknown>>) ?? [];
+          const myBetData = myUserId ? (rawBets.find((b) => b.userId === myUserId) ?? null) : null;
           if (myBetData) {
             myBetRef.current = {
-              amount: myBetData.amount,
-              autoCashout: null,
-              cashedOutAt: myBetData.cashedOutAt,
+              amount: myBetData.amount as number,
+              autoCashout: (myBetData.autoCashout as number | null) ?? null,
+              cashedOutAt: (myBetData.cashedOutAt as number | null) ?? null,
             };
           }
         }
@@ -99,7 +103,7 @@ export function useCrashStream() {
         setState((prev) => ({
           ...prev,
           status,
-          roundNumber: (event.roundNumber as number) ?? 0,
+          roundNumber: incomingRound,
           hash: (event.hash as string) ?? "",
           countdown: (event.countdown as number) ?? 0,
           startTime,
@@ -119,19 +123,25 @@ export function useCrashStream() {
       if (type === "waiting") {
         stopRaf();
         startTimeRef.current = null;
-        myBetRef.current = null;
+        const incomingRound = (event.roundNumber as number) ?? 0;
+        // Only reset myBet and liveBets when a genuinely new round starts.
+        // Repeated countdown ticks for the same round must NOT wipe the player's active bet.
+        const isNewRound = incomingRound !== currentRoundRef.current;
+        if (isNewRound) {
+          currentRoundRef.current = incomingRound;
+          myBetRef.current = null;
+        }
 
         setState((prev) => ({
           ...prev,
           status: "WAITING",
-          roundNumber: (event.roundNumber as number) ?? prev.roundNumber,
+          roundNumber: incomingRound,
           hash: (event.hash as string) ?? "",
           countdown: (event.countdown as number) ?? 7,
           startTime: null,
           crashPoint: null,
           multiplier: 1.0,
-          myBet: null,
-          liveBets: [],
+          ...(isNewRound ? { myBet: null, liveBets: [] } : {}),
         }));
         return;
       }
