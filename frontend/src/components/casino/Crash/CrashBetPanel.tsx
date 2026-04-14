@@ -9,7 +9,7 @@ import { Button } from "../../ui/Button";
 import { WinPopup, useWinPopup } from "../../ui/WinPopup";
 import type { CrashStreamState } from "../../../hooks/useCrashStream";
 
-const MIN_BET = 120;
+const MIN_BET = 10;
 const MAX_BET = 1_000_000;
 
 interface CrashBetPanelProps {
