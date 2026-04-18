@@ -3,30 +3,27 @@ import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "../../lib/utils";
 
 const buttonVariants = cva(
-  "interactive-hover inline-flex items-center justify-center rounded-lg font-semibold focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500/70",
+  "interactive-hover inline-flex items-center justify-center font-semibold focus-visible:outline-none",
   {
     variants: {
       variant: {
-        primary:
-          "button-primary-surface",
-        secondary:
-          "button-secondary-surface",
-        danger:
-          "button-danger-surface",
+        primary:   "btn-primary",
+        secondary: "btn-secondary",
+        danger:    "btn-danger",
       },
       size: {
         default: "h-11 px-4 text-sm",
-        sm: "h-9 px-3 text-sm",
-        lg: "h-12 px-5 text-base",
+        sm:      "h-9 px-3 text-sm",
+        lg:      "h-12 px-5 text-base",
       },
       fullWidth: {
-        true: "w-full",
+        true:  "w-full",
         false: "",
       },
     },
     defaultVariants: {
-      variant: "primary",
-      size: "default",
+      variant:   "primary",
+      size:      "default",
       fullWidth: false,
     },
   },

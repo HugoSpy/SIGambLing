@@ -55,7 +55,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
   const navLinkClassName =
     "interactive-hover flex items-center gap-3 rounded-xl border px-3 py-2.5 text-sm";
   const actionSurfaceClassName =
-    "interactive-hover relative inline-flex h-11 items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900 px-4 text-sm text-zinc-100 shadow-[0_10px_24px_rgba(0,0,0,0.18)]";
+    "interactive-hover relative inline-flex h-11 items-center gap-3 rounded-xl border border-[var(--ink-700)] bg-[var(--surface-1)] px-4 text-sm text-[var(--fg-primary)] shadow-[var(--shadow-card)]";
   const initials = useMemo(
     () =>
       user.pseudo
@@ -95,13 +95,13 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
   );
 
   return (
-    <div className="surface-grid min-h-dvh bg-zinc-950 text-zinc-100">
-      <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-zinc-800 bg-zinc-900/95 lg:flex lg:flex-col">
-        <div className="flex h-16 items-center gap-3 border-b border-zinc-800 px-6">
-          <Dice3 className="h-8 w-8 text-emerald-500" />
+    <div className="surface-grid min-h-dvh bg-[var(--bg)] text-[var(--fg-primary)]">
+      <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-[var(--ink-700)] bg-[var(--surface-1)]/95 lg:flex lg:flex-col">
+        <div className="flex h-16 items-center gap-3 border-b border-[var(--ink-700)] px-6">
+          <Dice3 className="h-8 w-8 text-[var(--brand-emerald)]" />
           <div>
-            <p className="text-[11px] uppercase tracking-[0.28em] text-zinc-500">EPITA</p>
-            <h1 className="text-xl font-semibold text-zinc-100">SIGambling</h1>
+            <p className="text-[11px] uppercase tracking-[0.28em] text-[var(--fg-muted)]">EPITA</p>
+            <h1 className="text-xl font-semibold text-[var(--fg-primary)]">SIGambling</h1>
           </div>
         </div>
 
@@ -121,15 +121,15 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
                 className={cn(
                   navLinkClassName,
                   active
-                    ? "border-emerald-500/20 bg-emerald-500/10 text-emerald-400"
-                    : "border-transparent text-zinc-400 hover:border-zinc-700 hover:bg-zinc-800 hover:text-zinc-100",
+                    ? "border-[var(--brand-emerald-line)] bg-[var(--brand-emerald-soft)] text-[var(--brand-emerald-hover)]"
+                    : "border-transparent text-[var(--fg-secondary)] hover:border-[var(--ink-700)] hover:bg-[var(--surface-2)] hover:text-[var(--fg-primary)]",
                 )}
                 to={item.href}
               >
                 <span className="relative">
                   <Icon className="h-4 w-4" />
                   {(isReward && rewardAvailable) || (isProfile && unclaimedBadges > 0) ? (
-                    <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-zinc-900 animate-pulse" />
+                    <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-[var(--brand-emerald)] ring-2 ring-[var(--surface-1)] animate-pulse" />
                   ) : null}
                 </span>
                 <span>{item.label}</span>
@@ -143,18 +143,18 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
           })}
         </nav>
 
-        <div className="space-y-3 border-t border-zinc-800 p-4">
+        <div className="space-y-3 border-t border-[var(--ink-700)] p-4">
           <button
             className={cn(
               actionSurfaceClassName,
-              "w-full justify-between text-left enabled:hover:border-zinc-700 enabled:hover:bg-zinc-800",
-              chatOpen && "border-emerald-500/20 bg-emerald-500/10 text-emerald-400",
+              "w-full justify-between text-left enabled:hover:border-[var(--ink-700)] enabled:hover:bg-[var(--surface-2)]",
+              chatOpen && "border-[var(--brand-emerald-line)] bg-[var(--brand-emerald-soft)] text-[var(--brand-emerald-hover)]",
             )}
             onClick={() => setChatOpen(!chatOpen)}
             type="button"
           >
             <span className="inline-flex items-center gap-2">
-              <MessageSquare className="h-4 w-4 text-emerald-400" />
+              <MessageSquare className="h-4 w-4 text-[var(--brand-emerald-hover)]" />
               Chat
             </span>
             {unreadCount > 0 && (
@@ -173,23 +173,23 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
           <button
             className={cn(
               actionSurfaceClassName,
-              "w-full justify-between text-left enabled:hover:border-zinc-700 enabled:hover:bg-zinc-800",
+              "w-full justify-between text-left enabled:hover:border-[var(--ink-700)] enabled:hover:bg-[var(--surface-2)]",
             )}
             onClick={() => setCartOpen(true)}
             type="button"
           >
             <span className="inline-flex items-center gap-2">
-              <Ticket className="h-4 w-4 text-emerald-400" />
+              <Ticket className="h-4 w-4 text-[var(--brand-emerald-hover)]" />
               Ticket de paris
             </span>
             {cartSelectionsCount > 0 ? (
-              <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-emerald-500 px-2 py-0.5 text-[11px] font-bold text-zinc-950">
+              <span className="inline-flex min-w-6 items-center justify-center rounded-full bg-[var(--brand-emerald)] px-2 py-0.5 text-[11px] font-bold text-[var(--fg-inverse)]">
                 {cartSelectionsCount}
               </span>
             ) : null}
           </button>
 
-          <div className="rounded-xl border border-zinc-800 bg-zinc-950 px-4 py-3">
+          <div className="rounded-xl border border-[var(--ink-700)] bg-[var(--bg)] px-4 py-3">
             <div className="flex items-center gap-3">
               {user.avatar_url ? (
                 <img
@@ -201,26 +201,26 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
                   src={user.avatar_url}
                 />
               ) : (
-                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-emerald-500/10 text-sm font-bold text-emerald-400">
+                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[var(--brand-emerald-soft)] text-sm font-bold text-[var(--brand-emerald-hover)]">
                   {initials}
                 </div>
               )}
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-zinc-100">{user.pseudo}</p>
-                <p className="truncate text-xs text-zinc-500">{user.email}</p>
+                <p className="truncate text-sm font-semibold text-[var(--fg-primary)]">{user.pseudo}</p>
+                <p className="truncate text-xs text-[var(--fg-muted)]">{user.email}</p>
               </div>
             </div>
 
             <div className="mt-4 grid grid-cols-2 gap-2">
-              <div className="rounded-lg bg-zinc-900 px-3 py-2">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Solde</p>
-                <p className="mt-1 text-sm font-semibold text-emerald-400">
+              <div className="rounded-lg bg-[var(--surface-1)] px-3 py-2">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--fg-muted)]">Solde</p>
+                <p className="mt-1 text-sm font-semibold text-[var(--brand-emerald-hover)]">
                   {formatTokens(liveBalance)}
                 </p>
               </div>
-              <div className="rounded-lg bg-zinc-900 px-3 py-2">
-                <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-500">Série</p>
-                <p className="mt-1 text-sm font-semibold text-zinc-100">{user.streak_days} j</p>
+              <div className="rounded-lg bg-[var(--surface-1)] px-3 py-2">
+                <p className="text-[11px] uppercase tracking-[0.18em] text-[var(--fg-muted)]">Série</p>
+                <p className="mt-1 text-sm font-semibold text-[var(--fg-primary)]">{user.streak_days} j</p>
               </div>
             </div>
 
@@ -242,18 +242,18 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
       </aside>
 
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-30 border-b border-zinc-800/80 bg-zinc-950/90 backdrop-blur">
+        <header className="sticky top-0 z-30 border-b border-[var(--ink-700)]/80 bg-[var(--bg)]/90 backdrop-blur">
           <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 lg:px-8">
             <div className="min-w-0">
-              <p className="text-[11px] uppercase tracking-[0.28em] text-zinc-500">SIGambling</p>
-              <h2 className="truncate text-lg font-semibold text-zinc-100">{activeItem.label}</h2>
+              <p className="text-[11px] uppercase tracking-[0.28em] text-[var(--fg-muted)]">SIGambling</p>
+              <h2 className="truncate text-lg font-semibold text-[var(--fg-primary)]">{activeItem.label}</h2>
             </div>
 
             <div className="flex items-center gap-3">
               <button
                 className={cn(
                   actionSurfaceClassName,
-                  "justify-center px-3 enabled:hover:border-zinc-700 enabled:hover:bg-zinc-800",
+                  "justify-center px-3 enabled:hover:border-[var(--ink-700)] enabled:hover:bg-[var(--surface-2)]",
                 )}
                 onClick={() => setCartOpen(true)}
                 type="button"
@@ -261,20 +261,20 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
                 <Ticket className="h-4 w-4" />
                 <span className="ml-2 hidden text-sm sm:inline">Ticket</span>
                 {cartSelectionsCount > 0 ? (
-                  <span className="absolute -right-2 -top-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-emerald-500 px-1.5 text-[10px] font-bold text-zinc-950">
+                  <span className="absolute -right-2 -top-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--brand-emerald)] px-1.5 text-[10px] font-bold text-[var(--fg-inverse)]">
                     {cartSelectionsCount}
                   </span>
                 ) : null}
               </button>
 
-              <div className="hidden h-11 items-center gap-2 rounded-xl border border-zinc-800 bg-zinc-900 px-4 shadow-[0_10px_24px_rgba(0,0,0,0.18)] sm:flex">
-                <Coins className="h-4 w-4 text-emerald-400" />
-                <span className="text-sm font-medium text-zinc-100">
+              <div className="hidden h-11 items-center gap-2 rounded-xl border border-[var(--ink-700)] bg-[var(--surface-1)] px-4 shadow-[var(--shadow-card)] sm:flex">
+                <Coins className="h-4 w-4 text-[var(--brand-emerald-hover)]" />
+                <span className="text-sm font-medium text-[var(--fg-primary)]">
                   {formatTokens(liveBalance)}
                 </span>
               </div>
 
-              <div className="flex h-11 items-center gap-3 rounded-xl border border-zinc-800 bg-zinc-900 px-3 shadow-[0_10px_24px_rgba(0,0,0,0.18)]">
+              <div className="flex h-11 items-center gap-3 rounded-xl border border-[var(--ink-700)] bg-[var(--surface-1)] px-3 shadow-[var(--shadow-card)]">
                 {user.avatar_url ? (
                   <img
                     alt={`Photo de profil de ${user.pseudo}`}
@@ -285,15 +285,15 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
                     src={user.avatar_url}
                   />
                 ) : (
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-emerald-500/10 text-xs font-bold text-emerald-400">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--brand-emerald-soft)] text-xs font-bold text-[var(--brand-emerald-hover)]">
                     {initials}
                   </div>
                 )}
                 <div>
-                  <p className="max-w-[160px] truncate text-sm font-medium text-zinc-100">
+                  <p className="max-w-[160px] truncate text-sm font-medium text-[var(--fg-primary)]">
                     {user.pseudo}
                   </p>
-                  <p className="hidden text-xs text-zinc-500 sm:block">{user.email}</p>
+                  <p className="hidden text-xs text-[var(--fg-muted)] sm:block">{user.email}</p>
                 </div>
               </div>
 
@@ -325,7 +325,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
       </div>
 
       <nav
-        className="fixed bottom-0 inset-x-0 z-40 border-t border-zinc-800 bg-zinc-900/95 backdrop-blur lg:hidden"
+        className="fixed bottom-0 inset-x-0 z-40 border-t border-[var(--ink-700)] bg-[var(--surface-1)]/95 backdrop-blur lg:hidden"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
         <div className="flex overflow-x-auto gap-1 px-2 pt-2 pb-2 scrollbar-none">
@@ -343,14 +343,14 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
                 key={item.label}
                 className={cn(
                   "flex-none flex flex-col items-center justify-center rounded-lg px-2 py-2 text-[10px] min-w-[56px] transition-colors",
-                  active ? "bg-emerald-500/10 text-emerald-400" : "text-zinc-400",
+                  active ? "bg-[var(--brand-emerald-soft)] text-[var(--brand-emerald-hover)]" : "text-[var(--fg-secondary)]",
                 )}
                 to={item.href}
               >
                 <span className="relative">
                   <Icon className="h-4 w-4" />
                   {(isReward && rewardAvailable) || (isProfile && unclaimedBadges > 0) ? (
-                    <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-emerald-500 ring-2 ring-zinc-900 animate-pulse" />
+                    <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-[var(--brand-emerald)] ring-2 ring-[var(--surface-1)] animate-pulse" />
                   ) : null}
                   {isAdmin && pendingProposalsCount > 0 && (
                     <span className="absolute -right-1 -top-1 inline-flex min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
@@ -367,7 +367,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
           <button
             className={cn(
               "relative flex-none flex flex-col items-center justify-center rounded-lg px-2 py-2 text-[10px] min-w-[56px] transition-colors",
-              chatOpen ? "bg-emerald-500/10 text-emerald-400" : "text-zinc-400",
+              chatOpen ? "bg-[var(--brand-emerald-soft)] text-[var(--brand-emerald-hover)]" : "text-[var(--fg-secondary)]",
             )}
             onClick={() => setChatOpen(!chatOpen)}
             type="button"

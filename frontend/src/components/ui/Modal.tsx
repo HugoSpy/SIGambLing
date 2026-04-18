@@ -28,20 +28,37 @@ export function Modal({ title, description, open, onClose, children }: ModalProp
         >
           <motion.div
             animate={{ opacity: 1, y: 0, scale: 1 }}
-            className="w-full max-w-xl max-h-[90dvh] overflow-y-auto rounded-xl border border-zinc-800 bg-zinc-900 p-5 shadow-[0_20px_80px_rgba(0,0,0,0.45)]"
+            className="w-full max-w-xl max-h-[90dvh] overflow-y-auto rounded-[var(--radius-lg)] border p-5"
             exit={{ opacity: 0, y: 16, scale: 0.98 }}
             initial={{ opacity: 0, y: 24, scale: 0.98 }}
             onClick={(event) => event.stopPropagation()}
+            style={{
+              background: "var(--surface-1)",
+              borderColor: "var(--ink-700)",
+              boxShadow: "var(--shadow-modal)",
+            }}
             transition={{ duration: 0.2 }}
           >
             <div className="mb-5 flex items-start justify-between gap-4">
               <div>
-                <h2 className="font-display text-2xl text-zinc-100">{title}</h2>
-                {description ? <p className="mt-2 text-sm text-zinc-400">{description}</p> : null}
+                <h2
+                  className="font-display"
+                  style={{ fontSize: "var(--text-2xl)", color: "var(--fg-primary)" }}
+                >
+                  {title}
+                </h2>
+                {description ? (
+                  <p
+                    className="mt-2"
+                    style={{ fontSize: "var(--text-sm)", color: "var(--fg-secondary)" }}
+                  >
+                    {description}
+                  </p>
+                ) : null}
               </div>
               <button
                 aria-label="Fermer"
-                className="rounded-lg border border-zinc-700 bg-zinc-800 p-2 text-zinc-300 transition hover:bg-zinc-700 hover:text-zinc-100"
+                className="modal-close-btn p-2"
                 onClick={onClose}
                 type="button"
               >

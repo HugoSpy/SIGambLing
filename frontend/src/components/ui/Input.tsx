@@ -9,18 +9,23 @@ interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   ({ className, label, error, id, ...props }, ref) => (
     <label className="block space-y-2">
-      {label ? <span className="text-sm font-medium text-brand-text">{label}</span> : null}
+      {label ? (
+        <span
+          className="block"
+          style={{ fontSize: "var(--text-sm)", fontWeight: 500, color: "var(--fg-secondary)" }}
+        >
+          {label}
+        </span>
+      ) : null}
       <input
         ref={ref}
-        className={cn(
-          "w-full rounded-2xl border border-brand-line bg-white/5 px-4 py-3 text-base text-brand-text outline-none transition-all duration-300 placeholder:text-brand-muted focus:border-brand-cyan/50 focus:bg-white/10",
-          error ? "border-red-400/70" : "",
-          className,
-        )}
+        className={cn("input-base", error ? "input-error" : "", className)}
         id={id}
         {...props}
       />
-      {error ? <p className="text-xs text-red-300">{error}</p> : null}
+      {error ? (
+        <p style={{ fontSize: "var(--text-xs)", color: "var(--brand-red-hover)" }}>{error}</p>
+      ) : null}
     </label>
   ),
 );
