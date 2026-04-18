@@ -84,7 +84,7 @@
       "source_file": "test.py",
       "source_location": "L1",
       "id": "test_py",
-      "community": 142,
+      "community": 141,
       "norm_label": "test.py"
     },
     {
@@ -93,7 +93,7 @@
       "source_file": "start.py",
       "source_location": "L1",
       "id": "start_py",
-      "community": 143,
+      "community": 142,
       "norm_label": "start.py"
     },
     {
@@ -579,7 +579,7 @@
       "source_file": "backend/tests/security.test.ts",
       "source_location": "L1",
       "id": "backend_tests_security_test_ts",
-      "community": 144,
+      "community": 143,
       "norm_label": "security.test.ts"
     },
     {
@@ -1002,7 +1002,7 @@
       "source_file": "backend/routers/__init__.py",
       "source_location": "L1",
       "id": "backend_routers_init_py",
-      "community": 145,
+      "community": 144,
       "norm_label": "__init__.py"
     },
     {
@@ -1128,7 +1128,7 @@
       "source_file": "backend/src/index.ts",
       "source_location": "L1",
       "id": "backend_src_index_ts",
-      "community": 146,
+      "community": 145,
       "norm_label": "index.ts"
     },
     {
@@ -1542,7 +1542,7 @@
       "source_file": "backend/src/lib/prisma.ts",
       "source_location": "L1",
       "id": "backend_src_lib_prisma_ts",
-      "community": 147,
+      "community": 146,
       "norm_label": "prisma.ts"
     },
     {
@@ -1578,7 +1578,7 @@
       "source_file": "backend/src/routes/public.config.routes.ts",
       "source_location": "L1",
       "id": "backend_src_routes_public_config_routes_ts",
-      "community": 148,
+      "community": 147,
       "norm_label": "public.config.routes.ts"
     },
     {
@@ -1587,7 +1587,7 @@
       "source_file": "backend/src/routes/casino.routes.ts",
       "source_location": "L1",
       "id": "backend_src_routes_casino_routes_ts",
-      "community": 149,
+      "community": 148,
       "norm_label": "casino.routes.ts"
     },
     {
@@ -1614,7 +1614,7 @@
       "source_file": "backend/src/routes/gamification.routes.ts",
       "source_location": "L1",
       "id": "backend_src_routes_gamification_routes_ts",
-      "community": 150,
+      "community": 149,
       "norm_label": "gamification.routes.ts"
     },
     {
@@ -1623,7 +1623,7 @@
       "source_file": "backend/src/routes/auth.routes.ts",
       "source_location": "L1",
       "id": "backend_src_routes_auth_routes_ts",
-      "community": 151,
+      "community": 150,
       "norm_label": "auth.routes.ts"
     },
     {
@@ -1632,7 +1632,7 @@
       "source_file": "backend/src/routes/admin.routes.ts",
       "source_location": "L1",
       "id": "backend_src_routes_admin_routes_ts",
-      "community": 152,
+      "community": 151,
       "norm_label": "admin.routes.ts"
     },
     {
@@ -1641,7 +1641,7 @@
       "source_file": "backend/src/routes/admin.config.routes.ts",
       "source_location": "L1",
       "id": "backend_src_routes_admin_config_routes_ts",
-      "community": 153,
+      "community": 152,
       "norm_label": "admin.config.routes.ts"
     },
     {
@@ -1668,7 +1668,7 @@
       "source_file": "backend/src/routes/health.routes.ts",
       "source_location": "L1",
       "id": "backend_src_routes_health_routes_ts",
-      "community": 154,
+      "community": 153,
       "norm_label": "health.routes.ts"
     },
     {
@@ -1803,7 +1803,7 @@
       "source_file": "backend/src/utils/logger.ts",
       "source_location": "L1",
       "id": "backend_src_utils_logger_ts",
-      "community": 155,
+      "community": 154,
       "norm_label": "logger.ts"
     },
     {
@@ -2001,7 +2001,7 @@
       "source_file": "backend/src/schemas/casino.schemas.ts",
       "source_location": "L1",
       "id": "backend_src_schemas_casino_schemas_ts",
-      "community": 156,
+      "community": 155,
       "norm_label": "casino.schemas.ts"
     },
     {
@@ -2028,7 +2028,7 @@
       "source_file": "backend/src/schemas/wins.schemas.ts",
       "source_location": "L1",
       "id": "backend_src_schemas_wins_schemas_ts",
-      "community": 157,
+      "community": 156,
       "norm_label": "wins.schemas.ts"
     },
     {
@@ -2037,7 +2037,7 @@
       "source_file": "backend/src/schemas/auth.schemas.ts",
       "source_location": "L1",
       "id": "backend_src_schemas_auth_schemas_ts",
-      "community": 158,
+      "community": 157,
       "norm_label": "auth.schemas.ts"
     },
     {
@@ -2046,7 +2046,7 @@
       "source_file": "backend/src/schemas/user.schemas.ts",
       "source_location": "L1",
       "id": "backend_src_schemas_user_schemas_ts",
-      "community": 159,
+      "community": 158,
       "norm_label": "user.schemas.ts"
     },
     {
@@ -3504,7 +3504,7 @@
       "source_file": "backend/src/services/prisma.service.ts",
       "source_location": "L1",
       "id": "backend_src_services_prisma_service_ts",
-      "community": 160,
+      "community": 159,
       "norm_label": "prisma.service.ts"
     },
     {
@@ -4512,7 +4512,7 @@
       "source_file": "backend/src/types/upload.ts",
       "source_location": "L1",
       "id": "backend_src_types_upload_ts",
-      "community": 161,
+      "community": 160,
       "norm_label": "upload.ts"
     },
     {
@@ -4539,7 +4539,7 @@
       "source_file": "backend/src/types/express.d.ts",
       "source_location": "L1",
       "id": "backend_src_types_express_d_ts",
-      "community": 162,
+      "community": 161,
       "norm_label": "express.d.ts"
     },
     {
@@ -4548,7 +4548,7 @@
       "source_file": "backend/src/types/auth.ts",
       "source_location": "L1",
       "id": "backend_src_types_auth_ts",
-      "community": 163,
+      "community": 162,
       "norm_label": "auth.ts"
     },
     {
@@ -5475,7 +5475,7 @@
       "source_file": "frontend/tailwind.config.ts",
       "source_location": "L1",
       "id": "frontend_tailwind_config_ts",
-      "community": 164,
+      "community": 163,
       "norm_label": "tailwind.config.ts"
     },
     {
@@ -5484,7 +5484,7 @@
       "source_file": "frontend/vite.config.ts",
       "source_location": "L1",
       "id": "frontend_vite_config_ts",
-      "community": 165,
+      "community": 164,
       "norm_label": "vite.config.ts"
     },
     {
@@ -5529,7 +5529,7 @@
       "source_file": "frontend/src/main.tsx",
       "source_location": "L1",
       "id": "frontend_src_main_tsx",
-      "community": 166,
+      "community": 165,
       "norm_label": "main.tsx"
     },
     {
@@ -5538,7 +5538,7 @@
       "source_file": "frontend/src/vite-env.d.ts",
       "source_location": "L1",
       "id": "frontend_src_vite_env_d_ts",
-      "community": 167,
+      "community": 166,
       "norm_label": "vite-env.d.ts"
     },
     {
@@ -5547,7 +5547,7 @@
       "source_file": "frontend/src/components/OddsChangeModal.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_oddschangemodal_tsx",
-      "community": 168,
+      "community": 167,
       "norm_label": "oddschangemodal.tsx"
     },
     {
@@ -5763,17 +5763,8 @@
       "source_file": "frontend/src/components/layout/DashboardShell.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_layout_dashboardshell_tsx",
-      "community": 113,
+      "community": 168,
       "norm_label": "dashboardshell.tsx"
-    },
-    {
-      "label": "cn()",
-      "file_type": "code",
-      "source_file": "frontend/src/components/layout/DashboardShell.tsx",
-      "source_location": "L368",
-      "id": "dashboardshell_cn",
-      "community": 113,
-      "norm_label": "cn()"
     },
     {
       "label": "AppErrorBoundary.tsx",
@@ -5826,7 +5817,7 @@
       "source_file": "frontend/src/components/layout/LoadingScreen.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_layout_loadingscreen_tsx",
-      "community": 114,
+      "community": 113,
       "norm_label": "loadingscreen.tsx"
     },
     {
@@ -5835,7 +5826,7 @@
       "source_file": "frontend/src/components/layout/LoadingScreen.tsx",
       "source_location": "L3",
       "id": "loadingscreen_loadingscreen",
-      "community": 114,
+      "community": 113,
       "norm_label": "loadingscreen()"
     },
     {
@@ -5844,7 +5835,7 @@
       "source_file": "frontend/src/components/casino/HiloHistory.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_hilohistory_tsx",
-      "community": 115,
+      "community": 114,
       "norm_label": "hilohistory.tsx"
     },
     {
@@ -5853,7 +5844,7 @@
       "source_file": "frontend/src/components/casino/HiloHistory.tsx",
       "source_location": "L9",
       "id": "hilohistory_hilohistory",
-      "community": 115,
+      "community": 114,
       "norm_label": "hilohistory()"
     },
     {
@@ -5916,7 +5907,7 @@
       "source_file": "frontend/src/components/casino/HiloCard.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_hilocard_tsx",
-      "community": 116,
+      "community": 115,
       "norm_label": "hilocard.tsx"
     },
     {
@@ -5925,7 +5916,7 @@
       "source_file": "frontend/src/components/casino/HiloCard.tsx",
       "source_location": "L21",
       "id": "hilocard_getvaluelabel",
-      "community": 116,
+      "community": 115,
       "norm_label": "getvaluelabel()"
     },
     {
@@ -5943,7 +5934,7 @@
       "source_file": "frontend/src/components/casino/RideTheBusGame.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_ridethebusgame_tsx",
-      "community": 117,
+      "community": 116,
       "norm_label": "ridethebusgame.tsx"
     },
     {
@@ -5952,7 +5943,7 @@
       "source_file": "frontend/src/components/casino/RideTheBusGame.tsx",
       "source_location": "L74",
       "id": "ridethebusgame_handler",
-      "community": 117,
+      "community": 116,
       "norm_label": "handler()"
     },
     {
@@ -5997,7 +5988,7 @@
       "source_file": "frontend/src/components/casino/RouletteStats.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_roulettestats_tsx",
-      "community": 118,
+      "community": 117,
       "norm_label": "roulettestats.tsx"
     },
     {
@@ -6006,7 +5997,7 @@
       "source_file": "frontend/src/components/casino/RouletteStats.tsx",
       "source_location": "L9",
       "id": "roulettestats_numberpill",
-      "community": 118,
+      "community": 117,
       "norm_label": "numberpill()"
     },
     {
@@ -6177,7 +6168,7 @@
       "source_file": "frontend/src/components/casino/RouletteChip.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_roulettechip_tsx",
-      "community": 119,
+      "community": 118,
       "norm_label": "roulettechip.tsx"
     },
     {
@@ -6186,7 +6177,7 @@
       "source_file": "frontend/src/components/casino/RouletteChip.tsx",
       "source_location": "L9",
       "id": "roulettechip_roulettechip",
-      "community": 119,
+      "community": 118,
       "norm_label": "roulettechip()"
     },
     {
@@ -6240,7 +6231,7 @@
       "source_file": "frontend/src/components/casino/Mines/MinesCell.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_mines_minescell_tsx",
-      "community": 120,
+      "community": 119,
       "norm_label": "minescell.tsx"
     },
     {
@@ -6249,7 +6240,7 @@
       "source_file": "frontend/src/components/casino/Mines/MinesCell.tsx",
       "source_location": "L13",
       "id": "minescell_gemicon",
-      "community": 120,
+      "community": 119,
       "norm_label": "gemicon()"
     },
     {
@@ -6294,7 +6285,7 @@
       "source_file": "frontend/src/components/casino/Crash/CrashPlayerList.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_crash_crashplayerlist_tsx",
-      "community": 121,
+      "community": 120,
       "norm_label": "crashplayerlist.tsx"
     },
     {
@@ -6303,7 +6294,7 @@
       "source_file": "frontend/src/components/casino/Crash/CrashPlayerList.tsx",
       "source_location": "L26",
       "id": "crashplayerlist_crashplayerrow",
-      "community": 121,
+      "community": 120,
       "norm_label": "crashplayerrow()"
     },
     {
@@ -6474,7 +6465,7 @@
       "source_file": "frontend/src/components/chat/MentionDropdown.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_chat_mentiondropdown_tsx",
-      "community": 122,
+      "community": 121,
       "norm_label": "mentiondropdown.tsx"
     },
     {
@@ -6483,7 +6474,7 @@
       "source_file": "frontend/src/components/chat/MentionDropdown.tsx",
       "source_location": "L19",
       "id": "mentiondropdown_fetchmentionusers",
-      "community": 122,
+      "community": 121,
       "norm_label": "fetchmentionusers()"
     },
     {
@@ -6528,7 +6519,7 @@
       "source_file": "frontend/src/components/ui/BadgeCard.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_ui_badgecard_tsx",
-      "community": 123,
+      "community": 122,
       "norm_label": "badgecard.tsx"
     },
     {
@@ -6537,7 +6528,7 @@
       "source_file": "frontend/src/components/ui/BadgeCard.tsx",
       "source_location": "L35",
       "id": "badgecard_badgecard",
-      "community": 123,
+      "community": 122,
       "norm_label": "badgecard()"
     },
     {
@@ -6555,7 +6546,7 @@
       "source_file": "frontend/src/components/ui/Button.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_ui_button_tsx",
-      "community": 124,
+      "community": 123,
       "norm_label": "button.tsx"
     },
     {
@@ -6564,7 +6555,7 @@
       "source_file": "frontend/src/components/ui/Button.tsx",
       "source_location": "L36",
       "id": "button_button",
-      "community": 124,
+      "community": 123,
       "norm_label": "button()"
     },
     {
@@ -6573,7 +6564,7 @@
       "source_file": "frontend/src/components/ui/Card.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_ui_card_tsx",
-      "community": 125,
+      "community": 124,
       "norm_label": "card.tsx"
     },
     {
@@ -6582,7 +6573,7 @@
       "source_file": "frontend/src/components/ui/Card.tsx",
       "source_location": "L18",
       "id": "card_card",
-      "community": 125,
+      "community": 124,
       "norm_label": "card()"
     },
     {
@@ -6600,7 +6591,7 @@
       "source_file": "frontend/src/components/ui/Input.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_ui_input_tsx",
-      "community": 126,
+      "community": 125,
       "norm_label": "input.tsx"
     },
     {
@@ -6609,7 +6600,7 @@
       "source_file": "frontend/src/components/ui/Input.tsx",
       "source_location": "L12",
       "id": "input_label",
-      "community": 126,
+      "community": 125,
       "norm_label": "label()"
     },
     {
@@ -6618,7 +6609,7 @@
       "source_file": "frontend/src/components/ui/FogEffect.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_ui_fogeffect_tsx",
-      "community": 127,
+      "community": 126,
       "norm_label": "fogeffect.tsx"
     },
     {
@@ -6627,7 +6618,7 @@
       "source_file": "frontend/src/components/ui/FogEffect.tsx",
       "source_location": "L16",
       "id": "fogeffect_fogeffect",
-      "community": 127,
+      "community": 126,
       "norm_label": "fogeffect()"
     },
     {
@@ -7212,7 +7203,7 @@
       "source_file": "frontend/src/lib/notifications.ts",
       "source_location": "L1",
       "id": "frontend_src_lib_notifications_ts",
-      "community": 128,
+      "community": 127,
       "norm_label": "notifications.ts"
     },
     {
@@ -7221,7 +7212,7 @@
       "source_file": "frontend/src/lib/notifications.ts",
       "source_location": "L9",
       "id": "notifications_geterrormessage",
-      "community": 128,
+      "community": 127,
       "norm_label": "geterrormessage()"
     },
     {
@@ -7986,7 +7977,7 @@
       "source_file": "frontend/src/pages/EventsDisabledPage.tsx",
       "source_location": "L1",
       "id": "frontend_src_pages_eventsdisabledpage_tsx",
-      "community": 129,
+      "community": 128,
       "norm_label": "eventsdisabledpage.tsx"
     },
     {
@@ -7995,7 +7986,7 @@
       "source_file": "frontend/src/pages/EventsDisabledPage.tsx",
       "source_location": "L1",
       "id": "eventsdisabledpage_eventsdisabledpage",
-      "community": 129,
+      "community": 128,
       "norm_label": "eventsdisabledpage()"
     },
     {
@@ -8004,7 +7995,7 @@
       "source_file": "frontend/src/pages/MaintenancePage.tsx",
       "source_location": "L1",
       "id": "frontend_src_pages_maintenancepage_tsx",
-      "community": 130,
+      "community": 129,
       "norm_label": "maintenancepage.tsx"
     },
     {
@@ -8013,7 +8004,7 @@
       "source_file": "frontend/src/pages/MaintenancePage.tsx",
       "source_location": "L1",
       "id": "maintenancepage_maintenancepage",
-      "community": 130,
+      "community": 129,
       "norm_label": "maintenancepage()"
     },
     {
@@ -8022,7 +8013,7 @@
       "source_file": "frontend/src/pages/AuthCallbackPage.tsx",
       "source_location": "L1",
       "id": "frontend_src_pages_authcallbackpage_tsx",
-      "community": 131,
+      "community": 130,
       "norm_label": "authcallbackpage.tsx"
     },
     {
@@ -8031,7 +8022,7 @@
       "source_file": "frontend/src/pages/AuthCallbackPage.tsx",
       "source_location": "L8",
       "id": "authcallbackpage_authcallbackpage",
-      "community": 131,
+      "community": 130,
       "norm_label": "authcallbackpage()"
     },
     {
@@ -8229,7 +8220,7 @@
       "source_file": "frontend/src/pages/EventDetailPage.tsx",
       "source_location": "L1",
       "id": "frontend_src_pages_eventdetailpage_tsx",
-      "community": 132,
+      "community": 131,
       "norm_label": "eventdetailpage.tsx"
     },
     {
@@ -8238,7 +8229,7 @@
       "source_file": "frontend/src/pages/EventDetailPage.tsx",
       "source_location": "L54",
       "id": "eventdetailpage_handlelogout",
-      "community": 132,
+      "community": 131,
       "norm_label": "handlelogout()"
     },
     {
@@ -8661,7 +8652,7 @@
       "source_file": "frontend/src/routes/ProtectedRoute.tsx",
       "source_location": "L1",
       "id": "frontend_src_routes_protectedroute_tsx",
-      "community": 133,
+      "community": 132,
       "norm_label": "protectedroute.tsx"
     },
     {
@@ -8670,7 +8661,7 @@
       "source_file": "frontend/src/routes/ProtectedRoute.tsx",
       "source_location": "L10",
       "id": "protectedroute_protectedroute",
-      "community": 133,
+      "community": 132,
       "norm_label": "protectedroute()"
     },
     {
@@ -8679,7 +8670,7 @@
       "source_file": "frontend/src/hooks/useMinesAutoBet.ts",
       "source_location": "L1",
       "id": "frontend_src_hooks_useminesautobet_ts",
-      "community": 134,
+      "community": 133,
       "norm_label": "useminesautobet.ts"
     },
     {
@@ -8688,7 +8679,7 @@
       "source_file": "frontend/src/hooks/useMinesAutoBet.ts",
       "source_location": "L22",
       "id": "useminesautobet_useminesautobet",
-      "community": 134,
+      "community": 133,
       "norm_label": "useminesautobet()"
     },
     {
@@ -8697,7 +8688,7 @@
       "source_file": "frontend/src/hooks/useMinesGame.ts",
       "source_location": "L1",
       "id": "frontend_src_hooks_useminesgame_ts",
-      "community": 135,
+      "community": 134,
       "norm_label": "useminesgame.ts"
     },
     {
@@ -8706,7 +8697,7 @@
       "source_file": "frontend/src/hooks/useMinesGame.ts",
       "source_location": "L13",
       "id": "useminesgame_useminesgame",
-      "community": 135,
+      "community": 134,
       "norm_label": "useminesgame()"
     },
     {
@@ -8715,7 +8706,7 @@
       "source_file": "frontend/src/hooks/useAuthenticatedUser.ts",
       "source_location": "L1",
       "id": "frontend_src_hooks_useauthenticateduser_ts",
-      "community": 136,
+      "community": 135,
       "norm_label": "useauthenticateduser.ts"
     },
     {
@@ -8724,7 +8715,7 @@
       "source_file": "frontend/src/hooks/useAuthenticatedUser.ts",
       "source_location": "L6",
       "id": "useauthenticateduser_useauthenticateduser",
-      "community": 136,
+      "community": 135,
       "norm_label": "useauthenticateduser()"
     },
     {
@@ -8733,7 +8724,7 @@
       "source_file": "frontend/src/hooks/useRideTheBusGame.ts",
       "source_location": "L1",
       "id": "frontend_src_hooks_useridethebusgame_ts",
-      "community": 137,
+      "community": 136,
       "norm_label": "useridethebusgame.ts"
     },
     {
@@ -8742,7 +8733,7 @@
       "source_file": "frontend/src/hooks/useRideTheBusGame.ts",
       "source_location": "L15",
       "id": "useridethebusgame_useridethebusgame",
-      "community": 137,
+      "community": 136,
       "norm_label": "useridethebusgame()"
     },
     {
@@ -8778,7 +8769,7 @@
       "source_file": "frontend/src/hooks/useChatStream.ts",
       "source_location": "L1",
       "id": "frontend_src_hooks_usechatstream_ts",
-      "community": 138,
+      "community": 137,
       "norm_label": "usechatstream.ts"
     },
     {
@@ -8787,7 +8778,7 @@
       "source_file": "frontend/src/hooks/useChatStream.ts",
       "source_location": "L25",
       "id": "usechatstream_usechatstream",
-      "community": 138,
+      "community": 137,
       "norm_label": "usechatstream()"
     },
     {
@@ -8796,7 +8787,7 @@
       "source_file": "frontend/src/hooks/useSessionBootstrap.ts",
       "source_location": "L1",
       "id": "frontend_src_hooks_usesessionbootstrap_ts",
-      "community": 139,
+      "community": 138,
       "norm_label": "usesessionbootstrap.ts"
     },
     {
@@ -8805,7 +8796,7 @@
       "source_file": "frontend/src/hooks/useSessionBootstrap.ts",
       "source_location": "L6",
       "id": "usesessionbootstrap_usesessionbootstrap",
-      "community": 139,
+      "community": 138,
       "norm_label": "usesessionbootstrap()"
     },
     {
@@ -8814,7 +8805,7 @@
       "source_file": "frontend/src/hooks/useHiloGame.ts",
       "source_location": "L1",
       "id": "frontend_src_hooks_usehilogame_ts",
-      "community": 140,
+      "community": 139,
       "norm_label": "usehilogame.ts"
     },
     {
@@ -8823,7 +8814,7 @@
       "source_file": "frontend/src/hooks/useHiloGame.ts",
       "source_location": "L17",
       "id": "usehilogame_usehilogame",
-      "community": 140,
+      "community": 139,
       "norm_label": "usehilogame()"
     },
     {
@@ -8976,7 +8967,7 @@
       "source_file": "frontend/src/store/auth-store.ts",
       "source_location": "L1",
       "id": "frontend_src_store_auth_store_ts",
-      "community": 141,
+      "community": 140,
       "norm_label": "auth-store.ts"
     },
     {
@@ -8985,7 +8976,7 @@
       "source_file": "frontend/src/store/auth-store.ts",
       "source_location": "L37",
       "id": "auth_store_purgelegacyauthstorage",
-      "community": 141,
+      "community": 140,
       "norm_label": "purgelegacyauthstorage()"
     },
     {
@@ -22277,18 +22268,6 @@
       "_tgt": "oddshistorychart_handlemousemove",
       "source": "frontend_src_components_oddshistorychart_tsx",
       "target": "oddshistorychart_handlemousemove",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "contains",
-      "confidence": "EXTRACTED",
-      "source_file": "frontend/src/components/layout/DashboardShell.tsx",
-      "source_location": "L368",
-      "weight": 1.0,
-      "_src": "frontend_src_components_layout_dashboardshell_tsx",
-      "_tgt": "dashboardshell_cn",
-      "source": "frontend_src_components_layout_dashboardshell_tsx",
-      "target": "dashboardshell_cn",
       "confidence_score": 1.0
     },
     {

@@ -388,9 +388,17 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 30, stiffness: 300 }}
+              drag="y"
+              dragConstraints={{ top: 0 }}
+              dragElastic={{ top: 0, bottom: 0.4 }}
+              onDragEnd={(_, info) => {
+                if (info.offset.y > 80 || info.velocity.y > 400) {
+                  setMoreOpen(false);
+                }
+              }}
             >
               {/* Handle */}
-              <div className="flex justify-center pt-3 pb-4">
+              <div className="flex justify-center pt-3 pb-4 cursor-grab active:cursor-grabbing">
                 <div className="h-1 w-10 rounded-full bg-[var(--ink-700)]" />
               </div>
 
