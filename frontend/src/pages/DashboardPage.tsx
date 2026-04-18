@@ -94,62 +94,67 @@ export function DashboardPage() {
     <DashboardShell onLogout={handleLogout} user={user}>
       <div className="space-y-6">
         <div>
-          <h1 className="text-2xl font-bold text-zinc-100">Bienvenue, {user.pseudo}</h1>
-          <p className="mt-1 text-sm text-zinc-400">
-            Retrouvez vos stats, les marchés actifs et vos positions en cours.
+          <h1 className="text-xl font-bold text-[var(--fg-primary)]">
+            Bienvenue, {user.pseudo}
+          </h1>
+          <p className="mt-0.5 text-xs text-[var(--fg-secondary)]">
+            Marchés actifs et positions en cours.
           </p>
         </div>
 
-        <div className="grid gap-4 md:grid-cols-3">
-          <Card accent="cyan">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-zinc-400">Solde</span>
-              <Coins className="h-4 w-4 text-emerald-400" />
+        <div className="grid grid-cols-3 gap-3">
+          <Card accent="cyan" className="p-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-[var(--fg-secondary)]">Solde</span>
+              <Coins className="h-3.5 w-3.5 text-[var(--brand-emerald-hover)]" />
             </div>
-            <p className="mt-3 text-3xl font-bold text-emerald-400">{formatTokens(user.balance)}</p>
-            <p className="mt-1 text-xs text-zinc-500">Tokens disponibles pour vos paris</p>
-          </Card>
-
-          <Card>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-zinc-400">Série</span>
-              <Flame className="h-4 w-4 text-amber-400" />
-            </div>
-            <p className="mt-3 text-3xl font-bold text-zinc-100">
-              {gamification?.daily_reward.current_streak ?? user.streak_days} jour
-              {(gamification?.daily_reward.current_streak ?? user.streak_days) > 1 ? "s" : ""}
+            <p className="text-xl font-bold text-[var(--brand-emerald-hover)] numeric leading-tight">
+              {formatTokens(user.balance)}
             </p>
-            <p className="mt-1 text-xs text-zinc-500">Connexion quotidienne actuelle</p>
+            <p className="mt-0.5 text-[10px] text-[var(--fg-muted)]">tokens</p>
           </Card>
 
-          <Card>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-zinc-400">Positions ouvertes</span>
-              <TrendingUp className="h-4 w-4 text-sky-400" />
+          <Card className="p-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-[var(--fg-secondary)]">Série</span>
+              <Flame className="h-3.5 w-3.5 text-[var(--brand-amber-hover)]" />
             </div>
-            <p className="mt-3 text-3xl font-bold text-zinc-100">{openPositions.length}</p>
-            <p className="mt-1 text-xs text-zinc-500">
-              {formatTokens(openPositions.reduce((sum, bet) => sum + bet.stake, 0))} engagés
+            <p className="text-xl font-bold text-[var(--fg-primary)] numeric leading-tight">
+              {gamification?.daily_reward.current_streak ?? user.streak_days}
+            </p>
+            <p className="mt-0.5 text-[10px] text-[var(--fg-muted)]">jours</p>
+          </Card>
+
+          <Card className="p-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-[var(--fg-secondary)]">Positions</span>
+              <TrendingUp className="h-3.5 w-3.5 text-[var(--cat-sky)]" />
+            </div>
+            <p className="text-xl font-bold text-[var(--fg-primary)] numeric leading-tight">
+              {openPositions.length}
+            </p>
+            <p className="mt-0.5 text-[10px] text-[var(--fg-muted)]">
+              {formatTokens(openPositions.reduce((s, b) => s + b.stake, 0))} engagés
             </p>
           </Card>
         </div>
 
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1.5fr)_360px]">
+        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.5fr)_360px]">
           <div className="space-y-6">
             {/* Événements populaires */}
             <Card>
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">
+                  <p className="text-xs uppercase tracking-[0.24em] text-[var(--fg-muted)]">
                     Événements populaires
                   </p>
-                  <h2 className="mt-2 flex items-center gap-2 text-lg font-semibold text-zinc-100">
+                  <h2 className="mt-2 flex items-center gap-2 text-lg font-semibold text-[var(--fg-primary)]">
                     <Flame className="h-5 w-5 text-orange-400" />
                     Top marchés
                   </h2>
                 </div>
                 <Link
-                  className="text-sm font-medium text-emerald-400 transition hover:text-emerald-300"
+                  className="text-sm font-medium text-[var(--brand-emerald-hover)] transition hover:text-[var(--brand-emerald-hover)]"
                   to="/events"
                 >
                   Voir tout
@@ -159,21 +164,21 @@ export function DashboardPage() {
               <div className="mt-4 space-y-2">
                 {popularEvents.map((event) => (
                   <Link
-                    className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 transition hover:border-zinc-700 hover:bg-zinc-900"
+                    className="flex items-center justify-between rounded-lg border border-[var(--ink-700)] bg-[var(--bg)] px-4 py-3 transition hover:border-[var(--ink-700)] hover:bg-[var(--surface-1)]"
                     key={event.id}
                     to={`/events/${event.id}`}
                   >
-                    <p className="min-w-0 flex-1 truncate text-sm font-medium text-zinc-100">
+                    <p className="min-w-0 flex-1 truncate text-sm font-medium text-[var(--fg-primary)]">
                       {event.title}
                     </p>
-                    <span className="ml-4 shrink-0 text-sm font-semibold text-emerald-400">
+                    <span className="ml-4 shrink-0 text-sm font-semibold text-[var(--brand-emerald-hover)]">
                       {formatTokens(event.total_pool)}
                     </span>
                   </Link>
                 ))}
 
                 {popularEvents.length === 0 && (
-                  <p className="text-sm leading-7 text-zinc-400">
+                  <p className="text-sm leading-7 text-[var(--fg-secondary)]">
                     Aucun événement disponible pour le moment.
                   </p>
                 )}
@@ -184,13 +189,13 @@ export function DashboardPage() {
             <Card>
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">
+                  <p className="text-xs uppercase tracking-[0.24em] text-[var(--fg-muted)]">
                     Mes positions
                   </p>
-                  <h2 className="mt-2 text-lg font-semibold text-zinc-100">Paris en cours</h2>
+                  <h2 className="mt-2 text-lg font-semibold text-[var(--fg-primary)]">Paris en cours</h2>
                 </div>
                 <Link
-                  className="text-sm font-medium text-emerald-400 transition hover:text-emerald-300"
+                  className="text-sm font-medium text-[var(--brand-emerald-hover)] transition hover:text-[var(--brand-emerald-hover)]"
                   to="/events?tab=my-bets"
                 >
                   Voir mes paris
@@ -200,10 +205,10 @@ export function DashboardPage() {
               <div className="mt-4">
                 {highlightedOpenPositions.length === 0 ? (
                   <div className="flex flex-col items-center gap-2 py-6 text-center">
-                    <Inbox className="h-8 w-8 text-zinc-600" />
-                    <p className="text-sm text-zinc-500">Aucune position ouverte.</p>
+                    <Inbox className="h-8 w-8 text-[var(--fg-muted)]" />
+                    <p className="text-sm text-[var(--fg-muted)]">Aucune position ouverte.</p>
                     <Link
-                      className="mt-1 text-sm font-medium text-emerald-400 hover:text-emerald-300"
+                      className="mt-1 text-sm font-medium text-[var(--brand-emerald-hover)] hover:text-[var(--brand-emerald-hover)]"
                       to="/events"
                     >
                       Parcourir les marchés
@@ -224,13 +229,13 @@ export function DashboardPage() {
             <Card>
               <div className="flex items-center justify-between gap-4">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">
+                  <p className="text-xs uppercase tracking-[0.24em] text-[var(--fg-muted)]">
                     Historique des paris
                   </p>
-                  <h2 className="mt-2 text-lg font-semibold text-zinc-100">Derniers résultats</h2>
+                  <h2 className="mt-2 text-lg font-semibold text-[var(--fg-primary)]">Derniers résultats</h2>
                 </div>
                 <Link
-                  className="text-sm font-medium text-emerald-400 transition hover:text-emerald-300"
+                  className="text-sm font-medium text-[var(--brand-emerald-hover)] transition hover:text-[var(--brand-emerald-hover)]"
                   to="/history"
                 >
                   Voir tout l'historique
@@ -240,8 +245,8 @@ export function DashboardPage() {
               <div className="mt-4 space-y-2">
                 {recentHistory.length === 0 ? (
                   <div className="flex flex-col items-center gap-2 py-6 text-center">
-                    <Clock className="h-8 w-8 text-zinc-600" />
-                    <p className="text-sm text-zinc-500">Aucun pari résolu pour le moment.</p>
+                    <Clock className="h-8 w-8 text-[var(--fg-muted)]" />
+                    <p className="text-sm text-[var(--fg-muted)]">Aucun pari résolu pour le moment.</p>
                   </div>
                 ) : (
                   recentHistory.map((bet) => {
@@ -254,12 +259,12 @@ export function DashboardPage() {
 
                     return (
                       <div
-                        className="flex items-center justify-between gap-4 rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3"
+                        className="flex items-center justify-between gap-4 rounded-lg border border-[var(--ink-700)] bg-[var(--bg)] px-4 py-3"
                         key={bet.id}
                       >
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium text-zinc-100">{title}</p>
-                          <p className="mt-0.5 text-xs text-zinc-500">
+                          <p className="truncate text-sm font-medium text-[var(--fg-primary)]">{title}</p>
+                          <p className="mt-0.5 text-xs text-[var(--fg-muted)]">
                             {isParlay
                               ? `${bet.legs.length} sélections · `
                               : bet.chosen_option
@@ -275,7 +280,7 @@ export function DashboardPage() {
                             {formatEventBetStatus(bet.status)}
                           </span>
                           {bet.status === "WON" && (
-                            <span className="text-xs font-semibold text-emerald-400">
+                            <span className="text-xs font-semibold text-[var(--brand-emerald-hover)]">
                               +{formatTokens(gain)}
                             </span>
                           )}
@@ -295,31 +300,31 @@ export function DashboardPage() {
 
           <div className="space-y-4">
             <Card accent="cyan">
-              <p className="text-xs uppercase tracking-[0.24em] text-emerald-300">Leaderboard</p>
-              <h2 className="mt-2 text-lg font-semibold text-zinc-100">Momentum 60 jours</h2>
-              <div className="mt-4 space-y-3 text-sm text-zinc-400">
+              <p className="text-xs uppercase tracking-[0.24em] text-[var(--brand-emerald-hover)]">Leaderboard</p>
+              <h2 className="mt-2 text-lg font-semibold text-[var(--fg-primary)]">Momentum 60 jours</h2>
+              <div className="mt-4 space-y-3 text-sm text-[var(--fg-secondary)]">
                 <div className="flex items-center justify-between gap-3">
                   <span className="inline-flex items-center gap-2">
                     <Medal className="h-4 w-4 text-amber-300" />
                     Position
                   </span>
-                  <span className="text-zinc-100">
+                  <span className="text-[var(--fg-primary)]">
                     {openPositions.length > 0 ? "Classement live" : "Prêt à monter"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <span>Paris actifs</span>
-                  <span className="text-zinc-100">{openPositions.length}</span>
+                  <span className="text-[var(--fg-primary)]">{openPositions.length}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <span>Exposition ouverte</span>
-                  <span className="text-zinc-100">
+                  <span className="text-[var(--fg-primary)]">
                     {formatTokens(openPositions.reduce((sum, bet) => sum + bet.stake, 0))}
                   </span>
                 </div>
               </div>
               <Link
-                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-emerald-400 transition hover:text-emerald-300"
+                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-[var(--brand-emerald-hover)] transition hover:text-[var(--brand-emerald-hover)]"
                 to="/leaderboard"
               >
                 Ouvrir le leaderboard
@@ -328,15 +333,15 @@ export function DashboardPage() {
             </Card>
 
             <Card>
-              <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Jackpot</p>
-              <h2 className="mt-2 text-lg font-semibold text-zinc-100">Jackpot</h2>
-              <div className="mt-4 space-y-3 text-sm text-zinc-400">
+              <p className="text-xs uppercase tracking-[0.24em] text-[var(--fg-muted)]">Jackpot</p>
+              <h2 className="mt-2 text-lg font-semibold text-[var(--fg-primary)]">Jackpot</h2>
+              <div className="mt-4 space-y-3 text-sm text-[var(--fg-secondary)]">
                 <div className="flex items-center justify-between gap-3">
                   <span className="inline-flex items-center gap-2">
-                    <Coins className="h-4 w-4 text-emerald-400" />
+                    <Coins className="h-4 w-4 text-[var(--brand-emerald-hover)]" />
                     Pot
                   </span>
-                  <span className="text-zinc-100">
+                  <span className="text-[var(--fg-primary)]">
                     {formatTokens(Math.round(gamification?.jackpot.current_pot ?? 0))}
                   </span>
                 </div>
@@ -345,19 +350,19 @@ export function DashboardPage() {
                     <Ticket className="h-4 w-4 text-amber-400" />
                     Vos apports
                   </span>
-                  <span className="text-zinc-100">
+                  <span className="text-[var(--fg-primary)]">
                     {formatTokens(Math.round(gamification?.jackpot.user_contribution_total ?? 0))}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <span>Contributions</span>
-                  <span className="text-zinc-100">
+                  <span className="text-[var(--fg-primary)]">
                     {gamification?.jackpot.user_contribution_count ?? 0}
                   </span>
                 </div>
               </div>
               <Link
-                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-emerald-400 transition hover:text-emerald-300"
+                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-[var(--brand-emerald-hover)] transition hover:text-[var(--brand-emerald-hover)]"
                 to="/jackpot"
               >
                 Ouvrir le jackpot
@@ -366,26 +371,26 @@ export function DashboardPage() {
             </Card>
 
             <Card>
-              <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Compte</p>
-              <h2 className="mt-2 text-lg font-semibold text-zinc-100">Votre profil</h2>
-              <div className="mt-4 space-y-3 text-sm text-zinc-400">
+              <p className="text-xs uppercase tracking-[0.24em] text-[var(--fg-muted)]">Compte</p>
+              <h2 className="mt-2 text-lg font-semibold text-[var(--fg-primary)]">Votre profil</h2>
+              <div className="mt-4 space-y-3 text-sm text-[var(--fg-secondary)]">
                 <div className="flex items-center justify-between gap-3">
                   <span>Email</span>
-                  <span className="max-w-[180px] truncate text-right text-zinc-100">
+                  <span className="max-w-[180px] truncate text-right text-[var(--fg-primary)]">
                     {user.email}
                   </span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <span>Pseudo</span>
-                  <span className="text-zinc-100">{user.pseudo}</span>
+                  <span className="text-[var(--fg-primary)]">{user.pseudo}</span>
                 </div>
                 <div className="flex items-center justify-between gap-3">
                   <span>Role</span>
-                  <span className="text-zinc-100">{user.role}</span>
+                  <span className="text-[var(--fg-primary)]">{user.role}</span>
                 </div>
               </div>
               <Link
-                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-emerald-400 transition hover:text-emerald-300"
+                className="mt-4 inline-flex items-center gap-2 text-sm font-medium text-[var(--brand-emerald-hover)] transition hover:text-[var(--brand-emerald-hover)]"
                 to="/profile"
               >
                 Gerer mon profil
@@ -394,32 +399,32 @@ export function DashboardPage() {
             </Card>
 
             <Card>
-              <p className="text-xs uppercase tracking-[0.24em] text-zinc-500">Raccourcis</p>
+              <p className="text-xs uppercase tracking-[0.24em] text-[var(--fg-muted)]">Raccourcis</p>
               <div className="mt-4 space-y-3">
                 <Link
-                  className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 transition hover:border-zinc-700 hover:bg-zinc-900"
+                  className="flex items-center justify-between rounded-lg border border-[var(--ink-700)] bg-[var(--bg)] px-4 py-3 text-sm text-[var(--fg-primary)] transition hover:border-[var(--ink-700)] hover:bg-[var(--surface-1)]"
                   to="/events"
                 >
                   <span>Ouvrir les marchés</span>
-                  <ArrowRight className="h-4 w-4 text-zinc-500" />
+                  <ArrowRight className="h-4 w-4 text-[var(--fg-muted)]" />
                 </Link>
                 <Link
-                  className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 transition hover:border-zinc-700 hover:bg-zinc-900"
+                  className="flex items-center justify-between rounded-lg border border-[var(--ink-700)] bg-[var(--bg)] px-4 py-3 text-sm text-[var(--fg-primary)] transition hover:border-[var(--ink-700)] hover:bg-[var(--surface-1)]"
                   to="/casino"
                 >
                   <span>Aller a la roulette</span>
-                  <ArrowRight className="h-4 w-4 text-zinc-500" />
+                  <ArrowRight className="h-4 w-4 text-[var(--fg-muted)]" />
                 </Link>
                 {user.role === "admin" ? (
                   <Link
-                    className="flex items-center justify-between rounded-lg border border-zinc-800 bg-zinc-950 px-4 py-3 text-sm text-zinc-100 transition hover:border-zinc-700 hover:bg-zinc-900"
+                    className="flex items-center justify-between rounded-lg border border-[var(--ink-700)] bg-[var(--bg)] px-4 py-3 text-sm text-[var(--fg-primary)] transition hover:border-[var(--ink-700)] hover:bg-[var(--surface-1)]"
                     to="/admin/events"
                   >
                     <span className="inline-flex items-center gap-2">
                       <ShieldCheck className="h-4 w-4 text-amber-400" />
                       Panneau admin
                     </span>
-                    <ArrowRight className="h-4 w-4 text-zinc-500" />
+                    <ArrowRight className="h-4 w-4 text-[var(--fg-muted)]" />
                   </Link>
                 ) : null}
               </div>

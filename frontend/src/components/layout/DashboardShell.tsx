@@ -1,6 +1,6 @@
-import { type ReactNode, useMemo } from "react";
+import { type ReactNode, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Clock,
   Coins,
@@ -10,13 +10,14 @@ import {
   LayoutDashboard,
   Medal,
   MessageSquare,
+  MoreHorizontal,
   ShieldCheck,
   Ticket,
   Trophy,
   TrendingUp,
   UserRound,
 } from "lucide-react";
-import { NavLink, useLocation } from "react-router-dom";
+import { Link, NavLink, useLocation } from "react-router-dom";
 import type { AuthUser } from "../../types/auth";
 import { cn, formatTokens } from "../../lib/utils";
 import { useBetCartStore } from "../../store/bet-cart-store";
@@ -52,6 +53,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
     enabled: user.role === "admin" || user.role === "validator",
   });
   const pendingProposalsCount = (adminProposals ?? []).filter((p) => p.status === "PENDING").length;
+  const [moreOpen, setMoreOpen] = useState(false);
   const navLinkClassName =
     "interactive-hover flex items-center gap-3 rounded-xl border px-3 py-2.5 text-sm";
   const actionSurfaceClassName =
@@ -94,8 +96,27 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
     [location.pathname, navItems],
   );
 
+  const moreItems: Array<{
+    label: string;
+    icon: React.ComponentType<{ className?: string }>;
+    href?: string;
+    action?: () => void;
+  }> = [
+    { label: "Historique", icon: Clock, href: "/history" },
+    { label: "Classement", icon: Medal, href: "/leaderboard" },
+    { label: "Mes Wins", icon: Crown, href: "/wins" },
+    { label: "Jackpot", icon: Trophy, href: "/jackpot" },
+    { label: "Profil", icon: UserRound, href: "/profile" },
+    { label: "Chat", icon: MessageSquare, action: () => { setChatOpen(!chatOpen); setMoreOpen(false); } },
+    { label: "Ticket", icon: Ticket, action: () => { setCartOpen(true); setMoreOpen(false); } },
+    ...(user.role === "admin" || user.role === "validator"
+      ? [{ label: "Admin", icon: ShieldCheck, href: "/admin/events" }]
+      : []),
+  ];
+
   return (
     <div className="surface-grid min-h-dvh bg-[var(--bg)] text-[var(--fg-primary)]">
+      {/* ── Sidebar desktop ─────────────────────────────────── */}
       <aside className="fixed inset-y-0 left-0 hidden w-64 border-r border-[var(--ink-700)] bg-[var(--surface-1)]/95 lg:flex lg:flex-col">
         <div className="flex h-16 items-center gap-3 border-b border-[var(--ink-700)] px-6">
           <Dice3 className="h-8 w-8 text-[var(--brand-emerald)]" />
@@ -241,73 +262,41 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
         </div>
       </aside>
 
+      {/* ── Main content ─────────────────────────────────────── */}
       <div className="lg:pl-64">
         <header className="sticky top-0 z-30 border-b border-[var(--ink-700)]/80 bg-[var(--bg)]/90 backdrop-blur">
-          <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 lg:px-8">
-            <div className="min-w-0">
-              <p className="text-[11px] uppercase tracking-[0.28em] text-[var(--fg-muted)]">SIGambling</p>
-              <h2 className="truncate text-lg font-semibold text-[var(--fg-primary)]">{activeItem.label}</h2>
+          <div className="flex items-center justify-between gap-2 px-4 py-3">
+            {/* Titre page active */}
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] uppercase tracking-[0.28em] text-[var(--fg-muted)]">SIGambling</p>
+              <h2 className="truncate text-base font-semibold text-[var(--fg-primary)] leading-tight">
+                {activeItem.label}
+              </h2>
             </div>
 
-            <div className="flex items-center gap-3">
-              <button
-                className={cn(
-                  actionSurfaceClassName,
-                  "justify-center px-3 enabled:hover:border-[var(--ink-700)] enabled:hover:bg-[var(--surface-2)]",
-                )}
-                onClick={() => setCartOpen(true)}
-                type="button"
-              >
-                <Ticket className="h-4 w-4" />
-                <span className="ml-2 hidden text-sm sm:inline">Ticket</span>
-                {cartSelectionsCount > 0 ? (
-                  <span className="absolute -right-2 -top-2 inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--brand-emerald)] px-1.5 text-[10px] font-bold text-[var(--fg-inverse)]">
-                    {cartSelectionsCount}
-                  </span>
-                ) : null}
-              </button>
-
-              <div className="hidden h-11 items-center gap-2 rounded-xl border border-[var(--ink-700)] bg-[var(--surface-1)] px-4 shadow-[var(--shadow-card)] sm:flex">
-                <Coins className="h-4 w-4 text-[var(--brand-emerald-hover)]" />
-                <span className="text-sm font-medium text-[var(--fg-primary)]">
+            {/* Balance + avatar */}
+            <div className="flex items-center gap-2 shrink-0">
+              <div className="flex items-center gap-1.5 rounded-[var(--radius-sm)] border border-[var(--ink-700)] bg-[var(--surface-1)] px-3 py-1.5">
+                <Coins className="h-3.5 w-3.5 text-[var(--brand-emerald-hover)]" />
+                <span className="text-sm font-semibold text-[var(--fg-primary)] numeric">
                   {formatTokens(liveBalance)}
                 </span>
               </div>
 
-              <div className="flex h-11 items-center gap-3 rounded-xl border border-[var(--ink-700)] bg-[var(--surface-1)] px-3 shadow-[var(--shadow-card)]">
+              <Link to="/profile">
                 {user.avatar_url ? (
                   <img
-                    alt={`Photo de profil de ${user.pseudo}`}
-                    className="h-9 w-9 rounded-full object-cover"
-                    onError={(event) => {
-                      event.currentTarget.src = "/default-avatar.svg";
-                    }}
+                    alt={user.pseudo}
+                    className="h-8 w-8 rounded-full object-cover border border-[var(--ink-700)]"
+                    onError={(e) => { e.currentTarget.src = "/default-avatar.svg"; }}
                     src={user.avatar_url}
                   />
                 ) : (
-                  <div className="flex h-9 w-9 items-center justify-center rounded-full bg-[var(--brand-emerald-soft)] text-xs font-bold text-[var(--brand-emerald-hover)]">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-full bg-[var(--brand-emerald-soft)] text-xs font-bold text-[var(--brand-emerald-hover)]">
                     {initials}
                   </div>
                 )}
-                <div>
-                  <p className="max-w-[160px] truncate text-sm font-medium text-[var(--fg-primary)]">
-                    {user.pseudo}
-                  </p>
-                  <p className="hidden text-xs text-[var(--fg-muted)] sm:block">{user.email}</p>
-                </div>
-              </div>
-
-              <Button
-                className="hidden sm:inline-flex"
-                size="sm"
-                variant="secondary"
-                onClick={() => void onLogout()}
-              >
-                Se déconnecter
-              </Button>
-              <Button className="sm:hidden" size="sm" variant="secondary" onClick={() => void onLogout()}>
-                Sortir
-              </Button>
+              </Link>
             </div>
           </div>
         </header>
@@ -324,72 +313,138 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
         </main>
       </div>
 
+      {/* ── Bottom nav mobile ────────────────────────────────── */}
       <nav
         className="fixed bottom-0 inset-x-0 z-40 border-t border-[var(--ink-700)] bg-[var(--surface-1)]/95 backdrop-blur lg:hidden"
         style={{ paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}
       >
-        <div className="flex overflow-x-auto gap-1 px-2 pt-2 pb-2 scrollbar-none">
-          {navItems.map((item) => {
+        <div className="grid grid-cols-5 px-2 pt-1 pb-1">
+          {[
+            { label: "Accueil", icon: LayoutDashboard, href: "/dashboard" },
+            { label: "Événements", icon: TrendingUp, href: "/events" },
+            { label: "Casino", icon: Dice3, href: "/casino" },
+            { label: "Récompense", icon: Gift, href: "/rewards" },
+          ].map((item) => {
             const Icon = item.icon;
             const active =
               location.pathname === item.href ||
-              (item.href !== "/dashboard" && location.pathname.startsWith(`${item.href}/`));
+              (item.href !== "/dashboard" && location.pathname.startsWith(item.href + "/"));
             const isReward = item.href === "/rewards";
-            const isProfile = item.href === "/profile";
-            const isAdmin = item.href === "/admin/events";
-
             return (
               <NavLink
-                key={item.label}
-                className={cn(
-                  "flex-none flex flex-col items-center justify-center rounded-lg px-2 py-2 text-[10px] min-w-[56px] transition-colors",
-                  active ? "bg-[var(--brand-emerald-soft)] text-[var(--brand-emerald-hover)]" : "text-[var(--fg-secondary)]",
-                )}
+                key={item.href}
                 to={item.href}
+                className={cn(
+                  "flex flex-col items-center justify-center gap-0.5 py-2 rounded-[var(--radius-sm)] text-[10px] transition-colors",
+                  active
+                    ? "text-[var(--brand-emerald-hover)]"
+                    : "text-[var(--fg-muted)]"
+                )}
               >
                 <span className="relative">
-                  <Icon className="h-4 w-4" />
-                  {(isReward && rewardAvailable) || (isProfile && unclaimedBadges > 0) ? (
-                    <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-[var(--brand-emerald)] ring-2 ring-[var(--surface-1)] animate-pulse" />
-                  ) : null}
-                  {isAdmin && pendingProposalsCount > 0 && (
-                    <span className="absolute -right-1 -top-1 inline-flex min-w-4 items-center justify-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
-                      {pendingProposalsCount}
-                    </span>
+                  <Icon className="h-5 w-5" />
+                  {isReward && rewardAvailable && (
+                    <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-[var(--brand-emerald)] ring-1 ring-[var(--surface-1)] animate-pulse" />
                   )}
                 </span>
-                <span className="mt-1 max-w-[52px] truncate text-center leading-tight">{item.label}</span>
+                <span className="leading-tight truncate max-w-[52px] text-center">{item.label}</span>
               </NavLink>
             );
           })}
 
-          {/* Chat button in mobile nav */}
+          {/* Bouton Plus */}
           <button
             className={cn(
-              "relative flex-none flex flex-col items-center justify-center rounded-lg px-2 py-2 text-[10px] min-w-[56px] transition-colors",
-              chatOpen ? "bg-[var(--brand-emerald-soft)] text-[var(--brand-emerald-hover)]" : "text-[var(--fg-secondary)]",
+              "flex flex-col items-center justify-center gap-0.5 py-2 rounded-[var(--radius-sm)] text-[10px] transition-colors relative",
+              moreOpen ? "text-[var(--brand-emerald-hover)]" : "text-[var(--fg-muted)]"
             )}
-            onClick={() => setChatOpen(!chatOpen)}
+            onClick={() => setMoreOpen(true)}
             type="button"
           >
-            <span className="relative">
-              <MessageSquare className="h-4 w-4" />
-              {unreadCount > 0 && (
-                <span
-                  className={`absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full text-[9px] font-medium ${
-                    unreadMentions > 0
-                      ? "bg-yellow-400 text-black"
-                      : "bg-red-500 text-white"
-                  }`}
-                >
-                  {unreadCount > 9 ? "9+" : unreadCount}
-                </span>
-              )}
-            </span>
-            <span className="mt-1">Chat</span>
+            <MoreHorizontal className="h-5 w-5" />
+            <span>Plus</span>
+            {(unreadCount > 0 || pendingProposalsCount > 0) && (
+              <span className="absolute right-2 top-1.5 h-2 w-2 rounded-full bg-red-500" />
+            )}
           </button>
         </div>
       </nav>
+
+      {/* ── Drawer "Plus" ────────────────────────────────────── */}
+      <AnimatePresence>
+        {moreOpen && (
+          <>
+            <motion.div
+              className="fixed inset-0 z-50 bg-black/60 lg:hidden"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setMoreOpen(false)}
+            />
+            <motion.div
+              className="fixed bottom-0 inset-x-0 z-50 rounded-t-[var(--radius-xl)] border-t border-[var(--ink-700)] bg-[var(--surface-1)] lg:hidden"
+              style={{ paddingBottom: 'env(safe-area-inset-bottom, 16px)' }}
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            >
+              {/* Handle */}
+              <div className="flex justify-center pt-3 pb-4">
+                <div className="h-1 w-10 rounded-full bg-[var(--ink-700)]" />
+              </div>
+
+              <div className="grid grid-cols-4 gap-2 px-4 pb-4">
+                {moreItems.map((item) => {
+                  const Icon = item.icon;
+                  const isActive = item.href
+                    ? location.pathname === item.href || location.pathname.startsWith(item.href + "/")
+                    : false;
+                  const hasChat = item.label === "Chat" && unreadCount > 0;
+                  const hasAdmin = item.label === "Admin" && pendingProposalsCount > 0;
+                  const hasTicket = item.label === "Ticket" && cartSelectionsCount > 0;
+                  const hasProfile = item.label === "Profil" && unclaimedBadges > 0;
+
+                  const content = (
+                    <div className={cn(
+                      "flex flex-col items-center gap-1.5 rounded-[var(--radius-md)] border p-3 text-xs transition-colors",
+                      isActive
+                        ? "border-[var(--brand-emerald-line)] bg-[var(--brand-emerald-soft)] text-[var(--brand-emerald-hover)]"
+                        : "border-[var(--ink-700)] bg-[var(--surface-2)] text-[var(--fg-secondary)]"
+                    )}>
+                      <span className="relative">
+                        <Icon className="h-5 w-5" />
+                        {(hasChat || hasAdmin || hasTicket || hasProfile) && (
+                          <span className="absolute -right-0.5 -top-0.5 h-2 w-2 rounded-full bg-red-500 ring-1 ring-[var(--surface-1)]" />
+                        )}
+                      </span>
+                      <span className="font-medium">{item.label}</span>
+                      {hasTicket && cartSelectionsCount > 0 && (
+                        <span className="text-[10px] text-[var(--brand-emerald-hover)]">
+                          {cartSelectionsCount} séléction{cartSelectionsCount > 1 ? "s" : ""}
+                        </span>
+                      )}
+                    </div>
+                  );
+
+                  if (item.href) {
+                    return (
+                      <NavLink key={item.label} to={item.href} onClick={() => setMoreOpen(false)}>
+                        {content}
+                      </NavLink>
+                    );
+                  }
+                  return (
+                    <button key={item.label} type="button" onClick={item.action}>
+                      {content}
+                    </button>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <BetCartDrawer />
       <ChatPanel

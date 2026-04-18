@@ -30,6 +30,9 @@
   --brand-amber:        #f59e0b;
   --brand-amber-hover:  #fbbf24;
   --brand-amber-soft:   rgba(245, 158, 11, 0.12);
+  --brand-orange:       #fb923c;
+  --brand-orange-hover: #fdba74;
+  --brand-orange-soft:  rgba(251, 146, 60, 0.12);
   --cat-sky:    #38bdf8; --cat-rose:   #fb7185; --cat-violet: #a78bfa;
   --cat-cyan:   #22d3ee; --cat-orange: #fb923c;
 
