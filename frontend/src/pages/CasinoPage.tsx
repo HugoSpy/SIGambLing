@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Bus, CircleDot, Coins, Sparkles, TrendingUp, Waves, Bomb } from "lucide-react";
+import { ArrowRight, Bus, CircleDot, Coins, Sparkles, TrendingUp, Waves, Bomb, Layers } from "lucide-react";
 import toast from "react-hot-toast";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { BlackjackGame } from "../components/casino/BlackjackGame";
@@ -16,7 +16,7 @@ import { fetchCurrentUser, logoutRequest } from "../lib/api";
 import { cn } from "../lib/utils";
 import { useAuthStore } from "../store/auth-store";
 
-type GameTab = "roulette" | "blackjack" | "hilo" | "ride-the-bus" | "mines" | "crash";
+type GameTab = "roulette" | "blackjack" | "hilo" | "ride-the-bus" | "mines" | "crash" | "plinko";
 
 const TABS: {
   id: GameTab;
@@ -81,6 +81,15 @@ const TABS: {
       accentClassName: "from-orange-500/20 via-orange-500/5 to-transparent",
       icon: TrendingUp,
     },
+    {
+      id: "plinko",
+      label: "Plinko",
+      eyebrow: "Hasard pur",
+      description: "Lâchez la balle et regardez-la rebondir de pin en pin. Choisissez vos lignes et votre risque pour contrôler la variance.",
+      href: "/casino/plinko",
+      accentClassName: "from-purple-500/20 via-purple-500/5 to-transparent",
+      icon: Layers,
+    },
   ];
 
 function isGameTab(value: string | undefined): value is GameTab {
@@ -90,7 +99,8 @@ function isGameTab(value: string | undefined): value is GameTab {
     value === "hilo" ||
     value === "ride-the-bus" ||
     value === "mines" ||
-    value === "crash"
+    value === "crash" ||
+    value === "plinko"
   );
 }
 
@@ -153,6 +163,7 @@ export function CasinoPage() {
     "ride-the-bus": "Ride the Bus temporairement indisponible",
     mines: "Mines temporairement indisponible",
     crash: "Crash temporairement indisponible",
+    plinko: "Plinko temporairement indisponible",
   };
 
   const handleLogout = async () => {
@@ -234,6 +245,7 @@ export function CasinoPage() {
         {activeGame === "hilo" ? <HiloGame /> : null}
         {activeGame === "ride-the-bus" ? <RideTheBusGame /> : null}
         {activeGame === "mines" ? <MinesGame /> : null}
+        {activeGame === "plinko" ? <Navigate replace to="/casino/plinko" /> : null}
 
         {!activeGame ? (
           <Card className="border-white/10 bg-zinc-900/95">
