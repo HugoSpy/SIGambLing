@@ -2,6 +2,7 @@ import cron from 'node-cron';
 import { prisma } from '../services/prisma.service';
 import { gamificationService } from '../services/gamification.service';
 import { logger } from './logger';
+import * as robinHoodService from '../services/robin-hood.service';
 
 const LEADERBOARD_TABS = ['balance', 'volume', 'winrate_global', 'winrate_casino'] as const;
 
@@ -49,5 +50,41 @@ export function startCronJobs(): void {
     await takeLeaderboardSnapshots();
   });
 
-  logger.info('[CRON] Jobs démarrés (purge OddsHistory à 02h00, snapshots leaderboard toutes les heures)');
+  // Lundi 00:00 — Création du vote Robin de Vegas
+  cron.schedule('0 0 * * 1', async () => {
+    try {
+      await robinHoodService.createWeeklyEvent();
+      logger.info('[CRON] Robin de Vegas: vote créé');
+    } catch (err) {
+      logger.error('[CRON] Robin de Vegas: erreur création vote', { error: err });
+    }
+  });
+
+  // Lundi 10:00 — Clôture du vote, activation
+  cron.schedule('0 10 * * 1', async () => {
+    try {
+      const event = await robinHoodService.getCurrentEvent();
+      if (event?.status === 'VOTE') {
+        await robinHoodService.closeVoteAndActivate(event.id);
+        logger.info('[CRON] Robin de Vegas: vote clôturé, événement activé');
+      }
+    } catch (err) {
+      logger.error('[CRON] Robin de Vegas: erreur clôture vote', { error: err });
+    }
+  });
+
+  // Lundi 23:59 — Clôture de l'événement
+  cron.schedule('59 23 * * 1', async () => {
+    try {
+      const event = await robinHoodService.getCurrentEvent();
+      if (event?.status === 'ACTIVE') {
+        await robinHoodService.closeEvent(event.id);
+        logger.info('[CRON] Robin de Vegas: événement clôturé');
+      }
+    } catch (err) {
+      logger.error('[CRON] Robin de Vegas: erreur clôture événement', { error: err });
+    }
+  });
+
+  logger.info('[CRON] Jobs démarrés (purge OddsHistory à 02h00, snapshots leaderboard toutes les heures, Robin de Vegas lundi)');
 }

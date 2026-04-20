@@ -1,10 +1,12 @@
 import type { CasinoGameResult, CasinoGameType } from "@prisma/client";
 import { AppError } from "../utils/app-error";
 import { spinRoulette } from "../utils/roulette-rng";
+import { generateRandomNumber } from "../utils/roulette-rng";
 import { gamificationService } from "./gamification.service";
 import { jackpotService } from "./jackpot.service";
 import { prisma } from "./prisma.service";
 import type { RouletteSpinInput } from "../schemas/casino.schemas";
+import * as robinHoodService from "./robin-hood.service";
 
 const RED_NUMBERS = new Set([1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]);
 const BLACK_NUMBERS = new Set([2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35]);
@@ -153,7 +155,19 @@ class RouletteService {
       throw new AppError("Balance insuffisante.", 400);
     }
 
-    const resultNumber = spinRoulette();
+    // Robin de Vegas check
+    const robinEvent = await robinHoodService.getActiveEvent();
+    if (robinEvent) {
+      const isVictim = await prisma.robinHoodVictim.findFirst({
+        where: { eventId: robinEvent.id, userId },
+      });
+      if (isVictim) {
+        throw new AppError("Tu ne peux pas jouer pendant que tu es la victime de Robin de Vegas.", 403);
+      }
+    }
+
+    // Robin active → exclude 0 (RTP 100%)
+    const resultNumber = robinEvent ? generateRandomNumber(1, 36) : spinRoulette();
     const resultColor = this.getColor(resultNumber);
     const winningBets = bets.filter((bet) => this.isBetWinning(bet.type, resultNumber));
     const totalPayout = winningBets.reduce(
@@ -223,6 +237,15 @@ class RouletteService {
 
       return { game, newBalance: updatedUser.balance };
     });
+
+    // Robin de Vegas pool routing
+    if (robinEvent) {
+      if (totalPayout > totalBet) {
+        await robinHoodService.deductFromPool(robinEvent.id, totalPayout - totalBet);
+      } else if (totalPayout === 0) {
+        await robinHoodService.addToPool(robinEvent.id, totalBet);
+      }
+    }
 
     return {
       game_id: outcome.game.id,

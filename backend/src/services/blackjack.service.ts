@@ -3,6 +3,7 @@ import { AppError } from "../utils/app-error";
 import { gamificationService } from "./gamification.service";
 import { jackpotService } from "./jackpot.service";
 import { prisma } from "./prisma.service";
+import * as robinHoodService from "./robin-hood.service";
 
 type Suit = "hearts" | "diamonds" | "clubs" | "spades";
 type Rank = "A" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "J" | "Q" | "K";
@@ -33,6 +34,7 @@ interface ActiveGame {
   splitHands?: [SplitHandState, SplitHandState];
   currentSplitHand?: 0 | 1;
   isSplitAces?: boolean;
+  robinEventId: string | null;
 }
 
 const SUITS: Suit[] = ["hearts", "diamonds", "clubs", "spades"];
@@ -116,6 +118,16 @@ function formatSplitHands(
 }
 
 class BlackjackService {
+  private async routeRobinResult(robinEventId: string | null, payout: number, totalStake: number) {
+    if (!robinEventId) return;
+    const net = payout - totalStake;
+    if (net > 0) {
+      await robinHoodService.deductFromPool(robinEventId, net);
+    } else if (net < 0) {
+      await robinHoodService.addToPool(robinEventId, Math.abs(net));
+    }
+  }
+
   private getActiveGame(userId: string, gameId: string): ActiveGame {
     const game = activeSessions.get(gameId);
     if (!game || game.userId !== userId) {
@@ -203,6 +215,7 @@ class BlackjackService {
       insurance_payout: insurancePayout,
       insurance_won: insuranceWon,
     });
+    await this.routeRobinResult(game.robinEventId, payout, game.initialBet);
 
     const updatedUser = await prisma.user.findUnique({
       where: { id: userId },
@@ -286,6 +299,7 @@ class BlackjackService {
       payout,
       dealer_busted: dealerBusted,
     });
+    await this.routeRobinResult(game.robinEventId, payout, game.bet);
 
     const updatedUser = await prisma.user.findUnique({
       where: { id: userId },
@@ -404,6 +418,7 @@ class BlackjackService {
     });
 
     game.bet = savedBet;
+    await this.routeRobinResult(game.robinEventId, totalPayout, totalBet);
 
     const updatedUser = await prisma.user.findUnique({
       where: { id: userId },
@@ -494,6 +509,18 @@ class BlackjackService {
     if (!user || user.isBanned) throw new AppError("Utilisateur introuvable ou banni.", 404);
     if (user.balance < bet) throw new AppError("Balance insuffisante.", 400);
 
+    // Robin de Vegas check
+    const robinEvent = await robinHoodService.getActiveEvent();
+    if (robinEvent) {
+      const isVictim = await prisma.robinHoodVictim.findFirst({
+        where: { eventId: robinEvent.id, userId },
+      });
+      if (isVictim) {
+        throw new AppError("Tu ne peux pas jouer pendant que tu es la victime de Robin de Vegas.", 403);
+      }
+    }
+    const robinEventId = robinEvent?.id ?? null;
+
     const gameId = generateGameId();
     await prisma.$transaction(async (transaction) => {
       const debited = await transaction.user.updateMany({
@@ -534,6 +561,7 @@ class BlackjackService {
       insuranceResolved: false,
       insuranceAvailable,
       dealerHasBlackjack: dealerBlackjack,
+      robinEventId,
     });
     userGameMap.set(userId, gameId);
 
@@ -554,7 +582,8 @@ class BlackjackService {
       } else if (playerBlackjack) {
         result = "win";
         resolvedResult = "blackjack";
-        payout = Math.floor(bet * 2.5);
+        // Robin active: BJ pays 1:1 instead of 3:2
+        payout = robinEventId ? bet * 2 : Math.floor(bet * 2.5);
       } else {
         result = "loss";
         resolvedResult = "loss";
@@ -591,6 +620,7 @@ class BlackjackService {
 
       await gamificationService.synchronizeUserBadges(userId);
       await gamificationService.triggerLeaderboardTop3(userId);
+      await this.routeRobinResult(robinEventId, payout, bet);
 
       return {
         game_id: gameId,
@@ -650,6 +680,7 @@ class BlackjackService {
         result: "bust",
         payout: 0,
       });
+      await this.routeRobinResult(game.robinEventId, 0, game.bet);
 
       const updatedUser = await prisma.user.findUnique({
         where: { id: userId },

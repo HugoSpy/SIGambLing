@@ -29,6 +29,8 @@ import { useGamificationState } from "../../hooks/useGamificationState";
 import { fetchAdminProposals } from "../../lib/api";
 import { ChatPanel } from "../chat/ChatPanel";
 import { useChatStore } from "../../store/chat-store";
+import { useRobinHoodEvent } from "../../hooks/useRobinHoodEvent";
+import { RobinHoodBanner } from "../robin-hood/RobinHoodBanner";
 
 interface DashboardShellProps {
   user: AuthUser;
@@ -43,6 +45,8 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
   const cartSelectionsCount = useBetCartStore((state) => state.selections.length);
   const setCartOpen = useBetCartStore((state) => state.setOpen);
   const { data: gamificationData } = useGamificationState();
+  const { data: robinHoodEvent } = useRobinHoodEvent();
+  const isRobinActive = robinHoodEvent?.status === "VOTE" || robinHoodEvent?.status === "ACTIVE";
   const rewardAvailable = gamificationData != null && !gamificationData.daily_reward.claimed_today;
   const unclaimedBadges = gamificationData?.badges.filter(
     (b) => b.unlocked && b.claimed_at === null,
@@ -79,6 +83,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
       { label: "Mes Wins", icon: Crown, href: "/wins" },
       { label: "Jackpot", icon: Trophy, href: "/jackpot" },
       { label: "Récompense", icon: Gift, href: "/rewards" },
+      { label: "Robin de Vegas", icon: Coins, href: "/robin-hood" },
       { label: "Profil", icon: UserRound, href: "/profile" },
       ...(user.role === "admin" || user.role === "validator"
         ? [{ label: "Admin", icon: ShieldCheck, href: "/admin/events" }]
@@ -106,6 +111,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
     { label: "Classement", icon: Medal, href: "/leaderboard" },
     { label: "Mes Wins", icon: Crown, href: "/wins" },
     { label: "Jackpot", icon: Trophy, href: "/jackpot" },
+    { label: "Robin de Vegas", icon: Coins, href: "/robin-hood" },
     { label: "Profil", icon: UserRound, href: "/profile" },
     { label: "Chat", icon: MessageSquare, action: () => { setChatOpen(!chatOpen); setMoreOpen(false); } },
     { label: "Ticket", icon: Ticket, action: () => { setCartOpen(true); setMoreOpen(false); } },
@@ -135,6 +141,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
             const isReward = item.href === "/rewards";
             const isProfile = item.href === "/profile";
             const isAdmin = item.href === "/admin/events";
+            const isRobin = item.href === "/robin-hood";
 
             return (
               <NavLink
@@ -152,6 +159,9 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
                   {(isReward && rewardAvailable) || (isProfile && unclaimedBadges > 0) ? (
                     <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-[var(--brand-emerald)] ring-2 ring-[var(--surface-1)] animate-pulse" />
                   ) : null}
+                  {isRobin && isRobinActive && (
+                    <span className="absolute -right-1 -top-1 h-2 w-2 rounded-full bg-amber-400 ring-2 ring-[var(--surface-1)] animate-pulse" />
+                  )}
                 </span>
                 <span>{item.label}</span>
                 {isAdmin && pendingProposalsCount > 0 && (
@@ -301,6 +311,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
           </div>
         </header>
 
+        <RobinHoodBanner />
         <main className="mx-auto max-w-7xl px-4 py-6 pb-28 lg:px-8 lg:pb-8">
           <motion.div
             animate={{ opacity: 1, y: 0 }}
