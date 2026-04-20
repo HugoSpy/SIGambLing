@@ -129,7 +129,7 @@ export function MinesSidebar({
   const isPlaying = phase === "playing";
   const isIdle = phase === "idle";
   const isOver = phase === "won" || phase === "lost";
-  const canCashout = isPlaying && gemsFound > 0 && !isLoading && potentialWin > bet;
+  const canCashout = isPlaying && gemsFound > 0 && !isLoading && potentialWin > (bet ?? 0);
 
   // ── Mode toggle ──────────────────────────────────────────────────────────────
   const [mode, setMode] = useState<"manual" | "auto">("manual");

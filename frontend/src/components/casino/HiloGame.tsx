@@ -108,7 +108,7 @@ export function HiloGame() {
 
             {isIdle && (
               <Button
-                onClick={() => { sounds.betButton.play(); start(bet); }}
+                onClick={() => { if (!bet) return; sounds.betButton.play(); start(bet); }}
                 disabled={isLoading || !bet || bet < 1 || (user?.balance ?? 0) < bet}
                 className="w-full"
               >

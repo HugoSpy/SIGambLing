@@ -176,12 +176,12 @@ export function PlinkoPage() {
           balance: result.newBalance,
           win: result.profit > 0,
           profit: result.profit,
-          bet: autoBetAmountRef.current,
+          bet: autoBetAmountRef.current ?? 0,
         },
       ]);
 
       const maxR = autoMaxRoundsRef.current;
-      if ((maxR !== null && done >= maxR) || result.newBalance < autoBetAmountRef.current) {
+      if ((maxR !== null && done >= maxR) || (autoBetAmountRef.current !== null && result.newBalance < autoBetAmountRef.current)) {
         stopAuto();
         return;
       }

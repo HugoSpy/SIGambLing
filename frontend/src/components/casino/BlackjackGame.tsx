@@ -1114,7 +1114,7 @@ export function BlackjackGame() {
                 <p className="text-xs uppercase tracking-[0.28em] text-[var(--fg-muted)]">Mise courante</p>
                 <p className="mt-1 font-display text-xl text-[var(--fg-primary)]">
                   {formatTokens(
-                    gameState === "BETTING" || gameState === "GAME_OVER" ? bet : currentBet || bet,
+                    gameState === "BETTING" || gameState === "GAME_OVER" ? (bet ?? 0) : currentBet || (bet ?? 0),
                   )}
                 </p>
               </div>

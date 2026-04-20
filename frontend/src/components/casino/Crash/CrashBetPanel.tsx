@@ -215,7 +215,7 @@ export function CrashBetPanel({ stream, onBet, onCashout, onBetPlaced }: CrashBe
               {isLoading ? "Envoi…" : `Parier ${(bet ?? 0).toLocaleString("fr-FR")} 🪙`}
             </Button>
 
-            {bet > balance && (
+            {bet !== null && bet > balance && (
               <p className="text-xs text-red-400 text-center">Solde insuffisant</p>
             )}
           </motion.div>
