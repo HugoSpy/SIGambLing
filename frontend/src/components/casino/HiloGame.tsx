@@ -16,7 +16,7 @@ const QUICK_BETS = [10, 25, 50, 100];
 
 export function HiloGame() {
   const user = useAuthStore((s) => s.user);
-  const [bet, setBet] = useState(10);
+  const [bet, setBet] = useState<number | null>(null);
   const [hoveredAction, setHoveredAction] = useState<"higher" | "lower" | "equal" | null>(null);
   const { popupProps, showWin } = useWinPopup();
   const prevPhaseRef = useRef<string>("");
@@ -76,9 +76,14 @@ export function HiloGame() {
                 min={1}
                 max={user?.balance ?? 1}
                 step={1}
-                value={bet}
+                value={bet ?? ""}
                 disabled={isPlaying}
-                onChange={(e) => setBet(Math.max(1, parseInt(e.target.value) || 1))}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  if (raw === "") { setBet(null); return; }
+                  const n = parseInt(raw, 10);
+                  if (!isNaN(n) && n >= 1) setBet(n);
+                }}
                 className="w-full rounded-lg border border-white/10 bg-zinc-800 px-3 py-2 text-sm text-brand-text focus:outline-none focus:ring-1 focus:ring-brand-cyan disabled:opacity-50"
               />
               <div className="mt-2 flex gap-1.5 flex-wrap">
@@ -104,7 +109,7 @@ export function HiloGame() {
             {isIdle && (
               <Button
                 onClick={() => { sounds.betButton.play(); start(bet); }}
-                disabled={isLoading || bet < 1 || (user?.balance ?? 0) < bet}
+                disabled={isLoading || !bet || bet < 1 || (user?.balance ?? 0) < bet}
                 className="w-full"
               >
                 {isLoading ? "Démarrage..." : "Lancer la partie"}

@@ -368,7 +368,7 @@ export function BlackjackGame() {
   const updateBalance = useAuthStore((state) => state.updateBalance);
 
   const [gameState, setGameState] = useState<BlackjackGameState>("BETTING");
-  const [bet, setBet] = useState(10);
+  const [bet, setBet] = useState<number | null>(null);
   const [gameId, setGameId] = useState<string | null>(null);
   const [playerHand, setPlayerHand] = useState<BlackjackCard[]>([]);
   const [dealerUpcard, setDealerUpcard] = useState<BlackjackCard | null>(null);
@@ -558,7 +558,7 @@ export function BlackjackGame() {
   }, [dealerHandFinal]);
 
   const handleBet = useCallback(async () => {
-    if (bet < 1) {
+    if (!bet || bet < 1) {
       notify.error("La mise minimum est de 1 token.");
       return;
     }
@@ -1144,8 +1144,8 @@ export function BlackjackGame() {
                     <button
                       aria-label="Diviser la mise par 2"
                       className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--ink-700)] bg-[var(--surface-2)] text-sm font-bold text-[var(--fg-primary)] transition-all hover:border-[var(--brand-emerald-line)] hover:bg-[var(--surface-1)] disabled:opacity-40"
-                      disabled={!canAdjustBet}
-                      onClick={() => setBet((prev) => Math.max(1, Math.floor(prev / 2)))}
+                      disabled={!canAdjustBet || !bet || bet <= 1}
+                      onClick={() => { if (bet && bet > 1) setBet(Math.max(1, Math.floor(bet / 2))); }}
                       type="button"
                     >
                       ÷2
@@ -1158,19 +1158,20 @@ export function BlackjackGame() {
                       min={1}
                       onChange={(event) => {
                         const raw = event.target.value.replace(/^0+(?=\d)/, "");
+                        if (raw === "") { setBet(null); return; }
                         const value = parseInt(raw, 10);
                         if (!Number.isNaN(value)) {
                           setBet(Math.min(Math.max(1, value), balance));
                         }
                       }}
                       type="number"
-                      value={bet || ""}
+                      value={bet ?? ""}
                     />
                     <button
                       aria-label="Doubler la mise"
                       className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--ink-700)] bg-[var(--surface-2)] text-sm font-bold text-[var(--fg-primary)] transition-all hover:border-[var(--brand-emerald-line)] hover:bg-[var(--surface-1)] disabled:opacity-40"
                       disabled={!canAdjustBet}
-                      onClick={() => setBet((prev) => Math.min(prev * 2, balance))}
+                      onClick={() => setBet(bet ? Math.min(bet * 2, balance) : 1)}
                       type="button"
                     >
                       ×2
@@ -1217,7 +1218,7 @@ export function BlackjackGame() {
                 <Button
                   aria-label="Parier et démarrer la partie"
                   className="flex-1 gap-2"
-                  disabled={isDisabled || bet < 1 || bet > balance}
+                  disabled={isDisabled || !bet || bet < 1 || bet > balance}
                   onClick={() => {
                     if (gameState === "GAME_OVER") {
                       sounds.cardShuffle.play();

@@ -25,7 +25,7 @@ interface PlinkoDropResult {
   newBalance: number;
 }
 
-const MIN_BET = 10;
+const MIN_BET = 1;
 
 function NumInput({
   label,
@@ -83,7 +83,7 @@ export function PlinkoPage() {
   const userBalance = useAuthStore((s) => s.user?.balance ?? user?.balance ?? 0);
 
   // Game settings
-  const [bet, setBet] = useState(100);
+  const [bet, setBet] = useState<number | null>(null);
   const [rows, setRows] = useState(12);
   const [risk, setRisk] = useState<RiskLevel>("medium");
 
@@ -97,7 +97,7 @@ export function PlinkoPage() {
   const [mode, setMode] = useState<"manual" | "auto">("manual");
 
   // Auto-bet state
-  const [autoBetAmount, setAutoBetAmount] = useState(100);
+  const [autoBetAmount, setAutoBetAmount] = useState<number | null>(null);
   const [autoMaxRounds, setAutoMaxRounds] = useState<number | null>(null);
   const [autoRunning, setAutoRunning] = useState(false);
   const [autoRoundsDone, setAutoRoundsDone] = useState(0);
@@ -112,7 +112,7 @@ export function PlinkoPage() {
   const autoRunningRef = useRef(false);
   const autoRoundsDoneRef = useRef(0);
   const autoMaxRoundsRef = useRef<number | null>(null);
-  const autoBetAmountRef = useRef(100);
+  const autoBetAmountRef = useRef<number | null>(null);
   const rowsRef = useRef(12);
   const riskRef = useRef<RiskLevel>("medium");
 
@@ -199,7 +199,7 @@ export function PlinkoPage() {
     setPendingAutoNext(false);
     if (!autoRunningRef.current) return;
     setTimeout(() => {
-      if (!autoRunningRef.current) return;
+      if (!autoRunningRef.current || !autoBetAmountRef.current) return;
       dropMutation.mutate({
         betAmount: autoBetAmountRef.current,
         rows: rowsRef.current,
@@ -210,13 +210,14 @@ export function PlinkoPage() {
   }, [pendingAutoNext]);
 
   function handleDrop() {
-    if (dropLockedRef.current || isAnimating || dropMutation.isPending) return;
+    if (dropLockedRef.current || isAnimating || dropMutation.isPending || !bet) return;
     dropLockedRef.current = true;
     sounds.betButton.play();
     dropMutation.mutate({ betAmount: bet, rows, risk });
   }
 
   function startAuto() {
+    if (!autoBetAmountRef.current) return;
     autoRunningRef.current = true;
     autoRoundsDoneRef.current = 0;
     setAutoRunning(true);
@@ -301,9 +302,11 @@ export function PlinkoPage() {
                         type="number"
                         min={MIN_BET}
                         max={userBalance}
-                        value={bet}
+                        value={bet ?? ""}
                         onChange={(e) => {
-                          const n = parseInt(e.target.value, 10);
+                          const raw = e.target.value;
+                          if (raw === "") { setBet(null); return; }
+                          const n = parseInt(raw, 10);
                           if (!isNaN(n) && n > 0) setBet(n);
                         }}
                         disabled={isDropping}
@@ -314,15 +317,15 @@ export function PlinkoPage() {
                     </div>
                     <div className="flex gap-1.5">
                       {[
-                        { label: "×½", fn: () => setBet((v) => Math.max(MIN_BET, Math.floor(v / 2))) },
-                        { label: "×2", fn: () => setBet((v) => Math.min(userBalance, v * 2)) },
-                        { label: "Max", fn: () => setBet(userBalance) },
-                      ].map(({ label, fn }) => (
+                        { label: "×½", fn: () => { if (bet && bet > MIN_BET) setBet(Math.max(MIN_BET, Math.floor(bet / 2))); }, xDis: !bet || bet <= MIN_BET },
+                        { label: "×2", fn: () => setBet(bet ? Math.min(userBalance, bet * 2) : MIN_BET), xDis: false },
+                        { label: "Max", fn: () => setBet(userBalance), xDis: false },
+                      ].map(({ label, fn, xDis }) => (
                         <button
                           key={label}
                           onClick={fn}
-                          disabled={isDropping}
-                          className="flex-1 rounded-md py-1.5 text-xs font-medium text-zinc-300 transition hover:text-white disabled:opacity-40"
+                          disabled={isDropping || xDis}
+                          className="flex-1 rounded-md py-1.5 text-xs font-medium text-zinc-300 transition hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
                           style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.06)" }}
                         >
                           {label}
@@ -375,7 +378,7 @@ export function PlinkoPage() {
                   {/* Drop button */}
                   <button
                     onClick={handleDrop}
-                    disabled={isDropping || bet < MIN_BET || bet > userBalance}
+                    disabled={isDropping || !bet || bet < MIN_BET || bet > userBalance}
                     className="w-full rounded-xl py-3 text-sm font-bold transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
                     style={{
                       background: "linear-gradient(135deg, #00e701 0%, #00cc00 100%)",
@@ -398,9 +401,11 @@ export function PlinkoPage() {
                         type="number"
                         min={MIN_BET}
                         max={userBalance}
-                        value={autoBetAmount}
+                        value={autoBetAmount ?? ""}
                         onChange={(e) => {
-                          const n = parseInt(e.target.value, 10);
+                          const raw = e.target.value;
+                          if (raw === "") { setAutoBetAmount(null); return; }
+                          const n = parseInt(raw, 10);
                           if (!isNaN(n) && n > 0) setAutoBetAmount(n);
                         }}
                         disabled={autoRunning}
@@ -411,15 +416,15 @@ export function PlinkoPage() {
                     </div>
                     <div className="flex gap-1.5">
                       {[
-                        { label: "×½", fn: () => setAutoBetAmount((v) => Math.max(MIN_BET, Math.floor(v / 2))) },
-                        { label: "×2", fn: () => setAutoBetAmount((v) => Math.min(userBalance, v * 2)) },
-                        { label: "Max", fn: () => setAutoBetAmount(userBalance) },
-                      ].map(({ label, fn }) => (
+                        { label: "×½", fn: () => { if (autoBetAmount && autoBetAmount > MIN_BET) setAutoBetAmount(Math.max(MIN_BET, Math.floor(autoBetAmount / 2))); }, xDis: !autoBetAmount || autoBetAmount <= MIN_BET },
+                        { label: "×2", fn: () => setAutoBetAmount(autoBetAmount ? Math.min(userBalance, autoBetAmount * 2) : MIN_BET), xDis: false },
+                        { label: "Max", fn: () => setAutoBetAmount(userBalance), xDis: false },
+                      ].map(({ label, fn, xDis }) => (
                         <button
                           key={label}
                           onClick={fn}
-                          disabled={autoRunning}
-                          className="flex-1 rounded-md py-1.5 text-xs font-medium text-zinc-300 transition hover:text-white disabled:opacity-40"
+                          disabled={autoRunning || xDis}
+                          className="flex-1 rounded-md py-1.5 text-xs font-medium text-zinc-300 transition hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
                           style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.06)" }}
                         >
                           {label}
@@ -481,7 +486,7 @@ export function PlinkoPage() {
                     {!autoRunning ? (
                       <button
                         onClick={startAuto}
-                        disabled={autoBetAmount < MIN_BET || autoBetAmount > userBalance}
+                        disabled={!autoBetAmount || autoBetAmount < MIN_BET || autoBetAmount > userBalance}
                         className="w-full rounded-xl py-3 text-sm font-bold transition active:scale-95 disabled:opacity-50"
                         style={{
                           background: "linear-gradient(135deg, #00e701 0%, #00cc00 100%)",

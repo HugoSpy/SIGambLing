@@ -6,8 +6,8 @@ import type { AutoBetConfig, AutoBetStrategy, MinesGamePhase } from "../../../ty
 
 interface MinesSidebarProps {
   phase: MinesGamePhase;
-  bet: number;
-  onBetChange: (v: number) => void;
+  bet: number | null;
+  onBetChange: (v: number | null) => void;
   minesCount: number;
   onMinesCountChange: (v: number) => void;
   userBalance: number;
@@ -135,7 +135,7 @@ export function MinesSidebar({
   const [mode, setMode] = useState<"manual" | "auto">("manual");
 
   // ── Auto-bet config state ────────────────────────────────────────────────────
-  const [autoBet, setAutoBet] = useState(bet || 100);
+  const [autoBet, setAutoBet] = useState<number | null>(null);
   const [autoMines, setAutoMines] = useState(minesCount || 3);
   const [strategy, setStrategy] = useState<AutoBetStrategy>("flat");
   const [customMultiplier, setCustomMultiplier] = useState(1.5);
@@ -146,6 +146,7 @@ export function MinesSidebar({
   const [takeProfit, setTakeProfit] = useState<number | null>(null);
 
   function handleBetInput(raw: string) {
+    if (raw === "") { onBetChange(null); return; }
     const n = parseInt(raw, 10);
     if (!isNaN(n) && n > 0) onBetChange(n);
   }
@@ -156,6 +157,7 @@ export function MinesSidebar({
   }
 
   function handleStart() {
+    if (!autoBet) return;
     const config: AutoBetConfig = {
       betAmount: autoBet,
       minesCount: autoMines,
@@ -181,7 +183,7 @@ export function MinesSidebar({
           type="number"
           min={1}
           max={userBalance}
-          value={bet}
+          value={bet ?? ""}
           onChange={(e) => handleBetInput(e.target.value)}
           disabled={isPlaying}
           className="w-full rounded-lg px-3 py-2.5 pr-16 text-sm font-mono text-zinc-100 outline-none transition disabled:opacity-50"
@@ -191,15 +193,15 @@ export function MinesSidebar({
       </div>
       <div className="flex gap-1.5">
         {[
-          { label: "×½", fn: () => onBetChange(Math.max(1, Math.floor(bet / 2))) },
-          { label: "×2", fn: () => onBetChange(Math.min(userBalance, bet * 2)) },
-          { label: "Max", fn: () => onBetChange(userBalance) },
-        ].map(({ label, fn }) => (
+          { label: "×½", fn: () => { if (bet && bet > 1) onBetChange(Math.max(1, Math.floor(bet / 2))); }, xDis: !bet || bet <= 1 },
+          { label: "×2", fn: () => onBetChange(bet ? Math.min(userBalance, bet * 2) : 1), xDis: false },
+          { label: "Max", fn: () => onBetChange(userBalance), xDis: false },
+        ].map(({ label, fn, xDis }) => (
           <button
             key={label}
             onClick={fn}
-            disabled={isPlaying}
-            className="flex-1 rounded-md py-1.5 text-xs font-medium text-zinc-300 transition hover:text-white disabled:opacity-40"
+            disabled={isPlaying || xDis}
+            className="flex-1 rounded-md py-1.5 text-xs font-medium text-zinc-300 transition hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
             style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.06)" }}
           >
             {label}
@@ -374,7 +376,7 @@ export function MinesSidebar({
             {(isIdle || isOver) && (
               <button
                 onClick={onStart}
-                disabled={isLoading || bet < 1 || bet > userBalance}
+                disabled={isLoading || !bet || bet < 1 || bet > userBalance}
                 className="w-full rounded-xl py-3 text-sm font-bold transition active:scale-95 disabled:opacity-50"
                 style={{
                   background: "linear-gradient(135deg, #00e701 0%, #00cc00 100%)",
@@ -409,9 +411,11 @@ export function MinesSidebar({
                 type="number"
                 min={AUTO_MIN_BET}
                 max={userBalance}
-                value={autoBet}
+                value={autoBet ?? ""}
                 onChange={(e) => {
-                  const n = parseInt(e.target.value, 10);
+                  const raw = e.target.value;
+                  if (raw === "") { setAutoBet(null); return; }
+                  const n = parseInt(raw, 10);
                   if (!isNaN(n) && n > 0) setAutoBet(n);
                 }}
                 disabled={autoBetRunning}
@@ -420,20 +424,20 @@ export function MinesSidebar({
               />
               <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-500">tokens</span>
             </div>
-            {!autoBetRunning && autoBet < AUTO_MIN_BET && (
+            {!autoBetRunning && autoBet !== null && autoBet < AUTO_MIN_BET && (
               <p className="text-xs text-red-400">Mise minimale : {AUTO_MIN_BET} tokens</p>
             )}
             <div className="flex gap-1.5">
               {[
-                { label: "×½", fn: () => setAutoBet((v) => Math.max(AUTO_MIN_BET, Math.floor(v / 2))) },
-                { label: "×2", fn: () => setAutoBet((v) => Math.min(userBalance, v * 2)) },
-                { label: "Max", fn: () => setAutoBet(userBalance) },
-              ].map(({ label, fn }) => (
+                { label: "×½", fn: () => { if (autoBet && autoBet > AUTO_MIN_BET) setAutoBet(Math.max(AUTO_MIN_BET, Math.floor(autoBet / 2))); }, xDis: !autoBet || autoBet <= AUTO_MIN_BET },
+                { label: "×2", fn: () => setAutoBet(autoBet ? Math.min(userBalance, autoBet * 2) : AUTO_MIN_BET), xDis: false },
+                { label: "Max", fn: () => setAutoBet(userBalance), xDis: false },
+              ].map(({ label, fn, xDis }) => (
                 <button
                   key={label}
                   onClick={fn}
-                  disabled={autoBetRunning}
-                  className="flex-1 rounded-md py-1.5 text-xs font-medium text-zinc-300 transition hover:text-white disabled:opacity-40"
+                  disabled={autoBetRunning || xDis}
+                  className="flex-1 rounded-md py-1.5 text-xs font-medium text-zinc-300 transition hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
                   style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.06)" }}
                 >
                   {label}
@@ -635,6 +639,7 @@ export function MinesSidebar({
               <button
                 onClick={handleStart}
                 disabled={
+                  !autoBet ||
                   autoBet < AUTO_MIN_BET ||
                   autoBet > userBalance ||
                   (autoCellMode === "fixed" && autoFixedCells.length === 0)

@@ -35,7 +35,7 @@ export function RouletteGame() {
   );
   const [bets, setBets] = useState<RouletteBet[]>([]);
   const [lastBets, setLastBets] = useState<RouletteBet[]>([]);
-  const [betAmount, setBetAmount] = useState(10);
+  const [betAmount, setBetAmount] = useState<number | null>(null);
   const [history, setHistory] = useState<RouletteResult[]>([]);
   const [spinRequest, setSpinRequest] = useState<RouletteSpinAnimationRequest | null>(null);
   const [pendingResponse, setPendingResponse] = useState<RouletteSpinResponse | null>(null);
@@ -76,8 +76,8 @@ export function RouletteGame() {
         return;
       }
 
-      if (betAmount < 1) {
-        notify.error(`Mise minimale : 1 token. Vous avez entré ${betAmount} token${betAmount <= 1 ? "" : "s"}.`);
+      if (!betAmount || betAmount < 1) {
+        notify.error(`Mise minimale : 1 token.`);
         return;
       }
 

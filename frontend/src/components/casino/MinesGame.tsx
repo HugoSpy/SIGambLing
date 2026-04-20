@@ -35,7 +35,7 @@ export function MinesGame() {
 
   const autoBet = useMinesAutoBet();
 
-  const [bet, setBet] = useState(100);
+  const [bet, setBet] = useState<number | null>(null);
   const [mines, setMines] = useState(3);
 
   // ── Auto-bet cell selection state (lifted from sidebar) ──────────────────────
@@ -181,6 +181,7 @@ export function MinesGame() {
 
   // ── Handlers ─────────────────────────────────────────────────────────────────
   function handleStart() {
+    if (!bet) return;
     sounds.betButton.play();
     startGame(bet, mines);
   }
