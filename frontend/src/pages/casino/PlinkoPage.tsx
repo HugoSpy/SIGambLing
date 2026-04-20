@@ -105,6 +105,9 @@ export function PlinkoPage() {
   const [autoHistory, setAutoHistory] = useState<AutoBetRound[]>([]);
   const [pendingAutoNext, setPendingAutoNext] = useState(false);
 
+  // Prevent concurrent drops (guards against rapid double-clicks before React re-renders)
+  const dropLockedRef = useRef(false);
+
   // Refs to avoid stale closures in animation callbacks
   const autoRunningRef = useRef(false);
   const autoRoundsDoneRef = useRef(0);
@@ -138,6 +141,7 @@ export function PlinkoPage() {
       setIsAnimating(true);
     },
     onError: (err: unknown) => {
+      dropLockedRef.current = false;
       const msg = err instanceof Error ? err.message : "Erreur lors du drop.";
       toast.error(msg);
       setIsAnimating(false);
@@ -146,6 +150,7 @@ export function PlinkoPage() {
   });
 
   const handleAnimationComplete = useCallback(() => {
+    dropLockedRef.current = false;
     const result = pendingResultRef.current;
     if (!result) return;
 
@@ -205,7 +210,8 @@ export function PlinkoPage() {
   }, [pendingAutoNext]);
 
   function handleDrop() {
-    if (isAnimating || dropMutation.isPending) return;
+    if (dropLockedRef.current || isAnimating || dropMutation.isPending) return;
+    dropLockedRef.current = true;
     sounds.betButton.play();
     dropMutation.mutate({ betAmount: bet, rows, risk });
   }
@@ -370,7 +376,7 @@ export function PlinkoPage() {
                   <button
                     onClick={handleDrop}
                     disabled={isDropping || bet < MIN_BET || bet > userBalance}
-                    className="w-full rounded-xl py-3 text-sm font-bold transition active:scale-95 disabled:opacity-50 mt-2"
+                    className="w-full rounded-xl py-3 text-sm font-bold transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
                     style={{
                       background: "linear-gradient(135deg, #00e701 0%, #00cc00 100%)",
                       color: "#0a1f0a",

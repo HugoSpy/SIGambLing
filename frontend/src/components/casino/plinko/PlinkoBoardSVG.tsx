@@ -102,16 +102,6 @@ export function PlinkoBoardSVG({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [animStep, isAnimating, rows]);
 
-  // Compute visited pegs (trail)
-  const visitedPegs = new Set<string>();
-  if (path && animStep >= 0) {
-    let col = 0;
-    for (let r = 0; r <= Math.min(animStep, rows - 1); r++) {
-      visitedPegs.add(`${r},${col}`);
-      if (r < animStep && path[r]) col++;
-    }
-  }
-
   // Ball position
   let ballCx = W / 2;
   let ballCy = TOP_PAD - 20;
@@ -146,18 +136,16 @@ export function PlinkoBoardSVG({
         fill="rgba(0,231,1,0.3)"
       />
 
-      {/* Pins */}
-      {Array.from({ length: rows }, (_, r) =>
+      {/* Pins — rows+1 rows so last row has rows+1 pegs, aligning slots exactly below them */}
+      {Array.from({ length: rows + 1 }, (_, r) =>
         Array.from({ length: r + 1 }, (_, c) => {
           const x = pegX(rows, r, c);
           const y = pegY(r);
-          const visited = visitedPegs.has(`${r},${c}`);
           return (
             <circle
               key={`${r}-${c}`}
               cx={x} cy={y} r={4}
-              fill={visited ? "#00e701" : "#2d4a5a"}
-              style={{ transition: "fill 0.08s ease" }}
+              fill="#2d4a5a"
             />
           );
         })
@@ -219,7 +207,7 @@ export function PlinkoBoardSVG({
             r={7}
             fill="#00e701"
             animate={{ cx: ballCx, cy: ballCy }}
-            transition={{ duration: 0.13, ease: "easeOut" }}
+            transition={{ type: "spring", stiffness: 400, damping: 15 }}
             initial={{ cx: W / 2, cy: TOP_PAD - 20 }}
             style={{ filter: "drop-shadow(0 0 6px rgba(0,231,1,0.9))" }}
           />
