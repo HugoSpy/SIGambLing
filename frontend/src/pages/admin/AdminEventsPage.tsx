@@ -412,11 +412,13 @@ export function AdminEventsPage() {
   const [eventsDisabled, setLocalEventsDisabled] = useState(false);
   const [minesDisabled, setLocalMinesDisabled] = useState(false);
   const [crashDisabled, setLocalCrashDisabled] = useState(false);
+  const [plinkoDisabled, setLocalPlinkoDisabled] = useState(false);
   const [rouletteConfirmTarget, setRouletteConfirmTarget] = useState<boolean | null>(null);
   const [blackjackConfirmTarget, setBlackjackConfirmTarget] = useState<boolean | null>(null);
   const [eventsConfirmTarget, setEventsConfirmTarget] = useState<boolean | null>(null);
   const [minesConfirmTarget, setMinesConfirmTarget] = useState<boolean | null>(null);
   const [crashConfirmTarget, setCrashConfirmTarget] = useState<boolean | null>(null);
+  const [plinkoConfirmTarget, setPlinkoConfirmTarget] = useState<boolean | null>(null);
   const setStoreFeatureFlags = useAuthStore((state) => state.setFeatureFlags);
 
   const { data: events, isLoading } = useQuery({
@@ -478,12 +480,13 @@ export function AdminEventsPage() {
       .then(({ maintenanceMode: enabled }) => setLocalMaintenanceMode(enabled))
       .catch(() => {});
     getFeatureFlags()
-      .then(({ rouletteDisabled: r, blackjackDisabled: b, eventsDisabled: e, minesDisabled: m, crashDisabled: c }) => {
+      .then(({ rouletteDisabled: r, blackjackDisabled: b, eventsDisabled: e, minesDisabled: m, crashDisabled: c, plinkoDisabled: p }) => {
         setLocalRouletteDisabled(r);
         setLocalBlackjackDisabled(b);
         setLocalEventsDisabled(e);
         setLocalMinesDisabled(m);
         setLocalCrashDisabled(c);
+        setLocalPlinkoDisabled(p);
       })
       .catch(() => {});
   }, []);
@@ -892,6 +895,24 @@ export function AdminEventsPage() {
                   <span
                     className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
                       crashDisabled ? "translate-x-6" : "translate-x-1"
+                    }`}
+                  />
+                </button>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-sm text-zinc-400">🎯 Plinko (bêta)</span>
+                <button
+                  aria-checked={plinkoDisabled}
+                  className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer items-center rounded-full transition-colors focus:outline-none ${
+                    plinkoDisabled ? "bg-amber-500" : "bg-zinc-700"
+                  }`}
+                  onClick={() => setPlinkoConfirmTarget(!plinkoDisabled)}
+                  role="switch"
+                  type="button"
+                >
+                  <span
+                    className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${
+                      plinkoDisabled ? "translate-x-6" : "translate-x-1"
                     }`}
                   />
                 </button>
@@ -1948,7 +1969,7 @@ export function AdminEventsPage() {
                     async () => {
                       const updated = await setFeatureFlag("rouletteDisabled", rouletteConfirmTarget);
                       setLocalRouletteDisabled(updated.rouletteDisabled);
-                      setStoreFeatureFlags({ rouletteDisabled: updated.rouletteDisabled, blackjackDisabled, eventsDisabled, minesDisabled, crashDisabled });
+                      setStoreFeatureFlags({ rouletteDisabled: updated.rouletteDisabled, blackjackDisabled, eventsDisabled, minesDisabled, crashDisabled, plinkoDisabled });
                       setRouletteConfirmTarget(null);
                     },
                     rouletteConfirmTarget ? "Roulette désactivée." : "Roulette réactivée.",
@@ -1988,7 +2009,7 @@ export function AdminEventsPage() {
                     async () => {
                       const updated = await setFeatureFlag("blackjackDisabled", blackjackConfirmTarget);
                       setLocalBlackjackDisabled(updated.blackjackDisabled);
-                      setStoreFeatureFlags({ rouletteDisabled, blackjackDisabled: updated.blackjackDisabled, eventsDisabled, minesDisabled, crashDisabled });
+                      setStoreFeatureFlags({ rouletteDisabled, blackjackDisabled: updated.blackjackDisabled, eventsDisabled, minesDisabled, crashDisabled, plinkoDisabled });
                       setBlackjackConfirmTarget(null);
                     },
                     blackjackConfirmTarget ? "Blackjack désactivé." : "Blackjack réactivé.",
@@ -2028,7 +2049,7 @@ export function AdminEventsPage() {
                     async () => {
                       const updated = await setFeatureFlag("eventsDisabled", eventsConfirmTarget);
                       setLocalEventsDisabled(updated.eventsDisabled);
-                      setStoreFeatureFlags({ rouletteDisabled, blackjackDisabled, eventsDisabled: updated.eventsDisabled, minesDisabled, crashDisabled });
+                      setStoreFeatureFlags({ rouletteDisabled, blackjackDisabled, eventsDisabled: updated.eventsDisabled, minesDisabled, crashDisabled, plinkoDisabled });
                       setEventsConfirmTarget(null);
                     },
                     eventsConfirmTarget ? "Événements désactivés." : "Événements réactivés.",
@@ -2067,7 +2088,7 @@ export function AdminEventsPage() {
                     async () => {
                       const updated = await setFeatureFlag("minesDisabled", minesConfirmTarget);
                       setLocalMinesDisabled(updated.minesDisabled);
-                      setStoreFeatureFlags({ rouletteDisabled, blackjackDisabled, eventsDisabled, minesDisabled: updated.minesDisabled, crashDisabled });
+                      setStoreFeatureFlags({ rouletteDisabled, blackjackDisabled, eventsDisabled, minesDisabled: updated.minesDisabled, crashDisabled, plinkoDisabled });
                       setMinesConfirmTarget(null);
                     },
                     minesConfirmTarget ? "Mines désactivées." : "Mines réactivées.",
@@ -2107,13 +2128,53 @@ export function AdminEventsPage() {
                     async () => {
                       const updated = await setFeatureFlag("crashDisabled", crashConfirmTarget);
                       setLocalCrashDisabled(updated.crashDisabled);
-                      setStoreFeatureFlags({ rouletteDisabled, blackjackDisabled, eventsDisabled, minesDisabled, crashDisabled: updated.crashDisabled });
+                      setStoreFeatureFlags({ rouletteDisabled, blackjackDisabled, eventsDisabled, minesDisabled, crashDisabled: updated.crashDisabled, plinkoDisabled });
                       setCrashConfirmTarget(null);
                     },
                     crashConfirmTarget ? "Crash désactivé." : "Crash réactivé.",
                   )
                 }
                 variant={crashConfirmTarget ? "danger" : "primary"}
+              >
+                Confirmer
+              </Button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      <Modal
+        description={
+          plinkoConfirmTarget
+            ? "Activer la maintenance Plinko ? Les joueurs verront un overlay sur la carte et le jeu sera inaccessible."
+            : "Désactiver la maintenance Plinko ? Le jeu sera à nouveau accessible."
+        }
+        onClose={() => setPlinkoConfirmTarget(null)}
+        open={plinkoConfirmTarget !== null}
+        title={plinkoConfirmTarget ? "Désactiver Plinko (bêta)" : "Réactiver Plinko (bêta)"}
+      >
+        {plinkoConfirmTarget !== null && (
+          <div className="space-y-5">
+            <div className="flex gap-3">
+              <Button fullWidth onClick={() => setPlinkoConfirmTarget(null)} variant="secondary">
+                Annuler
+              </Button>
+              <Button
+                disabled={actionKey === "plinko-flag"}
+                fullWidth
+                onClick={() =>
+                  void runAction(
+                    "plinko-flag",
+                    async () => {
+                      const updated = await setFeatureFlag("plinkoDisabled", plinkoConfirmTarget);
+                      setLocalPlinkoDisabled(updated.plinkoDisabled);
+                      setStoreFeatureFlags({ rouletteDisabled, blackjackDisabled, eventsDisabled, minesDisabled, crashDisabled, plinkoDisabled: updated.plinkoDisabled });
+                      setPlinkoConfirmTarget(null);
+                    },
+                    plinkoConfirmTarget ? "Plinko désactivé." : "Plinko réactivé.",
+                  )
+                }
+                variant={plinkoConfirmTarget ? "danger" : "primary"}
               >
                 Confirmer
               </Button>

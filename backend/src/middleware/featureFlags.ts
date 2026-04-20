@@ -8,6 +8,7 @@ interface FeatureFlags {
   eventsDisabled: boolean;
   minesDisabled: boolean;
   crashDisabled: boolean;
+  plinkoDisabled: boolean;
 }
 
 // In-memory cache — invalidated on POST /admin/config/features
@@ -23,7 +24,7 @@ async function getFeatureFlagValues(): Promise<FeatureFlags> {
   }
 
   const configs = await prisma.siteConfig.findMany({
-    where: { key: { in: ["rouletteDisabled", "blackjackDisabled", "eventsDisabled", "minesDisabled", "crashDisabled"] } },
+    where: { key: { in: ["rouletteDisabled", "blackjackDisabled", "eventsDisabled", "minesDisabled", "crashDisabled", "plinkoDisabled"] } },
   });
 
   const map = Object.fromEntries(configs.map((c) => [c.key, c.value === "true"]));
@@ -34,6 +35,7 @@ async function getFeatureFlagValues(): Promise<FeatureFlags> {
     eventsDisabled: map["eventsDisabled"] ?? false,
     minesDisabled: map["minesDisabled"] ?? false,
     crashDisabled: map["crashDisabled"] ?? false,
+    plinkoDisabled: map["plinkoDisabled"] ?? false,
   };
 
   return cachedFlags;
@@ -90,6 +92,12 @@ const FEATURE_RULES: {
     error: "crashDisabled",
     message: "Le Crash est temporairement indisponible.",
   },
+  {
+    flag: "plinkoDisabled",
+    prefix: "/casino/plinko",
+    error: "plinkoDisabled",
+    message: "Plinko est temporairement indisponible.",
+  },
 ];
 
 export const featureFlagsMiddleware: RequestHandler = async (request, response, next) => {
@@ -100,7 +108,8 @@ export const featureFlagsMiddleware: RequestHandler = async (request, response, 
       flags.blackjackDisabled ||
       flags.eventsDisabled ||
       flags.minesDisabled ||
-      flags.crashDisabled;
+      flags.crashDisabled ||
+      flags.plinkoDisabled;
 
     if (!anyDisabled) {
       return next();

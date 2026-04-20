@@ -18,6 +18,16 @@ import { useAuthStore } from "../store/auth-store";
 
 type GameTab = "roulette" | "blackjack" | "hilo" | "ride-the-bus" | "mines" | "crash" | "plinko";
 
+function WipOverlay({ label }: { label: string }) {
+  return (
+    <div className="absolute inset-0 z-10 flex items-center justify-center rounded-[inherit] bg-black/60 pointer-events-none">
+      <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold uppercase tracking-widest text-white backdrop-blur-sm">
+        {label}
+      </span>
+    </div>
+  );
+}
+
 const TABS: {
   id: GameTab;
   label: string;
@@ -112,6 +122,7 @@ export function CasinoPage() {
   const blackjackDisabled = useAuthStore((state) => state.blackjackDisabled);
   const minesDisabled = useAuthStore((state) => state.minesDisabled);
   const crashDisabled = useAuthStore((state) => state.crashDisabled);
+  const plinkoDisabled = useAuthStore((state) => state.plinkoDisabled);
   const { game } = useParams<{ game?: string }>();
   const activeGame = isGameTab(game) ? game : null;
 
@@ -148,6 +159,9 @@ export function CasinoPage() {
   if (activeGame === "mines" && minesDisabled && !isAdmin) {
     return <Navigate replace to="/casino" />;
   }
+  if (activeGame === "plinko" && plinkoDisabled && !isAdmin) {
+    return <Navigate replace to="/casino" />;
+  }
   // hilo and ride-the-bus have no feature flag yet — no redirect needed
 
   const isGameDisabled = (id: GameTab) =>
@@ -155,6 +169,8 @@ export function CasinoPage() {
     (id === "blackjack" && blackjackDisabled && !isAdmin) ||
     (id === "mines" && minesDisabled && !isAdmin) ||
     (id === "crash" && crashDisabled && !isAdmin);
+
+  const isPlinkoWip = plinkoDisabled && !isAdmin;
 
   const disabledLabel: Record<GameTab, string> = {
     roulette: "Roulette temporairement indisponible",
@@ -181,6 +197,7 @@ export function CasinoPage() {
             {TABS.map((tab) => {
               const Icon = tab.icon;
               const disabled = isGameDisabled(tab.id);
+              const wip = tab.id === "plinko" && isPlinkoWip;
 
               return (
                 <Card
@@ -188,8 +205,10 @@ export function CasinoPage() {
                   className={cn(
                     "group relative overflow-hidden border-white/10 bg-zinc-900/95 p-0",
                     disabled && "opacity-60",
+                    wip && "pointer-events-none",
                   )}
                 >
+                  {wip && <WipOverlay label="Bientôt" />}
                   <div
                     className={cn("absolute inset-0 bg-gradient-to-br opacity-100", tab.accentClassName)}
                   />

@@ -60,7 +60,7 @@ export const setMaintenanceConfig: RequestHandler = async (request, response, ne
   }
 };
 
-const ALL_CONFIG_KEYS = ["maintenanceMode", "rouletteDisabled", "blackjackDisabled", "eventsDisabled", "minesDisabled", "crashDisabled"] as const;
+const ALL_CONFIG_KEYS = ["maintenanceMode", "rouletteDisabled", "blackjackDisabled", "eventsDisabled", "minesDisabled", "crashDisabled", "plinkoDisabled"] as const;
 
 export const getPublicMaintenanceConfig: RequestHandler = async (_request, response, next) => {
   try {
@@ -77,13 +77,14 @@ export const getPublicMaintenanceConfig: RequestHandler = async (_request, respo
       eventsDisabled: map["eventsDisabled"] ?? false,
       minesDisabled: map["minesDisabled"] ?? false,
       crashDisabled: map["crashDisabled"] ?? false,
+      plinkoDisabled: map["plinkoDisabled"] ?? false,
     });
   } catch (error) {
     next(error);
   }
 };
 
-const FEATURE_FLAG_KEYS = ["rouletteDisabled", "blackjackDisabled", "eventsDisabled", "minesDisabled", "crashDisabled"] as const;
+const FEATURE_FLAG_KEYS = ["rouletteDisabled", "blackjackDisabled", "eventsDisabled", "minesDisabled", "crashDisabled", "plinkoDisabled"] as const;
 type FeatureFlagKey = (typeof FEATURE_FLAG_KEYS)[number];
 
 export const getFeatureFlagsConfig: RequestHandler = async (_request, response, next) => {
@@ -100,6 +101,7 @@ export const getFeatureFlagsConfig: RequestHandler = async (_request, response, 
       eventsDisabled: map["eventsDisabled"] ?? false,
       minesDisabled: map["minesDisabled"] ?? false,
       crashDisabled: map["crashDisabled"] ?? false,
+      plinkoDisabled: map["plinkoDisabled"] ?? false,
     });
   } catch (error) {
     next(error);
@@ -159,6 +161,7 @@ export const setFeatureFlagsConfig: RequestHandler = async (request, response, n
       eventsDisabled: map["eventsDisabled"] ?? false,
       minesDisabled: map["minesDisabled"] ?? false,
       crashDisabled: map["crashDisabled"] ?? false,
+      plinkoDisabled: map["plinkoDisabled"] ?? false,
     });
   } catch (error) {
     next(error);
