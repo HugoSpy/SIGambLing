@@ -34,14 +34,14 @@ function useCountdown(target: string | null | undefined) {
   return display;
 }
 
-// ─── Next Monday 00:00 ───────────────────────────────────────────────────────
+// ─── Next Tuesday 00:00 ──────────────────────────────────────────────────────
 
-function nextMondayMidnight(): string {
+function nextTuesdayMidnight(): string {
   const now = new Date();
-  const day = now.getDay(); // 0=sun, 1=mon ...
-  const daysUntilMonday = day === 0 ? 1 : (8 - day) % 7 || 7;
+  const day = now.getDay(); // 0=sun, 1=mon, 2=tue ...
+  const daysUntilTuesday = day === 2 ? 7 : (9 - day) % 7;
   const next = new Date(now);
-  next.setDate(now.getDate() + daysUntilMonday);
+  next.setDate(now.getDate() + daysUntilTuesday);
   next.setHours(0, 0, 0, 0);
   return next.toISOString();
 }
@@ -293,8 +293,8 @@ function HistorySection() {
 export function RobinHoodPage() {
   const { data: user } = useAuthenticatedUser();
   const { data: event, isLoading } = useRobinHoodEvent();
-  const nextMonday = nextMondayMidnight();
-  const nextCountdown = useCountdown(nextMonday);
+  const nextTuesday = nextTuesdayMidnight();
+  const nextCountdown = useCountdown(nextTuesday);
 
   const handleLogout = async () => {
     await logoutRequest();
@@ -307,7 +307,7 @@ export function RobinHoodPage() {
   const status = event?.status ?? null;
 
   const tagline =
-    status === "VOTE" ? "Qui sera dépouillé ce lundi ?" :
+    status === "VOTE" ? "Qui sera dépouillé ce mardi ?" :
     status === "ACTIVE" ? "L'heure de la redistribution a sonné." :
     "Préparez-vous pour le prochain Robin des Slots.";
 

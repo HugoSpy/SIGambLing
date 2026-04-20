@@ -50,8 +50,8 @@ export function startCronJobs(): void {
     await takeLeaderboardSnapshots();
   });
 
-  // Lundi 00:00 — Création du vote Robin des Slots
-  cron.schedule('0 0 * * 1', async () => {
+  // Mardi 00:00 — Création du vote Robin des Slots
+  cron.schedule('0 0 * * 2', async () => {
     try {
       await robinHoodService.createWeeklyEvent();
       logger.info('[CRON] Robin des Slots: vote créé');
@@ -60,8 +60,8 @@ export function startCronJobs(): void {
     }
   });
 
-  // Lundi 10:00 — Clôture du vote, activation
-  cron.schedule('0 10 * * 1', async () => {
+  // Mardi 10:00 — Clôture du vote, activation
+  cron.schedule('0 10 * * 2', async () => {
     try {
       const event = await robinHoodService.getCurrentEvent();
       if (event?.status === 'VOTE') {
@@ -73,8 +73,8 @@ export function startCronJobs(): void {
     }
   });
 
-  // Lundi 23:59 — Clôture de l'événement
-  cron.schedule('59 23 * * 1', async () => {
+  // Mardi 23:59 — Clôture de l'événement
+  cron.schedule('59 23 * * 2', async () => {
     try {
       const event = await robinHoodService.getCurrentEvent();
       if (event?.status === 'ACTIVE') {
@@ -86,5 +86,5 @@ export function startCronJobs(): void {
     }
   });
 
-  logger.info('[CRON] Jobs démarrés (purge OddsHistory à 02h00, snapshots leaderboard toutes les heures, Robin des Slots lundi)');
+  logger.info('[CRON] Jobs démarrés (purge OddsHistory à 02h00, snapshots leaderboard toutes les heures, Robin des Slots mardi)');
 }
