@@ -19,6 +19,7 @@ import {
   minesCurrentController,
   minesRevealController,
   minesStartController,
+  plinkoDropController,
   ridethebusAnswerController,
   ridethebusCurrentController,
   ridethebusStartController,
@@ -34,6 +35,7 @@ import {
   minesAutobetSchema,
   minesRevealSchema,
   minesStartSchema,
+  plinkoDropSchema,
   ridethebusAnswerSchema,
   ridethebusStartSchema,
   rouletteSpinSchema,
@@ -193,4 +195,12 @@ casinoRouter.post(
   minesRevealLimiter,
   validateBody(minesAutobetSchema),
   minesAutobetController,
+);
+
+casinoRouter.post(
+  "/plinko/drop",
+  requireAuth,
+  casinoLimiter,
+  validateBody(plinkoDropSchema),
+  plinkoDropController,
 );

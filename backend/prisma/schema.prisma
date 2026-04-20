@@ -47,6 +47,7 @@ enum CasinoGameType {
   ride_the_bus
   mines
   crash
+  plinko
 }
 
 enum CrashRoundStatus {

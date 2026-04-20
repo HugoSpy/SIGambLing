@@ -13,7 +13,8 @@ type JackpotContributionSource =
   | "casino_blackjack"
   | "casino_hilo"
   | "casino_ride_the_bus"
-  | "casino_crash";
+  | "casino_crash"
+  | "casino_plinko";
 
 type JackpotState = {
   current_pot: number;
@@ -176,7 +177,7 @@ class JackpotService {
   async recordCasinoContribution(
     userId: string,
     wagerAmount: number,
-    sourceGameType: "roulette" | "blackjack" | "hilo" | "ride_the_bus" | "mines" | "crash",
+    sourceGameType: "roulette" | "blackjack" | "hilo" | "ride_the_bus" | "mines" | "crash" | "plinko",
     sourceReference?: string,
     client?: DatabaseClient,
   ) {
@@ -186,6 +187,7 @@ class JackpotService {
       hilo: "casino_hilo",
       ride_the_bus: "casino_ride_the_bus",
       crash: "casino_crash",
+      plinko: "casino_plinko",
     };
     return this.addContribution(
       userId,
