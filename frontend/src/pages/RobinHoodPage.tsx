@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { DashboardShell } from "../components/layout/DashboardShell";
 import { Button } from "../components/ui/Button";
@@ -288,6 +288,87 @@ function HistorySection() {
   );
 }
 
+// ─── Info Modal ───────────────────────────────────────────────────────────────
+
+const INFO_SECTIONS = [
+  {
+    title: "Le principe",
+    icon: "🏹",
+    text: "Chaque mardi à 00:00, un vote s'ouvre pour désigner la victime de la semaine. La victime perd 1 000 000 tokens qui alimentent la cagnotte Robin des Slots.",
+  },
+  {
+    title: "Le vote",
+    icon: "🗳️",
+    text: "Tous les joueurs votent jusqu'à 10:00. En cas d'égalité au sommet, toutes les victimes à égalité sont désignées. Sans votes, une victime est tirée au sort parmi les éligibles.",
+  },
+  {
+    title: "L'événement (10:00 → 23:59)",
+    icon: "🎰",
+    text: "Pendant toute la durée de l'événement, tous les jeux casino passent à RTP 100% : les gains sont prélevés directement sur la cagnotte Robin des Slots.",
+  },
+  {
+    title: "La fin",
+    icon: "⏰",
+    text: "À 23:59, l'événement se clôture. Les tokens restants dans la cagnotte sont restitués à la (aux) victime(s). Si la cagnotte tombe à 0 avant, l'événement se clôture automatiquement.",
+  },
+  {
+    title: "La victime",
+    icon: "🚫",
+    text: "La victime est bannie de tous les jeux casino pendant toute la durée de l'événement. Elle ne peut ni jouer ni miser jusqu'à la clôture.",
+  },
+];
+
+function InfoModal({ onClose }: { onClose: () => void }) {
+  return (
+    <AnimatePresence>
+      <motion.div
+        key="backdrop"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm"
+        onClick={onClose}
+      >
+        <motion.div
+          key="modal"
+          initial={{ opacity: 0, y: 24, scale: 0.96 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={{ opacity: 0, y: 16, scale: 0.97 }}
+          transition={{ type: "spring", stiffness: 320, damping: 28 }}
+          className="relative w-full max-w-lg rounded-2xl border border-amber-400/30 bg-[var(--surface-1)] p-6 shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <button
+            onClick={onClose}
+            className="absolute right-4 top-4 flex h-7 w-7 items-center justify-center rounded-full text-[var(--fg-muted)] hover:bg-[var(--surface-2)] hover:text-[var(--fg-primary)] transition-colors"
+          >
+            ✕
+          </button>
+
+          <div className="mb-5 text-center">
+            <span className="text-3xl">🏹</span>
+            <h2 className="mt-2 text-xl font-bold text-amber-400" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
+              Comment fonctionne Robin des Slots ?
+            </h2>
+          </div>
+
+          <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+            {INFO_SECTIONS.map((s) => (
+              <div key={s.title} className="rounded-xl border border-[var(--ink-700)] bg-[var(--surface-2)] p-4">
+                <p className="mb-1 flex items-center gap-2 font-semibold text-[var(--fg-primary)]">
+                  <span>{s.icon}</span>
+                  {s.title}
+                </p>
+                <p className="text-sm text-[var(--fg-muted)] leading-relaxed">{s.text}</p>
+              </div>
+            ))}
+          </div>
+        </motion.div>
+      </motion.div>
+    </AnimatePresence>
+  );
+}
+
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export function RobinHoodPage() {
@@ -295,6 +376,7 @@ export function RobinHoodPage() {
   const { data: event, isLoading } = useRobinHoodEvent();
   const nextTuesday = nextTuesdayMidnight();
   const nextCountdown = useCountdown(nextTuesday);
+  const [showInfo, setShowInfo] = useState(false);
 
   const handleLogout = async () => {
     await logoutRequest();
@@ -373,6 +455,17 @@ export function RobinHoodPage() {
 
         <HistorySection />
       </div>
+
+      {/* Floating info button */}
+      <button
+        onClick={() => setShowInfo(true)}
+        className="fixed bottom-24 right-6 z-50 flex h-12 w-12 items-center justify-center rounded-full bg-amber-500 text-black text-xl font-bold shadow-lg hover:bg-amber-400 transition-colors"
+        aria-label="Explication Robin des Slots"
+      >
+        ?
+      </button>
+
+      {showInfo && <InfoModal onClose={() => setShowInfo(false)} />}
     </DashboardShell>
   );
 }
