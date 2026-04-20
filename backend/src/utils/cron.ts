@@ -50,13 +50,13 @@ export function startCronJobs(): void {
     await takeLeaderboardSnapshots();
   });
 
-  // Lundi 00:00 — Création du vote Robin de Vegas
+  // Lundi 00:00 — Création du vote Robin des Slots
   cron.schedule('0 0 * * 1', async () => {
     try {
       await robinHoodService.createWeeklyEvent();
-      logger.info('[CRON] Robin de Vegas: vote créé');
+      logger.info('[CRON] Robin des Slots: vote créé');
     } catch (err) {
-      logger.error('[CRON] Robin de Vegas: erreur création vote', { error: err });
+      logger.error('[CRON] Robin des Slots: erreur création vote', { error: err });
     }
   });
 
@@ -66,10 +66,10 @@ export function startCronJobs(): void {
       const event = await robinHoodService.getCurrentEvent();
       if (event?.status === 'VOTE') {
         await robinHoodService.closeVoteAndActivate(event.id);
-        logger.info('[CRON] Robin de Vegas: vote clôturé, événement activé');
+        logger.info('[CRON] Robin des Slots: vote clôturé, événement activé');
       }
     } catch (err) {
-      logger.error('[CRON] Robin de Vegas: erreur clôture vote', { error: err });
+      logger.error('[CRON] Robin des Slots: erreur clôture vote', { error: err });
     }
   });
 
@@ -79,12 +79,12 @@ export function startCronJobs(): void {
       const event = await robinHoodService.getCurrentEvent();
       if (event?.status === 'ACTIVE') {
         await robinHoodService.closeEvent(event.id);
-        logger.info('[CRON] Robin de Vegas: événement clôturé');
+        logger.info('[CRON] Robin des Slots: événement clôturé');
       }
     } catch (err) {
-      logger.error('[CRON] Robin de Vegas: erreur clôture événement', { error: err });
+      logger.error('[CRON] Robin des Slots: erreur clôture événement', { error: err });
     }
   });
 
-  logger.info('[CRON] Jobs démarrés (purge OddsHistory à 02h00, snapshots leaderboard toutes les heures, Robin de Vegas lundi)');
+  logger.info('[CRON] Jobs démarrés (purge OddsHistory à 02h00, snapshots leaderboard toutes les heures, Robin des Slots lundi)');
 }

@@ -155,14 +155,14 @@ class RouletteService {
       throw new AppError("Balance insuffisante.", 400);
     }
 
-    // Robin de Vegas check
+    // Robin des Slots check
     const robinEvent = await robinHoodService.getActiveEvent();
     if (robinEvent) {
       const isVictim = await prisma.robinHoodVictim.findFirst({
         where: { eventId: robinEvent.id, userId },
       });
       if (isVictim) {
-        throw new AppError("Tu ne peux pas jouer pendant que tu es la victime de Robin de Vegas.", 403);
+        throw new AppError("Tu ne peux pas jouer pendant que tu es la victime de Robin des Slots.", 403);
       }
     }
 
@@ -238,7 +238,7 @@ class RouletteService {
       return { game, newBalance: updatedUser.balance };
     });
 
-    // Robin de Vegas pool routing
+    // Robin des Slots pool routing
     if (robinEvent) {
       if (totalPayout > totalBet) {
         await robinHoodService.deductFromPool(robinEvent.id, totalPayout - totalBet);

@@ -113,7 +113,7 @@ export async function closeVoteAndActivate(eventId: string): Promise<void> {
   });
   const pseudos = users.map((u) => u.pseudo).join(', ');
   await sendChatSystemMessage(
-    `🏹 Robin de Vegas est en cours ! ${pseudos} a été désigné(e) victime. La cagnotte s'élève à ${totalPool.toLocaleString('fr-FR')} tokens. Bonne chasse ! @everyone`,
+    `🏹 Robin des Slots est en cours ! ${pseudos} a été désigné(e) victime. La cagnotte s'élève à ${totalPool.toLocaleString('fr-FR')} tokens. Bonne chasse ! @everyone`,
   );
 }
 
@@ -153,7 +153,7 @@ export async function closeEvent(eventId: string): Promise<void> {
   }
 
   await sendChatSystemMessage(
-    `🏹 Robin de Vegas terminé ! La cagnotte restante (${remaining.toLocaleString('fr-FR')} tokens) a été restituée.`,
+    `🏹 Robin des Slots terminé ! La cagnotte restante (${remaining.toLocaleString('fr-FR')} tokens) a été restituée.`,
   );
 }
 

@@ -509,14 +509,14 @@ class BlackjackService {
     if (!user || user.isBanned) throw new AppError("Utilisateur introuvable ou banni.", 404);
     if (user.balance < bet) throw new AppError("Balance insuffisante.", 400);
 
-    // Robin de Vegas check
+    // Robin des Slots check
     const robinEvent = await robinHoodService.getActiveEvent();
     if (robinEvent) {
       const isVictim = await prisma.robinHoodVictim.findFirst({
         where: { eventId: robinEvent.id, userId },
       });
       if (isVictim) {
-        throw new AppError("Tu ne peux pas jouer pendant que tu es la victime de Robin de Vegas.", 403);
+        throw new AppError("Tu ne peux pas jouer pendant que tu es la victime de Robin des Slots.", 403);
       }
     }
     const robinEventId = robinEvent?.id ?? null;

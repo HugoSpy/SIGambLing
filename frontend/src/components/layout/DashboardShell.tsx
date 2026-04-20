@@ -83,7 +83,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
       { label: "Mes Wins", icon: Crown, href: "/wins" },
       { label: "Jackpot", icon: Trophy, href: "/jackpot" },
       { label: "Récompense", icon: Gift, href: "/rewards" },
-      { label: "Robin de Vegas", icon: Coins, href: "/robin-hood" },
+      { label: "Robin des Slots", icon: Coins, href: "/robin-hood" },
       { label: "Profil", icon: UserRound, href: "/profile" },
       ...(user.role === "admin" || user.role === "validator"
         ? [{ label: "Admin", icon: ShieldCheck, href: "/admin/events" }]
@@ -111,7 +111,7 @@ export function DashboardShell({ user, onLogout, children }: DashboardShellProps
     { label: "Classement", icon: Medal, href: "/leaderboard" },
     { label: "Mes Wins", icon: Crown, href: "/wins" },
     { label: "Jackpot", icon: Trophy, href: "/jackpot" },
-    { label: "Robin de Vegas", icon: Coins, href: "/robin-hood" },
+    { label: "Robin des Slots", icon: Coins, href: "/robin-hood" },
     { label: "Profil", icon: UserRound, href: "/profile" },
     { label: "Chat", icon: MessageSquare, action: () => { setChatOpen(!chatOpen); setMoreOpen(false); } },
     { label: "Ticket", icon: Ticket, action: () => { setCartOpen(true); setMoreOpen(false); } },

@@ -133,11 +133,11 @@ class MinesService {
     if (!user) throw new AppError("Utilisateur introuvable.", 404);
     if (user.balance < betAmount) throw new AppError("Solde insuffisant.", 400);
 
-    // Robin de Vegas check
+    // Robin des Slots check
     const robinEvent = await robinHoodService.getActiveEvent();
     if (robinEvent) {
       const isVictim = await prisma.robinHoodVictim.findFirst({ where: { eventId: robinEvent.id, userId } });
-      if (isVictim) throw new AppError("Tu ne peux pas jouer pendant que tu es la victime de Robin de Vegas.", 403);
+      if (isVictim) throw new AppError("Tu ne peux pas jouer pendant que tu es la victime de Robin des Slots.", 403);
     }
     const robinEventId = robinEvent?.id ?? null;
     const fairMult = (mines: number, gems: number) => getMinesMultiplier(mines, gems, !!robinEventId);

@@ -224,11 +224,11 @@ class CrashService {
     if (!user) throw new AppError("Utilisateur introuvable.", 404);
     if (user.balance < amount) throw new AppError("Solde insuffisant.", 400);
 
-    // Robin de Vegas check
+    // Robin des Slots check
     const robinEvent = await robinHoodService.getActiveEvent();
     if (robinEvent) {
       const isVictim = await prisma.robinHoodVictim.findFirst({ where: { eventId: robinEvent.id, userId } });
-      if (isVictim) throw new AppError("Tu ne peux pas jouer pendant que tu es la victime de Robin de Vegas.", 403);
+      if (isVictim) throw new AppError("Tu ne peux pas jouer pendant que tu es la victime de Robin des Slots.", 403);
     }
 
     await prisma.user.update({
@@ -308,7 +308,7 @@ class CrashService {
       });
     }
 
-    // Robin de Vegas pool routing on cashout
+    // Robin des Slots pool routing on cashout
     const robinForCashout = await robinHoodService.getActiveEvent();
     if (robinForCashout && payout > bet.amount) {
       await robinHoodService.deductFromPool(robinForCashout.id, payout - bet.amount);
@@ -474,7 +474,7 @@ class CrashService {
       }
     }
 
-    // Robin de Vegas pool routing for losses (bets that did not cashout)
+    // Robin des Slots pool routing for losses (bets that did not cashout)
     const robinForCrash = await robinHoodService.getActiveEvent();
     if (robinForCrash) {
       for (const bet of allBets) {

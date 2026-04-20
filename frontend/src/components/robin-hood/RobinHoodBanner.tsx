@@ -43,14 +43,14 @@ export function RobinHoodBanner() {
           <span>🏹</span>
           {isVote ? (
             <span>
-              Robin de Vegas — Vote en cours !{" "}
+              Robin des Slots — Vote en cours !{" "}
               <span className="opacity-80">{candidateCount} candidat{candidateCount !== 1 ? "s" : ""}</span>{" "}
               • Fermeture dans{" "}
               <span className="font-mono font-bold">{voteCountdown}</span>
             </span>
           ) : (
             <span>
-              Robin de Vegas ACTIF — Cagnotte :{" "}
+              Robin des Slots ACTIF — Cagnotte :{" "}
               <span className="font-bold">{formatTokens(event.currentPool)}</span>{" "}
               • Fin dans{" "}
               <span className="font-mono font-bold">{activeCountdown}</span>

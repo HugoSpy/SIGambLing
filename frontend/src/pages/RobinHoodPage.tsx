@@ -209,7 +209,7 @@ function ActivePhase({ event }: { event: RobinHoodEvent }) {
       </div>
 
       <div className="rounded-xl border border-red-500/30 bg-red-500/10 p-6 text-center space-y-3">
-        <p className="text-[var(--fg-muted)] text-sm">Cagnotte Robin de Vegas</p>
+        <p className="text-[var(--fg-muted)] text-sm">Cagnotte Robin des Slots</p>
         <p className="text-5xl font-bold text-red-400">{formatTokens(event.currentPool)}</p>
         <div className="h-3 w-full rounded-full bg-[var(--surface-2)]">
           <div
@@ -301,7 +301,7 @@ export function RobinHoodPage() {
   };
 
   if (isLoading || !user) {
-    return <LoadingScreen label="Chargement Robin de Vegas..." />;
+    return <LoadingScreen label="Chargement Robin des Slots..." />;
   }
 
   const status = event?.status ?? null;
@@ -309,7 +309,7 @@ export function RobinHoodPage() {
   const tagline =
     status === "VOTE" ? "Qui sera dépouillé ce lundi ?" :
     status === "ACTIVE" ? "L'heure de la redistribution a sonné." :
-    "Préparez-vous pour le prochain Robin de Vegas.";
+    "Préparez-vous pour le prochain Robin des Slots.";
 
   return (
     <DashboardShell user={user} onLogout={handleLogout}>
@@ -317,7 +317,7 @@ export function RobinHoodPage() {
         {/* Header */}
         <div className="text-center space-y-2 py-4">
           <h1 className="text-4xl font-bold text-[var(--fg-primary)] tracking-tight" style={{ fontFamily: "'Space Grotesk', sans-serif" }}>
-            🏹 Robin de Vegas
+            🏹 Robin des Slots
           </h1>
           <p className="text-[var(--fg-muted)]">{tagline}</p>
         </div>
@@ -361,12 +361,12 @@ export function RobinHoodPage() {
             <p className="text-2xl font-bold text-[var(--fg-primary)]">Aucun événement actif</p>
             {event?.status === "COMPLETED" && event.victims.length > 0 && (
               <p className="text-[var(--fg-muted)] text-sm">
-                Dernier Robin de Vegas : victime{event.victims.length > 1 ? "s" : ""}{" "}
+                Dernier Robin des Slots : victime{event.victims.length > 1 ? "s" : ""}{" "}
                 {event.victims.map((v) => v.pseudo).join(", ")} •{" "}
                 {formatTokens(event.victims.reduce((s, v) => s + (v.amountReturned ?? 0), 0))} restitués
               </p>
             )}
-            <p className="text-sm text-[var(--fg-muted)]">Prochain Robin de Vegas dans</p>
+            <p className="text-sm text-[var(--fg-muted)]">Prochain Robin des Slots dans</p>
             <p className="text-3xl font-bold font-mono text-amber-400">{nextCountdown}</p>
           </div>
         )}
