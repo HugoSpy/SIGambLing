@@ -53,6 +53,16 @@ const casinoLimiter = rateLimit({
   message: { message: "Too many casino requests" },
 });
 
+const plinkoLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 600,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (request) =>
+    ((request as { auth?: { id?: string } }).auth?.id ?? request.ip ?? "anonymous"),
+  message: { message: "Too many plinko requests" },
+});
+
 const minesRevealLimiter = rateLimit({
   windowMs: 60_000,
   max: 180,
@@ -200,7 +210,7 @@ casinoRouter.post(
 casinoRouter.post(
   "/plinko/drop",
   requireAuth,
-  casinoLimiter,
+  plinkoLimiter,
   validateBody(plinkoDropSchema),
   plinkoDropController,
 );

@@ -15,7 +15,7 @@ import { sounds } from "../../lib/sounds";
 import { getMultipliers, type RiskLevel } from "../../lib/plinkoMultipliers";
 import type { AutoBetRound } from "../../hooks/useMinesAutoBet";
 
-const MAX_BALLS = 10;
+const MAX_BALLS = 30;
 
 interface PlinkoDropResult {
   path: boolean[];
