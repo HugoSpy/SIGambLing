@@ -1,10 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useMutation } from "@tanstack/react-query";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import { PlinkoBoardSVG } from "../../components/casino/plinko/PlinkoBoardSVG";
+import { PlinkoBoardSVG, type ActiveBall } from "../../components/casino/plinko/PlinkoBoardSVG";
 import { MinesAutoBetGraph } from "../../components/casino/Mines/MinesAutoBetGraph";
 import { WinPopup, useWinPopup } from "../../components/ui/WinPopup";
 import { DashboardShell } from "../../components/layout/DashboardShell";
@@ -15,6 +14,8 @@ import { api, logoutRequest } from "../../lib/api";
 import { sounds } from "../../lib/sounds";
 import { getMultipliers, type RiskLevel } from "../../lib/plinkoMultipliers";
 import type { AutoBetRound } from "../../hooks/useMinesAutoBet";
+
+const MAX_BALLS = 10;
 
 interface PlinkoDropResult {
   path: boolean[];
@@ -79,7 +80,7 @@ function NumInput({
 
 export function PlinkoPage() {
   const { data: user } = useAuthenticatedUser();
-  const updateBalance = useAuthStore((s) => s.updateBalance);
+  const applyBalanceDelta = useAuthStore((s) => s.applyBalanceDelta);
   const userBalance = useAuthStore((s) => s.user?.balance ?? user?.balance ?? 0);
 
   // Game settings
@@ -87,10 +88,15 @@ export function PlinkoPage() {
   const [rows, setRows] = useState(12);
   const [risk, setRisk] = useState<RiskLevel>("medium");
 
-  // Game state
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [currentPath, setCurrentPath] = useState<boolean[] | null>(null);
-  const [currentSlotIndex, setCurrentSlotIndex] = useState<number | null>(null);
+  // Multi-ball state
+  const [activeBalls, setActiveBalls] = useState<ActiveBall[]>([]);
+  // Counts API calls in-flight before ball appears on board
+  const [pendingDrops, setPendingDrops] = useState(0);
+  // Stores the full result for each ball keyed by id
+  const ballResultsRef = useRef<Map<string, PlinkoDropResult>>(new Map());
+
+  const totalBalls = pendingDrops + activeBalls.length;
+
   const [lastResult, setLastResult] = useState<{ multiplier: number; profit: number } | null>(null);
 
   // Mode toggle
@@ -105,16 +111,15 @@ export function PlinkoPage() {
   const [autoHistory, setAutoHistory] = useState<AutoBetRound[]>([]);
   const [pendingAutoNext, setPendingAutoNext] = useState(false);
 
-  // Prevent concurrent drops (guards against rapid double-clicks before React re-renders)
-  const dropLockedRef = useRef(false);
-
-  // Refs to avoid stale closures in animation callbacks
+  // Refs to avoid stale closures
   const autoRunningRef = useRef(false);
   const autoRoundsDoneRef = useRef(0);
   const autoMaxRoundsRef = useRef<number | null>(null);
   const autoBetAmountRef = useRef<number | null>(null);
   const rowsRef = useRef(12);
   const riskRef = useRef<RiskLevel>("medium");
+  // Tracks the ball id that belongs to the current auto round
+  const autoBallIdRef = useRef<string | null>(null);
 
   // Keep refs in sync
   useEffect(() => { autoRunningRef.current = autoRunning; }, [autoRunning]);
@@ -128,34 +133,16 @@ export function PlinkoPage() {
 
   const { popupProps, showWin } = useWinPopup();
 
-  // Pending result to process after animation
-  const pendingResultRef = useRef<PlinkoDropResult | null>(null);
+  // Called by PlinkoBoardSVG when a ball's animation finishes
+  const handleBallComplete = useCallback((ballId: string) => {
+    const result = ballResultsRef.current.get(ballId);
+    ballResultsRef.current.delete(ballId);
+    setActiveBalls((prev) => prev.filter((b) => b.id !== ballId));
 
-  const dropMutation = useMutation({
-    mutationFn: (payload: { betAmount: number; rows: number; risk: RiskLevel }) =>
-      api.post<PlinkoDropResult>("/casino/plinko/drop", payload).then((r) => r.data),
-    onSuccess: (result) => {
-      pendingResultRef.current = result;
-      setCurrentPath(result.path);
-      setCurrentSlotIndex(result.slotIndex);
-      setIsAnimating(true);
-    },
-    onError: (err: unknown) => {
-      dropLockedRef.current = false;
-      const msg = err instanceof Error ? err.message : "Erreur lors du drop.";
-      toast.error(msg);
-      setIsAnimating(false);
-      stopAuto();
-    },
-  });
-
-  const handleAnimationComplete = useCallback(() => {
-    dropLockedRef.current = false;
-    const result = pendingResultRef.current;
     if (!result) return;
 
-    setIsAnimating(false);
-    updateBalance(result.newBalance);
+    // Apply balance delta atomically — safe for concurrent completions
+    applyBalanceDelta(result.profit);
     setLastResult({ multiplier: result.multiplier, profit: result.profit });
 
     if (result.profit > 0) {
@@ -165,33 +152,56 @@ export function PlinkoPage() {
       sounds.bombClick.play();
     }
 
-    if (autoRunningRef.current) {
-      const done = autoRoundsDoneRef.current + 1;
-      autoRoundsDoneRef.current = done;
-      setAutoRoundsDone(done);
-      setAutoHistory((prev) => [
-        ...prev,
-        {
-          round: done,
-          balance: result.newBalance,
-          win: result.profit > 0,
-          profit: result.profit,
-          bet: autoBetAmountRef.current ?? 0,
-        },
-      ]);
+    // Auto mode: trigger next round when its specific ball completes
+    if (ballId !== autoBallIdRef.current) return;
+    autoBallIdRef.current = null;
+    if (!autoRunningRef.current) return;
 
-      const maxR = autoMaxRoundsRef.current;
-      if ((maxR !== null && done >= maxR) || (autoBetAmountRef.current !== null && result.newBalance < autoBetAmountRef.current)) {
-        stopAuto();
-        return;
-      }
-      // Schedule next round (slight delay for readability)
-      setPendingAutoNext(true);
+    const done = autoRoundsDoneRef.current + 1;
+    autoRoundsDoneRef.current = done;
+    setAutoRoundsDone(done);
+    setAutoHistory((prev) => [
+      ...prev,
+      {
+        round: done,
+        balance: result.newBalance,
+        win: result.profit > 0,
+        profit: result.profit,
+        bet: autoBetAmountRef.current ?? 0,
+      },
+    ]);
+
+    const maxR = autoMaxRoundsRef.current;
+    if (
+      (maxR !== null && done >= maxR) ||
+      (autoBetAmountRef.current !== null && result.newBalance < autoBetAmountRef.current)
+    ) {
+      stopAuto();
+      return;
     }
-
-    pendingResultRef.current = null;
+    setPendingAutoNext(true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [applyBalanceDelta, showWin]);
+
+  async function callDropApi(betAmount: number, r: number, rk: RiskLevel): Promise<PlinkoDropResult> {
+    return api.post<PlinkoDropResult>("/casino/plinko/drop", { betAmount, rows: r, risk: rk }).then((res) => res.data);
+  }
+
+  async function handleDrop() {
+    if (totalBalls >= MAX_BALLS || !bet || bet < MIN_BET || bet > userBalance) return;
+    sounds.betButton.play();
+    setPendingDrops((p) => p + 1);
+    try {
+      const result = await callDropApi(bet, rows, risk);
+      const id = crypto.randomUUID();
+      ballResultsRef.current.set(id, result);
+      setActiveBalls((prev) => [...prev, { id, path: result.path, slotIndex: result.slotIndex }]);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erreur lors du drop.");
+    } finally {
+      setPendingDrops((p) => p - 1);
+    }
+  }
 
   // Fire next auto-bet round when pendingAutoNext becomes true
   useEffect(() => {
@@ -200,20 +210,23 @@ export function PlinkoPage() {
     if (!autoRunningRef.current) return;
     setTimeout(() => {
       if (!autoRunningRef.current || !autoBetAmountRef.current) return;
-      dropMutation.mutate({
-        betAmount: autoBetAmountRef.current,
-        rows: rowsRef.current,
-        risk: riskRef.current,
-      });
+      dropAutoRound();
     }, 100);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pendingAutoNext]);
 
-  function handleDrop() {
-    if (dropLockedRef.current || isAnimating || dropMutation.isPending || !bet) return;
-    dropLockedRef.current = true;
-    sounds.betButton.play();
-    dropMutation.mutate({ betAmount: bet, rows, risk });
+  async function dropAutoRound() {
+    if (!autoRunningRef.current || !autoBetAmountRef.current) return;
+    try {
+      const result = await callDropApi(autoBetAmountRef.current, rowsRef.current, riskRef.current);
+      const id = crypto.randomUUID();
+      autoBallIdRef.current = id;
+      ballResultsRef.current.set(id, result);
+      setActiveBalls((prev) => [...prev, { id, path: result.path, slotIndex: result.slotIndex }]);
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : "Erreur lors du drop.");
+      stopAuto();
+    }
   }
 
   function startAuto() {
@@ -224,11 +237,7 @@ export function PlinkoPage() {
     setAutoRoundsDone(0);
     setAutoHistory([]);
     setAutoStartBalance(userBalance);
-    dropMutation.mutate({
-      betAmount: autoBetAmountRef.current,
-      rows: rowsRef.current,
-      risk: riskRef.current,
-    });
+    dropAutoRound();
   }
 
   function stopAuto() {
@@ -242,7 +251,7 @@ export function PlinkoPage() {
   };
 
   const showGraph = autoRunning || autoHistory.length > 0;
-  const isDropping = isAnimating || dropMutation.isPending;
+  const noBallsActive = totalBalls === 0;
 
   if (!user) return <LoadingScreen label="Préparation du Plinko..." />;
 
@@ -279,7 +288,7 @@ export function PlinkoPage() {
                       if (m === "manual" && autoRunning) stopAuto();
                       setMode(m);
                     }}
-                    disabled={isDropping}
+                    disabled={totalBalls > 0 || autoRunning}
                     className="flex-1 py-1.5 text-xs font-semibold transition disabled:opacity-40"
                     style={{
                       background: mode === m ? "rgba(0,231,1,0.15)" : "transparent",
@@ -309,8 +318,7 @@ export function PlinkoPage() {
                           const n = parseInt(raw, 10);
                           if (!isNaN(n) && n > 0) setBet(n);
                         }}
-                        disabled={isDropping}
-                        className="w-full rounded-lg px-3 py-2.5 pr-16 text-sm font-mono text-zinc-100 outline-none transition disabled:opacity-50"
+                        className="w-full rounded-lg px-3 py-2.5 pr-16 text-sm font-mono text-zinc-100 outline-none transition"
                         style={{ background: "#0f1923", border: "1px solid rgba(255,255,255,0.08)" }}
                       />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-zinc-500">tokens</span>
@@ -324,7 +332,7 @@ export function PlinkoPage() {
                         <button
                           key={label}
                           onClick={fn}
-                          disabled={isDropping || xDis}
+                          disabled={xDis}
                           className="flex-1 rounded-md py-1.5 text-xs font-medium text-zinc-300 transition hover:text-white disabled:opacity-40 disabled:cursor-not-allowed"
                           style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.06)" }}
                         >
@@ -345,8 +353,7 @@ export function PlinkoPage() {
                       min={8} max={16} step={1}
                       value={rows}
                       onChange={(e) => setRows(parseInt(e.target.value, 10))}
-                      disabled={isDropping}
-                      className="w-full accent-emerald-400 disabled:opacity-50"
+                      className="w-full accent-emerald-400"
                     />
                     <div className="flex justify-between text-[10px] text-zinc-600">
                       <span>8</span><span>16</span>
@@ -361,8 +368,7 @@ export function PlinkoPage() {
                         <button
                           key={r}
                           onClick={() => setRisk(r)}
-                          disabled={isDropping}
-                          className="flex-1 rounded-md py-1.5 text-xs font-semibold capitalize transition disabled:opacity-40"
+                          className="flex-1 rounded-md py-1.5 text-xs font-semibold capitalize transition"
                           style={{
                             background: risk === r ? "rgba(0,231,1,0.15)" : "rgba(255,255,255,0.06)",
                             border: risk === r ? "1px solid rgba(0,231,1,0.4)" : "1px solid rgba(255,255,255,0.06)",
@@ -378,15 +384,23 @@ export function PlinkoPage() {
                   {/* Drop button */}
                   <button
                     onClick={handleDrop}
-                    disabled={isDropping || !bet || bet < MIN_BET || bet > userBalance}
-                    className="w-full rounded-xl py-3 text-sm font-bold transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed mt-2"
+                    disabled={totalBalls >= MAX_BALLS || !bet || bet < MIN_BET || bet > userBalance}
+                    className="w-full rounded-xl py-3 text-sm font-bold transition active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed mt-2 relative"
                     style={{
                       background: "linear-gradient(135deg, #00e701 0%, #00cc00 100%)",
                       color: "#0a1f0a",
-                      boxShadow: isDropping ? "none" : "0 4px 20px rgba(0,231,1,0.3)",
+                      boxShadow: totalBalls > 0 ? "none" : "0 4px 20px rgba(0,231,1,0.3)",
                     }}
                   >
-                    {isDropping ? "En cours..." : "Lâcher la balle"}
+                    Lâcher la balle
+                    {totalBalls > 1 && (
+                      <span
+                        className="absolute -top-2 -right-2 rounded-full px-1.5 py-0.5 text-[10px] font-bold leading-none"
+                        style={{ background: "#00e701", color: "#0a1f0a", minWidth: "1.25rem", textAlign: "center" }}
+                      >
+                        ×{totalBalls}
+                      </span>
+                    )}
                   </button>
                 </>
               )}
@@ -517,9 +531,9 @@ export function PlinkoPage() {
 
           {/* ── Board ─────────────────────────────────────────────────── */}
           <div className="flex-1 flex flex-col gap-4">
-            {/* Last result badge */}
+            {/* Last result badge — shown when no balls active */}
             <AnimatePresence>
-              {lastResult && !isAnimating && (
+              {lastResult && noBallsActive && (
                 <motion.div
                   initial={{ opacity: 0, y: -8 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -545,11 +559,9 @@ export function PlinkoPage() {
             <div className="relative">
               <PlinkoBoardSVG
                 rows={rows}
-                path={currentPath}
-                slotIndex={currentSlotIndex}
                 multipliers={multipliers}
-                isAnimating={isAnimating}
-                onAnimationComplete={handleAnimationComplete}
+                balls={activeBalls}
+                onBallComplete={handleBallComplete}
                 onPinBounce={() => sounds.gemmeClick.play()}
               />
               <WinPopup {...popupProps} />

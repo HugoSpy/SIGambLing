@@ -1,14 +1,18 @@
-import { useEffect, useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { motion } from "framer-motion";
 import { formatMultiplier } from "../../../lib/plinkoMultipliers";
+
+export interface ActiveBall {
+  id: string;
+  path: boolean[];
+  slotIndex: number;
+}
 
 interface Props {
   rows: number;
-  path: boolean[] | null;
-  slotIndex: number | null;
   multipliers: number[];
-  isAnimating: boolean;
-  onAnimationComplete: () => void;
+  balls: ActiveBall[];
+  onBallComplete: (ballId: string) => void;
   onPinBounce?: () => void;
 }
 
@@ -52,13 +56,81 @@ function slotTextColor(mult: number): string {
   return "#fca5a5";
 }
 
+// One per active ball — manages its own step counter and reports landing / completion
+function SingleBallAnimator({
+  rows,
+  ball,
+  onLanding,
+  onComplete,
+  onBounce,
+}: {
+  rows: number;
+  ball: ActiveBall;
+  onLanding: (id: string, slotIndex: number) => void;
+  onComplete: (id: string) => void;
+  onBounce?: () => void;
+}) {
+  const [animStep, setAnimStep] = useState(0);
+  const hasLandedRef = useRef(false);
+  const hasCompletedRef = useRef(false);
+  const onLandingRef = useRef(onLanding);
+  const onCompleteRef = useRef(onComplete);
+  const onBounceRef = useRef(onBounce);
+
+  useEffect(() => { onLandingRef.current = onLanding; }, [onLanding]);
+  useEffect(() => { onCompleteRef.current = onComplete; }, [onComplete]);
+  useEffect(() => { onBounceRef.current = onBounce; }, [onBounce]);
+
+  useEffect(() => {
+    if (animStep < rows) {
+      onBounceRef.current?.();
+      const t = setTimeout(() => setAnimStep((s) => s + 1), 150);
+      return () => clearTimeout(t);
+    } else {
+      if (!hasLandedRef.current) {
+        hasLandedRef.current = true;
+        onLandingRef.current(ball.id, ball.slotIndex);
+      }
+      const t = setTimeout(() => {
+        if (!hasCompletedRef.current) {
+          hasCompletedRef.current = true;
+          onCompleteRef.current(ball.id);
+        }
+      }, 500);
+      return () => clearTimeout(t);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [animStep, rows]);
+
+  let col = 0;
+  for (let r = 0; r < Math.min(animStep, rows); r++) {
+    if (ball.path[r]) col++;
+  }
+
+  const cx = animStep < rows
+    ? pegX(rows, animStep, col)
+    : slotCx(rows, ball.slotIndex);
+  const cy = animStep < rows
+    ? pegY(animStep)
+    : slotY(rows) + SLOT_H / 2;
+
+  return (
+    <motion.circle
+      r={7}
+      fill="#00e701"
+      animate={{ cx, cy }}
+      transition={{ type: "spring", stiffness: 400, damping: 15 }}
+      initial={{ cx: W / 2, cy: TOP_PAD - 20 }}
+      style={{ filter: "drop-shadow(0 0 6px rgba(0,231,1,0.9))" }}
+    />
+  );
+}
+
 export function PlinkoBoardSVG({
   rows,
-  path,
-  slotIndex,
   multipliers,
-  isAnimating,
-  onAnimationComplete,
+  balls,
+  onBallComplete,
   onPinBounce,
 }: Props) {
   const H = TOP_PAD + rows * ROW_H + SLOT_H + 14;
@@ -66,60 +138,23 @@ export function PlinkoBoardSVG({
   const slotW = Math.max(s - 4, 4);
   const fontSize = Math.max(7, Math.min(10, s * 0.36));
 
-  // -1 = idle/before start, 0..rows-1 = ball at peg row, rows = ball in slot
-  const [animStep, setAnimStep] = useState<number>(-1);
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const onCompleteRef = useRef(onAnimationComplete);
-  const onBounceRef = useRef(onPinBounce);
+  // Track which balls are currently in their landing slot (for glow)
+  const [landingBalls, setLandingBalls] = useState<Map<string, number>>(new Map());
 
-  useEffect(() => { onCompleteRef.current = onAnimationComplete; }, [onAnimationComplete]);
-  useEffect(() => { onBounceRef.current = onPinBounce; }, [onPinBounce]);
+  const handleLanding = useCallback((id: string, slotIndex: number) => {
+    setLandingBalls((prev) => new Map([...prev, [id, slotIndex]]));
+  }, []);
 
-  // Start/stop animation when isAnimating changes
-  useEffect(() => {
-    if (isAnimating && path) {
-      setAnimStep(0);
-    } else if (!isAnimating) {
-      if (timerRef.current) clearTimeout(timerRef.current);
-      setAnimStep(-1);
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isAnimating]);
+  const handleComplete = useCallback((id: string) => {
+    setLandingBalls((prev) => {
+      const next = new Map(prev);
+      next.delete(id);
+      return next;
+    });
+    onBallComplete(id);
+  }, [onBallComplete]);
 
-  // Advance steps
-  useEffect(() => {
-    if (!isAnimating || animStep < 0) return;
-
-    if (animStep < rows) {
-      onBounceRef.current?.();
-      timerRef.current = setTimeout(() => setAnimStep((s) => s + 1), 150);
-    } else {
-      // Ball reached slot — wait then call complete
-      timerRef.current = setTimeout(() => onCompleteRef.current(), 500);
-    }
-
-    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [animStep, isAnimating, rows]);
-
-  // Ball position
-  let ballCx = W / 2;
-  let ballCy = TOP_PAD - 20;
-  if (path && animStep >= 0) {
-    let col = 0;
-    for (let r = 0; r < animStep; r++) {
-      if (path[r]) col++;
-    }
-    if (animStep < rows) {
-      ballCx = pegX(rows, animStep, col);
-      ballCy = pegY(animStep);
-    } else {
-      ballCx = slotCx(rows, slotIndex ?? col);
-      ballCy = slotY(rows) + SLOT_H / 2;
-    }
-  }
-
-  const showFinalGlow = !isAnimating && slotIndex !== null;
+  const activeSlots = new Set(landingBalls.values());
 
   return (
     <svg
@@ -136,7 +171,7 @@ export function PlinkoBoardSVG({
         fill="rgba(0,231,1,0.3)"
       />
 
-      {/* Pins — rows+1 rows so last row has rows+1 pegs, aligning slots exactly below them */}
+      {/* Pins */}
       {Array.from({ length: rows + 1 }, (_, r) =>
         Array.from({ length: r + 1 }, (_, c) => {
           const x = pegX(rows, r, c);
@@ -155,7 +190,7 @@ export function PlinkoBoardSVG({
       {multipliers.map((mult, j) => {
         const cx = slotCx(rows, j);
         const y = slotY(rows);
-        const isActive = showFinalGlow && j === slotIndex;
+        const isActive = activeSlots.has(j);
         return (
           <g key={j}>
             <rect
@@ -199,20 +234,17 @@ export function PlinkoBoardSVG({
         );
       })}
 
-      {/* Ball */}
-      <AnimatePresence>
-        {isAnimating && path && animStep >= 0 && (
-          <motion.circle
-            key="ball"
-            r={7}
-            fill="#00e701"
-            animate={{ cx: ballCx, cy: ballCy }}
-            transition={{ type: "spring", stiffness: 400, damping: 15 }}
-            initial={{ cx: W / 2, cy: TOP_PAD - 20 }}
-            style={{ filter: "drop-shadow(0 0 6px rgba(0,231,1,0.9))" }}
-          />
-        )}
-      </AnimatePresence>
+      {/* One animator per active ball */}
+      {balls.map((ball) => (
+        <SingleBallAnimator
+          key={ball.id}
+          rows={rows}
+          ball={ball}
+          onLanding={handleLanding}
+          onComplete={handleComplete}
+          onBounce={onPinBounce}
+        />
+      ))}
     </svg>
   );
 }

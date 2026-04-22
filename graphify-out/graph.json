@@ -345,7 +345,7 @@
       "source_file": "backend/config.py",
       "source_location": "L1",
       "id": "backend_config_py",
-      "community": 60,
+      "community": 61,
       "norm_label": "config.py"
     },
     {
@@ -354,7 +354,7 @@
       "source_file": "backend/config.py",
       "source_location": "L5",
       "id": "config_settings",
-      "community": 60,
+      "community": 61,
       "norm_label": "settings"
     },
     {
@@ -363,7 +363,7 @@
       "source_file": "",
       "source_location": "",
       "id": "basesettings",
-      "community": 60,
+      "community": 61,
       "norm_label": "basesettings"
     },
     {
@@ -372,7 +372,7 @@
       "source_file": "backend/config.py",
       "source_location": "L21",
       "id": "config_config",
-      "community": 60,
+      "community": 61,
       "norm_label": "config"
     },
     {
@@ -1189,7 +1189,7 @@
       "label": "invalidateFeatureFlagsCache()",
       "file_type": "code",
       "source_file": "backend/src/middleware/featureFlags.ts",
-      "source_location": "L16",
+      "source_location": "L17",
       "id": "featureflags_invalidatefeatureflagscache",
       "community": 47,
       "norm_label": "invalidatefeatureflagscache()"
@@ -1198,7 +1198,7 @@
       "label": "getFeatureFlagValues()",
       "file_type": "code",
       "source_file": "backend/src/middleware/featureFlags.ts",
-      "source_location": "L20",
+      "source_location": "L21",
       "id": "featureflags_getfeatureflagvalues",
       "community": 47,
       "norm_label": "getfeatureflagvalues()"
@@ -1207,7 +1207,7 @@
       "label": "isAdmin()",
       "file_type": "code",
       "source_file": "backend/src/middleware/featureFlags.ts",
-      "source_location": "L42",
+      "source_location": "L44",
       "id": "featureflags_isadmin",
       "community": 47,
       "norm_label": "isadmin()"
@@ -1216,7 +1216,7 @@
       "label": "featureFlagsMiddleware()",
       "file_type": "code",
       "source_file": "backend/src/middleware/featureFlags.ts",
-      "source_location": "L95",
+      "source_location": "L103",
       "id": "featureflags_featureflagsmiddleware",
       "community": 47,
       "norm_label": "featureflagsmiddleware()"
@@ -1704,7 +1704,7 @@
       "source_file": "backend/src/utils/roulette-rng.ts",
       "source_location": "L1",
       "id": "backend_src_utils_roulette_rng_ts",
-      "community": 61,
+      "community": 62,
       "norm_label": "roulette-rng.ts"
     },
     {
@@ -1713,7 +1713,7 @@
       "source_file": "backend/src/utils/roulette-rng.ts",
       "source_location": "L3",
       "id": "roulette_rng_generaterandomnumber",
-      "community": 61,
+      "community": 62,
       "norm_label": "generaterandomnumber()"
     },
     {
@@ -1722,7 +1722,7 @@
       "source_file": "backend/src/utils/roulette-rng.ts",
       "source_location": "L7",
       "id": "roulette_rng_spinroulette",
-      "community": 61,
+      "community": 62,
       "norm_label": "spinroulette()"
     },
     {
@@ -1731,7 +1731,7 @@
       "source_file": "backend/src/utils/roulette-rng.ts",
       "source_location": "L11",
       "id": "roulette_rng_generateprovablyfairspin",
-      "community": 61,
+      "community": 62,
       "norm_label": "generateprovablyfairspin()"
     },
     {
@@ -1767,7 +1767,7 @@
       "source_file": "backend/src/utils/banword-loader.ts",
       "source_location": "L1",
       "id": "backend_src_utils_banword_loader_ts",
-      "community": 62,
+      "community": 63,
       "norm_label": "banword-loader.ts"
     },
     {
@@ -1776,7 +1776,7 @@
       "source_file": "backend/src/utils/banword-loader.ts",
       "source_location": "L4",
       "id": "banword_loader_normalize",
-      "community": 62,
+      "community": 63,
       "norm_label": "normalize()"
     },
     {
@@ -1785,7 +1785,7 @@
       "source_file": "backend/src/utils/banword-loader.ts",
       "source_location": "L11",
       "id": "banword_loader_loadbanwords",
-      "community": 62,
+      "community": 63,
       "norm_label": "loadbanwords()"
     },
     {
@@ -1794,7 +1794,7 @@
       "source_file": "backend/src/utils/banword-loader.ts",
       "source_location": "L26",
       "id": "banword_loader_containsbanword",
-      "community": 62,
+      "community": 63,
       "norm_label": "containsbanword()"
     },
     {
@@ -4989,7 +4989,7 @@
       "source_file": "backend/src/controllers/wins.controller.ts",
       "source_location": "L1",
       "id": "backend_src_controllers_wins_controller_ts",
-      "community": 63,
+      "community": 64,
       "norm_label": "wins.controller.ts"
     },
     {
@@ -4998,7 +4998,7 @@
       "source_file": "backend/src/controllers/wins.controller.ts",
       "source_location": "L7",
       "id": "wins_controller_getauthenticateduserid",
-      "community": 63,
+      "community": 64,
       "norm_label": "getauthenticateduserid()"
     },
     {
@@ -5007,7 +5007,7 @@
       "source_file": "backend/src/controllers/wins.controller.ts",
       "source_location": "L15",
       "id": "wins_controller_getmywinscontroller",
-      "community": 63,
+      "community": 64,
       "norm_label": "getmywinscontroller()"
     },
     {
@@ -5016,7 +5016,7 @@
       "source_file": "backend/src/controllers/wins.controller.ts",
       "source_location": "L35",
       "id": "wins_controller_sharewincontroller",
-      "community": 63,
+      "community": 64,
       "norm_label": "sharewincontroller()"
     },
     {
@@ -5068,7 +5068,7 @@
       "label": "getFeatureFlagsConfig()",
       "file_type": "code",
       "source_file": "backend/src/controllers/admin.config.controller.ts",
-      "source_location": "L89",
+      "source_location": "L90",
       "id": "admin_config_controller_getfeatureflagsconfig",
       "community": 37,
       "norm_label": "getfeatureflagsconfig()"
@@ -5077,7 +5077,7 @@
       "label": "setFeatureFlagsConfig()",
       "file_type": "code",
       "source_file": "backend/src/controllers/admin.config.controller.ts",
-      "source_location": "L109",
+      "source_location": "L111",
       "id": "admin_config_controller_setfeatureflagsconfig",
       "community": 37,
       "norm_label": "setfeatureflagsconfig()"
@@ -5646,7 +5646,7 @@
       "source_file": "backend/prisma/seed.ts",
       "source_location": "L1",
       "id": "backend_prisma_seed_ts",
-      "community": 64,
+      "community": 65,
       "norm_label": "seed.ts"
     },
     {
@@ -5655,7 +5655,7 @@
       "source_file": "backend/prisma/seed.ts",
       "source_location": "L144",
       "id": "seed_buildpoolbyoption",
-      "community": 64,
+      "community": 65,
       "norm_label": "buildpoolbyoption()"
     },
     {
@@ -5664,7 +5664,7 @@
       "source_file": "backend/prisma/seed.ts",
       "source_location": "L156",
       "id": "seed_tojsonoptions",
-      "community": 64,
+      "community": 65,
       "norm_label": "tojsonoptions()"
     },
     {
@@ -5673,7 +5673,7 @@
       "source_file": "backend/prisma/seed.ts",
       "source_location": "L166",
       "id": "seed_main",
-      "community": 64,
+      "community": 65,
       "norm_label": "main()"
     },
     {
@@ -5700,7 +5700,7 @@
       "source_file": "frontend/src/RouterApp.tsx",
       "source_location": "L1",
       "id": "frontend_src_routerapp_tsx",
-      "community": 65,
+      "community": 66,
       "norm_label": "routerapp.tsx"
     },
     {
@@ -5709,7 +5709,7 @@
       "source_file": "frontend/src/RouterApp.tsx",
       "source_location": "L66",
       "id": "routerapp_scrolltotop",
-      "community": 65,
+      "community": 66,
       "norm_label": "scrolltotop()"
     },
     {
@@ -5718,7 +5718,7 @@
       "source_file": "frontend/src/RouterApp.tsx",
       "source_location": "L74",
       "id": "routerapp_landingredirect",
-      "community": 65,
+      "community": 66,
       "norm_label": "landingredirect()"
     },
     {
@@ -5727,7 +5727,7 @@
       "source_file": "frontend/src/RouterApp.tsx",
       "source_location": "L84",
       "id": "routerapp_publiconly",
-      "community": 65,
+      "community": 66,
       "norm_label": "publiconly()"
     },
     {
@@ -5817,7 +5817,7 @@
       "source_file": "frontend/src/components/BetDrawer.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_betdrawer_tsx",
-      "community": 66,
+      "community": 67,
       "norm_label": "betdrawer.tsx"
     },
     {
@@ -5826,7 +5826,7 @@
       "source_file": "frontend/src/components/BetDrawer.tsx",
       "source_location": "L75",
       "id": "betdrawer_invalidatebetqueries",
-      "community": 66,
+      "community": 67,
       "norm_label": "invalidatebetqueries()"
     },
     {
@@ -5835,7 +5835,7 @@
       "source_file": "frontend/src/components/BetDrawer.tsx",
       "source_location": "L85",
       "id": "betdrawer_submitbet",
-      "community": 66,
+      "community": 67,
       "norm_label": "submitbet()"
     },
     {
@@ -5844,7 +5844,7 @@
       "source_file": "frontend/src/components/BetDrawer.tsx",
       "source_location": "L128",
       "id": "betdrawer_confirmoddschange",
-      "community": 66,
+      "community": 67,
       "norm_label": "confirmoddschange()"
     },
     {
@@ -5934,7 +5934,7 @@
       "source_file": "frontend/src/components/OddsHistoryChart.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_oddshistorychart_tsx",
-      "community": 67,
+      "community": 68,
       "norm_label": "oddshistorychart.tsx"
     },
     {
@@ -5943,7 +5943,7 @@
       "source_file": "frontend/src/components/OddsHistoryChart.tsx",
       "source_location": "L6",
       "id": "oddshistorychart_buildpath",
-      "community": 67,
+      "community": 68,
       "norm_label": "buildpath()"
     },
     {
@@ -5952,7 +5952,7 @@
       "source_file": "frontend/src/components/OddsHistoryChart.tsx",
       "source_location": "L16",
       "id": "oddshistorychart_formattooltipdate",
-      "community": 67,
+      "community": 68,
       "norm_label": "formattooltipdate()"
     },
     {
@@ -5961,7 +5961,7 @@
       "source_file": "frontend/src/components/OddsHistoryChart.tsx",
       "source_location": "L55",
       "id": "oddshistorychart_handlemousemove",
-      "community": 67,
+      "community": 68,
       "norm_label": "handlemousemove()"
     },
     {
@@ -6060,7 +6060,7 @@
       "source_file": "frontend/src/components/casino/RouletteBetGrid.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_roulettebetgrid_tsx",
-      "community": 68,
+      "community": 69,
       "norm_label": "roulettebetgrid.tsx"
     },
     {
@@ -6069,7 +6069,7 @@
       "source_file": "frontend/src/components/casino/RouletteBetGrid.tsx",
       "source_location": "L22",
       "id": "roulettebetgrid_getnumbercellclasses",
-      "community": 68,
+      "community": 69,
       "norm_label": "getnumbercellclasses()"
     },
     {
@@ -6078,7 +6078,7 @@
       "source_file": "frontend/src/components/casino/RouletteBetGrid.tsx",
       "source_location": "L36",
       "id": "roulettebetgrid_getoutsidecellclasses",
-      "community": 68,
+      "community": 69,
       "norm_label": "getoutsidecellclasses()"
     },
     {
@@ -6087,7 +6087,7 @@
       "source_file": "frontend/src/components/casino/RouletteBetGrid.tsx",
       "source_location": "L55",
       "id": "roulettebetgrid_renderchip",
-      "community": 68,
+      "community": 69,
       "norm_label": "renderchip()"
     },
     {
@@ -6168,7 +6168,7 @@
       "source_file": "frontend/src/components/casino/BlackjackGame.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_blackjackgame_tsx",
-      "community": 69,
+      "community": 70,
       "norm_label": "blackjackgame.tsx"
     },
     {
@@ -6177,7 +6177,7 @@
       "source_file": "frontend/src/components/casino/BlackjackGame.tsx",
       "source_location": "L78",
       "id": "blackjackgame_isredsuit",
-      "community": 69,
+      "community": 70,
       "norm_label": "isredsuit()"
     },
     {
@@ -6186,7 +6186,7 @@
       "source_file": "frontend/src/components/casino/BlackjackGame.tsx",
       "source_location": "L82",
       "id": "blackjackgame_getblackjackrankvalue",
-      "community": 69,
+      "community": 70,
       "norm_label": "getblackjackrankvalue()"
     },
     {
@@ -6195,7 +6195,7 @@
       "source_file": "frontend/src/components/casino/BlackjackGame.tsx",
       "source_location": "L1200",
       "id": "blackjackgame_cn",
-      "community": 69,
+      "community": 70,
       "norm_label": "cn()"
     },
     {
@@ -6519,7 +6519,7 @@
       "source_file": "frontend/src/components/casino/Crash/CrashBetPanel.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_casino_crash_crashbetpanel_tsx",
-      "community": 70,
+      "community": 71,
       "norm_label": "crashbetpanel.tsx"
     },
     {
@@ -6528,7 +6528,7 @@
       "source_file": "frontend/src/components/casino/Crash/CrashBetPanel.tsx",
       "source_location": "L71",
       "id": "crashbetpanel_clampbet",
-      "community": 70,
+      "community": 71,
       "norm_label": "clampbet()"
     },
     {
@@ -6537,7 +6537,7 @@
       "source_file": "frontend/src/components/casino/Crash/CrashBetPanel.tsx",
       "source_location": "L73",
       "id": "crashbetpanel_handlebet",
-      "community": 70,
+      "community": 71,
       "norm_label": "handlebet()"
     },
     {
@@ -6546,7 +6546,7 @@
       "source_file": "frontend/src/components/casino/Crash/CrashBetPanel.tsx",
       "source_location": "L87",
       "id": "crashbetpanel_handlecashout",
-      "community": 70,
+      "community": 71,
       "norm_label": "handlecashout()"
     },
     {
@@ -6951,7 +6951,7 @@
       "source_file": "frontend/src/components/admin/StatisticsTab.tsx",
       "source_location": "L1",
       "id": "frontend_src_components_admin_statisticstab_tsx",
-      "community": 71,
+      "community": 72,
       "norm_label": "statisticstab.tsx"
     },
     {
@@ -6960,7 +6960,7 @@
       "source_file": "frontend/src/components/admin/StatisticsTab.tsx",
       "source_location": "L13",
       "id": "statisticstab_formattokens",
-      "community": 71,
+      "community": 72,
       "norm_label": "formattokens()"
     },
     {
@@ -6969,7 +6969,7 @@
       "source_file": "frontend/src/components/admin/StatisticsTab.tsx",
       "source_location": "L19",
       "id": "statisticstab_statcard",
-      "community": 71,
+      "community": 72,
       "norm_label": "statcard()"
     },
     {
@@ -6978,7 +6978,7 @@
       "source_file": "frontend/src/components/admin/StatisticsTab.tsx",
       "source_location": "L54",
       "id": "statisticstab_load",
-      "community": 71,
+      "community": 72,
       "norm_label": "load()"
     },
     {
@@ -7057,7 +7057,7 @@
       "label": "getCrashState()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L166",
+      "source_location": "L167",
       "id": "api_getcrashstate",
       "community": 1,
       "norm_label": "getcrashstate()"
@@ -7066,7 +7066,7 @@
       "label": "placeCrashBet()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L171",
+      "source_location": "L172",
       "id": "api_placecrashbet",
       "community": 1,
       "norm_label": "placecrashbet()"
@@ -7075,7 +7075,7 @@
       "label": "cashoutCrash()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L182",
+      "source_location": "L183",
       "id": "api_cashoutcrash",
       "community": 1,
       "norm_label": "cashoutcrash()"
@@ -7084,7 +7084,7 @@
       "label": "getMaintenanceStatus()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L187",
+      "source_location": "L188",
       "id": "api_getmaintenancestatus",
       "community": 1,
       "norm_label": "getmaintenancestatus()"
@@ -7093,7 +7093,7 @@
       "label": "setMaintenanceMode()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L195",
+      "source_location": "L196",
       "id": "api_setmaintenancemode",
       "community": 1,
       "norm_label": "setmaintenancemode()"
@@ -7102,7 +7102,7 @@
       "label": "getFeatureFlags()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L211",
+      "source_location": "L213",
       "id": "api_getfeatureflags",
       "community": 1,
       "norm_label": "getfeatureflags()"
@@ -7111,7 +7111,7 @@
       "label": "setFeatureFlag()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L216",
+      "source_location": "L218",
       "id": "api_setfeatureflag",
       "community": 1,
       "norm_label": "setfeatureflag()"
@@ -7120,7 +7120,7 @@
       "label": "fetchGamificationState()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L224",
+      "source_location": "L226",
       "id": "api_fetchgamificationstate",
       "community": 1,
       "norm_label": "fetchgamificationstate()"
@@ -7129,7 +7129,7 @@
       "label": "claimDailyReward()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L229",
+      "source_location": "L231",
       "id": "api_claimdailyreward",
       "community": 1,
       "norm_label": "claimdailyreward()"
@@ -7138,7 +7138,7 @@
       "label": "fetchJackpotState()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L234",
+      "source_location": "L236",
       "id": "api_fetchjackpotstate",
       "community": 1,
       "norm_label": "fetchjackpotstate()"
@@ -7147,7 +7147,7 @@
       "label": "claimBadgeReward()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L239",
+      "source_location": "L241",
       "id": "api_claimbadgereward",
       "community": 1,
       "norm_label": "claimbadgereward()"
@@ -7156,7 +7156,7 @@
       "label": "fetchUserPublicProfile()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L271",
+      "source_location": "L273",
       "id": "api_fetchuserpublicprofile",
       "community": 1,
       "norm_label": "fetchuserpublicprofile()"
@@ -7165,7 +7165,7 @@
       "label": "updatePinnedBadges()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L276",
+      "source_location": "L278",
       "id": "api_updatepinnedbadges",
       "community": 1,
       "norm_label": "updatepinnedbadges()"
@@ -7174,7 +7174,7 @@
       "label": "fetchLeaderboard()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L286",
+      "source_location": "L288",
       "id": "api_fetchleaderboard",
       "community": 1,
       "norm_label": "fetchleaderboard()"
@@ -7183,7 +7183,7 @@
       "label": "triggerAdminJackpotPayout()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L293",
+      "source_location": "L295",
       "id": "api_triggeradminjackpotpayout",
       "community": 1,
       "norm_label": "triggeradminjackpotpayout()"
@@ -7192,7 +7192,7 @@
       "label": "updateCurrentUserProfile()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L300",
+      "source_location": "L302",
       "id": "api_updatecurrentuserprofile",
       "community": 1,
       "norm_label": "updatecurrentuserprofile()"
@@ -7201,7 +7201,7 @@
       "label": "resetChatPreferences()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L309",
+      "source_location": "L311",
       "id": "api_resetchatpreferences",
       "community": 1,
       "norm_label": "resetchatpreferences()"
@@ -7210,7 +7210,7 @@
       "label": "uploadCurrentUserAvatar()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L313",
+      "source_location": "L315",
       "id": "api_uploadcurrentuseravatar",
       "community": 1,
       "norm_label": "uploadcurrentuseravatar()"
@@ -7219,7 +7219,7 @@
       "label": "fetchEvents()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L318",
+      "source_location": "L320",
       "id": "api_fetchevents",
       "community": 1,
       "norm_label": "fetchevents()"
@@ -7228,7 +7228,7 @@
       "label": "fetchEventById()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L323",
+      "source_location": "L325",
       "id": "api_fetcheventbyid",
       "community": 1,
       "norm_label": "fetcheventbyid()"
@@ -7237,7 +7237,7 @@
       "label": "fetchMyEventBet()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L328",
+      "source_location": "L330",
       "id": "api_fetchmyeventbet",
       "community": 1,
       "norm_label": "fetchmyeventbet()"
@@ -7246,7 +7246,7 @@
       "label": "fetchEventOddsHistory()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L333",
+      "source_location": "L335",
       "id": "api_fetcheventoddshistory",
       "community": 1,
       "norm_label": "fetcheventoddshistory()"
@@ -7255,7 +7255,7 @@
       "label": "placeEventBet()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L338",
+      "source_location": "L340",
       "id": "api_placeeventbet",
       "community": 1,
       "norm_label": "placeeventbet()"
@@ -7264,7 +7264,7 @@
       "label": "placeSimpleBets()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L355",
+      "source_location": "L357",
       "id": "api_placesimplebets",
       "community": 1,
       "norm_label": "placesimplebets()"
@@ -7273,7 +7273,7 @@
       "label": "placeParlayBet()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L369",
+      "source_location": "L371",
       "id": "api_placeparlaybet",
       "community": 1,
       "norm_label": "placeparlaybet()"
@@ -7282,7 +7282,7 @@
       "label": "fetchMyEventBets()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L382",
+      "source_location": "L384",
       "id": "api_fetchmyeventbets",
       "community": 1,
       "norm_label": "fetchmyeventbets()"
@@ -7291,7 +7291,7 @@
       "label": "searchUsers()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L387",
+      "source_location": "L389",
       "id": "api_searchusers",
       "community": 1,
       "norm_label": "searchusers()"
@@ -7300,7 +7300,7 @@
       "label": "fetchAdminBadgeCatalog()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L394",
+      "source_location": "L396",
       "id": "api_fetchadminbadgecatalog",
       "community": 1,
       "norm_label": "fetchadminbadgecatalog()"
@@ -7309,7 +7309,7 @@
       "label": "adjustAdminUserBalance()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L399",
+      "source_location": "L401",
       "id": "api_adjustadminuserbalance",
       "community": 1,
       "norm_label": "adjustadminuserbalance()"
@@ -7318,7 +7318,7 @@
       "label": "unlockAdminUserBadge()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L407",
+      "source_location": "L409",
       "id": "api_unlockadminuserbadge",
       "community": 1,
       "norm_label": "unlockadminuserbadge()"
@@ -7327,7 +7327,7 @@
       "label": "updateAdminUserReward()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L415",
+      "source_location": "L417",
       "id": "api_updateadminuserreward",
       "community": 1,
       "norm_label": "updateadminuserreward()"
@@ -7336,7 +7336,7 @@
       "label": "fetchAdminEvents()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L420",
+      "source_location": "L422",
       "id": "api_fetchadminevents",
       "community": 1,
       "norm_label": "fetchadminevents()"
@@ -7345,7 +7345,7 @@
       "label": "createAdminEvent()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L427",
+      "source_location": "L429",
       "id": "api_createadminevent",
       "community": 1,
       "norm_label": "createadminevent()"
@@ -7354,7 +7354,7 @@
       "label": "updateAdminEvent()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L432",
+      "source_location": "L434",
       "id": "api_updateadminevent",
       "community": 1,
       "norm_label": "updateadminevent()"
@@ -7363,7 +7363,7 @@
       "label": "uploadAdminEventImage()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L437",
+      "source_location": "L439",
       "id": "api_uploadadmineventimage",
       "community": 1,
       "norm_label": "uploadadmineventimage()"
@@ -7372,7 +7372,7 @@
       "label": "closeAdminEvent()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L442",
+      "source_location": "L444",
       "id": "api_closeadminevent",
       "community": 1,
       "norm_label": "closeadminevent()"
@@ -7381,7 +7381,7 @@
       "label": "resolveAdminEvent()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L447",
+      "source_location": "L449",
       "id": "api_resolveadminevent",
       "community": 1,
       "norm_label": "resolveadminevent()"
@@ -7390,7 +7390,7 @@
       "label": "cancelAdminEvent()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L454",
+      "source_location": "L456",
       "id": "api_canceladminevent",
       "community": 1,
       "norm_label": "canceladminevent()"
@@ -7399,7 +7399,7 @@
       "label": "rewindAdminEvent()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L459",
+      "source_location": "L461",
       "id": "api_rewindadminevent",
       "community": 1,
       "norm_label": "rewindadminevent()"
@@ -7408,7 +7408,7 @@
       "label": "reopenAdminEvent()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L464",
+      "source_location": "L466",
       "id": "api_reopenadminevent",
       "community": 1,
       "norm_label": "reopenadminevent()"
@@ -7417,7 +7417,7 @@
       "label": "createProposal()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L469",
+      "source_location": "L471",
       "id": "api_createproposal",
       "community": 1,
       "norm_label": "createproposal()"
@@ -7426,7 +7426,7 @@
       "label": "fetchMyProposals()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L474",
+      "source_location": "L476",
       "id": "api_fetchmyproposals",
       "community": 1,
       "norm_label": "fetchmyproposals()"
@@ -7435,7 +7435,7 @@
       "label": "fetchAdminProposals()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L479",
+      "source_location": "L481",
       "id": "api_fetchadminproposals",
       "community": 1,
       "norm_label": "fetchadminproposals()"
@@ -7444,7 +7444,7 @@
       "label": "approveAdminProposal()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L486",
+      "source_location": "L488",
       "id": "api_approveadminproposal",
       "community": 1,
       "norm_label": "approveadminproposal()"
@@ -7453,7 +7453,7 @@
       "label": "rejectAdminProposal()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L493",
+      "source_location": "L495",
       "id": "api_rejectadminproposal",
       "community": 1,
       "norm_label": "rejectadminproposal()"
@@ -7462,7 +7462,7 @@
       "label": "toggleSaveAdminProposal()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L501",
+      "source_location": "L503",
       "id": "api_togglesaveadminproposal",
       "community": 1,
       "norm_label": "togglesaveadminproposal()"
@@ -7471,7 +7471,7 @@
       "label": "fetchSavedAdminProposals()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L508",
+      "source_location": "L510",
       "id": "api_fetchsavedadminproposals",
       "community": 1,
       "norm_label": "fetchsavedadminproposals()"
@@ -7480,7 +7480,7 @@
       "label": "fetchAdminStatisticsOverview()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L515",
+      "source_location": "L517",
       "id": "api_fetchadminstatisticsoverview",
       "community": 1,
       "norm_label": "fetchadminstatisticsoverview()"
@@ -7489,7 +7489,7 @@
       "label": "fetchPublicStats()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L520",
+      "source_location": "L522",
       "id": "api_fetchpublicstats",
       "community": 1,
       "norm_label": "fetchpublicstats()"
@@ -7498,7 +7498,7 @@
       "label": "requestMicrosoftRedirect()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L527",
+      "source_location": "L529",
       "id": "api_requestmicrosoftredirect",
       "community": 1,
       "norm_label": "requestmicrosoftredirect()"
@@ -7507,7 +7507,7 @@
       "label": "logoutRequest()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L532",
+      "source_location": "L534",
       "id": "api_logoutrequest",
       "community": 1,
       "norm_label": "logoutrequest()"
@@ -7516,7 +7516,7 @@
       "label": "fetchAdminEventsLeaderboard()",
       "file_type": "code",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L564",
+      "source_location": "L566",
       "id": "api_fetchadmineventsleaderboard",
       "community": 1,
       "norm_label": "fetchadmineventsleaderboard()"
@@ -8337,7 +8337,7 @@
       "source_file": "frontend/src/pages/RewardsPage.tsx",
       "source_location": "L1",
       "id": "frontend_src_pages_rewardspage_tsx",
-      "community": 72,
+      "community": 73,
       "norm_label": "rewardspage.tsx"
     },
     {
@@ -8346,7 +8346,7 @@
       "source_file": "frontend/src/pages/RewardsPage.tsx",
       "source_location": "L16",
       "id": "rewardspage_usecountdown",
-      "community": 72,
+      "community": 73,
       "norm_label": "usecountdown()"
     },
     {
@@ -8355,7 +8355,7 @@
       "source_file": "frontend/src/pages/RewardsPage.tsx",
       "source_location": "L76",
       "id": "rewardspage_handlelogout",
-      "community": 72,
+      "community": 73,
       "norm_label": "handlelogout()"
     },
     {
@@ -8364,7 +8364,7 @@
       "source_file": "frontend/src/pages/RewardsPage.tsx",
       "source_location": "L81",
       "id": "rewardspage_handleclaim",
-      "community": 72,
+      "community": 73,
       "norm_label": "handleclaim()"
     },
     {
@@ -8481,7 +8481,7 @@
       "source_file": "frontend/src/pages/UserProfilePage.tsx",
       "source_location": "L1",
       "id": "frontend_src_pages_userprofilepage_tsx",
-      "community": 73,
+      "community": 74,
       "norm_label": "userprofilepage.tsx"
     },
     {
@@ -8490,7 +8490,7 @@
       "source_file": "frontend/src/pages/UserProfilePage.tsx",
       "source_location": "L27",
       "id": "userprofilepage_rankpill",
-      "community": 73,
+      "community": 74,
       "norm_label": "rankpill()"
     },
     {
@@ -8499,7 +8499,7 @@
       "source_file": "frontend/src/pages/UserProfilePage.tsx",
       "source_location": "L42",
       "id": "userprofilepage_badgeslot",
-      "community": 73,
+      "community": 74,
       "norm_label": "badgeslot()"
     },
     {
@@ -8508,7 +8508,7 @@
       "source_file": "frontend/src/pages/UserProfilePage.tsx",
       "source_location": "L88",
       "id": "userprofilepage_handlelogout",
-      "community": 73,
+      "community": 74,
       "norm_label": "handlelogout()"
     },
     {
@@ -8517,7 +8517,7 @@
       "source_file": "frontend/src/pages/HistoryPage.tsx",
       "source_location": "L1",
       "id": "frontend_src_pages_historypage_tsx",
-      "community": 74,
+      "community": 75,
       "norm_label": "historypage.tsx"
     },
     {
@@ -8526,7 +8526,7 @@
       "source_file": "frontend/src/pages/HistoryPage.tsx",
       "source_location": "L24",
       "id": "historypage_betstatusbadgeclass",
-      "community": 74,
+      "community": 75,
       "norm_label": "betstatusbadgeclass()"
     },
     {
@@ -8535,7 +8535,7 @@
       "source_file": "frontend/src/pages/HistoryPage.tsx",
       "source_location": "L31",
       "id": "historypage_geteventtitle",
-      "community": 74,
+      "community": 75,
       "norm_label": "geteventtitle()"
     },
     {
@@ -8544,7 +8544,7 @@
       "source_file": "frontend/src/pages/HistoryPage.tsx",
       "source_location": "L72",
       "id": "historypage_handlelogout",
-      "community": 74,
+      "community": 75,
       "norm_label": "handlelogout()"
     },
     {
@@ -8553,7 +8553,7 @@
       "source_file": "frontend/src/pages/LoginPage.tsx",
       "source_location": "L1",
       "id": "frontend_src_pages_loginpage_tsx",
-      "community": 75,
+      "community": 76,
       "norm_label": "loginpage.tsx"
     },
     {
@@ -8562,7 +8562,7 @@
       "source_file": "frontend/src/pages/LoginPage.tsx",
       "source_location": "L8",
       "id": "loginpage_microsoftlogo",
-      "community": 75,
+      "community": 76,
       "norm_label": "microsoftlogo()"
     },
     {
@@ -8571,7 +8571,7 @@
       "source_file": "frontend/src/pages/LoginPage.tsx",
       "source_location": "L69",
       "id": "loginpage_formattokens",
-      "community": 75,
+      "community": 76,
       "norm_label": "formattokens()"
     },
     {
@@ -8580,7 +8580,7 @@
       "source_file": "frontend/src/pages/LoginPage.tsx",
       "source_location": "L92",
       "id": "loginpage_handlemicrosoftlogin",
-      "community": 75,
+      "community": 76,
       "norm_label": "handlemicrosoftlogin()"
     },
     {
@@ -8778,34 +8778,43 @@
       "source_file": "frontend/src/pages/CasinoPage.tsx",
       "source_location": "L1",
       "id": "frontend_src_pages_casinopage_tsx",
-      "community": 76,
+      "community": 59,
       "norm_label": "casinopage.tsx"
+    },
+    {
+      "label": "WipOverlay()",
+      "file_type": "code",
+      "source_file": "frontend/src/pages/CasinoPage.tsx",
+      "source_location": "L21",
+      "id": "casinopage_wipoverlay",
+      "community": 59,
+      "norm_label": "wipoverlay()"
     },
     {
       "label": "isGameTab()",
       "file_type": "code",
       "source_file": "frontend/src/pages/CasinoPage.tsx",
-      "source_location": "L95",
+      "source_location": "L105",
       "id": "casinopage_isgametab",
-      "community": 76,
+      "community": 59,
       "norm_label": "isgametab()"
     },
     {
       "label": "isGameDisabled()",
       "file_type": "code",
       "source_file": "frontend/src/pages/CasinoPage.tsx",
-      "source_location": "L153",
+      "source_location": "L167",
       "id": "casinopage_isgamedisabled",
-      "community": 76,
+      "community": 59,
       "norm_label": "isgamedisabled()"
     },
     {
       "label": "handleLogout()",
       "file_type": "code",
       "source_file": "frontend/src/pages/CasinoPage.tsx",
-      "source_location": "L169",
+      "source_location": "L185",
       "id": "casinopage_handlelogout",
-      "community": 76,
+      "community": 59,
       "norm_label": "handlelogout()"
     },
     {
@@ -8814,7 +8823,7 @@
       "source_file": "frontend/src/pages/casino/PlinkoPage.tsx",
       "source_location": "L1",
       "id": "frontend_src_pages_casino_plinkopage_tsx",
-      "community": 59,
+      "community": 60,
       "norm_label": "plinkopage.tsx"
     },
     {
@@ -8823,7 +8832,7 @@
       "source_file": "frontend/src/pages/casino/PlinkoPage.tsx",
       "source_location": "L212",
       "id": "plinkopage_handledrop",
-      "community": 59,
+      "community": 60,
       "norm_label": "handledrop()"
     },
     {
@@ -8832,7 +8841,7 @@
       "source_file": "frontend/src/pages/casino/PlinkoPage.tsx",
       "source_location": "L219",
       "id": "plinkopage_startauto",
-      "community": 59,
+      "community": 60,
       "norm_label": "startauto()"
     },
     {
@@ -8841,7 +8850,7 @@
       "source_file": "frontend/src/pages/casino/PlinkoPage.tsx",
       "source_location": "L234",
       "id": "plinkopage_stopauto",
-      "community": 59,
+      "community": 60,
       "norm_label": "stopauto()"
     },
     {
@@ -8850,7 +8859,7 @@
       "source_file": "frontend/src/pages/casino/PlinkoPage.tsx",
       "source_location": "L239",
       "id": "plinkopage_handlelogout",
-      "community": 59,
+      "community": 60,
       "norm_label": "handlelogout()"
     },
     {
@@ -8965,7 +8974,7 @@
       "label": "resetForm()",
       "file_type": "code",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L491",
+      "source_location": "L494",
       "id": "admineventspage_resetform",
       "community": 9,
       "norm_label": "resetform()"
@@ -8974,7 +8983,7 @@
       "label": "handleLogout()",
       "file_type": "code",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L499",
+      "source_location": "L502",
       "id": "admineventspage_handlelogout",
       "community": 9,
       "norm_label": "handlelogout()"
@@ -8983,7 +8992,7 @@
       "label": "applyEventToForm()",
       "file_type": "code",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L504",
+      "source_location": "L507",
       "id": "admineventspage_applyeventtoform",
       "community": 9,
       "norm_label": "applyeventtoform()"
@@ -8992,7 +9001,7 @@
       "label": "handleEventImageUpload()",
       "file_type": "code",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L518",
+      "source_location": "L521",
       "id": "admineventspage_handleeventimageupload",
       "community": 9,
       "norm_label": "handleeventimageupload()"
@@ -9001,7 +9010,7 @@
       "label": "submitForm()",
       "file_type": "code",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L547",
+      "source_location": "L550",
       "id": "admineventspage_submitform",
       "community": 9,
       "norm_label": "submitform()"
@@ -9010,7 +9019,7 @@
       "label": "runAction()",
       "file_type": "code",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L617",
+      "source_location": "L620",
       "id": "admineventspage_runaction",
       "community": 9,
       "norm_label": "runaction()"
@@ -9019,7 +9028,7 @@
       "label": "applyProposalToForm()",
       "file_type": "code",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L679",
+      "source_location": "L682",
       "id": "admineventspage_applyproposaltoform",
       "community": 9,
       "norm_label": "applyproposaltoform()"
@@ -9028,7 +9037,7 @@
       "label": "refreshAdminUserData()",
       "file_type": "code",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L700",
+      "source_location": "L703",
       "id": "admineventspage_refreshadminuserdata",
       "community": 9,
       "norm_label": "refreshadminuserdata()"
@@ -9037,7 +9046,7 @@
       "label": "submitBalanceAdjustment()",
       "file_type": "code",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L720",
+      "source_location": "L723",
       "id": "admineventspage_submitbalanceadjustment",
       "community": 9,
       "norm_label": "submitbalanceadjustment()"
@@ -9046,7 +9055,7 @@
       "label": "submitBadgeUnlock()",
       "file_type": "code",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L755",
+      "source_location": "L758",
       "id": "admineventspage_submitbadgeunlock",
       "community": 9,
       "norm_label": "submitbadgeunlock()"
@@ -9442,7 +9451,7 @@
       "label": "purgeLegacyAuthStorage()",
       "file_type": "code",
       "source_file": "frontend/src/store/auth-store.ts",
-      "source_location": "L37",
+      "source_location": "L39",
       "id": "auth_store_purgelegacyauthstorage",
       "community": 150,
       "norm_label": "purgelegacyauthstorage()"
@@ -12890,7 +12899,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/middleware/featureFlags.ts",
-      "source_location": "L16",
+      "source_location": "L17",
       "weight": 1.0,
       "_src": "backend_src_middleware_featureflags_ts",
       "_tgt": "featureflags_invalidatefeatureflagscache",
@@ -12902,7 +12911,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/middleware/featureFlags.ts",
-      "source_location": "L20",
+      "source_location": "L21",
       "weight": 1.0,
       "_src": "backend_src_middleware_featureflags_ts",
       "_tgt": "featureflags_getfeatureflagvalues",
@@ -12914,7 +12923,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/middleware/featureFlags.ts",
-      "source_location": "L42",
+      "source_location": "L44",
       "weight": 1.0,
       "_src": "backend_src_middleware_featureflags_ts",
       "_tgt": "featureflags_isadmin",
@@ -12926,7 +12935,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/middleware/featureFlags.ts",
-      "source_location": "L95",
+      "source_location": "L103",
       "weight": 1.0,
       "_src": "backend_src_middleware_featureflags_ts",
       "_tgt": "featureflags_featureflagsmiddleware",
@@ -12938,7 +12947,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/middleware/featureFlags.ts",
-      "source_location": "L97",
+      "source_location": "L105",
       "weight": 1.0,
       "_src": "featureflags_featureflagsmiddleware",
       "_tgt": "featureflags_getfeatureflagvalues",
@@ -12950,7 +12959,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/middleware/featureFlags.ts",
-      "source_location": "L115",
+      "source_location": "L124",
       "weight": 1.0,
       "_src": "featureflags_featureflagsmiddleware",
       "_tgt": "featureflags_isadmin",
@@ -21518,7 +21527,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/controllers/admin.config.controller.ts",
-      "source_location": "L89",
+      "source_location": "L90",
       "weight": 1.0,
       "_src": "backend_src_controllers_admin_config_controller_ts",
       "_tgt": "admin_config_controller_getfeatureflagsconfig",
@@ -21530,7 +21539,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/controllers/admin.config.controller.ts",
-      "source_location": "L109",
+      "source_location": "L111",
       "weight": 1.0,
       "_src": "backend_src_controllers_admin_config_controller_ts",
       "_tgt": "admin_config_controller_setfeatureflagsconfig",
@@ -21554,7 +21563,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "backend/src/controllers/admin.config.controller.ts",
-      "source_location": "L111",
+      "source_location": "L113",
       "weight": 1.0,
       "_src": "admin_config_controller_setfeatureflagsconfig",
       "_tgt": "admin_config_controller_getauthenticateduserid",
@@ -24218,7 +24227,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L166",
+      "source_location": "L167",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_getcrashstate",
@@ -24230,7 +24239,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L171",
+      "source_location": "L172",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_placecrashbet",
@@ -24242,7 +24251,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L182",
+      "source_location": "L183",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_cashoutcrash",
@@ -24254,7 +24263,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L187",
+      "source_location": "L188",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_getmaintenancestatus",
@@ -24266,7 +24275,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L195",
+      "source_location": "L196",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_setmaintenancemode",
@@ -24278,7 +24287,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L211",
+      "source_location": "L213",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_getfeatureflags",
@@ -24290,7 +24299,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L216",
+      "source_location": "L218",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_setfeatureflag",
@@ -24302,7 +24311,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L224",
+      "source_location": "L226",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_fetchgamificationstate",
@@ -24314,7 +24323,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L229",
+      "source_location": "L231",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_claimdailyreward",
@@ -24326,7 +24335,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L234",
+      "source_location": "L236",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_fetchjackpotstate",
@@ -24338,7 +24347,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L239",
+      "source_location": "L241",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_claimbadgereward",
@@ -24350,7 +24359,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L271",
+      "source_location": "L273",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_fetchuserpublicprofile",
@@ -24362,7 +24371,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L276",
+      "source_location": "L278",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_updatepinnedbadges",
@@ -24374,7 +24383,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L286",
+      "source_location": "L288",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_fetchleaderboard",
@@ -24386,7 +24395,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L293",
+      "source_location": "L295",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_triggeradminjackpotpayout",
@@ -24398,7 +24407,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L300",
+      "source_location": "L302",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_updatecurrentuserprofile",
@@ -24410,7 +24419,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L309",
+      "source_location": "L311",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_resetchatpreferences",
@@ -24422,7 +24431,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L313",
+      "source_location": "L315",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_uploadcurrentuseravatar",
@@ -24434,7 +24443,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L318",
+      "source_location": "L320",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_fetchevents",
@@ -24446,7 +24455,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L323",
+      "source_location": "L325",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_fetcheventbyid",
@@ -24458,7 +24467,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L328",
+      "source_location": "L330",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_fetchmyeventbet",
@@ -24470,7 +24479,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L333",
+      "source_location": "L335",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_fetcheventoddshistory",
@@ -24482,7 +24491,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L338",
+      "source_location": "L340",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_placeeventbet",
@@ -24494,7 +24503,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L355",
+      "source_location": "L357",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_placesimplebets",
@@ -24506,7 +24515,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L369",
+      "source_location": "L371",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_placeparlaybet",
@@ -24518,7 +24527,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L382",
+      "source_location": "L384",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_fetchmyeventbets",
@@ -24530,7 +24539,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L387",
+      "source_location": "L389",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_searchusers",
@@ -24542,7 +24551,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L394",
+      "source_location": "L396",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_fetchadminbadgecatalog",
@@ -24554,7 +24563,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L399",
+      "source_location": "L401",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_adjustadminuserbalance",
@@ -24566,7 +24575,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L407",
+      "source_location": "L409",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_unlockadminuserbadge",
@@ -24578,7 +24587,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L415",
+      "source_location": "L417",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_updateadminuserreward",
@@ -24590,7 +24599,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L420",
+      "source_location": "L422",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_fetchadminevents",
@@ -24602,7 +24611,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L427",
+      "source_location": "L429",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_createadminevent",
@@ -24614,7 +24623,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L432",
+      "source_location": "L434",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_updateadminevent",
@@ -24626,7 +24635,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L437",
+      "source_location": "L439",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_uploadadmineventimage",
@@ -24638,7 +24647,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L442",
+      "source_location": "L444",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_closeadminevent",
@@ -24650,7 +24659,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L447",
+      "source_location": "L449",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_resolveadminevent",
@@ -24662,7 +24671,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L454",
+      "source_location": "L456",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_canceladminevent",
@@ -24674,7 +24683,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L459",
+      "source_location": "L461",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_rewindadminevent",
@@ -24686,7 +24695,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L464",
+      "source_location": "L466",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_reopenadminevent",
@@ -24698,7 +24707,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L469",
+      "source_location": "L471",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_createproposal",
@@ -24710,7 +24719,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L474",
+      "source_location": "L476",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_fetchmyproposals",
@@ -24722,7 +24731,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L479",
+      "source_location": "L481",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_fetchadminproposals",
@@ -24734,7 +24743,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L486",
+      "source_location": "L488",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_approveadminproposal",
@@ -24746,7 +24755,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L493",
+      "source_location": "L495",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_rejectadminproposal",
@@ -24758,7 +24767,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L501",
+      "source_location": "L503",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_togglesaveadminproposal",
@@ -24770,7 +24779,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L508",
+      "source_location": "L510",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_fetchsavedadminproposals",
@@ -24782,7 +24791,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L515",
+      "source_location": "L517",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_fetchadminstatisticsoverview",
@@ -24794,7 +24803,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L520",
+      "source_location": "L522",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_fetchpublicstats",
@@ -24806,7 +24815,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L527",
+      "source_location": "L529",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_requestmicrosoftredirect",
@@ -24818,7 +24827,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L532",
+      "source_location": "L534",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_logoutrequest",
@@ -24830,7 +24839,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/lib/api.ts",
-      "source_location": "L564",
+      "source_location": "L566",
       "weight": 1.0,
       "_src": "frontend_src_lib_api_ts",
       "_tgt": "api_fetchadmineventsleaderboard",
@@ -26846,7 +26855,19 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/CasinoPage.tsx",
-      "source_location": "L95",
+      "source_location": "L21",
+      "weight": 1.0,
+      "_src": "frontend_src_pages_casinopage_tsx",
+      "_tgt": "casinopage_wipoverlay",
+      "source": "frontend_src_pages_casinopage_tsx",
+      "target": "casinopage_wipoverlay",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "frontend/src/pages/CasinoPage.tsx",
+      "source_location": "L105",
       "weight": 1.0,
       "_src": "frontend_src_pages_casinopage_tsx",
       "_tgt": "casinopage_isgametab",
@@ -26858,7 +26879,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/CasinoPage.tsx",
-      "source_location": "L153",
+      "source_location": "L167",
       "weight": 1.0,
       "_src": "frontend_src_pages_casinopage_tsx",
       "_tgt": "casinopage_isgamedisabled",
@@ -26870,7 +26891,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/CasinoPage.tsx",
-      "source_location": "L169",
+      "source_location": "L185",
       "weight": 1.0,
       "_src": "frontend_src_pages_casinopage_tsx",
       "_tgt": "casinopage_handlelogout",
@@ -27062,7 +27083,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L491",
+      "source_location": "L494",
       "weight": 1.0,
       "_src": "frontend_src_pages_admin_admineventspage_tsx",
       "_tgt": "admineventspage_resetform",
@@ -27074,7 +27095,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L499",
+      "source_location": "L502",
       "weight": 1.0,
       "_src": "frontend_src_pages_admin_admineventspage_tsx",
       "_tgt": "admineventspage_handlelogout",
@@ -27086,7 +27107,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L504",
+      "source_location": "L507",
       "weight": 1.0,
       "_src": "frontend_src_pages_admin_admineventspage_tsx",
       "_tgt": "admineventspage_applyeventtoform",
@@ -27098,7 +27119,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L518",
+      "source_location": "L521",
       "weight": 1.0,
       "_src": "frontend_src_pages_admin_admineventspage_tsx",
       "_tgt": "admineventspage_handleeventimageupload",
@@ -27110,7 +27131,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L547",
+      "source_location": "L550",
       "weight": 1.0,
       "_src": "frontend_src_pages_admin_admineventspage_tsx",
       "_tgt": "admineventspage_submitform",
@@ -27122,7 +27143,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L617",
+      "source_location": "L620",
       "weight": 1.0,
       "_src": "frontend_src_pages_admin_admineventspage_tsx",
       "_tgt": "admineventspage_runaction",
@@ -27134,7 +27155,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L679",
+      "source_location": "L682",
       "weight": 1.0,
       "_src": "frontend_src_pages_admin_admineventspage_tsx",
       "_tgt": "admineventspage_applyproposaltoform",
@@ -27146,7 +27167,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L700",
+      "source_location": "L703",
       "weight": 1.0,
       "_src": "frontend_src_pages_admin_admineventspage_tsx",
       "_tgt": "admineventspage_refreshadminuserdata",
@@ -27158,7 +27179,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L720",
+      "source_location": "L723",
       "weight": 1.0,
       "_src": "frontend_src_pages_admin_admineventspage_tsx",
       "_tgt": "admineventspage_submitbalanceadjustment",
@@ -27170,7 +27191,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L755",
+      "source_location": "L758",
       "weight": 1.0,
       "_src": "frontend_src_pages_admin_admineventspage_tsx",
       "_tgt": "admineventspage_submitbadgeunlock",
@@ -27194,7 +27215,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L692",
+      "source_location": "L695",
       "weight": 1.0,
       "_src": "admineventspage_applyproposaltoform",
       "_tgt": "admineventspage_createdefaultprobabilityrows",
@@ -27206,7 +27227,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L611",
+      "source_location": "L614",
       "weight": 1.0,
       "_src": "admineventspage_submitform",
       "_tgt": "admineventspage_toerrormessage",
@@ -27218,7 +27239,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L632",
+      "source_location": "L635",
       "weight": 1.0,
       "_src": "admineventspage_runaction",
       "_tgt": "admineventspage_toerrormessage",
@@ -27230,7 +27251,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L749",
+      "source_location": "L752",
       "weight": 1.0,
       "_src": "admineventspage_submitbalanceadjustment",
       "_tgt": "admineventspage_toerrormessage",
@@ -27242,7 +27263,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L773",
+      "source_location": "L776",
       "weight": 1.0,
       "_src": "admineventspage_submitbadgeunlock",
       "_tgt": "admineventspage_toerrormessage",
@@ -27254,7 +27275,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L511",
+      "source_location": "L514",
       "weight": 1.0,
       "_src": "admineventspage_applyeventtoform",
       "_tgt": "admineventspage_todatetimelocalvalue",
@@ -27266,7 +27287,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L693",
+      "source_location": "L696",
       "weight": 1.0,
       "_src": "admineventspage_applyproposaltoform",
       "_tgt": "admineventspage_todatetimelocalvalue",
@@ -27278,7 +27299,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L587",
+      "source_location": "L590",
       "weight": 1.0,
       "_src": "admineventspage_submitform",
       "_tgt": "admineventspage_toisofromlocaldate",
@@ -27302,7 +27323,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L548",
+      "source_location": "L551",
       "weight": 1.0,
       "_src": "admineventspage_submitform",
       "_tgt": "admineventspage_normalizeprobabilityrows",
@@ -27314,7 +27335,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L550",
+      "source_location": "L553",
       "weight": 1.0,
       "_src": "admineventspage_submitform",
       "_tgt": "admineventspage_calculateprobabilitytotal",
@@ -27326,7 +27347,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L510",
+      "source_location": "L513",
       "weight": 1.0,
       "_src": "admineventspage_applyeventtoform",
       "_tgt": "admineventspage_buildprobabilityrowsfromevent",
@@ -27338,7 +27359,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L603",
+      "source_location": "L606",
       "weight": 1.0,
       "_src": "admineventspage_submitform",
       "_tgt": "admineventspage_resetform",
@@ -27350,7 +27371,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L746",
+      "source_location": "L749",
       "weight": 1.0,
       "_src": "admineventspage_submitbalanceadjustment",
       "_tgt": "admineventspage_refreshadminuserdata",
@@ -27362,7 +27383,7 @@
       "relation": "calls",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/pages/admin/AdminEventsPage.tsx",
-      "source_location": "L770",
+      "source_location": "L773",
       "weight": 1.0,
       "_src": "admineventspage_submitbadgeunlock",
       "_tgt": "admineventspage_refreshadminuserdata",
@@ -27602,7 +27623,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "frontend/src/store/auth-store.ts",
-      "source_location": "L37",
+      "source_location": "L39",
       "weight": 1.0,
       "_src": "frontend_src_store_auth_store_ts",
       "_tgt": "auth_store_purgelegacyauthstorage",

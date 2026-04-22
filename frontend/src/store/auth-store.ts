@@ -28,6 +28,7 @@ interface AuthState {
   setUser: (user: AuthUser | null) => void;
   setSession: (payload: { user: AuthUser; accessToken: string }) => void;
   updateBalance: (balance: number) => void;
+  applyBalanceDelta: (delta: number) => void;
   updateOddsPreference: (acceptOddsChanges: boolean) => void;
   setMaintenanceMode: (enabled: boolean) => void;
   setFeatureFlags: (flags: FeatureFlags) => void;
@@ -69,6 +70,10 @@ export const useAuthStore = create<AuthState>()((set) => ({
   updateBalance: (balance) =>
     set((state) => ({
       user: state.user ? { ...state.user, balance } : null,
+    })),
+  applyBalanceDelta: (delta) =>
+    set((state) => ({
+      user: state.user ? { ...state.user, balance: state.user.balance + delta } : null,
     })),
   updateOddsPreference: (acceptOddsChanges) =>
     set((state) => ({
