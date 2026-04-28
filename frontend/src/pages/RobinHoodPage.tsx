@@ -153,6 +153,7 @@ function VotePhase({ event }: { event: RobinHoodEvent }) {
     pseudo: v.pseudo,
     avatarUrl: v.avatarUrl,
     balance: v.balance,
+    rankAtSnapshot: 0,
   }));
 
   return (
