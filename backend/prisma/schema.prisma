@@ -100,9 +100,10 @@ model User {
   chatMessages    ChatMessage[]
   chatBan         ChatBan?
   crashBets       CrashBet[]
-  robinHoodVictims     RobinHoodVictim[]
-  robinHoodVotesGiven  RobinHoodVote[]   @relation("RobinHoodVoter")
-  robinHoodVotesGot    RobinHoodVote[]   @relation("RobinHoodTarget")
+  robinHoodVictims      RobinHoodVictim[]
+  robinHoodVotesGiven   RobinHoodVote[]       @relation("RobinHoodVoter")
+  robinHoodVotesGot     RobinHoodVote[]       @relation("RobinHoodTarget")
+  robinHoodCandidacies  RobinHoodCandidate[]
 
   @@index([email])
   @@index([balance(sort: Desc)])
@@ -392,6 +393,7 @@ model RobinHoodEvent {
   updatedAt   DateTime          @updatedAt
   victims     RobinHoodVictim[]
   votes       RobinHoodVote[]
+  candidates  RobinHoodCandidate[]
 }
 
 model RobinHoodVictim {
@@ -416,4 +418,20 @@ model RobinHoodVote {
   target    User           @relation("RobinHoodTarget", fields: [targetId], references: [id])
 
   @@unique([eventId, voterId])
+}
+
+model RobinHoodCandidate {
+  id        String         @id @default(cuid())
+  eventId   String
+  userId    String         @db.Uuid
+  pseudo    String         @db.VarChar(50)
+  balance   Int
+  rank      Int
+  createdAt DateTime       @default(now())
+  event     RobinHoodEvent @relation(fields: [eventId], references: [id])
+  user      User           @relation(fields: [userId], references: [id])
+
+  @@unique([eventId, userId])
+  @@unique([eventId, rank])
+  @@index([eventId])
 }

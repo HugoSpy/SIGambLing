@@ -57,7 +57,7 @@ function VoteCard({
   myVoteTarget,
   onVote,
 }: {
-  candidate: { id: string; pseudo: string; avatarUrl: string | null; balance: number };
+  candidate: { id: string; pseudo: string; balance: number; rankAtSnapshot: number; avatarUrl?: string | null };
   voteCount: number;
   totalVotes: number;
   isLeader: boolean;

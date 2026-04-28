@@ -20,8 +20,8 @@ export interface RobinHoodVoteCount {
 export interface RobinHoodCandidate {
   id: string;
   pseudo: string;
-  avatarUrl: string | null;
   balance: number;
+  rankAtSnapshot: number;
 }
 
 export interface RobinHoodEvent {

@@ -582,8 +582,8 @@ class BlackjackService {
       } else if (playerBlackjack) {
         result = "win";
         resolvedResult = "blackjack";
-        // Robin active: BJ pays 1:1 instead of 3:2
-        payout = robinEventId ? bet * 2 : Math.floor(bet * 2.5);
+        // Robin active: BJ pays 2:1 instead of 3:2
+        payout = robinEventId ? bet * 3 : Math.floor(bet * 2.5);
       } else {
         result = "loss";
         resolvedResult = "loss";

@@ -331,6 +331,14 @@ class MinesService {
     if (!user) throw new AppError("Utilisateur introuvable.", 404);
     if (user.balance < betAmount) throw new AppError("Solde insuffisant.", 400);
 
+    // Robin des Slots check
+    const robinEvent = await robinHoodService.getActiveEvent();
+    if (robinEvent) {
+      const isVictim = await prisma.robinHoodVictim.findFirst({ where: { eventId: robinEvent.id, userId } });
+      if (isVictim) throw new AppError("Tu ne peux pas jouer pendant que tu es la victime de Robin des Slots.", 403);
+    }
+    const robinEventId = robinEvent?.id ?? null;
+
     const minePositions = placeMines(minesCount);
     const totalGems = TOTAL_CELLS - minesCount;
     // Default gemCount to 1 when not provided (random mode without explicit count)
@@ -385,6 +393,10 @@ class MinesService {
       await gamificationService.synchronizeUserBadges(userId);
       await gamificationService.triggerLeaderboardTop3(userId);
 
+      if (robinEventId) {
+        await robinHoodService.addToPool(robinEventId, betAmount);
+      }
+
       const after = await prisma.user.findUnique({ where: { id: userId } });
       return {
         win: false,
@@ -398,7 +410,7 @@ class MinesService {
 
     // All selected cells are gems — cashout
     const gemsFound = revealedGems.length;
-    const multiplier = getMinesMultiplier(minesCount, gemsFound);
+    const multiplier = getMinesMultiplier(minesCount, gemsFound, !!robinEventId);
     const payout = Math.floor(betAmount * multiplier);
 
     const updated = await prisma.user.update({
@@ -426,6 +438,10 @@ class MinesService {
     });
     await gamificationService.synchronizeUserBadges(userId);
     await gamificationService.triggerLeaderboardTop3(userId);
+
+    if (robinEventId && payout > betAmount) {
+      await robinHoodService.deductFromPool(robinEventId, payout - betAmount);
+    }
 
     return {
       win: true,

@@ -166,15 +166,16 @@ class RouletteService {
       }
     }
 
-    // Robin active → exclude 0 (RTP 100%)
-    const resultNumber = robinEvent ? generateRandomNumber(1, 36) : spinRoulette();
+    const resultNumber = spinRoulette();
     const resultColor = this.getColor(resultNumber);
-    const winningBets = bets.filter((bet) => this.isBetWinning(bet.type, resultNumber));
-    const totalPayout = winningBets.reduce(
-      (sum, bet) => sum + bet.amount * this.getMultiplier(bet.type),
-      0,
-    );
-    const result: CasinoGameResult = totalPayout > 0 ? "win" : "loss";
+
+    // Robin active + résultat 0 → push : remboursement intégral, EV=1, pas de mouvement cagnotte
+    const isPush = resultNumber === 0 && !!robinEvent;
+    const winningBets = isPush ? [] : bets.filter((bet) => this.isBetWinning(bet.type, resultNumber));
+    const totalPayout = isPush
+      ? totalBet
+      : winningBets.reduce((sum, bet) => sum + bet.amount * this.getMultiplier(bet.type), 0);
+    const result: CasinoGameResult = isPush ? "push" : totalPayout > 0 ? "win" : "loss";
     const gameType: CasinoGameType = "roulette";
 
     const outcome = await prisma.$transaction(async (transaction) => {
@@ -207,6 +208,7 @@ class RouletteService {
             bets,
             winning_bets: winningBets,
             total_payout: totalPayout,
+            push: isPush,
           },
         },
       });
@@ -238,8 +240,8 @@ class RouletteService {
       return { game, newBalance: updatedUser.balance };
     });
 
-    // Robin des Slots pool routing
-    if (robinEvent) {
+    // Robin des Slots pool routing (push = net 0, pas de mouvement)
+    if (robinEvent && !isPush) {
       if (totalPayout > totalBet) {
         await robinHoodService.deductFromPool(robinEvent.id, totalPayout - totalBet);
       } else if (totalPayout === 0) {

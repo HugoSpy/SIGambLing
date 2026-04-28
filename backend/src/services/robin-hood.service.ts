@@ -25,21 +25,36 @@ async function sendChatSystemMessage(content: string): Promise<void> {
 
 // ─── Public API ───────────────────────────────────────────────────────────────
 
-export async function getRobinHoodCandidates() {
+async function selectTopThreeForSnapshot() {
   return prisma.user.findMany({
-    where: { balance: { gte: 2_000_000 } },
-    select: { id: true, pseudo: true, avatarUrl: true, balance: true },
-    orderBy: { balance: 'desc' },
+    where: { role: 'user', isBanned: false, balance: { gt: 0 } },
+    select: { id: true, pseudo: true, balance: true },
+    orderBy: [{ balance: 'desc' }, { pseudo: 'asc' }],
+    take: 3,
   });
 }
 
+export async function getCandidatesForCurrentEvent() {
+  const event = await prisma.robinHoodEvent.findFirst({
+    where: { status: 'VOTE' },
+    include: { candidates: { orderBy: { rank: 'asc' } } },
+  });
+  if (!event) return [];
+  return event.candidates.map((c) => ({
+    id: c.userId,
+    pseudo: c.pseudo,
+    balance: c.balance,
+    rankAtSnapshot: c.rank,
+  }));
+}
+
 export async function createWeeklyEvent(): Promise<void> {
-  const candidates = await getRobinHoodCandidates();
-  if (candidates.length === 0) return;
+  const top3 = await selectTopThreeForSnapshot();
+  if (top3.length === 0) return;
 
   const now = new Date();
-  const voteEndAt = new Date(now.getTime() + 10 * 60 * 60 * 1000);       // +10h
-  const eventEndAt = new Date(now.getTime() + 23 * 60 * 60 * 1000 + 59 * 60 * 1000); // +23h59m
+  const voteEndAt = new Date(now.getTime() + 10 * 60 * 60 * 1000);
+  const eventEndAt = new Date(now.getTime() + 23 * 60 * 60 * 1000 + 59 * 60 * 1000);
 
   await prisma.robinHoodEvent.create({
     data: {
@@ -47,6 +62,14 @@ export async function createWeeklyEvent(): Promise<void> {
       voteStartAt: now,
       voteEndAt,
       eventEndAt,
+      candidates: {
+        create: top3.map((u, i) => ({
+          userId: u.id,
+          pseudo: u.pseudo,
+          balance: u.balance,
+          rank: i + 1,
+        })),
+      },
     },
   });
 }
@@ -54,30 +77,38 @@ export async function createWeeklyEvent(): Promise<void> {
 export async function closeVoteAndActivate(eventId: string): Promise<void> {
   const event = await prisma.robinHoodEvent.findUnique({
     where: { id: eventId },
-    include: { votes: true },
+    include: { votes: true, candidates: true },
   });
   if (!event || event.status !== 'VOTE') return;
 
-  const candidates = await getRobinHoodCandidates();
+  const candidates = event.candidates;
   if (candidates.length === 0) {
     await prisma.robinHoodEvent.update({ where: { id: eventId }, data: { status: 'SKIPPED' } });
     return;
   }
 
+  const candidateIds = new Set(candidates.map((c) => c.userId));
   let victimIds: string[] = [];
 
   if (event.votes.length === 0) {
-    // No votes — random pick
+    // No votes — random pick from snapshot
     const pick = candidates[Math.floor(Math.random() * candidates.length)];
-    if (pick) victimIds = [pick.id];
+    if (pick) victimIds = [pick.userId];
   } else {
-    // Count votes per target
+    // Count votes per target, restrict to snapshot candidates
     const counts = new Map<string, number>();
     for (const v of event.votes) {
-      counts.set(v.targetId, (counts.get(v.targetId) ?? 0) + 1);
+      if (candidateIds.has(v.targetId)) {
+        counts.set(v.targetId, (counts.get(v.targetId) ?? 0) + 1);
+      }
     }
-    const max = Math.max(...counts.values());
-    victimIds = [...counts.entries()].filter(([, c]) => c === max).map(([id]) => id);
+    if (counts.size === 0) {
+      const pick = candidates[Math.floor(Math.random() * candidates.length)];
+      if (pick) victimIds = [pick.userId];
+    } else {
+      const max = Math.max(...counts.values());
+      victimIds = [...counts.entries()].filter(([, c]) => c === max).map(([id]) => id);
+    }
   }
 
   // Deduct tokens from each victim and build pool
@@ -158,13 +189,15 @@ export async function closeEvent(eventId: string): Promise<void> {
 }
 
 export async function castVote(eventId: string, voterId: string, targetId: string): Promise<void> {
-  const event = await prisma.robinHoodEvent.findUnique({ where: { id: eventId } });
+  const event = await prisma.robinHoodEvent.findUnique({
+    where: { id: eventId },
+    include: { candidates: { select: { userId: true } } },
+  });
   if (!event || event.status !== 'VOTE') {
     throw new AppError('Aucun vote en cours.', 400);
   }
 
-  const candidates = await getRobinHoodCandidates();
-  const isEligible = candidates.some((c) => c.id === targetId);
+  const isEligible = event.candidates.some((c) => c.userId === targetId);
   if (!isEligible) {
     throw new AppError('Ce joueur n\'est pas éligible.', 400);
   }
@@ -185,6 +218,7 @@ export async function getCurrentEvent() {
       votes: {
         select: { targetId: true, voterId: true },
       },
+      candidates: { orderBy: { rank: 'asc' } },
     },
   });
   if (!event) return null;
@@ -195,7 +229,9 @@ export async function getCurrentEvent() {
     voteCounts.set(v.targetId, (voteCounts.get(v.targetId) ?? 0) + 1);
   }
 
-  const candidates = event.status === 'VOTE' ? await getRobinHoodCandidates() : [];
+  const candidates = event.status === 'VOTE'
+    ? event.candidates.map((c) => ({ id: c.userId, pseudo: c.pseudo, balance: c.balance, rankAtSnapshot: c.rank }))
+    : [];
 
   const voteCountsWithInfo = await Promise.all(
     [...voteCounts.entries()].map(async ([userId, count]) => {
@@ -276,4 +312,20 @@ export async function getHistory() {
       },
     },
   });
+}
+
+export async function isRobinHoodActive(): Promise<boolean> {
+  const e = await prisma.robinHoodEvent.findFirst({
+    where: { status: 'ACTIVE' },
+    select: { id: true },
+  });
+  return e !== null;
+}
+
+export async function isVictim(userId: string): Promise<boolean> {
+  const e = await prisma.robinHoodEvent.findFirst({
+    where: { status: 'ACTIVE' },
+    select: { victims: { where: { userId }, select: { id: true } } },
+  });
+  return (e?.victims.length ?? 0) > 0;
 }

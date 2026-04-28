@@ -24,7 +24,7 @@ robinHoodRouter.get("/current", requireAuth, async (req, res, next) => {
 
 robinHoodRouter.get("/candidates", requireAuth, async (_req, res, next) => {
   try {
-    const candidates = await robinHoodService.getRobinHoodCandidates();
+    const candidates = await robinHoodService.getCandidatesForCurrentEvent();
     res.json(candidates);
   } catch (err) {
     next(err);
