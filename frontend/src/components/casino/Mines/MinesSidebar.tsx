@@ -22,6 +22,7 @@ interface MinesSidebarProps {
   onAutoBetStart: (config: AutoBetConfig) => void;
   onAutoBetStop: () => void;
   onSwitchToManual?: () => void;
+  isRobinActive?: boolean;
   // Auto-bet cell selection (managed in MinesGame)
   autoCellMode: "random" | "fixed";
   onAutoCellModeChange: (m: "random" | "fixed") => void;
@@ -32,15 +33,15 @@ interface MinesSidebarProps {
 const QUICK_MINES = [1, 3, 5, 10, 24];
 const AUTO_MIN_BET = 10;
 
-/** Replicate backend getMinesMultiplier formula (house edge 1%). */
-function calcMultiplier(mines: number, gemsFound: number): number {
+/** Replicate backend getMinesMultiplier formula (house edge 1%, or 0% during Robin). */
+function calcMultiplier(mines: number, gemsFound: number, isRobinActive = false): number {
   if (gemsFound <= 0) return 1;
   const totalGems = 25 - mines;
   let survivalProb = 1;
   for (let i = 0; i < gemsFound; i++) {
     survivalProb *= (totalGems - i) / (25 - i);
   }
-  return Math.round((1 / survivalProb) * 0.99 * 100) / 100;
+  return Math.round((1 / survivalProb) * (isRobinActive ? 1.0 : 0.99) * 100) / 100;
 }
 
 const STRATEGY_LABELS: Record<AutoBetStrategy, string> = {
@@ -121,6 +122,7 @@ export function MinesSidebar({
   onAutoBetStart,
   onAutoBetStop,
   onSwitchToManual,
+  isRobinActive = false,
   autoCellMode,
   onAutoCellModeChange,
   autoFixedCells,
@@ -631,7 +633,7 @@ export function MinesSidebar({
               <div className="flex items-center justify-between">
                 <span className="text-sm text-zinc-400">Multi possible</span>
                 <span className="font-mono font-bold text-emerald-400">
-                  ×{calcMultiplier(autoMines, autoFixedCells.length).toFixed(2)}
+                  ×{calcMultiplier(autoMines, autoFixedCells.length, isRobinActive).toFixed(2)}
                 </span>
               </div>
             )}
