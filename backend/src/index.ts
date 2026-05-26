@@ -9,7 +9,7 @@ const httpServer = createServer(app);
 
 initCrashSocket(httpServer);
 
-httpServer.listen(env.PORT, () => {
+httpServer.listen(env.PORT, '127.0.0.1', () => {
   process.stdout.write(`Server running on port ${env.PORT}\n`);
   startCronJobs();
   crashService.startGameLoop();
