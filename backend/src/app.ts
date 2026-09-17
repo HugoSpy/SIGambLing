@@ -21,6 +21,7 @@ import { adminConfigRouter } from "./routes/admin.config.routes";
 import { publicConfigRouter } from "./routes/public.config.routes";
 import { chatRouter } from "./routes/chat.routes";
 import { userRouter } from "./routes/user.routes";
+import { robinHoodRouter } from "./routes/robin-hood.routes";
 
 configurePassport();
 
@@ -67,6 +68,7 @@ export function createApp() {
   app.use("/admin/config", adminConfigRouter);
   app.use("/rewards", gamificationRouter);
   app.use("/users", userRouter);
+  app.use("/robin-hood", robinHoodRouter);
 
   app.use(notFoundHandler);
   app.use(errorHandler);

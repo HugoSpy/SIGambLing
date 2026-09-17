@@ -5,6 +5,7 @@ import { useMinesAutoBet } from "../../hooks/useMinesAutoBet";
 import { sounds } from "../../lib/sounds";
 import { MinesGrid } from "./Mines/MinesGrid";
 import { MinesSidebar } from "./Mines/MinesSidebar";
+import { useRobinHoodEvent } from "../../hooks/useRobinHoodEvent";
 import { MinesAutoBetGraph } from "./Mines/MinesAutoBetGraph";
 import { WinPopup, useWinPopup } from "../ui/WinPopup";
 import type { AutoBetConfig } from "../../types/mines";
@@ -34,8 +35,10 @@ export function MinesGame() {
   } = useMinesGame();
 
   const autoBet = useMinesAutoBet();
+  const { data: robinEvent } = useRobinHoodEvent();
+  const isRobinActive = robinEvent?.status === 'ACTIVE';
 
-  const [bet, setBet] = useState(100);
+  const [bet, setBet] = useState<number | null>(null);
   const [mines, setMines] = useState(3);
 
   // ── Auto-bet cell selection state (lifted from sidebar) ──────────────────────
@@ -181,6 +184,7 @@ export function MinesGame() {
 
   // ── Handlers ─────────────────────────────────────────────────────────────────
   function handleStart() {
+    if (!bet) return;
     sounds.betButton.play();
     startGame(bet, mines);
   }
@@ -256,6 +260,7 @@ export function MinesGame() {
             onAutoBetStart={handleAutoBetStart}
             onAutoBetStop={handleAutoBetStop}
             onSwitchToManual={handleSwitchToManual}
+            isRobinActive={isRobinActive}
             autoCellMode={autoCellMode}
             onAutoCellModeChange={setAutoCellMode}
             autoFixedCells={autoFixedCells}

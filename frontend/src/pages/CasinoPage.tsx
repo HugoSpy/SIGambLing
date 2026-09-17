@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, Bus, CircleDot, Coins, Sparkles, TrendingUp, Waves, Bomb } from "lucide-react";
+import { ArrowRight, Bus, CircleDot, Coins, Sparkles, TrendingUp, Waves, Bomb, Layers } from "lucide-react";
 import toast from "react-hot-toast";
 import { Link, Navigate, useParams } from "react-router-dom";
 import { BlackjackGame } from "../components/casino/BlackjackGame";
@@ -16,7 +16,17 @@ import { fetchCurrentUser, logoutRequest } from "../lib/api";
 import { cn } from "../lib/utils";
 import { useAuthStore } from "../store/auth-store";
 
-type GameTab = "roulette" | "blackjack" | "hilo" | "ride-the-bus" | "mines" | "crash";
+type GameTab = "roulette" | "blackjack" | "hilo" | "ride-the-bus" | "mines" | "crash" | "plinko";
+
+function WipOverlay({ label }: { label: string }) {
+  return (
+    <div className="absolute inset-0 z-10 flex items-center justify-center rounded-[inherit] bg-black/60 pointer-events-none">
+      <span className="rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold uppercase tracking-widest text-white backdrop-blur-sm">
+        {label}
+      </span>
+    </div>
+  );
+}
 
 const TABS: {
   id: GameTab;
@@ -81,6 +91,15 @@ const TABS: {
       accentClassName: "from-orange-500/20 via-orange-500/5 to-transparent",
       icon: TrendingUp,
     },
+    {
+      id: "plinko",
+      label: "Plinko",
+      eyebrow: "Hasard pur",
+      description: "Lâchez la balle et regardez-la rebondir de pin en pin. Choisissez vos lignes et votre risque pour contrôler la variance.",
+      href: "/casino/plinko",
+      accentClassName: "from-purple-500/20 via-purple-500/5 to-transparent",
+      icon: Layers,
+    },
   ];
 
 function isGameTab(value: string | undefined): value is GameTab {
@@ -90,7 +109,8 @@ function isGameTab(value: string | undefined): value is GameTab {
     value === "hilo" ||
     value === "ride-the-bus" ||
     value === "mines" ||
-    value === "crash"
+    value === "crash" ||
+    value === "plinko"
   );
 }
 
@@ -102,6 +122,7 @@ export function CasinoPage() {
   const blackjackDisabled = useAuthStore((state) => state.blackjackDisabled);
   const minesDisabled = useAuthStore((state) => state.minesDisabled);
   const crashDisabled = useAuthStore((state) => state.crashDisabled);
+  const plinkoDisabled = useAuthStore((state) => state.plinkoDisabled);
   const { game } = useParams<{ game?: string }>();
   const activeGame = isGameTab(game) ? game : null;
 
@@ -138,6 +159,9 @@ export function CasinoPage() {
   if (activeGame === "mines" && minesDisabled && !isAdmin) {
     return <Navigate replace to="/casino" />;
   }
+  if (activeGame === "plinko" && plinkoDisabled && !isAdmin) {
+    return <Navigate replace to="/casino" />;
+  }
   // hilo and ride-the-bus have no feature flag yet — no redirect needed
 
   const isGameDisabled = (id: GameTab) =>
@@ -146,6 +170,8 @@ export function CasinoPage() {
     (id === "mines" && minesDisabled && !isAdmin) ||
     (id === "crash" && crashDisabled && !isAdmin);
 
+  const isPlinkoWip = plinkoDisabled && !isAdmin;
+
   const disabledLabel: Record<GameTab, string> = {
     roulette: "Roulette temporairement indisponible",
     blackjack: "Blackjack temporairement indisponible",
@@ -153,6 +179,7 @@ export function CasinoPage() {
     "ride-the-bus": "Ride the Bus temporairement indisponible",
     mines: "Mines temporairement indisponible",
     crash: "Crash temporairement indisponible",
+    plinko: "Plinko temporairement indisponible",
   };
 
   const handleLogout = async () => {
@@ -170,6 +197,7 @@ export function CasinoPage() {
             {TABS.map((tab) => {
               const Icon = tab.icon;
               const disabled = isGameDisabled(tab.id);
+              const wip = tab.id === "plinko" && isPlinkoWip;
 
               return (
                 <Card
@@ -177,8 +205,10 @@ export function CasinoPage() {
                   className={cn(
                     "group relative overflow-hidden border-white/10 bg-zinc-900/95 p-0",
                     disabled && "opacity-60",
+                    wip && "pointer-events-none",
                   )}
                 >
+                  {wip && <WipOverlay label="Bientôt" />}
                   <div
                     className={cn("absolute inset-0 bg-gradient-to-br opacity-100", tab.accentClassName)}
                   />
@@ -234,6 +264,7 @@ export function CasinoPage() {
         {activeGame === "hilo" ? <HiloGame /> : null}
         {activeGame === "ride-the-bus" ? <RideTheBusGame /> : null}
         {activeGame === "mines" ? <MinesGame /> : null}
+        {activeGame === "plinko" ? <Navigate replace to="/casino/plinko" /> : null}
 
         {!activeGame ? (
           <Card className="border-white/10 bg-zinc-900/95">

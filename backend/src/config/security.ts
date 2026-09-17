@@ -39,18 +39,8 @@ export function resolveRefreshCookieSameSite(options: {
   isProduction: boolean;
   explicitPolicy?: string;
 }): SameSitePolicy {
-  const explicitPolicy = options.explicitPolicy?.trim().toLowerCase();
-
-  if (explicitPolicy === "lax" || explicitPolicy === "strict" || explicitPolicy === "none") {
-    return explicitPolicy;
-  }
-
-  if (!options.isProduction) {
-    return "lax";
-  }
-
-  const frontendHost = new URL(options.frontendUrl).hostname;
-  const apiHost = new URL(options.apiBaseUrl).hostname;
-
-  return frontendHost === apiHost ? "lax" : "none";
+  // www.sigambling.fr and api.sigambling.fr share the same registrable domain
+  // (sigambling.fr), so Lax is sufficient for cross-subdomain cookie delivery.
+  // Never use None to avoid CSRF exposure.
+  return "lax";
 }

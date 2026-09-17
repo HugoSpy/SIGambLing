@@ -2,6 +2,7 @@ import type { RequestHandler } from "express";
 import { blackjackService } from "../services/blackjack.service";
 import { hiloService } from "../services/hilo.service";
 import { minesService } from "../services/mines.service";
+import { plinkoService } from "../services/plinko.service";
 import { ridethebusService } from "../services/ride-the-bus.service";
 import { rouletteService } from "../services/roulette.service";
 
@@ -226,6 +227,17 @@ export const minesAutobetController: RequestHandler = async (request, response, 
     const userId = getAuthUserId(request);
     const { betAmount, minesCount, selectedCells, gemCount } = request.body;
     const result = await minesService.autobet(userId, betAmount, minesCount, selectedCells, gemCount);
+    response.json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const plinkoDropController: RequestHandler = async (request, response, next) => {
+  try {
+    const userId = getAuthUserId(request);
+    const { betAmount, rows, risk } = request.body;
+    const result = await plinkoService.dropBall(userId, betAmount, rows, risk);
     response.json(result);
   } catch (error) {
     next(error);

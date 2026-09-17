@@ -3,6 +3,7 @@ import { AppError } from "../utils/app-error";
 import { gamificationService } from "./gamification.service";
 import { jackpotService } from "./jackpot.service";
 import { prisma } from "./prisma.service";
+import * as robinHoodService from "./robin-hood.service";
 
 type Suit = "hearts" | "diamonds" | "clubs" | "spades";
 
@@ -20,6 +21,7 @@ interface HiloSession {
   cardHistory: Array<{ card: HiloCard; multiplierAfter: number }>;
   startedAt: Date;
   lastActivityAt: Date;
+  robinEventId: string | null;
 }
 
 export interface MultiplierEntry {
@@ -83,12 +85,26 @@ function drawRandomCard(): HiloCard {
   return { suit, value };
 }
 
-function calcMultiplier(prob: number): number {
-  return Math.max(1.02, Math.round((1 / prob) * 0.97 * 100) / 100);
+function calcMultiplier(prob: number, fair = false): number {
+  const edge = fair ? 1.0 : 0.97;
+  return Math.max(1.0, Math.round((1 / prob) * edge * 100) / 100);
 }
 
-function makeEntry(prob: number): MultiplierEntry {
-  return { probability: prob, multiplier: calcMultiplier(prob) };
+function makeEntry(prob: number, fair = false): MultiplierEntry {
+  return { probability: prob, multiplier: calcMultiplier(prob, fair) };
+}
+
+function getMultipliersFair(value: number): HiloMultipliers {
+  const DECK_SIZE = 52;
+  if (value === 1) {
+    return { higherOrEqual: null, lowerOrEqual: null, higher: makeEntry(48 / DECK_SIZE, true), lower: null, equal: makeEntry(4 / DECK_SIZE, true) };
+  }
+  if (value === 13) {
+    return { higherOrEqual: null, lowerOrEqual: null, higher: null, lower: makeEntry(48 / DECK_SIZE, true), equal: makeEntry(4 / DECK_SIZE, true) };
+  }
+  const pHigherOrEqual = ((13 - value + 1) * 4) / DECK_SIZE;
+  const pLowerOrEqual = (value * 4) / DECK_SIZE;
+  return { higherOrEqual: makeEntry(pHigherOrEqual, true), lowerOrEqual: makeEntry(pLowerOrEqual, true), higher: null, lower: null, equal: null };
 }
 
 function getMultipliers(value: number): HiloMultipliers {
@@ -150,7 +166,6 @@ class HiloService {
     if (existing && !isSessionExpired(existing)) {
       throw new AppError("Une partie est déjà en cours.", 409);
     }
-    // Remove expired session if present
     activeSessions.delete(userId);
 
     if (!Number.isInteger(betAmount) || betAmount < MIN_BET) {
@@ -161,13 +176,19 @@ class HiloService {
     if (!user) throw new AppError("Utilisateur introuvable.", 404);
     if (user.balance < betAmount) throw new AppError("Solde insuffisant.", 400);
 
-    // Deduct bet
+    // Robin des Slots check
+    const robinEvent = await robinHoodService.getActiveEvent();
+    if (robinEvent) {
+      const isVictim = await prisma.robinHoodVictim.findFirst({ where: { eventId: robinEvent.id, userId } });
+      if (isVictim) throw new AppError("Tu ne peux pas jouer pendant que tu es la victime de Robin des Slots.", 403);
+    }
+    const robinEventId = robinEvent?.id ?? null;
+
     const updated = await prisma.user.update({
       where: { id: userId },
       data: { balance: { decrement: betAmount } },
     });
 
-    // Jackpot contribution
     await jackpotService.recordCasinoContribution(userId, betAmount, "hilo");
 
     const currentCard = drawRandomCard();
@@ -180,12 +201,14 @@ class HiloService {
       cardHistory: [{ card: currentCard, multiplierAfter: 1.0 }],
       startedAt: new Date(),
       lastActivityAt: new Date(),
+      robinEventId,
     };
     activeSessions.set(userId, session);
 
+    const multFn = robinEventId ? getMultipliersFair : getMultipliers;
     return {
       currentCard,
-      multipliers: getMultipliers(currentCard.value),
+      multipliers: multFn(currentCard.value),
       balance: updated.balance,
     };
   }
@@ -196,7 +219,8 @@ class HiloService {
     const newCard = drawRandomCard();
     const newValue = newCard.value;
 
-    const mults = getMultipliers(currentValue);
+    const multFn = session.robinEventId ? getMultipliersFair : getMultipliers;
+    const mults = multFn(currentValue);
 
     let correct: boolean;
     let multiplierGained: number;
@@ -249,12 +273,15 @@ class HiloService {
       });
       await gamificationService.synchronizeUserBadges(userId);
       await gamificationService.triggerLeaderboardTop3(userId);
+      if (session.robinEventId) {
+        await robinHoodService.addToPool(session.robinEventId, session.initialBet);
+      }
 
       return {
         correct: false,
         newCard,
         newMultiplier: session.accumulatedMultiplier,
-        multipliers: getMultipliers(newValue),
+        multipliers: multFn(newValue),
         gameOver: true,
         payout: 0,
         balance: (await prisma.user.findUnique({ where: { id: userId } }))!.balance,
@@ -271,7 +298,7 @@ class HiloService {
       correct: true,
       newCard,
       newMultiplier: session.accumulatedMultiplier,
-      multipliers: getMultipliers(newValue),
+      multipliers: multFn(newValue),
       gameOver: false,
     };
   }
@@ -321,6 +348,9 @@ class HiloService {
 
     await gamificationService.synchronizeUserBadges(userId);
     await gamificationService.triggerLeaderboardTop3(userId);
+    if (session.robinEventId && payout > session.initialBet) {
+      await robinHoodService.deductFromPool(session.robinEventId, payout - session.initialBet);
+    }
 
     return {
       payout,

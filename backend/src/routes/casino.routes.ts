@@ -19,6 +19,7 @@ import {
   minesCurrentController,
   minesRevealController,
   minesStartController,
+  plinkoDropController,
   ridethebusAnswerController,
   ridethebusCurrentController,
   ridethebusStartController,
@@ -34,6 +35,7 @@ import {
   minesAutobetSchema,
   minesRevealSchema,
   minesStartSchema,
+  plinkoDropSchema,
   ridethebusAnswerSchema,
   ridethebusStartSchema,
   rouletteSpinSchema,
@@ -49,6 +51,16 @@ const casinoLimiter = rateLimit({
   keyGenerator: (request) =>
     ((request as { auth?: { id?: string } }).auth?.id ?? request.ip ?? "anonymous"),
   message: { message: "Too many casino requests" },
+});
+
+const plinkoLimiter = rateLimit({
+  windowMs: 60 * 1000,
+  max: 600,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (request) =>
+    ((request as { auth?: { id?: string } }).auth?.id ?? request.ip ?? "anonymous"),
+  message: { message: "Too many plinko requests" },
 });
 
 const minesRevealLimiter = rateLimit({
@@ -193,4 +205,12 @@ casinoRouter.post(
   minesRevealLimiter,
   validateBody(minesAutobetSchema),
   minesAutobetController,
+);
+
+casinoRouter.post(
+  "/plinko/drop",
+  requireAuth,
+  plinkoLimiter,
+  validateBody(plinkoDropSchema),
+  plinkoDropController,
 );

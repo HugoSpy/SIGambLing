@@ -9,6 +9,7 @@ export interface FeatureFlags {
   eventsDisabled: boolean;
   minesDisabled: boolean;
   crashDisabled: boolean;
+  plinkoDisabled: boolean;
 }
 
 interface AuthState {
@@ -21,11 +22,13 @@ interface AuthState {
   eventsDisabled: boolean;
   minesDisabled: boolean;
   crashDisabled: boolean;
+  plinkoDisabled: boolean;
   setStatus: (status: AuthStatus) => void;
   setAccessToken: (token: string | null) => void;
   setUser: (user: AuthUser | null) => void;
   setSession: (payload: { user: AuthUser; accessToken: string }) => void;
   updateBalance: (balance: number) => void;
+  applyBalanceDelta: (delta: number) => void;
   updateOddsPreference: (acceptOddsChanges: boolean) => void;
   setMaintenanceMode: (enabled: boolean) => void;
   setFeatureFlags: (flags: FeatureFlags) => void;
@@ -54,6 +57,7 @@ export const useAuthStore = create<AuthState>()((set) => ({
   eventsDisabled: false,
   minesDisabled: false,
   crashDisabled: false,
+  plinkoDisabled: false,
   setStatus: (status) => set({ status }),
   setAccessToken: (token) => set({ accessToken: token }),
   setUser: (user) => set({ user }),
@@ -66,6 +70,10 @@ export const useAuthStore = create<AuthState>()((set) => ({
   updateBalance: (balance) =>
     set((state) => ({
       user: state.user ? { ...state.user, balance } : null,
+    })),
+  applyBalanceDelta: (delta) =>
+    set((state) => ({
+      user: state.user ? { ...state.user, balance: state.user.balance + delta } : null,
     })),
   updateOddsPreference: (acceptOddsChanges) =>
     set((state) => ({

@@ -25,7 +25,7 @@ export function CrashBetPanel({ stream, onBet, onCashout, onBetPlaced }: CrashBe
 
   const { status, multiplier, myBet, hash, countdown } = stream;
 
-  const [bet, setBet] = useState(10);
+  const [bet, setBet] = useState<number | null>(null);
   const [autoCashoutEnabled, setAutoCashoutEnabled] = useState(false);
   const [autoCashoutValue, setAutoCashoutValue] = useState(2.0);
   const [isLoading, setIsLoading] = useState(false);
@@ -71,7 +71,7 @@ export function CrashBetPanel({ stream, onBet, onCashout, onBetPlaced }: CrashBe
   const clampBet = (v: number) => Math.max(MIN_BET, Math.min(MAX_BET, Math.round(v)));
 
   const handleBet = async () => {
-    if (hasSubmittedRef.current) return;
+    if (hasSubmittedRef.current || !bet) return;
     hasSubmittedRef.current = true;
     setIsLoading(true);
     try {
@@ -127,19 +127,24 @@ export function CrashBetPanel({ stream, onBet, onCashout, onBetPlaced }: CrashBe
                 min={MIN_BET}
                 max={MAX_BET}
                 step={1}
-                value={bet}
-                onChange={(e) => setBet(clampBet(parseInt(e.target.value) || MIN_BET))}
+                value={bet ?? ""}
+                onChange={(e) => {
+                  const raw = e.target.value;
+                  if (raw === "") { setBet(null); return; }
+                  setBet(clampBet(parseInt(raw) || MIN_BET));
+                }}
                 className="w-full rounded-lg border border-white/10 bg-zinc-800 px-3 py-2 text-sm text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
               />
               <div className="mt-2 flex gap-1.5">
                 <button
-                  onClick={() => setBet((v) => clampBet(Math.floor(v / 2)))}
-                  className="flex-1 rounded-md border border-white/10 py-1 text-xs text-zinc-400 hover:border-white/30 hover:text-white transition-colors"
+                  onClick={() => { if (bet && bet > MIN_BET) setBet(clampBet(Math.floor(bet / 2))); }}
+                  disabled={!bet || bet <= MIN_BET}
+                  className="flex-1 rounded-md border border-white/10 py-1 text-xs text-zinc-400 hover:border-white/30 hover:text-white transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   ×½
                 </button>
                 <button
-                  onClick={() => setBet((v) => clampBet(v * 2))}
+                  onClick={() => setBet(bet ? clampBet(bet * 2) : MIN_BET)}
                   className="flex-1 rounded-md border border-white/10 py-1 text-xs text-zinc-400 hover:border-white/30 hover:text-white transition-colors"
                 >
                   ×2
@@ -204,13 +209,13 @@ export function CrashBetPanel({ stream, onBet, onCashout, onBetPlaced }: CrashBe
             {/* Parier button */}
             <Button
               onClick={() => void handleBet()}
-              disabled={isLoading || bet > balance || bet < MIN_BET}
+              disabled={isLoading || !bet || bet > balance || bet < MIN_BET}
               className="w-full bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50"
             >
-              {isLoading ? "Envoi…" : `Parier ${bet.toLocaleString("fr-FR")} 🪙`}
+              {isLoading ? "Envoi…" : `Parier ${(bet ?? 0).toLocaleString("fr-FR")} 🪙`}
             </Button>
 
-            {bet > balance && (
+            {bet !== null && bet > balance && (
               <p className="text-xs text-red-400 text-center">Solde insuffisant</p>
             )}
           </motion.div>

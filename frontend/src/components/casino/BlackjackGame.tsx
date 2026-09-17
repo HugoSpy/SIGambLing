@@ -51,27 +51,27 @@ const GAME_STATE_COPY: Record<
   BETTING: {
     label: "Mise ouverte",
     detail: "Choisissez votre mise puis lancez la distribution.",
-    tone: "text-brand-cyan",
+    tone: "text-[var(--brand-emerald-hover)]",
   },
   DEALING: {
     label: "Distribution",
     detail: "Les cartes arrivent sur le tapis.",
-    tone: "text-amber-300",
+    tone: "text-[var(--brand-amber-hover)]",
   },
   PLAYER_TURN: {
     label: "Votre decision",
     detail: "Tirez, restez ou doublez selon votre lecture.",
-    tone: "text-emerald-300",
+    tone: "text-[var(--brand-emerald-hover)]",
   },
   DEALER_TURN: {
     label: "Tour du dealer",
     detail: "Le croupier complete sa main avant la resolution.",
-    tone: "text-orange-300",
+    tone: "text-[var(--brand-amber-hover)]",
   },
   GAME_OVER: {
     label: "Manche terminee",
     detail: "Analysez le resultat puis relancez une partie.",
-    tone: "text-zinc-100",
+    tone: "text-[var(--fg-primary)]",
   },
 };
 
@@ -172,8 +172,8 @@ function PlayingCard({
       className={cn(
         "relative flex h-[90px] w-[60px] flex-shrink-0 select-none flex-col rounded-xl border shadow-lg sm:h-[120px] sm:w-[80px]",
         hidden
-          ? "border-blue-400/30 bg-gradient-to-br from-blue-800 to-red-800"
-          : "border-gray-200/20 bg-white",
+          ? "border-[var(--brand-emerald-line)] bg-gradient-to-br from-[var(--surface-2)] to-[var(--surface-3)]"
+          : "border-[var(--ink-700)] bg-white",
       )}
       style={{ transformStyle: "preserve-3d" }}
     >
@@ -224,23 +224,23 @@ function HandTotal({
   helper?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-black/20 px-3 py-2 text-right">
-      <p className="text-[10px] uppercase tracking-[0.28em] text-white/45">{label}</p>
+    <div className="rounded-[var(--radius-md)] border border-[var(--ink-700)] bg-[var(--surface-2)] px-3 py-2 text-right">
+      <p className="text-[10px] uppercase tracking-[0.28em] text-[var(--fg-muted)]">{label}</p>
       <p
         className={cn(
           "mt-1 text-base font-black",
           isBlackjack
-            ? "text-yellow-400"
+            ? "text-[var(--jackpot)]"
             : total > 21
-              ? "text-red-400"
+              ? "text-[var(--loss)]"
               : total === 21
-                ? "text-green-400"
-                : "text-white",
+                ? "text-[var(--win)]"
+                : "text-[var(--fg-primary)]",
         )}
       >
         {isBlackjack ? "BLACKJACK" : total > 21 ? `${total} BUST` : total}
       </p>
-      {helper ? <p className="mt-1 text-xs text-white/45">{helper}</p> : null}
+      {helper ? <p className="mt-1 text-xs text-[var(--fg-muted)]">{helper}</p> : null}
     </div>
   );
 }
@@ -293,21 +293,21 @@ function SplitHandsArea({
             <div
               key={i}
               className={cn(
-                "rounded-[28px] border border-white/10 bg-black/10 p-3 backdrop-blur-sm transition-all duration-300",
-                isActive ? "ring-2 ring-brand-cyan" : hand.done ? "opacity-60" : "",
+                "rounded-[var(--radius-lg)] border border-[var(--ink-700)] bg-[var(--surface-2)] p-3 transition-all duration-300",
+                isActive ? "ring-2 ring-[var(--brand-emerald)]" : hand.done ? "opacity-60" : "",
               )}
             >
               <div className="mb-2 flex items-center justify-between gap-2">
                 <div>
-                  <p className="flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.3em] text-white/55">
+                  <p className="flex items-center gap-1 text-xs font-semibold uppercase tracking-[0.3em] text-[var(--fg-muted)]">
                     Main {i + 1}
                     {isActive ? (
-                      <span className="animate-pulse text-brand-cyan">▶</span>
+                      <span className="animate-pulse text-[var(--brand-emerald)]">▶</span>
                     ) : null}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <div className="flex min-h-8 min-w-8 items-center justify-center rounded-full border-2 border-amber-300 bg-amber-900/75 px-2 text-xs font-bold text-amber-100">
+                  <div className="flex min-h-8 min-w-8 items-center justify-center rounded-full border-2 border-[var(--brand-amber)] bg-[var(--brand-amber-soft)] px-2 text-xs font-bold text-[var(--brand-amber-hover)]">
                     {formatTokens(hand.bet)}
                   </div>
                   <HandTotal label="Total" total={hand.total} />
@@ -330,12 +330,11 @@ function SplitHandsArea({
 
       {gameState === "PLAYER_TURN" ? (
         <div className="mt-2 flex flex-wrap justify-center gap-2">
-          <p className="w-full text-center text-xs text-white/50">
+          <p className="w-full text-center text-xs text-[var(--fg-muted)]">
             Jouez la Main {currentSplitHand + 1}
           </p>
           <Button
             aria-label="Tirer une carte"
-            className="bg-sky-500 text-zinc-950 hover:bg-sky-400"
             disabled={isDisabled}
             onClick={onHit}
           >
@@ -343,7 +342,7 @@ function SplitHandsArea({
           </Button>
           <Button
             aria-label="Rester avec la main actuelle"
-            className="bg-amber-500 text-zinc-950 hover:bg-amber-400"
+            variant="secondary"
             disabled={isDisabled}
             onClick={onStand}
           >
@@ -351,7 +350,7 @@ function SplitHandsArea({
           </Button>
           <Button
             aria-label="Doubler la mise et tirer une carte"
-            className="bg-zinc-100 text-zinc-950 hover:bg-white"
+            variant="secondary"
             disabled={isDisabled || !canDouble}
             onClick={onDouble}
           >
@@ -369,7 +368,7 @@ export function BlackjackGame() {
   const updateBalance = useAuthStore((state) => state.updateBalance);
 
   const [gameState, setGameState] = useState<BlackjackGameState>("BETTING");
-  const [bet, setBet] = useState(10);
+  const [bet, setBet] = useState<number | null>(null);
   const [gameId, setGameId] = useState<string | null>(null);
   const [playerHand, setPlayerHand] = useState<BlackjackCard[]>([]);
   const [dealerUpcard, setDealerUpcard] = useState<BlackjackCard | null>(null);
@@ -559,7 +558,7 @@ export function BlackjackGame() {
   }, [dealerHandFinal]);
 
   const handleBet = useCallback(async () => {
-    if (bet < 1) {
+    if (!bet || bet < 1) {
       notify.error("La mise minimum est de 1 token.");
       return;
     }
@@ -878,21 +877,21 @@ export function BlackjackGame() {
                 ? "Defaite"
                 : "En attente";
   const playerHandBorderClass = (() => {
-    if (gameState !== "GAME_OVER") return "border-white/10";
+    if (gameState !== "GAME_OVER") return "border-[var(--ink-700)]";
     if (splitResults) {
       const splitTotalBet = splitResults.reduce((s, r) => s + r.bet, 0);
       const splitNet = payout - splitTotalBet;
-      return splitNet > 0 ? "border-emerald-500/60" : splitNet === 0 ? "border-orange-500/60" : "border-red-500/60";
+      return splitNet > 0 ? "border-[var(--brand-emerald)]" : splitNet === 0 ? "border-[var(--brand-amber)]" : "border-[var(--brand-red)]";
     }
-    if (result === "win" || result === "blackjack") return "border-emerald-500/60";
-    if (result === "push") return "border-orange-500/60";
-    return "border-red-500/60";
+    if (result === "win" || result === "blackjack") return "border-[var(--brand-emerald)]";
+    if (result === "push") return "border-[var(--brand-amber)]";
+    return "border-[var(--brand-red)]";
   })();
 
   if (isCheckingSession) {
     return (
       <div className="flex min-h-[200px] items-center justify-center">
-        <p className="text-sm text-brand-muted">Chargement...</p>
+        <p className="text-sm text-[var(--fg-muted)]">Chargement...</p>
       </div>
     );
   }
@@ -908,32 +907,32 @@ export function BlackjackGame() {
       <Card accent="cyan" className="min-w-0 p-4">
         <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
           <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-brand-cyan">Salon casino</p>
-            <h1 className="mt-1 font-display text-2xl text-brand-text">Blackjack</h1>
+            <p className="text-xs uppercase tracking-[0.3em] text-[var(--brand-emerald)]">Salon casino</p>
+            <h1 className="mt-1 font-display text-2xl text-[var(--fg-primary)]">Blackjack</h1>
           </div>
 
           <div className="grid gap-2 sm:grid-cols-3">
-            <div className="flex items-center gap-3 rounded-[22px] border border-white/10 bg-white/5 px-3 py-2">
-              <Coins className="h-4 w-4 text-brand-cyan" />
+            <div className="flex items-center gap-3 rounded-[var(--radius-md)] border border-[var(--ink-700)] bg-[var(--surface-2)] px-3 py-2">
+              <Coins className="h-4 w-4 text-[var(--brand-emerald)]" />
               <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Solde</p>
-                <p className="text-sm font-semibold text-brand-text">
+                <p className="text-xs uppercase tracking-[0.24em] text-[var(--fg-muted)]">Solde</p>
+                <p className="text-sm font-semibold text-[var(--fg-primary)]">
                   {formatTokens(balance)} tokens
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-3 rounded-[22px] border border-white/10 bg-white/5 px-3 py-2">
-              <Sparkles className="h-4 w-4 text-amber-300" />
+            <div className="flex items-center gap-3 rounded-[var(--radius-md)] border border-[var(--ink-700)] bg-[var(--surface-2)] px-3 py-2">
+              <Sparkles className="h-4 w-4 text-[var(--brand-amber-hover)]" />
               <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Etat</p>
+                <p className="text-xs uppercase tracking-[0.24em] text-[var(--fg-muted)]">Etat</p>
                 <p className={cn("text-sm font-semibold", stateCopy.tone)}>{stateCopy.label}</p>
               </div>
             </div>
-            <div className="flex items-center gap-3 rounded-[22px] border border-white/10 bg-white/5 px-3 py-2">
-              <Shield className="h-4 w-4 text-emerald-300" />
+            <div className="flex items-center gap-3 rounded-[var(--radius-md)] border border-[var(--ink-700)] bg-[var(--surface-2)] px-3 py-2">
+              <Shield className="h-4 w-4 text-[var(--brand-emerald-hover)]" />
               <div>
-                <p className="text-xs uppercase tracking-[0.24em] text-brand-muted">Resultat</p>
-                <p className="text-sm font-semibold text-brand-text">{resultText}</p>
+                <p className="text-xs uppercase tracking-[0.24em] text-[var(--fg-muted)]">Resultat</p>
+                <p className="text-sm font-semibold text-[var(--fg-primary)]">{resultText}</p>
               </div>
             </div>
           </div>
@@ -941,26 +940,15 @@ export function BlackjackGame() {
       </Card>
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px] min-h-0">
-        <div
-          className="relative overflow-y-auto rounded-[36px] border border-amber-200/20 p-4 shadow-[0_30px_80px_rgba(0,0,0,0.32)] sm:p-5 xl:flex xl:flex-col"
-          style={{
-            background:
-              "radial-gradient(circle at top, rgba(40,123,88,0.88), rgba(10,50,32,0.98) 62%)",
-          }}
-        >
-          <div className="absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/40 to-transparent" />
-          <div className="absolute left-6 top-6 rounded-full border border-white/10 bg-black/15 px-4 py-2 text-[11px] uppercase tracking-[0.32em] text-white/55">
-            Table principale
-          </div>
-
-          <div className="grid gap-3 pt-10">
-            <div className="rounded-[28px] border border-white/10 bg-black/10 p-3 backdrop-blur-sm">
+        <div className="relative overflow-y-auto rounded-[var(--radius-xl)] border border-[var(--ink-700)] bg-[var(--surface-1)] p-4 shadow-[var(--shadow-panel)] sm:p-5 xl:flex xl:flex-col">
+          <div className="grid gap-3">
+            <div className="rounded-[var(--radius-lg)] border border-[var(--ink-700)] bg-[var(--surface-2)] p-3">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/55">
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[var(--fg-muted)]">
                     Dealer
                   </p>
-                  <p className="mt-2 text-sm text-white/70">Main visible et resolution finale.</p>
+                  <p className="mt-2 text-sm text-[var(--fg-secondary)]">Main visible et resolution finale.</p>
                 </div>
                 {dealerDisplayHand.length > 0 ? (
                   <HandTotal
@@ -992,7 +980,7 @@ export function BlackjackGame() {
             </div>
 
             {isSplitActive ? (
-              <div className="rounded-[28px] border border-white/10 bg-black/10 p-3 backdrop-blur-sm">
+              <div className="rounded-[var(--radius-lg)] border border-[var(--ink-700)] bg-[var(--surface-2)] p-3">
                 <SplitHandsArea
                   canDouble={canDouble}
                   currentSplitHand={currentSplitHand}
@@ -1005,17 +993,17 @@ export function BlackjackGame() {
                 />
               </div>
             ) : (
-              <div className="rounded-[28px] bg-black/10 p-3 backdrop-blur-sm">
+              <div className="rounded-[var(--radius-lg)] bg-[var(--surface-2)] p-3">
                 <div className="mb-2 flex items-center justify-between gap-3">
                   <div>
-                    <p className="text-xs font-semibold uppercase tracking-[0.3em] text-white/55">
+                    <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[var(--fg-muted)]">
                       Joueur
                     </p>
-                    <p className="mt-2 text-sm text-white/70">{stateCopy.detail}</p>
+                    <p className="mt-2 text-sm text-[var(--fg-secondary)]">{stateCopy.detail}</p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2">
                     {currentBet > 0 && gameState !== "BETTING" ? (
-                      <div className="flex min-h-10 min-w-10 items-center justify-center rounded-full border-2 border-amber-300 bg-amber-900/75 px-2 text-xs font-bold text-amber-100 shadow-lg">
+                      <div className="flex min-h-10 min-w-10 items-center justify-center rounded-full border-2 border-[var(--brand-amber)] bg-[var(--brand-amber-soft)] px-2 text-xs font-bold text-[var(--brand-amber-hover)] shadow-lg">
                         {formatTokens(currentBet)}
                       </div>
                     ) : null}
@@ -1028,7 +1016,7 @@ export function BlackjackGame() {
                       />
                     ) : null}
                     {gameState === "PLAYER_TURN" ? (
-                      <span className="animate-pulse rounded-full bg-brand-cyan/20 px-3 py-1 text-xs text-brand-cyan">
+                      <span className="animate-pulse rounded-full bg-[var(--brand-emerald-soft)] px-3 py-1 text-xs text-[var(--brand-emerald-hover)]">
                         Votre tour
                       </span>
                     ) : null}
@@ -1055,12 +1043,11 @@ export function BlackjackGame() {
                   >
                     {canInsure && dealerUpcard?.rank === "A" ? (
                       <>
-                        <p className="w-full text-center text-xs text-amber-300">
+                        <p className="w-full text-center text-xs text-[var(--brand-amber-hover)]">
                           Le dealer montre un As — souhaitez-vous prendre l'assurance ?
                         </p>
                         <Button
                           aria-label="Prendre l'assurance"
-                          className="bg-emerald-500 text-zinc-950 hover:bg-emerald-400"
                           disabled={isDisabled}
                           onClick={() => void handleInsurance()}
                         >
@@ -1068,7 +1055,7 @@ export function BlackjackGame() {
                         </Button>
                         <Button
                           aria-label="Refuser l'assurance"
-                          className="bg-zinc-600 text-zinc-100 hover:bg-zinc-500"
+                          variant="secondary"
                           disabled={isDisabled}
                           onClick={() => void handleDeclineInsurance()}
                         >
@@ -1080,7 +1067,6 @@ export function BlackjackGame() {
                         {canSplit ? (
                           <Button
                             aria-label="Splitter la main en deux"
-                            className="bg-purple-500 text-zinc-950 hover:bg-purple-400"
                             disabled={isDisabled}
                             onClick={() => void handleSplit()}
                           >
@@ -1089,7 +1075,6 @@ export function BlackjackGame() {
                         ) : null}
                         <Button
                           aria-label="Tirer une carte"
-                          className="bg-sky-500 text-zinc-950 hover:bg-sky-400"
                           disabled={isDisabled}
                           onClick={() => void handleHit()}
                         >
@@ -1097,7 +1082,7 @@ export function BlackjackGame() {
                         </Button>
                         <Button
                           aria-label="Rester avec la main actuelle"
-                          className="bg-amber-500 text-zinc-950 hover:bg-amber-400"
+                          variant="secondary"
                           disabled={isDisabled}
                           onClick={() => void handleStand()}
                         >
@@ -1105,7 +1090,7 @@ export function BlackjackGame() {
                         </Button>
                         <Button
                           aria-label="Doubler la mise et tirer une carte"
-                          className="bg-zinc-100 text-zinc-950 hover:bg-white"
+                          variant="secondary"
                           disabled={isDisabled || !canDouble}
                           onClick={() => void handleDouble()}
                         >
@@ -1125,24 +1110,24 @@ export function BlackjackGame() {
         <div className="flex flex-col gap-3">
           <Card className="min-w-0 p-4">
             <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
-              <div className="rounded-[24px] border border-white/10 bg-white/5 px-3 py-2">
-                <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">Mise courante</p>
-                <p className="mt-1 font-display text-xl text-brand-text">
+              <div className="rounded-[var(--radius-md)] border border-[var(--ink-700)] bg-[var(--surface-2)] px-3 py-2">
+                <p className="text-xs uppercase tracking-[0.28em] text-[var(--fg-muted)]">Mise courante</p>
+                <p className="mt-1 font-display text-xl text-[var(--fg-primary)]">
                   {formatTokens(
-                    gameState === "BETTING" || gameState === "GAME_OVER" ? bet : currentBet || bet,
+                    gameState === "BETTING" || gameState === "GAME_OVER" ? (bet ?? 0) : currentBet || (bet ?? 0),
                   )}
                 </p>
               </div>
-              <div className="rounded-[24px] border border-white/10 bg-white/5 px-3 py-2">
-                <p className="text-xs uppercase tracking-[0.28em] text-brand-muted">Payout</p>
-                <p className="mt-1 font-display text-xl text-brand-text">
+              <div className="rounded-[var(--radius-md)] border border-[var(--ink-700)] bg-[var(--surface-2)] px-3 py-2">
+                <p className="text-xs uppercase tracking-[0.28em] text-[var(--fg-muted)]">Payout</p>
+                <p className="mt-1 font-display text-xl text-[var(--fg-primary)]">
                   {payout > 0 ? `+${formatTokens(payout)}` : "0"}
                 </p>
               </div>
-              <div className="rounded-[24px] border border-white/10 bg-white/5 px-3 py-2 sm:col-span-2 xl:col-span-1">
+              <div className="rounded-[var(--radius-md)] border border-[var(--ink-700)] bg-[var(--surface-2)] px-3 py-2 sm:col-span-2 xl:col-span-1">
                 <div className="flex items-start gap-2">
-                  <Waves className="mt-0.5 h-4 w-4 shrink-0 text-brand-cyan" />
-                  <p className="text-xs leading-5 text-brand-muted">
+                  <Waves className="mt-0.5 h-4 w-4 shrink-0 text-[var(--brand-emerald)]" />
+                  <p className="text-xs leading-5 text-[var(--fg-muted)]">
                     Dealer tire sur 16 ou moins • Assurance = 50% de la mise sur As visible • Split disponible sur deux cartes de même valeur
                   </p>
                 </div>
@@ -1154,38 +1139,39 @@ export function BlackjackGame() {
             {(gameState === "BETTING" || gameState === "GAME_OVER") ? (
               <div className="space-y-3">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.3em] text-brand-muted">Votre mise</p>
+                  <p className="text-xs uppercase tracking-[0.3em] text-[var(--fg-muted)]">Votre mise</p>
                   <div className="mt-2 flex items-center gap-3">
                     <button
                       aria-label="Diviser la mise par 2"
-                      className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl border border-brand-line bg-white/5 text-sm font-bold text-brand-text transition-all hover:border-brand-cyan/40 hover:bg-white/10 disabled:opacity-40"
-                      disabled={!canAdjustBet}
-                      onClick={() => setBet((prev) => Math.max(1, Math.floor(prev / 2)))}
+                      className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--ink-700)] bg-[var(--surface-2)] text-sm font-bold text-[var(--fg-primary)] transition-all hover:border-[var(--brand-emerald-line)] hover:bg-[var(--surface-1)] disabled:opacity-40"
+                      disabled={!canAdjustBet || !bet || bet <= 1}
+                      onClick={() => { if (bet && bet > 1) setBet(Math.max(1, Math.floor(bet / 2))); }}
                       type="button"
                     >
                       ÷2
                     </button>
                     <input
                       aria-label="Montant de la mise"
-                      className="h-11 w-full rounded-2xl border border-brand-line bg-white/5 px-4 text-center text-base font-semibold text-brand-text focus:border-brand-cyan/40 focus:outline-none"
+                      className="h-11 w-full rounded-[var(--radius-sm)] border border-[var(--ink-700)] bg-[var(--surface-2)] px-4 text-center text-base font-semibold text-[var(--fg-primary)] focus:border-[var(--brand-emerald-line)] focus:outline-none"
                       disabled={!canAdjustBet}
                       max={balance}
                       min={1}
                       onChange={(event) => {
                         const raw = event.target.value.replace(/^0+(?=\d)/, "");
+                        if (raw === "") { setBet(null); return; }
                         const value = parseInt(raw, 10);
                         if (!Number.isNaN(value)) {
                           setBet(Math.min(Math.max(1, value), balance));
                         }
                       }}
                       type="number"
-                      value={bet || ""}
+                      value={bet ?? ""}
                     />
                     <button
                       aria-label="Doubler la mise"
-                      className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-2xl border border-brand-line bg-white/5 text-sm font-bold text-brand-text transition-all hover:border-brand-cyan/40 hover:bg-white/10 disabled:opacity-40"
+                      className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-[var(--radius-sm)] border border-[var(--ink-700)] bg-[var(--surface-2)] text-sm font-bold text-[var(--fg-primary)] transition-all hover:border-[var(--brand-emerald-line)] hover:bg-[var(--surface-1)] disabled:opacity-40"
                       disabled={!canAdjustBet}
-                      onClick={() => setBet((prev) => Math.min(prev * 2, balance))}
+                      onClick={() => setBet(bet ? Math.min(bet * 2, balance) : 1)}
                       type="button"
                     >
                       ×2
@@ -1200,8 +1186,8 @@ export function BlackjackGame() {
                       className={cn(
                         "rounded-full border px-3 py-2 text-sm font-semibold transition",
                         bet === amount
-                          ? "border-amber-300 bg-amber-300 text-zinc-950"
-                          : "border-white/10 bg-white/5 text-brand-text hover:border-brand-cyan/45 hover:bg-white/10",
+                          ? "border-[var(--brand-amber)] bg-[var(--brand-amber-soft)] text-[var(--brand-amber-hover)]"
+                          : "border-[var(--ink-700)] bg-[var(--surface-2)] text-[var(--fg-primary)] hover:border-[var(--brand-emerald-line)] hover:bg-[var(--surface-1)]",
                       )}
                       disabled={!canAdjustBet || amount > balance}
                       onClick={() => setBet(Math.min(amount, balance))}
@@ -1214,8 +1200,8 @@ export function BlackjackGame() {
                     className={cn(
                       "rounded-full border px-3 py-2 text-sm font-semibold transition",
                       bet === balance
-                        ? "border-red-400 bg-red-500 text-white"
-                        : "border-red-500/50 bg-red-500/10 text-red-400 hover:border-red-400 hover:bg-red-500/20",
+                        ? "border-[var(--brand-red)] bg-[var(--brand-red-soft)] text-[var(--brand-red-hover)]"
+                        : "border-[var(--brand-red-soft)] bg-[var(--brand-red-soft)] text-[var(--brand-red-hover)] hover:border-[var(--brand-red)]",
                     )}
                     disabled={!canAdjustBet || balance < 1}
                     onClick={() => setBet(balance)}
@@ -1231,8 +1217,8 @@ export function BlackjackGame() {
               {(gameState === "BETTING" || gameState === "GAME_OVER") ? (
                 <Button
                   aria-label="Parier et démarrer la partie"
-                  className="flex-1 gap-2 bg-emerald-500 text-zinc-950 hover:bg-emerald-400"
-                  disabled={isDisabled || bet < 1 || bet > balance}
+                  className="flex-1 gap-2"
+                  disabled={isDisabled || !bet || bet < 1 || bet > balance}
                   onClick={() => {
                     if (gameState === "GAME_OVER") {
                       sounds.cardShuffle.play();

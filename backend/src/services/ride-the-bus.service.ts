@@ -3,6 +3,7 @@ import { AppError } from "../utils/app-error";
 import { gamificationService } from "./gamification.service";
 import { jackpotService } from "./jackpot.service";
 import { prisma } from "./prisma.service";
+import * as robinHoodService from "./robin-hood.service";
 
 type Suit = "hearts" | "diamonds" | "clubs" | "spades";
 type Color = "red" | "black";
@@ -71,6 +72,8 @@ interface RidetheBusSession {
   currentMultiplier: number;
   startedAt: Date;
   lastActivityAt: Date;
+  robinEventId: string | null;
+  fair: boolean;
 }
 
 const SUITS: Suit[] = ["hearts", "diamonds", "clubs", "spades"];
@@ -106,24 +109,25 @@ function drawTop(deck: RidetheBusCard[]): RidetheBusCard {
   return card;
 }
 
-function safeMultiplier(prob: number): number {
+function safeMultiplier(prob: number, fair = false): number {
   if (prob <= 0) return 50;
-  return Math.max(1.05, Math.round((1 / prob) * 0.985 * 100) / 100);
+  const factor = fair ? 1.0 : 0.985;
+  return Math.max(1.05, Math.round((1 / prob) * factor * 100) / 100);
 }
 
 // Infinite deck probabilities: 4 cards of each value 1-13 → uniform distribution
-function calcStep2Multipliers(card1Value: number): Step2Multipliers {
+function calcStep2Multipliers(card1Value: number, fair = false): Step2Multipliers {
   const higherOrEqualProb = (13 - card1Value + 1) / 13; // values from card1Value to 13
   const lowerOrEqualProb = card1Value / 13;              // values from 1 to card1Value
   return {
-    higherOrEqual: safeMultiplier(higherOrEqualProb),
-    lowerOrEqual: safeMultiplier(lowerOrEqualProb),
+    higherOrEqual: safeMultiplier(higherOrEqualProb, fair),
+    lowerOrEqual: safeMultiplier(lowerOrEqualProb, fair),
     higherOrEqualProb,
     lowerOrEqualProb,
   };
 }
 
-function calcStep3Multipliers(card1Value: number, card2Value: number): Step3Multipliers {
+function calcStep3Multipliers(card1Value: number, card2Value: number, fair = false): Step3Multipliers {
   const low = Math.min(card1Value, card2Value);
   const high = Math.max(card1Value, card2Value);
   const insideCount = high - low + 1; // values from low to high inclusive
@@ -131,8 +135,8 @@ function calcStep3Multipliers(card1Value: number, card2Value: number): Step3Mult
   const insideProb = insideCount / 13;
   const outsideProb = outsideCount / 13;
   return {
-    inside: safeMultiplier(insideProb),
-    outside: safeMultiplier(outsideProb),
+    inside: safeMultiplier(insideProb, fair),
+    outside: safeMultiplier(outsideProb, fair),
     insideProb,
     outsideProb,
   };
@@ -151,6 +155,15 @@ class RidetheBusService {
     if (!user) throw new AppError("Utilisateur introuvable.", 404);
     if (user.balance < betAmount) throw new AppError("Solde insuffisant.", 400);
 
+    // Robin des Slots check
+    const robinEvent = await robinHoodService.getActiveEvent();
+    if (robinEvent) {
+      const isVictim = await prisma.robinHoodVictim.findFirst({ where: { eventId: robinEvent.id, userId } });
+      if (isVictim) throw new AppError("Tu ne peux pas jouer pendant que tu es la victime de Robin des Slots.", 403);
+    }
+    const robinEventId = robinEvent?.id ?? null;
+    const fair = !!robinEventId;
+
     const updated = await prisma.user.update({
       where: { id: userId },
       data: { balance: { decrement: betAmount } },
@@ -167,6 +180,8 @@ class RidetheBusService {
       currentMultiplier: 1.0,
       startedAt: new Date(),
       lastActivityAt: new Date(),
+      robinEventId,
+      fair,
     };
     activeSessions.set(userId, session);
 
@@ -224,7 +239,7 @@ class RidetheBusService {
       Math.round(session.currentMultiplier * STEP1_MULTIPLIER * 100) / 100;
     session.currentStep = 2;
 
-    const s2 = calcStep2Multipliers(card.value);
+    const s2 = calcStep2Multipliers(card.value, session.fair);
     return {
       correct: true,
       revealedCard: card,
@@ -244,7 +259,7 @@ class RidetheBusService {
     answer: "higher_or_equal" | "lower_or_equal",
   ): Promise<RidetheBusAnswerResult> {
     const card1 = session.cards[0]!;
-    const mults = calcStep2Multipliers(card1.value);
+    const mults = calcStep2Multipliers(card1.value, session.fair);
     const appliedMultiplier = answer === "higher_or_equal" ? mults.higherOrEqual : mults.lowerOrEqual;
 
     const drawnCard = drawTop(session.deck);
@@ -276,7 +291,7 @@ class RidetheBusService {
       Math.round(session.currentMultiplier * appliedMultiplier * 100) / 100;
     session.currentStep = 3;
 
-    const s3 = calcStep3Multipliers(card1.value, drawnCard.value);
+    const s3 = calcStep3Multipliers(card1.value, drawnCard.value, session.fair);
     return {
       correct: true,
       revealedCard: drawnCard,
@@ -297,7 +312,7 @@ class RidetheBusService {
   ): Promise<RidetheBusAnswerResult> {
     const card1 = session.cards[0]!;
     const card2 = session.cards[1]!;
-    const mults = calcStep3Multipliers(card1.value, card2.value);
+    const mults = calcStep3Multipliers(card1.value, card2.value, session.fair);
     const appliedMultiplier = answer === "inside" ? mults.inside : mults.outside;
 
     const card = drawTop(session.deck);
@@ -395,6 +410,10 @@ class RidetheBusService {
     await gamificationService.synchronizeUserBadges(userId);
     await gamificationService.triggerLeaderboardTop3(userId);
 
+    if (session.robinEventId && payout > session.betAmount) {
+      await robinHoodService.deductFromPool(session.robinEventId, payout - session.betAmount);
+    }
+
     return {
       correct: true,
       revealedCard: card,
@@ -426,6 +445,10 @@ class RidetheBusService {
     });
     await gamificationService.synchronizeUserBadges(session.userId);
     await gamificationService.triggerLeaderboardTop3(session.userId);
+
+    if (session.robinEventId) {
+      await robinHoodService.addToPool(session.robinEventId, session.betAmount);
+    }
   }
 
   getCurrent(userId: string): RidetheBusCurrentResult {
@@ -436,10 +459,10 @@ class RidetheBusService {
     let step3Multipliers: Step3Multipliers | undefined;
 
     if (session.currentStep === 2 && session.cards[0]) {
-      step2Multipliers = calcStep2Multipliers(session.cards[0].value);
+      step2Multipliers = calcStep2Multipliers(session.cards[0].value, session.fair);
     }
     if (session.currentStep === 3 && session.cards[0] && session.cards[1]) {
-      step3Multipliers = calcStep3Multipliers(session.cards[0].value, session.cards[1].value);
+      step3Multipliers = calcStep3Multipliers(session.cards[0].value, session.cards[1].value, session.fair);
     }
 
     return {

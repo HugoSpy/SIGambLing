@@ -1,4 +1,4 @@
-import { Router } from "express";
+import { Router, type RequestHandler } from "express";
 import passport from "passport";
 import rateLimit from "express-rate-limit";
 import {
@@ -10,6 +10,7 @@ import {
 import { validateBody } from "../middleware/validate";
 import { startMicrosoftAuthSchema } from "../schemas/auth.schemas";
 import { AppError } from "../utils/app-error";
+import { env } from "../config/env";
 import {
   clearMicrosoftOAuthState,
   issueMicrosoftOAuthState,
@@ -17,6 +18,16 @@ import {
 } from "../utils/oauth-state";
 
 export const authRouter = Router();
+
+function requireTrustedOrigin(...allowedOrigins: string[]): RequestHandler {
+  return (req, _res, next) => {
+    const origin = req.headers.origin;
+    if (origin && !allowedOrigins.includes(origin)) {
+      return next(new AppError("Origin non autorisé.", 403));
+    }
+    next();
+  };
+}
 
 const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -80,5 +91,5 @@ authRouter.get("/microsoft/callback", (request, response, next) => {
   )(request, response, next);
 });
 
-authRouter.post("/refresh", strictLimiter, refreshController);
-authRouter.post("/logout", strictLimiter, logoutController);
+authRouter.post("/refresh", strictLimiter, requireTrustedOrigin(env.FRONTEND_URL), refreshController);
+authRouter.post("/logout",  strictLimiter, requireTrustedOrigin(env.FRONTEND_URL), logoutController);

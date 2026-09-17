@@ -8,6 +8,7 @@ import { prisma } from "./prisma.service";
 import { logger } from "../utils/logger";
 import { env } from "../config/env";
 import { verifyAccessToken } from "../utils/jwt";
+import * as robinHoodService from "./robin-hood.service";
 
 // ─── Timing constants ─────────────────────────────────────────────────────────
 
@@ -16,12 +17,13 @@ const CRASHED_DISPLAY_MS = 3000;
 
 // ─── RNG ──────────────────────────────────────────────────────────────────────
 
-function generateCrashData(maxMultiplier = 1000000): { crashPoint: number; seed: string; hash: string } {
+function generateCrashData(maxMultiplier = 1000000, fair = false): { crashPoint: number; seed: string; hash: string } {
   const seed = crypto.randomBytes(8).toString("hex");
   const hash = createHash("sha256").update(seed).digest("hex");
   const h = parseInt(hash.slice(0, 8), 16);
   const e = Math.pow(2, 32);
-  const raw = (e / (e - h)) * 0.97;
+  const edge = fair ? 1.0 : 0.97;
+  const raw = (e / (e - h)) * edge;
   const crashPoint = Math.min(parseFloat(Math.max(1.0, raw).toFixed(2)), maxMultiplier);
   return { crashPoint, seed, hash };
 }
@@ -222,6 +224,13 @@ class CrashService {
     if (!user) throw new AppError("Utilisateur introuvable.", 404);
     if (user.balance < amount) throw new AppError("Solde insuffisant.", 400);
 
+    // Robin des Slots check
+    const robinEvent = await robinHoodService.getActiveEvent();
+    if (robinEvent) {
+      const isVictim = await prisma.robinHoodVictim.findFirst({ where: { eventId: robinEvent.id, userId } });
+      if (isVictim) throw new AppError("Tu ne peux pas jouer pendant que tu es la victime de Robin des Slots.", 403);
+    }
+
     await prisma.user.update({
       where: { id: userId },
       data: { balance: { decrement: amount } },
@@ -299,6 +308,12 @@ class CrashService {
       });
     }
 
+    // Robin des Slots pool routing on cashout
+    const robinForCashout = await robinHoodService.getActiveEvent();
+    if (robinForCashout && payout > bet.amount) {
+      await robinHoodService.deductFromPool(robinForCashout.id, payout - bet.amount);
+    }
+
     // Targeted emit — only to the player who cashed out
     userSockets.get(userId)?.emit("cashout_confirmed", { cashedOutAt: multiplier, payout });
 
@@ -329,7 +344,8 @@ class CrashService {
   }
 
   private async _runWaitingPhase(): Promise<void> {
-    const { crashPoint, seed, hash } = generateCrashData();
+    const robinActive = !!(await robinHoodService.getActiveEvent());
+    const { crashPoint, seed, hash } = generateCrashData(1000000, robinActive);
 
     const round = await prisma.crashRound.create({
       data: { crashPoint, seed, hash, status: "WAITING" },
@@ -455,6 +471,20 @@ class CrashService {
         await jackpotService.recordCasinoContribution(bet.userId, bet.amount, "crash");
       } catch (err) {
         logger.error("[Crash] Jackpot contribution error", { userId: bet.userId, error: err });
+      }
+    }
+
+    // Robin des Slots pool routing for losses (bets that did not cashout)
+    const robinForCrash = await robinHoodService.getActiveEvent();
+    if (robinForCrash) {
+      for (const bet of allBets) {
+        if (!bet.cashedOut) {
+          try {
+            await robinHoodService.addToPool(robinForCrash.id, bet.amount);
+          } catch (err) {
+            logger.error("[Crash] Robin pool error", { userId: bet.userId, error: err });
+          }
+        }
       }
     }
 

@@ -1,10 +1,12 @@
 import type { CasinoGameResult, CasinoGameType } from "@prisma/client";
 import { AppError } from "../utils/app-error";
 import { spinRoulette } from "../utils/roulette-rng";
+import { generateRandomNumber } from "../utils/roulette-rng";
 import { gamificationService } from "./gamification.service";
 import { jackpotService } from "./jackpot.service";
 import { prisma } from "./prisma.service";
 import type { RouletteSpinInput } from "../schemas/casino.schemas";
+import * as robinHoodService from "./robin-hood.service";
 
 const RED_NUMBERS = new Set([1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]);
 const BLACK_NUMBERS = new Set([2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35]);
@@ -153,14 +155,27 @@ class RouletteService {
       throw new AppError("Balance insuffisante.", 400);
     }
 
+    // Robin des Slots check
+    const robinEvent = await robinHoodService.getActiveEvent();
+    if (robinEvent) {
+      const isVictim = await prisma.robinHoodVictim.findFirst({
+        where: { eventId: robinEvent.id, userId },
+      });
+      if (isVictim) {
+        throw new AppError("Tu ne peux pas jouer pendant que tu es la victime de Robin des Slots.", 403);
+      }
+    }
+
     const resultNumber = spinRoulette();
     const resultColor = this.getColor(resultNumber);
-    const winningBets = bets.filter((bet) => this.isBetWinning(bet.type, resultNumber));
-    const totalPayout = winningBets.reduce(
-      (sum, bet) => sum + bet.amount * this.getMultiplier(bet.type),
-      0,
-    );
-    const result: CasinoGameResult = totalPayout > 0 ? "win" : "loss";
+
+    // Robin active + résultat 0 → push : remboursement intégral, EV=1, pas de mouvement cagnotte
+    const isPush = resultNumber === 0 && !!robinEvent;
+    const winningBets = isPush ? [] : bets.filter((bet) => this.isBetWinning(bet.type, resultNumber));
+    const totalPayout = isPush
+      ? totalBet
+      : winningBets.reduce((sum, bet) => sum + bet.amount * this.getMultiplier(bet.type), 0);
+    const result: CasinoGameResult = isPush ? "push" : totalPayout > 0 ? "win" : "loss";
     const gameType: CasinoGameType = "roulette";
 
     const outcome = await prisma.$transaction(async (transaction) => {
@@ -193,6 +208,7 @@ class RouletteService {
             bets,
             winning_bets: winningBets,
             total_payout: totalPayout,
+            push: isPush,
           },
         },
       });
@@ -223,6 +239,15 @@ class RouletteService {
 
       return { game, newBalance: updatedUser.balance };
     });
+
+    // Robin des Slots pool routing (push = net 0, pas de mouvement)
+    if (robinEvent && !isPush) {
+      if (totalPayout > totalBet) {
+        await robinHoodService.deductFromPool(robinEvent.id, totalPayout - totalBet);
+      } else if (totalPayout === 0) {
+        await robinHoodService.addToPool(robinEvent.id, totalBet);
+      }
+    }
 
     return {
       game_id: outcome.game.id,

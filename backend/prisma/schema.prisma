@@ -47,6 +47,7 @@ enum CasinoGameType {
   ride_the_bus
   mines
   crash
+  plinko
 }
 
 enum CrashRoundStatus {
@@ -99,6 +100,10 @@ model User {
   chatMessages    ChatMessage[]
   chatBan         ChatBan?
   crashBets       CrashBet[]
+  robinHoodVictims      RobinHoodVictim[]
+  robinHoodVotesGiven   RobinHoodVote[]       @relation("RobinHoodVoter")
+  robinHoodVotesGot     RobinHoodVote[]       @relation("RobinHoodTarget")
+  robinHoodCandidacies  RobinHoodCandidate[]
 
   @@index([email])
   @@index([balance(sort: Desc)])
@@ -365,4 +370,68 @@ model CrashBet {
   @@unique([roundId, userId])
   @@index([roundId])
   @@index([userId])
+}
+
+// ─── Robin de Vegas ────────────────────────────────────────────────────────────
+
+enum RobinHoodStatus {
+  VOTE
+  ACTIVE
+  COMPLETED
+  SKIPPED
+}
+
+model RobinHoodEvent {
+  id          String            @id @default(cuid())
+  status      RobinHoodStatus   @default(VOTE)
+  voteStartAt DateTime
+  voteEndAt   DateTime
+  eventEndAt  DateTime
+  initialPool Int               @default(0)
+  currentPool Int               @default(0)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  victims     RobinHoodVictim[]
+  votes       RobinHoodVote[]
+  candidates  RobinHoodCandidate[]
+}
+
+model RobinHoodVictim {
+  id             String         @id @default(cuid())
+  eventId        String
+  userId         String         @db.Uuid
+  amountTaken    Int
+  amountReturned Int?
+  returnedAt     DateTime?
+  event          RobinHoodEvent @relation(fields: [eventId], references: [id])
+  user           User           @relation(fields: [userId], references: [id])
+}
+
+model RobinHoodVote {
+  id        String         @id @default(cuid())
+  eventId   String
+  voterId   String         @db.Uuid
+  targetId  String         @db.Uuid
+  createdAt DateTime       @default(now())
+  event     RobinHoodEvent @relation(fields: [eventId], references: [id])
+  voter     User           @relation("RobinHoodVoter", fields: [voterId], references: [id])
+  target    User           @relation("RobinHoodTarget", fields: [targetId], references: [id])
+
+  @@unique([eventId, voterId])
+}
+
+model RobinHoodCandidate {
+  id        String         @id @default(cuid())
+  eventId   String
+  userId    String         @db.Uuid
+  pseudo    String         @db.VarChar(50)
+  balance   Int
+  rank      Int
+  createdAt DateTime       @default(now())
+  event     RobinHoodEvent @relation(fields: [eventId], references: [id])
+  user      User           @relation(fields: [userId], references: [id])
+
+  @@unique([eventId, userId])
+  @@unique([eventId, rank])
+  @@index([eventId])
 }

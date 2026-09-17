@@ -3,6 +3,7 @@ import { AppError } from "../utils/app-error";
 import { gamificationService } from "./gamification.service";
 import { jackpotService } from "./jackpot.service";
 import { prisma } from "./prisma.service";
+import * as robinHoodService from "./robin-hood.service";
 
 const TOTAL_CELLS = 25;
 const MIN_BET = 10;
@@ -13,14 +14,15 @@ interface MinesSession {
   userId: string;
   betAmount: number;
   minesCount: number;
-  minePositions: number[]; // Never sent to frontend while active
-  revealedCells: number[]; // indices of revealed gems
+  minePositions: number[];
+  revealedCells: number[];
   gemsFound: number;
   status: "active" | "won" | "lost";
   currentMultiplier: number;
   nextMultiplier: number;
   createdAt: Date;
   lastActivityAt: Date;
+  robinEventId: string | null;
 }
 
 export interface MinesStartResult {
@@ -76,14 +78,19 @@ const SESSION_TIMEOUT_MS = 30 * 60 * 1000; // 30 minutes
 
 const activeSessions = new Map<string, MinesSession>();
 
-function getMinesMultiplier(mines: number, gemsFound: number): number {
+function getMinesMultiplier(mines: number, gemsFound: number, fair = false): number {
   if (gemsFound === 0) return 1;
   const totalGems = TOTAL_CELLS - mines;
   let survivalProb = 1;
   for (let i = 0; i < gemsFound; i++) {
     survivalProb *= (totalGems - i) / (TOTAL_CELLS - i);
   }
-  return Math.round((1 / survivalProb) * (1 - HOUSE_EDGE) * 100) / 100;
+  const edge = fair ? 0 : HOUSE_EDGE;
+  return Math.round((1 / survivalProb) * (1 - edge) * 100) / 100;
+}
+
+function getNextMultiplierFair(mines: number, gemsFound: number): number {
+  return getMinesMultiplier(mines, gemsFound + 1, true);
 }
 
 function getNextMultiplier(mines: number, gemsFound: number): number {
@@ -126,6 +133,16 @@ class MinesService {
     if (!user) throw new AppError("Utilisateur introuvable.", 404);
     if (user.balance < betAmount) throw new AppError("Solde insuffisant.", 400);
 
+    // Robin des Slots check
+    const robinEvent = await robinHoodService.getActiveEvent();
+    if (robinEvent) {
+      const isVictim = await prisma.robinHoodVictim.findFirst({ where: { eventId: robinEvent.id, userId } });
+      if (isVictim) throw new AppError("Tu ne peux pas jouer pendant que tu es la victime de Robin des Slots.", 403);
+    }
+    const robinEventId = robinEvent?.id ?? null;
+    const fairMult = (mines: number, gems: number) => getMinesMultiplier(mines, gems, !!robinEventId);
+    const fairNext = (mines: number, gems: number) => robinEventId ? getNextMultiplierFair(mines, gems) : getNextMultiplier(mines, gems);
+
     const updated = await prisma.user.update({
       where: { id: userId },
       data: { balance: { decrement: betAmount } },
@@ -144,9 +161,10 @@ class MinesService {
       gemsFound: 0,
       status: "active",
       currentMultiplier: 1,
-      nextMultiplier: getNextMultiplier(minesCount, 0),
+      nextMultiplier: fairNext(minesCount, 0),
       createdAt: new Date(),
       lastActivityAt: new Date(),
+      robinEventId,
     };
     activeSessions.set(userId, session);
 
@@ -194,6 +212,9 @@ class MinesService {
       });
       await gamificationService.synchronizeUserBadges(userId);
       await gamificationService.triggerLeaderboardTop3(userId);
+      if (session.robinEventId) {
+        await robinHoodService.addToPool(session.robinEventId, session.betAmount);
+      }
 
       return {
         result: "mine",
@@ -206,8 +227,10 @@ class MinesService {
     // Gem found
     session.revealedCells.push(cellIndex);
     session.gemsFound++;
-    session.currentMultiplier = getMinesMultiplier(session.minesCount, session.gemsFound);
-    session.nextMultiplier = getNextMultiplier(session.minesCount, session.gemsFound);
+    session.currentMultiplier = getMinesMultiplier(session.minesCount, session.gemsFound, !!session.robinEventId);
+    session.nextMultiplier = session.robinEventId
+      ? getNextMultiplierFair(session.minesCount, session.gemsFound)
+      : getNextMultiplier(session.minesCount, session.gemsFound);
 
     const potentialWin = Math.floor(session.betAmount * session.currentMultiplier);
 
@@ -258,6 +281,9 @@ class MinesService {
 
     await gamificationService.synchronizeUserBadges(userId);
     await gamificationService.triggerLeaderboardTop3(userId);
+    if (session.robinEventId && payout > session.betAmount) {
+      await robinHoodService.deductFromPool(session.robinEventId, payout - session.betAmount);
+    }
 
     return {
       payout,
@@ -304,6 +330,14 @@ class MinesService {
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user) throw new AppError("Utilisateur introuvable.", 404);
     if (user.balance < betAmount) throw new AppError("Solde insuffisant.", 400);
+
+    // Robin des Slots check
+    const robinEvent = await robinHoodService.getActiveEvent();
+    if (robinEvent) {
+      const isVictim = await prisma.robinHoodVictim.findFirst({ where: { eventId: robinEvent.id, userId } });
+      if (isVictim) throw new AppError("Tu ne peux pas jouer pendant que tu es la victime de Robin des Slots.", 403);
+    }
+    const robinEventId = robinEvent?.id ?? null;
 
     const minePositions = placeMines(minesCount);
     const totalGems = TOTAL_CELLS - minesCount;
@@ -359,6 +393,10 @@ class MinesService {
       await gamificationService.synchronizeUserBadges(userId);
       await gamificationService.triggerLeaderboardTop3(userId);
 
+      if (robinEventId) {
+        await robinHoodService.addToPool(robinEventId, betAmount);
+      }
+
       const after = await prisma.user.findUnique({ where: { id: userId } });
       return {
         win: false,
@@ -372,7 +410,7 @@ class MinesService {
 
     // All selected cells are gems — cashout
     const gemsFound = revealedGems.length;
-    const multiplier = getMinesMultiplier(minesCount, gemsFound);
+    const multiplier = getMinesMultiplier(minesCount, gemsFound, !!robinEventId);
     const payout = Math.floor(betAmount * multiplier);
 
     const updated = await prisma.user.update({
@@ -400,6 +438,10 @@ class MinesService {
     });
     await gamificationService.synchronizeUserBadges(userId);
     await gamificationService.triggerLeaderboardTop3(userId);
+
+    if (robinEventId && payout > betAmount) {
+      await robinHoodService.deductFromPool(robinEventId, payout - betAmount);
+    }
 
     return {
       win: true,

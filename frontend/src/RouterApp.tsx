@@ -56,6 +56,12 @@ const WinsPage = lazy(() =>
 const CrashPage = lazy(() =>
   import("./pages/CrashPage").then((module) => ({ default: module.CrashPage })),
 );
+const RobinHoodPage = lazy(() =>
+  import("./pages/RobinHoodPage").then((module) => ({ default: module.RobinHoodPage })),
+);
+const PlinkoPage = lazy(() =>
+  import("./pages/casino/PlinkoPage").then((module) => ({ default: module.PlinkoPage })),
+);
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -132,6 +138,7 @@ export default function RouterApp() {
             <Route path="/events/:id" element={<EventsGuard><EventDetailPage /></EventsGuard>} />
             <Route path="/casino" element={<CasinoPage />} />
             <Route path="/casino/crash" element={<CrashPage />} />
+            <Route path="/casino/plinko" element={<PlinkoPage />} />
             <Route path="/casino/:game" element={<CasinoPage />} />
             <Route path="/jackpot" element={<JackpotPage />} />
             <Route path="/leaderboard" element={<LeaderboardPage />} />
@@ -140,6 +147,7 @@ export default function RouterApp() {
             <Route path="/rewards" element={<RewardsPage />} />
             <Route path="/wins" element={<WinsPage />} />
             <Route path="/history" element={<HistoryPage />} />
+            <Route path="/robin-hood" element={<RobinHoodPage />} />
           </Route>
           <Route element={<ProtectedRoute allowedRoles={["admin", "validator"]} />}>
             <Route path="/admin/events" element={<AdminEventsPage />} />

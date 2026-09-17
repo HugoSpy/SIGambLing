@@ -7,14 +7,14 @@ import { Input } from "../ui/Input";
 
 interface RouletteControlsProps {
   balance: number;
-  betAmount: number;
+  betAmount: number | null;
   totalBet: number;
   maxPotentialWin: number;
   disabled: boolean;
   soundEnabled: boolean;
   phase: "idle" | "betting" | "spinning" | "resolving" | "payout";
   hasLastBets: boolean;
-  onBetAmountChange: (amount: number) => void;
+  onBetAmountChange: (amount: number | null) => void;
   onSpin: () => void;
   onClearBets: () => void;
   onToggleSound: () => void;
@@ -86,12 +86,13 @@ export function RouletteControls({
           min={1}
           onChange={(event) => {
             const raw = event.target.value.replace(/^0+(?=\d)/, "");
+            if (raw === "") { onBetAmountChange(null); return; }
             onBetAmountChange(Number(raw) || 0);
           }}
           placeholder="1"
           step={1}
           type="number"
-          value={betAmount || ""}
+          value={betAmount ?? ""}
         />
       </div>
 
